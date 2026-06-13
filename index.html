@@ -44,6 +44,13 @@
   .card .date { font-weight: 700; font-size: 15px; }
   .card .sub { color: var(--sub); font-size: 12.5px; margin-top: 4px; }
   footer { color: var(--sub); font-size: 11px; margin-top: 36px; text-align: center; opacity: .8; }
+  /* ノードホバー時のコメント吹き出し（vis-networkのtitle） */
+  .vis-tooltip { background: var(--panel) !important; color: var(--ink) !important;
+    border: 1px solid var(--line) !important; border-radius: 8px !important;
+    padding: 6px 10px !important; font-family: inherit !important; font-size: 12.5px !important;
+    box-shadow: var(--shadow) !important; max-width: 240px !important; white-space: normal !important; }
+  .vtip-note { font-weight: 600; }
+  .vtip-ttl { color: var(--sub); font-size: 11.5px; margin-top: 3px; }
 </style>
 </head>
 <body>
@@ -59,7 +66,7 @@
 
   <div id="net"></div>
   <div id="err">⚠️ ネットワークを読み込めませんでした。再読み込みしてください。</div>
-  <div class="hint">ノードに触れると、つながりだけが浮かびます ／ キャプチャ（小さい円）をクリックすると元の投稿・記事が開きます ／ 水色＝最近追加</div>
+  <div class="hint">ノードに触れると、つながりだけが浮かびます（コメントを付けたものは💬で一言が出ます）／ キャプチャ（小さい円）をクリックすると元の投稿・記事が開きます ／ 水色＝最近追加</div>
 
   <h2>最近の振り返り</h2>
   <div class="reviews">
@@ -91,6 +98,13 @@ if (typeof vis === "undefined" || typeof window.GRAPH === "undefined") {
   const nodes = new vis.DataSet(rawNodes.map(n => {
     const o = { ...n, value: n.value != null ? n.value : (n.kind === "concept" ? 16 : 9) };
     if (leadIds.has(n.id) && anchors[n.cluster]) { o.x = anchors[n.cluster].x; o.y = anchors[n.cluster].y; o.fixed = { x: true, y: true }; }
+    // ユーザーの一言コメントがあれば、ホバーで吹き出し表示（あなたの声＝なぜ刺さったか）
+    if (n.note) {
+      const tip = document.createElement("div");
+      const c = document.createElement("div"); c.className = "vtip-note"; c.textContent = "💬 " + n.note; tip.appendChild(c);
+      if (n.label) { const t = document.createElement("div"); t.className = "vtip-ttl"; t.textContent = n.label; tip.appendChild(t); }
+      o.title = tip;
+    }
     return o;
   }));
   const edges = new vis.DataSet(rawEdges.map((e, i) => ({ id: "e"+i, ...e })));
