@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>思考ネットワーク</title>
+<script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+<style>
+  :root { color-scheme: light; }
+  html, body { margin: 0; font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", sans-serif; color: #222; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 16px; }
+  header h1 { margin: 0 0 2px; font-size: 20px; }
+  header .meta { color: #888; font-size: 12px; }
+  .legend { display: flex; gap: 14px; margin-top: 8px; font-size: 12px; flex-wrap: wrap; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+  #net { height: 68vh; min-height: 420px; background: #fff; border: 1px solid #eee; border-radius: 8px; margin-top: 12px; }
+  #err { display: none; padding: 20px; color: #b53f1e; font-size: 14px; }
+  h2 { font-size: 16px; margin: 28px 0 8px; }
+  ul.reviews { list-style: none; padding: 0; margin: 0; }
+  ul.reviews li { padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+  ul.reviews a { color: #1e88c7; text-decoration: none; font-weight: 600; }
+  ul.reviews a:hover { text-decoration: underline; }
+  ul.reviews .sub { color: #888; font-size: 12px; margin-left: 8px; }
+  footer { color: #aaa; font-size: 11px; margin: 32px 0 16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>思考ネットワーク</h1>
+    <div class="meta" id="updated">最終更新: 2026-06-12 ｜ キャプチャ 4件 ｜ ドラッグで動かす・スクロールでズーム</div>
+    <div class="legend">
+      <span><i class="dot" style="background:#e8552d"></i>建築の言説・展覧会</span>
+      <span><i class="dot" style="background:#29b6f6"></i>アート/デザイン・キュレーション</span>
+      <span><i class="dot" style="background:#ab47bc"></i>核（curator-maker / taste）</span>
+      <span>◯=概念ハブ　•=キャプチャ</span>
+    </div>
+  </header>
+
+  <div id="net"></div>
+  <div id="err">⚠️ ネットワーク描画ライブラリを読み込めませんでした。再読み込みしてください。</div>
+
+  <h2>最近の振り返り</h2>
+  <ul class="reviews" id="reviews">
+    <li><a href="reviews/2026-06-12.html">2026-06-12 の振り返り</a><span class="sub">建築言説・AIアート・アーカイブの4件 / curator-maker志向</span></li>
+  </ul>
+
+  <footer>毎朝の同期で自動更新 ｜ katut-brain</footer>
+</div>
+
+<script>
+const rawNodes = [
+  { id: "core",    label: "curator-maker\ntaste",      group: "core",    kind: "concept" },
+  { id: "arch",    label: "建築",                       group: "arch",    kind: "concept" },
+  { id: "exh",     label: "展覧会",                     group: "arch",    kind: "concept" },
+  { id: "crit",    label: "言説・批評",                 group: "arch",    kind: "concept" },
+  { id: "cur",     label: "キュレーション",             group: "culture", kind: "concept" },
+  { id: "archive", label: "アーカイブ\n収集・継承",     group: "culture", kind: "concept" },
+  { id: "ai",      label: "AI×表現",                    group: "culture", kind: "concept" },
+  { id: "fashion", label: "ファッション",               group: "culture", kind: "concept" },
+  { id: "c0", label: "Under35 建築家展",         group: "arch",    kind: "capture" },
+  { id: "c1", label: "布施・磯崎新論",           group: "arch",    kind: "capture" },
+  { id: "c2", label: "nova / divine simulation", group: "culture", kind: "capture" },
+  { id: "c3", label: "マルジェラ アーカイブ展",  group: "culture", kind: "capture" },
+];
+const rawEdges = [
+  { from: "c0", to: "arch" }, { from: "c0", to: "exh" },
+  { from: "c1", to: "arch" }, { from: "c1", to: "crit" }, { from: "c1", to: "exh" },
+  { from: "c2", to: "ai" },   { from: "c2", to: "cur" },
+  { from: "c3", to: "archive" }, { from: "c3", to: "fashion" }, { from: "c3", to: "cur" },
+  { from: "core", to: "crit" }, { from: "core", to: "cur" }, { from: "core", to: "archive" },
+  { from: "exh", to: "crit",     label: "観て書く",   dashes: true },
+  { from: "ai",  to: "archive",  label: "蓄積・継承", dashes: true },
+];
+
+if (typeof vis === "undefined") {
+  document.getElementById("net").style.display = "none";
+  document.getElementById("err").style.display = "block";
+} else {
+  const nodes = new vis.DataSet(rawNodes.map(n => ({
+    ...n,
+    value: n.kind === "concept" ? (n.id === "core" ? 26 : 16) : 8,
+    shape: n.id === "core" ? "star" : "dot",
+  })));
+  const edges = new vis.DataSet(rawEdges.map(e => ({
+    ...e,
+    color: e.dashes ? { color: "#bbb" } : { color: "#d8d8d8" },
+    font: { size: 11, color: "#666", strokeWidth: 3, strokeColor: "#fff" },
+  })));
+  const options = {
+    nodes: {
+      shape: "dot",
+      scaling: { min: 8, max: 30, label: { min: 11, max: 18 } },
+      font: { color: "#333", face: "Segoe UI, Hiragino Sans, sans-serif" },
+      borderWidth: 1.5,
+    },
+    groups: {
+      arch:    { color: { background: "#e8552d", border: "#b53f1e" }, font: { color: "#fff" } },
+      culture: { color: { background: "#29b6f6", border: "#1e88c7" }, font: { color: "#fff" } },
+      core:    { color: { background: "#ab47bc", border: "#8e349e" }, font: { color: "#fff" } },
+    },
+    edges: { smooth: { type: "continuous" }, width: 1 },
+    physics: {
+      solver: "barnesHut",
+      barnesHut: { gravitationalConstant: -4000, springLength: 130, springConstant: 0.04, avoidOverlap: 0.3 },
+      stabilization: { iterations: 250 },
+    },
+    interaction: { hover: true, tooltipDelay: 120 },
+  };
+  new vis.Network(document.getElementById("net"), { nodes, edges }, options);
+}
+</script>
+</body>
+</html>
