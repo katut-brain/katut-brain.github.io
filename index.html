@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>思考ネットワーク</title>
 <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+<script src="data.js"></script>
 <style>
   :root {
     --bg: #fafafa; --panel: #ffffff; --ink: #1c1c1e; --sub: #8a8a8e;
@@ -31,7 +32,7 @@
   .tagline { color: var(--sub); font-size: 13px; margin-top: 3px; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
   .chip { background: var(--chip); color: var(--sub); border-radius: 999px; padding: 4px 10px; font-size: 12px; }
-  #net { height: 66vh; min-height: 420px; background: var(--bg);
+  #net { height: 70vh; min-height: 440px; background: var(--bg);
     border: 1px solid var(--line); border-radius: 14px; margin-top: 14px; box-shadow: var(--shadow); }
   .hint { color: var(--sub); font-size: 11px; margin-top: 8px; text-align: center; }
   #err { display: none; padding: 20px; color: #d05; font-size: 14px; }
@@ -51,13 +52,13 @@
   <div class="tagline">見たもの・読んだものから浮かぶ、関心のかたち</div>
 
   <div class="chips">
-    <span class="chip">最終更新 2026-06-12</span>
-    <span class="chip">キャプチャ 4件</span>
+    <span class="chip" id="chip-updated">最終更新 —</span>
+    <span class="chip" id="chip-count">キャプチャ —</span>
     <span class="chip">ドラッグ / ピンチでズーム</span>
   </div>
 
   <div id="net"></div>
-  <div id="err">⚠️ ネットワーク描画ライブラリを読み込めませんでした。再読み込みしてください。</div>
+  <div id="err">⚠️ ネットワークを読み込めませんでした。再読み込みしてください。</div>
   <div class="hint">ノードに触れると、つながりだけが浮かびます ／ キャプチャ（小さい円）をクリックすると元の投稿・記事が開きます ／ 水色＝最近追加</div>
 
   <h2>最近の振り返り</h2>
@@ -75,42 +76,16 @@
 const root = document.documentElement;
 function cssVar(n){ return getComputedStyle(root).getPropertyValue(n).trim(); }
 
-// kind: concept=概念ハブ / capture=個別キャプチャ ／ new=最近追加(水色) ／ cluster=背景の所属
-const rawNodes = [
-  { id: "arch",    label: "建築",                  kind: "concept", cluster: "arch" },
-  { id: "exh",     label: "展覧会",                kind: "concept", cluster: "arch" },
-  { id: "crit",    label: "言説・批評",            kind: "concept", cluster: "arch" },
-  { id: "cur",     label: "キュレーション",        kind: "concept", cluster: "culture" },
-  { id: "archive", label: "アーカイブ\n収集・継承", kind: "concept", cluster: "culture" },
-  { id: "ai",      label: "AI×表現",               kind: "concept", cluster: "culture" },
-  { id: "fashion", label: "ファッション",          kind: "concept", cluster: "culture" },
-  { id: "c0", label: "Under35 建築家展",         kind: "capture", cluster: "arch",    new: true,  url: "https://u35.aaf.ac/" },
-  { id: "c1", label: "布施・磯崎新論",           kind: "capture", cluster: "arch",    new: true,  url: "https://x.com/rintarofuse/status/2065395890186269162" },
-  { id: "c2", label: "nova / divine simulation", kind: "capture", cluster: "culture", url: "https://www.instagram.com/p/DYjibZlIqMx/" },
-  { id: "c3", label: "マルジェラ アーカイブ展",  kind: "capture", cluster: "culture", url: "https://www.instagram.com/p/DZBlUTZjzqR/" },
-];
-const rawEdges = [
-  { from: "c0", to: "arch" }, { from: "c0", to: "exh" },
-  { from: "c1", to: "arch" }, { from: "c1", to: "crit" }, { from: "c1", to: "exh" },
-  { from: "c2", to: "ai" },   { from: "c2", to: "cur" },
-  { from: "c3", to: "archive" }, { from: "c3", to: "fashion" }, { from: "c3", to: "cur" },
-  { from: "exh", to: "crit",     label: "観て書く",   dashes: true },
-  { from: "ai",  to: "archive",  label: "蓄積・継承", dashes: true },
-];
-
-// クラスタ背景：各ノードからにじむ柔らかい雲（外へいくほどぼかす）
-const clusters = {
-  arch:    { name: "建築の言説・展覧会",            ids: ["arch","exh","crit","c0","c1"],            rgb: "232,85,45" },
-  culture: { name: "アート / デザイン・キュレーション", ids: ["cur","archive","ai","fashion","c2","c3"], rgb: "41,182,246" },
-};
-
-if (typeof vis === "undefined") {
+if (typeof vis === "undefined" || typeof window.GRAPH === "undefined") {
   document.getElementById("net").style.display = "none";
   document.getElementById("err").style.display = "block";
 } else {
-  const nodes = new vis.DataSet(rawNodes.map(n => ({
-    ...n, value: n.kind === "concept" ? 16 : 9,
-  })));
+  const G = window.GRAPH;
+  const rawNodes = G.nodes, rawEdges = G.edges, clusters = G.clusters;
+  document.getElementById("chip-updated").textContent = "最終更新 " + G.updated;
+  document.getElementById("chip-count").textContent = "キャプチャ " + (G.count || rawNodes.filter(n=>n.kind==="capture").length) + "件";
+
+  const nodes = new vis.DataSet(rawNodes.map(n => ({ ...n, value: n.kind === "concept" ? 16 : 9 })));
   const edges = new vis.DataSet(rawEdges.map((e, i) => ({ id: "e"+i, ...e })));
 
   function fillOf(n){ return n.new ? cssVar("--node-new") : n.kind === "concept" ? cssVar("--node-concept") : cssVar("--node-capture"); }
@@ -119,45 +94,44 @@ if (typeof vis === "undefined") {
       background: fillOf(n), border: fillOf(n),
       highlight: { background: cssVar("--node-hi"), border: cssVar("--node-hi") } } })));
     net.setOptions({ nodes: { font: { color: cssVar("--ink") } },
-                     edges: { color: { color: cssVar("--edge"), highlight: cssVar("--sub"), opacity: .7 } } });
+                     edges: { color: { color: cssVar("--edge"), highlight: cssVar("--sub"), opacity: .65 } } });
     net.redraw();
   }
 
   const options = {
     nodes: { shape: "dot", borderWidth: 0,
-      scaling: { min: 9, max: 26, label: { min: 11, max: 19, drawThreshold: 7 } },
+      scaling: { min: 8, max: 24, label: { min: 11, max: 18, drawThreshold: 9 } },
       font: { face: "Segoe UI, Hiragino Sans, sans-serif", strokeWidth: 0 } },
     edges: { width: 1, smooth: false, font: { size: 11, color: "#9a9aa2", strokeWidth: 0 } },
     physics: { solver: "barnesHut",
-      barnesHut: { gravitationalConstant: -4600, springLength: 150, springConstant: 0.045, avoidOverlap: 0.5 },
-      stabilization: { iterations: 260 } },
+      barnesHut: { gravitationalConstant: -3000, centralGravity: 0.25, springLength: 95, springConstant: 0.04, damping: 0.4, avoidOverlap: 0.1 },
+      stabilization: { iterations: 400 } },
     interaction: { hover: true, tooltipDelay: 120 },
   };
   const net = new vis.Network(document.getElementById("net"), { nodes, edges }, options);
   window._net = net;
 
-  // クラスタ背景：ノードごとにラジアルグラデの光輪を重ねて、自由曲線・縁ぼかしの雲にする
   net.on("beforeDrawing", ctx => {
     const pos = net.getPositions();
     for (const key in clusters) {
       const c = clusters[key];
       const pts = c.ids.map(id => pos[id]).filter(Boolean);
       if (!pts.length) continue;
-      const R = 105;
+      const R = 95;
       pts.forEach(p => {
         const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, R);
-        g.addColorStop(0, "rgba(" + c.rgb + ",0.16)");
+        g.addColorStop(0, "rgba(" + c.rgb + ",0.13)");
         g.addColorStop(1, "rgba(" + c.rgb + ",0)");
         ctx.fillStyle = g;
         ctx.beginPath(); ctx.arc(p.x, p.y, R, 0, Math.PI*2); ctx.fill();
       });
-      let cx = 0, cy = 0, minY = Infinity;
-      pts.forEach(p => { cx += p.x; cy += p.y; minY = Math.min(minY, p.y); });
+      let cx = 0, minY = Infinity;
+      pts.forEach(p => { cx += p.x; minY = Math.min(minY, p.y); });
       cx /= pts.length;
-      ctx.fillStyle = "rgba(" + c.rgb + ",0.65)";
-      ctx.font = "12px Segoe UI, sans-serif";
+      ctx.fillStyle = "rgba(" + c.rgb + ",0.7)";
+      ctx.font = "13px Segoe UI, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(c.name, cx, minY - 62);
+      ctx.fillText(c.name, cx, minY - 70);
       ctx.textAlign = "left";
     }
   });
@@ -171,13 +145,13 @@ if (typeof vis === "undefined") {
   const allNodeIds = rawNodes.map(n => n.id);
   function focus(id){
     const keep = new Set([id, ...net.getConnectedNodes(id)]);
-    nodes.update(allNodeIds.map(nid => ({ id: nid, opacity: keep.has(nid) ? 1 : 0.12 })));
+    nodes.update(allNodeIds.map(nid => ({ id: nid, opacity: keep.has(nid) ? 1 : 0.1 })));
     edges.update(rawEdges.map((e,i)=> ({ id: "e"+i,
-      color: (e.from===id||e.to===id) ? { color: cssVar("--sub"), opacity: 1 } : { color: cssVar("--edge"), opacity: 0.06 } })));
+      color: (e.from===id||e.to===id) ? { color: cssVar("--sub"), opacity: 1 } : { color: cssVar("--edge"), opacity: 0.05 } })));
   }
   function clear(){
     nodes.update(allNodeIds.map(nid => ({ id: nid, opacity: 1 })));
-    edges.update(rawEdges.map((e,i)=> ({ id: "e"+i, color: { color: cssVar("--edge"), opacity: .7 } })));
+    edges.update(rawEdges.map((e,i)=> ({ id: "e"+i, color: { color: cssVar("--edge"), opacity: .65 } })));
   }
   net.on("hoverNode", p => focus(p.node));
   net.on("blurNode", clear);
