@@ -85,7 +85,14 @@ if (typeof vis === "undefined" || typeof window.GRAPH === "undefined") {
   document.getElementById("chip-updated").textContent = "最終更新 " + G.updated;
   document.getElementById("chip-count").textContent = "キャプチャ " + (G.count || rawNodes.filter(n=>n.kind==="capture").length) + "件";
 
-  const nodes = new vis.DataSet(rawNodes.map(n => ({ ...n, value: n.value != null ? n.value : (n.kind === "concept" ? 16 : 9) })));
+  // クラスタごとに親ノードを定位置にアンカー（重なり防止・配置を安定させる）
+  const anchors = { arch:{x:-360,y:-240}, culture:{x:380,y:-230}, ai:{x:120,y:310}, d3d:{x:-380,y:220}, misc:{x:40,y:-370} };
+  const leadIds = new Set(Object.values(clusters).map(c => c.ids[0]));
+  const nodes = new vis.DataSet(rawNodes.map(n => {
+    const o = { ...n, value: n.value != null ? n.value : (n.kind === "concept" ? 16 : 9) };
+    if (leadIds.has(n.id) && anchors[n.cluster]) { o.x = anchors[n.cluster].x; o.y = anchors[n.cluster].y; o.fixed = { x: true, y: true }; }
+    return o;
+  }));
   const edges = new vis.DataSet(rawEdges.map((e, i) => ({ id: "e"+i, ...e })));
 
   function fillOf(n){ return n.new ? cssVar("--node-new") : n.kind === "concept" ? cssVar("--node-concept") : cssVar("--node-capture"); }
@@ -99,12 +106,13 @@ if (typeof vis === "undefined" || typeof window.GRAPH === "undefined") {
   }
 
   const options = {
+    layout: { randomSeed: 7 },
     nodes: { shape: "dot", borderWidth: 0,
       scaling: { min: 7, max: 30, label: { min: 11, max: 19, drawThreshold: 9 } },
       font: { face: "Segoe UI, Hiragino Sans, sans-serif", strokeWidth: 0 } },
     edges: { width: 1, smooth: false, font: { size: 11, color: "#9a9aa2", strokeWidth: 0 } },
     physics: { solver: "barnesHut",
-      barnesHut: { gravitationalConstant: -3000, centralGravity: 0.25, springLength: 95, springConstant: 0.04, damping: 0.4, avoidOverlap: 0.1 },
+      barnesHut: { gravitationalConstant: -2200, centralGravity: 0.05, springLength: 70, springConstant: 0.05, damping: 0.5, avoidOverlap: 0.25 },
       stabilization: { iterations: 400 } },
     interaction: { hover: true, tooltipDelay: 120 },
   };
