@@ -8,14 +8,18 @@
 <style>
   :root {
     --bg: #fafafa; --panel: #ffffff; --ink: #1c1c1e; --sub: #8a8a8e;
-    --line: #ececec; --chip: #f1f1f3; --accent: #1e88c7;
-    --node: #5b616e; --node-hi: #2c3038; --edge: #c9c9cf;
+    --line: #e3e3e6; --chip: #f1f1f3; --accent: #1e88c7;
+    --node-concept: #565d6b; --node-capture: #aeb3bd; --node-new: #29b6f6;
+    --node-hi: #2c3038; --edge: #c9c9cf;
+    --shadow: 0 1px 12px rgba(0,0,0,.08);
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #0f1115; --panel: #161922; --ink: #e8e8ea; --sub: #8b91a0;
-      --line: #262b36; --chip: #1e2230; --accent: #5ec8f9;
-      --node: #aab1bd; --node-hi: #ffffff; --edge: #3a4150;
+      --line: #2b3140; --chip: #1e2230; --accent: #5ec8f9;
+      --node-concept: #c2c8d3; --node-capture: #727a8a; --node-new: #5ec8f9;
+      --node-hi: #ffffff; --edge: #3a4150;
+      --shadow: 0 2px 16px rgba(0,0,0,.5);
     }
   }
   * { box-sizing: border-box; }
@@ -26,10 +30,9 @@
   h1 { margin: 0; font-size: 22px; letter-spacing: .01em; font-weight: 700; }
   .tagline { color: var(--sub); font-size: 13px; margin-top: 3px; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-  .chip { background: var(--chip); color: var(--sub); border-radius: 999px;
-    padding: 4px 10px; font-size: 12px; }
+  .chip { background: var(--chip); color: var(--sub); border-radius: 999px; padding: 4px 10px; font-size: 12px; }
   #net { height: 66vh; min-height: 420px; background: var(--bg);
-    border: 1px solid var(--line); border-radius: 14px; margin-top: 14px; }
+    border: 1px solid var(--line); border-radius: 14px; margin-top: 14px; box-shadow: var(--shadow); }
   .hint { color: var(--sub); font-size: 11px; margin-top: 8px; text-align: center; }
   #err { display: none; padding: 20px; color: #d05; font-size: 14px; }
   h2 { font-size: 15px; margin: 34px 0 10px; font-weight: 700; }
@@ -48,17 +51,17 @@
   <div class="tagline">見たもの・読んだものから浮かぶ、関心のかたち</div>
 
   <div class="chips">
-    <span class="chip" id="chip-updated">最終更新 2026-06-12</span>
-    <span class="chip" id="chip-count">キャプチャ 4件</span>
+    <span class="chip">最終更新 2026-06-12</span>
+    <span class="chip">キャプチャ 4件</span>
     <span class="chip">ドラッグ / ピンチでズーム</span>
   </div>
 
   <div id="net"></div>
   <div id="err">⚠️ ネットワーク描画ライブラリを読み込めませんでした。再読み込みしてください。</div>
-  <div class="hint">ノードに触れると、つながりだけが浮かびます ／ キャプチャ（小さい円）をクリックすると元の投稿・記事が開きます</div>
+  <div class="hint">ノードに触れると、つながりだけが浮かびます ／ キャプチャ（小さい円）をクリックすると元の投稿・記事が開きます ／ 水色＝最近追加</div>
 
   <h2>最近の振り返り</h2>
-  <div class="reviews" id="reviews">
+  <div class="reviews">
     <a class="card" href="reviews/2026-06-12.html">
       <div class="date">2026-06-12 の振り返り</div>
       <div class="sub">建築言説・AIアート・アーカイブの4件 ／ 「観て書く」「収集→継承」 ／ curator-maker志向</div>
@@ -71,34 +74,21 @@
 <script>
 const root = document.documentElement;
 function cssVar(n){ return getComputedStyle(root).getPropertyValue(n).trim(); }
-function styleNet(){
-  if (!window._net) return;
-  window._net.setOptions({
-    nodes: { color: { background: cssVar("--node"), border: cssVar("--node"),
-                      highlight: { background: cssVar("--node-hi"), border: cssVar("--node-hi") } },
-             font: { color: cssVar("--ink") } },
-    edges: { color: { color: cssVar("--edge"), highlight: cssVar("--sub"), opacity: 0.7 } },
-  });
-  window._net.redraw();
-}
-// 端末のダーク/ライト設定に自動追従（手動切替なし）
-const mq = window.matchMedia("(prefers-color-scheme: dark)");
-mq.addEventListener ? mq.addEventListener("change", styleNet) : mq.addListener(styleNet);
 
-// ── データ（公開反映時に再生成） ──
+// kind: concept=概念ハブ / capture=個別キャプチャ ／ new=最近追加(水色) ／ cluster=背景の所属
 const rawNodes = [
-  { id: "core",    label: "curator-maker\ntaste",      kind: "concept" },
-  { id: "arch",    label: "建築",                       kind: "concept" },
-  { id: "exh",     label: "展覧会",                     kind: "concept" },
-  { id: "crit",    label: "言説・批評",                 kind: "concept" },
-  { id: "cur",     label: "キュレーション",             kind: "concept" },
-  { id: "archive", label: "アーカイブ\n収集・継承",     kind: "concept" },
-  { id: "ai",      label: "AI×表現",                    kind: "concept" },
-  { id: "fashion", label: "ファッション",               kind: "concept" },
-  { id: "c0", label: "Under35 建築家展",         kind: "capture", url: "https://u35.aaf.ac/" },
-  { id: "c1", label: "布施・磯崎新論",           kind: "capture", url: "https://x.com/rintarofuse/status/2065395890186269162" },
-  { id: "c2", label: "nova / divine simulation", kind: "capture", url: "https://www.instagram.com/p/DYjibZlIqMx/" },
-  { id: "c3", label: "マルジェラ アーカイブ展",  kind: "capture", url: "https://www.instagram.com/p/DZBlUTZjzqR/" },
+  { id: "core",    label: "curator-maker\ntaste", kind: "concept" },
+  { id: "arch",    label: "建築",                  kind: "concept", cluster: "arch" },
+  { id: "exh",     label: "展覧会",                kind: "concept", cluster: "arch" },
+  { id: "crit",    label: "言説・批評",            kind: "concept", cluster: "arch" },
+  { id: "cur",     label: "キュレーション",        kind: "concept", cluster: "culture" },
+  { id: "archive", label: "アーカイブ\n収集・継承", kind: "concept", cluster: "culture" },
+  { id: "ai",      label: "AI×表現",               kind: "concept", cluster: "culture" },
+  { id: "fashion", label: "ファッション",          kind: "concept", cluster: "culture" },
+  { id: "c0", label: "Under35 建築家展",         kind: "capture", cluster: "arch",    new: true,  url: "https://u35.aaf.ac/" },
+  { id: "c1", label: "布施・磯崎新論",           kind: "capture", cluster: "arch",    new: true,  url: "https://x.com/rintarofuse/status/2065395890186269162" },
+  { id: "c2", label: "nova / divine simulation", kind: "capture", cluster: "culture", url: "https://www.instagram.com/p/DYjibZlIqMx/" },
+  { id: "c3", label: "マルジェラ アーカイブ展",  kind: "capture", cluster: "culture", url: "https://www.instagram.com/p/DZBlUTZjzqR/" },
 ];
 const rawEdges = [
   { from: "c0", to: "arch" }, { from: "c0", to: "exh" },
@@ -110,42 +100,79 @@ const rawEdges = [
   { from: "ai",  to: "archive",  label: "蓄積・継承", dashes: true },
 ];
 
+// 背景で囲うクラスタ（色＝うっすら、名前つき）
+const clusters = {
+  arch:    { name: "建築の言説・展覧会",            ids: ["arch","exh","crit","c0","c1"],            rgb: "232,85,45" },
+  culture: { name: "アート / デザイン・キュレーション", ids: ["cur","archive","ai","fashion","c2","c3"], rgb: "41,182,246" },
+};
+
 if (typeof vis === "undefined") {
   document.getElementById("net").style.display = "none";
   document.getElementById("err").style.display = "block";
 } else {
   const nodes = new vis.DataSet(rawNodes.map(n => ({
-    ...n,
-    value: n.kind === "concept" ? (n.id === "core" ? 24 : 16) : 9,
+    ...n, value: n.kind === "concept" ? (n.id === "core" ? 24 : 16) : 9,
   })));
   const edges = new vis.DataSet(rawEdges.map((e, i) => ({ id: "e"+i, ...e })));
 
+  function fillOf(n){ return n.new ? cssVar("--node-new") : n.kind === "concept" ? cssVar("--node-concept") : cssVar("--node-capture"); }
+  function paint(){
+    nodes.update(rawNodes.map(n => ({ id: n.id, color: {
+      background: fillOf(n), border: fillOf(n),
+      highlight: { background: cssVar("--node-hi"), border: cssVar("--node-hi") } } })));
+    net.setOptions({ nodes: { font: { color: cssVar("--ink") } },
+                     edges: { color: { color: cssVar("--edge"), highlight: cssVar("--sub"), opacity: .7 } } });
+    net.redraw();
+  }
+
   const options = {
     nodes: { shape: "dot", borderWidth: 0,
-      scaling: { min: 9, max: 30, label: { min: 12, max: 18 } },
+      scaling: { min: 9, max: 30, label: { min: 11, max: 19, drawThreshold: 7 } },
       font: { face: "Segoe UI, Hiragino Sans, sans-serif", strokeWidth: 0 } },
-    edges: { width: 1, smooth: false,
-      font: { size: 11, color: "#9a9aa2", strokeWidth: 0 } },
+    edges: { width: 1, smooth: false, font: { size: 11, color: "#9a9aa2", strokeWidth: 0 } },
     physics: { solver: "barnesHut",
-      barnesHut: { gravitationalConstant: -4200, springLength: 135, springConstant: 0.045, avoidOverlap: 0.4 },
-      stabilization: { iterations: 250 } },
+      barnesHut: { gravitationalConstant: -4600, springLength: 145, springConstant: 0.045, avoidOverlap: 0.45 },
+      stabilization: { iterations: 260 } },
     interaction: { hover: true, tooltipDelay: 120 },
   };
   const net = new vis.Network(document.getElementById("net"), { nodes, edges }, options);
   window._net = net;
-  styleNet();
+
+  // クラスタ背景（ノードの後ろにうっすら描く）
+  net.on("beforeDrawing", ctx => {
+    const pos = net.getPositions();
+    for (const key in clusters) {
+      const c = clusters[key];
+      const pts = c.ids.map(id => pos[id]).filter(Boolean);
+      if (!pts.length) continue;
+      let a = { x: Infinity, y: Infinity }, b = { x: -Infinity, y: -Infinity };
+      pts.forEach(p => { a.x = Math.min(a.x, p.x); a.y = Math.min(a.y, p.y); b.x = Math.max(b.x, p.x); b.y = Math.max(b.y, p.y); });
+      const pad = 44, x = a.x - pad, y = a.y - pad, w = (b.x - a.x) + pad*2, h = (b.y - a.y) + pad*2;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, y, w, h, 30); else ctx.rect(x, y, w, h);
+      ctx.fillStyle = "rgba(" + c.rgb + ",0.06)"; ctx.fill();
+      ctx.strokeStyle = "rgba(" + c.rgb + ",0.22)"; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = "rgba(" + c.rgb + ",0.6)"; ctx.font = "12px Segoe UI, sans-serif";
+      ctx.fillText(c.name, x + 12, y + 19);
+    }
+  });
+
+  paint();
   net.once("stabilizationIterationsDone", () => { net.setOptions({ physics: false }); net.fit({ animation: true }); });
+
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  mq.addEventListener ? mq.addEventListener("change", paint) : mq.addListener(paint);
 
   const allNodeIds = rawNodes.map(n => n.id);
   function focus(id){
     const keep = new Set([id, ...net.getConnectedNodes(id)]);
     nodes.update(allNodeIds.map(nid => ({ id: nid, opacity: keep.has(nid) ? 1 : 0.12 })));
     edges.update(rawEdges.map((e,i)=> ({ id: "e"+i,
-      color: (e.from===id||e.to===id) ? { color: cssVar("--sub"), opacity: 1 } : { color: cssVar("--edge"), opacity: 0.08 } })));
+      color: (e.from===id||e.to===id) ? { color: cssVar("--sub"), opacity: 1 } : { color: cssVar("--edge"), opacity: 0.06 } })));
   }
   function clear(){
     nodes.update(allNodeIds.map(nid => ({ id: nid, opacity: 1 })));
-    edges.update(rawEdges.map((e,i)=> ({ id: "e"+i, color: { color: cssVar("--edge"), opacity: 0.7 } })));
+    edges.update(rawEdges.map((e,i)=> ({ id: "e"+i, color: { color: cssVar("--edge"), opacity: .7 } })));
   }
   net.on("hoverNode", p => focus(p.node));
   net.on("blurNode", clear);
