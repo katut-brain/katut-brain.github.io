@@ -8,11 +8,13 @@
 <style>
   :root {
     --bg: #fafafa; --panel: #ffffff; --ink: #1c1c1e; --sub: #8a8a8e;
-    --line: #ececec; --chip: #f1f1f3; --accent: #1e88c7; --net-bg: #ffffff;
+    --line: #ececec; --chip: #f1f1f3; --accent: #1e88c7;
+    --node: #5b616e; --node-hi: #2c3038; --edge: #c9c9cf;
   }
   html[data-theme="dark"] {
     --bg: #0f1115; --panel: #161922; --ink: #e8e8ea; --sub: #8b91a0;
-    --line: #262b36; --chip: #1e2230; --accent: #5ec8f9; --net-bg: #0f1115;
+    --line: #262b36; --chip: #1e2230; --accent: #5ec8f9;
+    --node: #aab1bd; --node-hi: #ffffff; --edge: #3a4150;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--ink);
@@ -28,10 +30,7 @@
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
   .chip { background: var(--chip); color: var(--sub); border-radius: 999px;
     padding: 4px 10px; font-size: 12px; }
-  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; font-size: 12px; color: var(--sub); }
-  .legend span { display: inline-flex; align-items: center; gap: 6px; }
-  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-  #net { height: 66vh; min-height: 420px; background: var(--net-bg);
+  #net { height: 66vh; min-height: 420px; background: var(--bg);
     border: 1px solid var(--line); border-radius: 14px; margin-top: 14px; }
   .hint { color: var(--sub); font-size: 11px; margin-top: 8px; text-align: center; }
   #err { display: none; padding: 20px; color: #d05; font-size: 14px; }
@@ -61,16 +60,9 @@
     <span class="chip">ドラッグ / ピンチでズーム</span>
   </div>
 
-  <div class="legend">
-    <span><i class="dot" style="background:#e8552d"></i>建築の言説・展覧会</span>
-    <span><i class="dot" style="background:#29b6f6"></i>アート/デザイン・キュレーション</span>
-    <span><i class="dot" style="background:#ab47bc"></i>核（curator-maker / taste）</span>
-    <span>◯ 概念ハブ　• キャプチャ</span>
-  </div>
-
   <div id="net"></div>
   <div id="err">⚠️ ネットワーク描画ライブラリを読み込めませんでした。再読み込みしてください。</div>
-  <div class="hint">ノードに触れると、つながりだけが浮かびます ／ キャプチャ（小さい点）をクリックすると元の投稿・記事が開きます</div>
+  <div class="hint">ノードに触れると、つながりだけが浮かびます ／ キャプチャ（小さい円）をクリックすると元の投稿・記事が開きます</div>
 
   <h2>最近の振り返り</h2>
   <div class="reviews" id="reviews">
@@ -84,27 +76,37 @@
 </div>
 
 <script>
-// ── テーマ切替 ──
 const root = document.documentElement, tbtn = document.getElementById("themeBtn");
+function cssVar(n){ return getComputedStyle(root).getPropertyValue(n).trim(); }
+function styleNet(){
+  if (!window._net) return;
+  window._net.setOptions({
+    nodes: { color: { background: cssVar("--node"), border: cssVar("--node"),
+                      highlight: { background: cssVar("--node-hi"), border: cssVar("--node-hi") } },
+             font: { color: cssVar("--ink") } },
+    edges: { color: { color: cssVar("--edge"), highlight: cssVar("--sub"), opacity: 0.7 } },
+  });
+  window._net.redraw();
+}
 function applyTheme(t){ root.setAttribute("data-theme", t); tbtn.textContent = t==="dark" ? "☀️ ライト" : "🌙 ダーク";
-  try{ localStorage.setItem("tn-theme", t); }catch(e){} if (window._net) window._net.redraw(); }
+  try{ localStorage.setItem("tn-theme", t); }catch(e){} styleNet(); }
 applyTheme((()=>{ try{ return localStorage.getItem("tn-theme") || "light"; }catch(e){ return "light"; } })());
 tbtn.addEventListener("click", ()=> applyTheme(root.getAttribute("data-theme")==="dark" ? "light" : "dark"));
 
 // ── データ（公開反映時に再生成） ──
 const rawNodes = [
-  { id: "core",    label: "curator-maker\ntaste",      group: "core",    kind: "concept" },
-  { id: "arch",    label: "建築",                       group: "arch",    kind: "concept" },
-  { id: "exh",     label: "展覧会",                     group: "arch",    kind: "concept" },
-  { id: "crit",    label: "言説・批評",                 group: "arch",    kind: "concept" },
-  { id: "cur",     label: "キュレーション",             group: "culture", kind: "concept" },
-  { id: "archive", label: "アーカイブ\n収集・継承",     group: "culture", kind: "concept" },
-  { id: "ai",      label: "AI×表現",                    group: "culture", kind: "concept" },
-  { id: "fashion", label: "ファッション",               group: "culture", kind: "concept" },
-  { id: "c0", label: "Under35 建築家展",         group: "arch",    kind: "capture", url: "https://u35.aaf.ac/" },
-  { id: "c1", label: "布施・磯崎新論",           group: "arch",    kind: "capture", url: "https://x.com/rintarofuse/status/2065395890186269162" },
-  { id: "c2", label: "nova / divine simulation", group: "culture", kind: "capture", url: "https://www.instagram.com/p/DYjibZlIqMx/" },
-  { id: "c3", label: "マルジェラ アーカイブ展",  group: "culture", kind: "capture", url: "https://www.instagram.com/p/DZBlUTZjzqR/" },
+  { id: "core",    label: "curator-maker\ntaste",      kind: "concept" },
+  { id: "arch",    label: "建築",                       kind: "concept" },
+  { id: "exh",     label: "展覧会",                     kind: "concept" },
+  { id: "crit",    label: "言説・批評",                 kind: "concept" },
+  { id: "cur",     label: "キュレーション",             kind: "concept" },
+  { id: "archive", label: "アーカイブ\n収集・継承",     kind: "concept" },
+  { id: "ai",      label: "AI×表現",                    kind: "concept" },
+  { id: "fashion", label: "ファッション",               kind: "concept" },
+  { id: "c0", label: "Under35 建築家展",         kind: "capture", url: "https://u35.aaf.ac/" },
+  { id: "c1", label: "布施・磯崎新論",           kind: "capture", url: "https://x.com/rintarofuse/status/2065395890186269162" },
+  { id: "c2", label: "nova / divine simulation", kind: "capture", url: "https://www.instagram.com/p/DYjibZlIqMx/" },
+  { id: "c3", label: "マルジェラ アーカイブ展",  kind: "capture", url: "https://www.instagram.com/p/DZBlUTZjzqR/" },
 ];
 const rawEdges = [
   { from: "c0", to: "arch" }, { from: "c0", to: "exh" },
@@ -122,51 +124,39 @@ if (typeof vis === "undefined") {
 } else {
   const nodes = new vis.DataSet(rawNodes.map(n => ({
     ...n,
-    value: n.kind === "concept" ? (n.id === "core" ? 26 : 16) : 9,
-    shape: n.id === "core" ? "star" : "dot",
+    value: n.kind === "concept" ? (n.id === "core" ? 24 : 16) : 9,
   })));
   const edges = new vis.DataSet(rawEdges.map((e, i) => ({ id: "e"+i, ...e })));
 
   const options = {
-    nodes: {
-      shape: "dot",
-      scaling: { min: 9, max: 32, label: { min: 12, max: 19 } },
-      font: { color: getComputedStyle(root).getPropertyValue("--ink").trim() || "#222",
-              face: "Segoe UI, Hiragino Sans, sans-serif", strokeWidth: 0 },
-      borderWidth: 0,
-    },
-    groups: {
-      arch:    { color: { background: "#e8552d", border: "#e8552d", highlight: { background: "#f4794f", border: "#e8552d" } }, font: { color: "#fff" } },
-      culture: { color: { background: "#29b6f6", border: "#29b6f6", highlight: { background: "#5ec8f9", border: "#29b6f6" } }, font: { color: "#fff" } },
-      core:    { color: { background: "#ab47bc", border: "#ab47bc", highlight: { background: "#c267d4", border: "#ab47bc" } }, font: { color: "#fff" } },
-    },
-    edges: { color: { color: "#c9c9cf", highlight: "#9a9aa2", opacity: 0.7 }, width: 1,
-             font: { size: 11, color: "#9a9aa2", strokeWidth: 0 }, smooth: { type: "continuous" } },
+    nodes: { shape: "dot", borderWidth: 0,
+      scaling: { min: 9, max: 30, label: { min: 12, max: 18 } },
+      font: { face: "Segoe UI, Hiragino Sans, sans-serif", strokeWidth: 0 } },
+    edges: { width: 1, smooth: false,
+      font: { size: 11, color: "#9a9aa2", strokeWidth: 0 } },
     physics: { solver: "barnesHut",
       barnesHut: { gravitationalConstant: -4200, springLength: 135, springConstant: 0.045, avoidOverlap: 0.4 },
       stabilization: { iterations: 250 } },
-    interaction: { hover: true, tooltipDelay: 120, navigationButtons: false },
+    interaction: { hover: true, tooltipDelay: 120 },
   };
   const net = new vis.Network(document.getElementById("net"), { nodes, edges }, options);
   window._net = net;
+  styleNet();
   net.once("stabilizationIterationsDone", () => { net.setOptions({ physics: false }); net.fit({ animation: true }); });
 
-  // ── つながり強調（hover/タップ） ──
   const allNodeIds = rawNodes.map(n => n.id);
   function focus(id){
     const keep = new Set([id, ...net.getConnectedNodes(id)]);
     nodes.update(allNodeIds.map(nid => ({ id: nid, opacity: keep.has(nid) ? 1 : 0.12 })));
     edges.update(rawEdges.map((e,i)=> ({ id: "e"+i,
-      color: (e.from===id||e.to===id) ? { color: "#7a7a82", opacity: 1 } : { color: "#c9c9cf", opacity: 0.08 } })));
+      color: (e.from===id||e.to===id) ? { color: cssVar("--sub"), opacity: 1 } : { color: cssVar("--edge"), opacity: 0.08 } })));
   }
   function clear(){
     nodes.update(allNodeIds.map(nid => ({ id: nid, opacity: 1 })));
-    edges.update(rawEdges.map((e,i)=> ({ id: "e"+i, color: { color: "#c9c9cf", opacity: 0.7 } })));
+    edges.update(rawEdges.map((e,i)=> ({ id: "e"+i, color: { color: cssVar("--edge"), opacity: 0.7 } })));
   }
   net.on("hoverNode", p => focus(p.node));
   net.on("blurNode", clear);
-
-  // ── キャプチャをクリック→元リンク ──
   net.on("click", p => {
     if (!p.nodes.length) return;
     const n = rawNodes.find(x => x.id === p.nodes[0]);
