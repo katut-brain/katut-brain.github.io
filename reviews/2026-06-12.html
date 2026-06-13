@@ -9,20 +9,19 @@
     --bg: #fafafa; --panel: #ffffff; --ink: #1c1c1e; --sub: #8a8a8e;
     --line: #ececec; --chip: #f1f1f3; --accent: #1e88c7;
   }
-  html[data-theme="dark"] {
-    --bg: #0f1115; --panel: #161922; --ink: #e8e8ea; --sub: #8b91a0;
-    --line: #262b36; --chip: #1e2230; --accent: #5ec8f9;
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --panel: #161922; --ink: #e8e8ea; --sub: #8b91a0;
+      --line: #262b36; --chip: #1e2230; --accent: #5ec8f9;
+    }
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.75;
     font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased; }
   .wrap { max-width: 700px; margin: 0 auto; padding: 22px 16px 64px; }
-  .topbar { display: flex; align-items: center; justify-content: space-between; }
   a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
   a.back:hover { text-decoration: underline; }
-  .theme-btn { border: 1px solid var(--line); background: var(--panel); color: var(--ink);
-    border-radius: 999px; padding: 6px 11px; font-size: 12px; cursor: pointer; }
   h1 { font-size: 23px; margin: 16px 0 4px; }
   .meta { color: var(--sub); font-size: 12px; margin-bottom: 8px; }
   h2 { font-size: 15px; margin: 30px 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
@@ -36,10 +35,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar">
-    <a class="back" href="../index.html">← 思考ネットワークへ戻る</a>
-    <button class="theme-btn" id="themeBtn" type="button">🌙</button>
-  </div>
+  <a class="back" href="../index.html">← 思考ネットワークへ戻る</a>
 
   <h1>2026-06-12 の振り返り</h1>
   <div class="meta">建築の言説・展覧会 / アート・デザイン・キュレーション圏の4件</div>
@@ -69,12 +65,5 @@
 
   <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
 </div>
-<script>
-  const root = document.documentElement, tb = document.getElementById("themeBtn");
-  function apply(t){ root.setAttribute("data-theme", t); tb.textContent = t==="dark" ? "☀️" : "🌙";
-    try{ localStorage.setItem("tn-theme", t); }catch(e){} }
-  apply((()=>{ try{ return localStorage.getItem("tn-theme") || "light"; }catch(e){ return "light"; } })());
-  tb.addEventListener("click", ()=> apply(root.getAttribute("data-theme")==="dark" ? "light" : "dark"));
-</script>
 </body>
 </html>

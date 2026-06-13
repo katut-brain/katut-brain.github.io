@@ -11,22 +11,20 @@
     --line: #ececec; --chip: #f1f1f3; --accent: #1e88c7;
     --node: #5b616e; --node-hi: #2c3038; --edge: #c9c9cf;
   }
-  html[data-theme="dark"] {
-    --bg: #0f1115; --panel: #161922; --ink: #e8e8ea; --sub: #8b91a0;
-    --line: #262b36; --chip: #1e2230; --accent: #5ec8f9;
-    --node: #aab1bd; --node-hi: #ffffff; --edge: #3a4150;
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --panel: #161922; --ink: #e8e8ea; --sub: #8b91a0;
+      --line: #262b36; --chip: #1e2230; --accent: #5ec8f9;
+      --node: #aab1bd; --node-hi: #ffffff; --edge: #3a4150;
+    }
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--ink);
     font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased; transition: background .25s, color .25s; }
+    -webkit-font-smoothing: antialiased; }
   .wrap { max-width: 940px; margin: 0 auto; padding: 20px 16px 48px; }
-  .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
   h1 { margin: 0; font-size: 22px; letter-spacing: .01em; font-weight: 700; }
   .tagline { color: var(--sub); font-size: 13px; margin-top: 3px; }
-  .theme-btn { flex: none; border: 1px solid var(--line); background: var(--panel);
-    color: var(--ink); border-radius: 999px; padding: 7px 12px; font-size: 13px; cursor: pointer; }
-  .theme-btn:hover { border-color: var(--sub); }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
   .chip { background: var(--chip); color: var(--sub); border-radius: 999px;
     padding: 4px 10px; font-size: 12px; }
@@ -46,13 +44,8 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="top">
-    <div>
-      <h1>思考ネットワーク</h1>
-      <div class="tagline">見たもの・読んだものから浮かぶ、関心のかたち</div>
-    </div>
-    <button class="theme-btn" id="themeBtn" type="button">🌙 ダーク</button>
-  </div>
+  <h1>思考ネットワーク</h1>
+  <div class="tagline">見たもの・読んだものから浮かぶ、関心のかたち</div>
 
   <div class="chips">
     <span class="chip" id="chip-updated">最終更新 2026-06-12</span>
@@ -76,7 +69,7 @@
 </div>
 
 <script>
-const root = document.documentElement, tbtn = document.getElementById("themeBtn");
+const root = document.documentElement;
 function cssVar(n){ return getComputedStyle(root).getPropertyValue(n).trim(); }
 function styleNet(){
   if (!window._net) return;
@@ -88,10 +81,9 @@ function styleNet(){
   });
   window._net.redraw();
 }
-function applyTheme(t){ root.setAttribute("data-theme", t); tbtn.textContent = t==="dark" ? "☀️ ライト" : "🌙 ダーク";
-  try{ localStorage.setItem("tn-theme", t); }catch(e){} styleNet(); }
-applyTheme((()=>{ try{ return localStorage.getItem("tn-theme") || "light"; }catch(e){ return "light"; } })());
-tbtn.addEventListener("click", ()=> applyTheme(root.getAttribute("data-theme")==="dark" ? "light" : "dark"));
+// 端末のダーク/ライト設定に自動追従（手動切替なし）
+const mq = window.matchMedia("(prefers-color-scheme: dark)");
+mq.addEventListener ? mq.addEventListener("change", styleNet) : mq.addListener(styleNet);
 
 // ── データ（公開反映時に再生成） ──
 const rawNodes = [
