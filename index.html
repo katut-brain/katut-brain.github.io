@@ -85,7 +85,7 @@ if (typeof vis === "undefined" || typeof window.GRAPH === "undefined") {
   document.getElementById("chip-updated").textContent = "最終更新 " + G.updated;
   document.getElementById("chip-count").textContent = "キャプチャ " + (G.count || rawNodes.filter(n=>n.kind==="capture").length) + "件";
 
-  const nodes = new vis.DataSet(rawNodes.map(n => ({ ...n, value: n.kind === "concept" ? 16 : 9 })));
+  const nodes = new vis.DataSet(rawNodes.map(n => ({ ...n, value: n.value != null ? n.value : (n.kind === "concept" ? 16 : 9) })));
   const edges = new vis.DataSet(rawEdges.map((e, i) => ({ id: "e"+i, ...e })));
 
   function fillOf(n){ return n.new ? cssVar("--node-new") : n.kind === "concept" ? cssVar("--node-concept") : cssVar("--node-capture"); }
@@ -100,7 +100,7 @@ if (typeof vis === "undefined" || typeof window.GRAPH === "undefined") {
 
   const options = {
     nodes: { shape: "dot", borderWidth: 0,
-      scaling: { min: 8, max: 24, label: { min: 11, max: 18, drawThreshold: 9 } },
+      scaling: { min: 7, max: 30, label: { min: 11, max: 19, drawThreshold: 9 } },
       font: { face: "Segoe UI, Hiragino Sans, sans-serif", strokeWidth: 0 } },
     edges: { width: 1, smooth: false, font: { size: 11, color: "#9a9aa2", strokeWidth: 0 } },
     physics: { solver: "barnesHut",
