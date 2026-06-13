@@ -6,50 +6,92 @@
 <title>思考ネットワーク</title>
 <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
 <style>
-  :root { color-scheme: light; }
-  html, body { margin: 0; font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", sans-serif; color: #222; }
-  .wrap { max-width: 960px; margin: 0 auto; padding: 16px; }
-  header h1 { margin: 0 0 2px; font-size: 20px; }
-  header .meta { color: #888; font-size: 12px; }
-  .legend { display: flex; gap: 14px; margin-top: 8px; font-size: 12px; flex-wrap: wrap; }
-  .legend span { display: inline-flex; align-items: center; gap: 5px; }
-  .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
-  #net { height: 68vh; min-height: 420px; background: #fff; border: 1px solid #eee; border-radius: 8px; margin-top: 12px; }
-  #err { display: none; padding: 20px; color: #b53f1e; font-size: 14px; }
-  h2 { font-size: 16px; margin: 28px 0 8px; }
-  ul.reviews { list-style: none; padding: 0; margin: 0; }
-  ul.reviews li { padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
-  ul.reviews a { color: #1e88c7; text-decoration: none; font-weight: 600; }
-  ul.reviews a:hover { text-decoration: underline; }
-  ul.reviews .sub { color: #888; font-size: 12px; margin-left: 8px; }
-  footer { color: #aaa; font-size: 11px; margin: 32px 0 16px; }
+  :root {
+    --bg: #fafafa; --panel: #ffffff; --ink: #1c1c1e; --sub: #8a8a8e;
+    --line: #ececec; --chip: #f1f1f3; --accent: #1e88c7; --net-bg: #ffffff;
+  }
+  html[data-theme="dark"] {
+    --bg: #0f1115; --panel: #161922; --ink: #e8e8ea; --sub: #8b91a0;
+    --line: #262b36; --chip: #1e2230; --accent: #5ec8f9; --net-bg: #0f1115;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; transition: background .25s, color .25s; }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 20px 16px 48px; }
+  .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  h1 { margin: 0; font-size: 22px; letter-spacing: .01em; font-weight: 700; }
+  .tagline { color: var(--sub); font-size: 13px; margin-top: 3px; }
+  .theme-btn { flex: none; border: 1px solid var(--line); background: var(--panel);
+    color: var(--ink); border-radius: 999px; padding: 7px 12px; font-size: 13px; cursor: pointer; }
+  .theme-btn:hover { border-color: var(--sub); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .chip { background: var(--chip); color: var(--sub); border-radius: 999px;
+    padding: 4px 10px; font-size: 12px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; font-size: 12px; color: var(--sub); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  #net { height: 66vh; min-height: 420px; background: var(--net-bg);
+    border: 1px solid var(--line); border-radius: 14px; margin-top: 14px; }
+  .hint { color: var(--sub); font-size: 11px; margin-top: 8px; text-align: center; }
+  #err { display: none; padding: 20px; color: #d05; font-size: 14px; }
+  h2 { font-size: 15px; margin: 34px 0 10px; font-weight: 700; }
+  .reviews { display: grid; gap: 10px; }
+  .card { display: block; text-decoration: none; color: inherit; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; transition: border-color .15s, transform .15s; }
+  .card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .card .date { font-weight: 700; font-size: 15px; }
+  .card .sub { color: var(--sub); font-size: 12.5px; margin-top: 4px; }
+  footer { color: var(--sub); font-size: 11px; margin-top: 36px; text-align: center; opacity: .8; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <h1>思考ネットワーク</h1>
-    <div class="meta" id="updated">最終更新: 2026-06-12 ｜ キャプチャ 4件 ｜ ドラッグで動かす・スクロールでズーム</div>
-    <div class="legend">
-      <span><i class="dot" style="background:#e8552d"></i>建築の言説・展覧会</span>
-      <span><i class="dot" style="background:#29b6f6"></i>アート/デザイン・キュレーション</span>
-      <span><i class="dot" style="background:#ab47bc"></i>核（curator-maker / taste）</span>
-      <span>◯=概念ハブ　•=キャプチャ</span>
+  <div class="top">
+    <div>
+      <h1>思考ネットワーク</h1>
+      <div class="tagline">見たもの・読んだものから浮かぶ、関心のかたち</div>
     </div>
-  </header>
+    <button class="theme-btn" id="themeBtn" type="button">🌙 ダーク</button>
+  </div>
+
+  <div class="chips">
+    <span class="chip" id="chip-updated">最終更新 2026-06-12</span>
+    <span class="chip" id="chip-count">キャプチャ 4件</span>
+    <span class="chip">ドラッグ / ピンチでズーム</span>
+  </div>
+
+  <div class="legend">
+    <span><i class="dot" style="background:#e8552d"></i>建築の言説・展覧会</span>
+    <span><i class="dot" style="background:#29b6f6"></i>アート/デザイン・キュレーション</span>
+    <span><i class="dot" style="background:#ab47bc"></i>核（curator-maker / taste）</span>
+    <span>◯ 概念ハブ　• キャプチャ</span>
+  </div>
 
   <div id="net"></div>
   <div id="err">⚠️ ネットワーク描画ライブラリを読み込めませんでした。再読み込みしてください。</div>
+  <div class="hint">ノードに触れると、つながりだけが浮かびます ／ キャプチャ（小さい点）をクリックすると元の投稿・記事が開きます</div>
 
   <h2>最近の振り返り</h2>
-  <ul class="reviews" id="reviews">
-    <li><a href="reviews/2026-06-12.html">2026-06-12 の振り返り</a><span class="sub">建築言説・AIアート・アーカイブの4件 / curator-maker志向</span></li>
-  </ul>
+  <div class="reviews" id="reviews">
+    <a class="card" href="reviews/2026-06-12.html">
+      <div class="date">2026-06-12 の振り返り</div>
+      <div class="sub">建築言説・AIアート・アーカイブの4件 ／ 「観て書く」「収集→継承」 ／ curator-maker志向</div>
+    </a>
+  </div>
 
-  <footer>毎朝の同期で自動更新 ｜ katut-brain</footer>
+  <footer>毎朝の振り返りから育つ地図 ｜ katut-brain</footer>
 </div>
 
 <script>
+// ── テーマ切替 ──
+const root = document.documentElement, tbtn = document.getElementById("themeBtn");
+function applyTheme(t){ root.setAttribute("data-theme", t); tbtn.textContent = t==="dark" ? "☀️ ライト" : "🌙 ダーク";
+  try{ localStorage.setItem("tn-theme", t); }catch(e){} if (window._net) window._net.redraw(); }
+applyTheme((()=>{ try{ return localStorage.getItem("tn-theme") || "light"; }catch(e){ return "light"; } })());
+tbtn.addEventListener("click", ()=> applyTheme(root.getAttribute("data-theme")==="dark" ? "light" : "dark"));
+
+// ── データ（公開反映時に再生成） ──
 const rawNodes = [
   { id: "core",    label: "curator-maker\ntaste",      group: "core",    kind: "concept" },
   { id: "arch",    label: "建築",                       group: "arch",    kind: "concept" },
@@ -59,10 +101,10 @@ const rawNodes = [
   { id: "archive", label: "アーカイブ\n収集・継承",     group: "culture", kind: "concept" },
   { id: "ai",      label: "AI×表現",                    group: "culture", kind: "concept" },
   { id: "fashion", label: "ファッション",               group: "culture", kind: "concept" },
-  { id: "c0", label: "Under35 建築家展",         group: "arch",    kind: "capture" },
-  { id: "c1", label: "布施・磯崎新論",           group: "arch",    kind: "capture" },
-  { id: "c2", label: "nova / divine simulation", group: "culture", kind: "capture" },
-  { id: "c3", label: "マルジェラ アーカイブ展",  group: "culture", kind: "capture" },
+  { id: "c0", label: "Under35 建築家展",         group: "arch",    kind: "capture", url: "https://u35.aaf.ac/" },
+  { id: "c1", label: "布施・磯崎新論",           group: "arch",    kind: "capture", url: "https://x.com/rintarofuse/status/2065395890186269162" },
+  { id: "c2", label: "nova / divine simulation", group: "culture", kind: "capture", url: "https://www.instagram.com/p/DYjibZlIqMx/" },
+  { id: "c3", label: "マルジェラ アーカイブ展",  group: "culture", kind: "capture", url: "https://www.instagram.com/p/DZBlUTZjzqR/" },
 ];
 const rawEdges = [
   { from: "c0", to: "arch" }, { from: "c0", to: "exh" },
@@ -80,35 +122,56 @@ if (typeof vis === "undefined") {
 } else {
   const nodes = new vis.DataSet(rawNodes.map(n => ({
     ...n,
-    value: n.kind === "concept" ? (n.id === "core" ? 26 : 16) : 8,
+    value: n.kind === "concept" ? (n.id === "core" ? 26 : 16) : 9,
     shape: n.id === "core" ? "star" : "dot",
   })));
-  const edges = new vis.DataSet(rawEdges.map(e => ({
-    ...e,
-    color: e.dashes ? { color: "#bbb" } : { color: "#d8d8d8" },
-    font: { size: 11, color: "#666", strokeWidth: 3, strokeColor: "#fff" },
-  })));
+  const edges = new vis.DataSet(rawEdges.map((e, i) => ({ id: "e"+i, ...e })));
+
   const options = {
     nodes: {
       shape: "dot",
-      scaling: { min: 8, max: 30, label: { min: 11, max: 18 } },
-      font: { color: "#333", face: "Segoe UI, Hiragino Sans, sans-serif" },
-      borderWidth: 1.5,
+      scaling: { min: 9, max: 32, label: { min: 12, max: 19 } },
+      font: { color: getComputedStyle(root).getPropertyValue("--ink").trim() || "#222",
+              face: "Segoe UI, Hiragino Sans, sans-serif", strokeWidth: 0 },
+      borderWidth: 0,
     },
     groups: {
-      arch:    { color: { background: "#e8552d", border: "#b53f1e" }, font: { color: "#fff" } },
-      culture: { color: { background: "#29b6f6", border: "#1e88c7" }, font: { color: "#fff" } },
-      core:    { color: { background: "#ab47bc", border: "#8e349e" }, font: { color: "#fff" } },
+      arch:    { color: { background: "#e8552d", border: "#e8552d", highlight: { background: "#f4794f", border: "#e8552d" } }, font: { color: "#fff" } },
+      culture: { color: { background: "#29b6f6", border: "#29b6f6", highlight: { background: "#5ec8f9", border: "#29b6f6" } }, font: { color: "#fff" } },
+      core:    { color: { background: "#ab47bc", border: "#ab47bc", highlight: { background: "#c267d4", border: "#ab47bc" } }, font: { color: "#fff" } },
     },
-    edges: { smooth: { type: "continuous" }, width: 1 },
-    physics: {
-      solver: "barnesHut",
-      barnesHut: { gravitationalConstant: -4000, springLength: 130, springConstant: 0.04, avoidOverlap: 0.3 },
-      stabilization: { iterations: 250 },
-    },
-    interaction: { hover: true, tooltipDelay: 120 },
+    edges: { color: { color: "#c9c9cf", highlight: "#9a9aa2", opacity: 0.7 }, width: 1,
+             font: { size: 11, color: "#9a9aa2", strokeWidth: 0 }, smooth: { type: "continuous" } },
+    physics: { solver: "barnesHut",
+      barnesHut: { gravitationalConstant: -4200, springLength: 135, springConstant: 0.045, avoidOverlap: 0.4 },
+      stabilization: { iterations: 250 } },
+    interaction: { hover: true, tooltipDelay: 120, navigationButtons: false },
   };
-  new vis.Network(document.getElementById("net"), { nodes, edges }, options);
+  const net = new vis.Network(document.getElementById("net"), { nodes, edges }, options);
+  window._net = net;
+  net.once("stabilizationIterationsDone", () => { net.setOptions({ physics: false }); net.fit({ animation: true }); });
+
+  // ── つながり強調（hover/タップ） ──
+  const allNodeIds = rawNodes.map(n => n.id);
+  function focus(id){
+    const keep = new Set([id, ...net.getConnectedNodes(id)]);
+    nodes.update(allNodeIds.map(nid => ({ id: nid, opacity: keep.has(nid) ? 1 : 0.12 })));
+    edges.update(rawEdges.map((e,i)=> ({ id: "e"+i,
+      color: (e.from===id||e.to===id) ? { color: "#7a7a82", opacity: 1 } : { color: "#c9c9cf", opacity: 0.08 } })));
+  }
+  function clear(){
+    nodes.update(allNodeIds.map(nid => ({ id: nid, opacity: 1 })));
+    edges.update(rawEdges.map((e,i)=> ({ id: "e"+i, color: { color: "#c9c9cf", opacity: 0.7 } })));
+  }
+  net.on("hoverNode", p => focus(p.node));
+  net.on("blurNode", clear);
+
+  // ── キャプチャをクリック→元リンク ──
+  net.on("click", p => {
+    if (!p.nodes.length) return;
+    const n = rawNodes.find(x => x.id === p.nodes[0]);
+    if (n && n.url) window.open(n.url, "_blank", "noopener");
+  });
 }
 </script>
 </body>
