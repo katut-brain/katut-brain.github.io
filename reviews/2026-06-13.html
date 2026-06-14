@@ -35,6 +35,16 @@
   .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
   .q b { color: var(--ink); }
 
+  .notes { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .04em; color: var(--accent);
+    background: var(--chip); border-radius: 999px; padding: 3px 10px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--ink); }
+  .ilist span, .qlist span { color: var(--sub); }
+
   .cards { display: grid; gap: 12px; }
   .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--panel);
     border: 1px solid var(--line); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
@@ -69,6 +79,29 @@
       <li><b>日本語の空白</b>：Google Earth×Photoshopマッピング、Walking City×AI は英語圏に多く日本語解説がない＝建築学生目線で日本語化する余地</li>
     </ul>
     <div class="q"><b>次に考える問い：</b>「作りたい」系を一つでも実際に手を動かすなら何から始める／Claude Code＋Figmaで自分のブランドデザインを回す仕組みは組めるか／建築×マッピング×日本語のコンテンツを1本作るならどの事例から入るか</div>
+  </section>
+
+  <h2>やりたい・気になったこと</h2>
+  <section class="notes">
+    <div class="ntag">やりたい</div>
+    <ul class="ilist">
+      <li><b>ロングネジでモジュールシェルフをDIY</b> <span>→ rhombus_labの構造を参考に自作設計</span></li>
+      <li><b>花びら型クリップを3Dプリント</b> <span>→ af_inventionsのSTLをダウンロード</span></li>
+      <li><b>インフィルスワッチを作る</b> <span>→ Makerworld model 2014875をダウンロード</span></li>
+      <li><b>ジェネラティブなタイポツールを試す</b> <span>→ fionaのリールコメントからリンク入手</span></li>
+      <li><b>事件系インスタリールの自動投稿</b> <span>→ Instagram自動投稿の仕組みを検討</span></li>
+      <li><b>日本語版の建築マッピングコンテンツ</b> <span>→ thearchpodのスタイルを日本語で再現</span></li>
+      <li><b>Claude×デザインを実務に</b> <span>→ Claude Code + Figma連携から始める</span></li>
+      <li><b>LLM Wiki×Obsidianの外部脳</b> <span>→ すでにやっていることと同じ。続ける</span></li>
+    </ul>
+    <div class="ntag">気になった</div>
+    <ul class="qlist">
+      <li><b>UGCとは？</b> <span>User Generated Content＝ユーザーが商品を使う動画でブランドをPRする手法。AI×UGCはClaudeやHiggsfieldのAPIで自動大量生成できる段階へ</span></li>
+      <li><b>Claude Code + Higgsfieldって何？</b> <span>HiggsfieldはAI動画生成ツール。Claude CodeでAPIを叩いてUGCスタイル動画を自動量産するワークフロー</span></li>
+      <li><b>FinchとGrasshopperの関係は？</b> <span>FinchはGrasshopper上で動くAI建築設計ツール。RevitはBIMソフトで、Finchが両者を橋渡ししつつ2026年中に機能拡張予定</span></li>
+      <li><b>Riso印刷とは？</b> <span>RISO社製の孔版印刷機。インクのにじみ・版ズレが独自の質感を生み、ZINEやアーティストブックで人気</span></li>
+      <li><b>Rhinoの神コマンドとは？</b> <span>動画を見ないと特定不可。要調査・次ラン</span></li>
+    </ul>
   </section>
 
   <h2>🤖 AI × ツール活用（9件）</h2>
