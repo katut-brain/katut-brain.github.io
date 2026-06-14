@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-06-13 の振り返り</title>
+<style>
+  :root {
+    --bg: #fafafa; --panel: #ffffff; --ink: #1c1c1e; --sub: #8a8a8e;
+    --line: #e3e3e6; --chip: #f1f1f3; --accent: #1e88c7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --panel: #161922; --ink: #e8e8ea; --sub: #8b91a0;
+      --line: #2b3140; --chip: #1e2230; --accent: #5ec8f9;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.7;
+    font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 22px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 23px; margin: 14px 0 2px; }
+  .meta { color: var(--sub); font-size: 12px; margin-bottom: 18px; }
+  h2 { font-size: 15px; margin: 28px 0 10px; font-weight: 700; }
+
+  .summary { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--ink); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--ink); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--sub); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 700; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--sub); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 思考ネットワークへ戻る</a>
+  <h1>2026-06-13 の振り返り</h1>
+  <div class="meta">AI×ツール活用・建築ビジョン・3D/DIY・デザインツール圏の25件</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日のキャプチャは25件（午後〜夕方のInstagram/Threads保存）。テーマがはっきり<b>2つの軸</b>に割れた日だった。ひとつは <b>AI×作業自動化の加速</b>——Claude CodeをSNS分析・図解生成・UGC動画量産・CAD操作・ブランドデザインに使う事例が集中。もうひとつは <b>手を動かしたい衝動</b>——3Dプリント、モジュールシェルフ、動くタイポツールなど「物理的にアウトプットしたい」欲求で、机上のAI情報収集と対になっている。</p>
+    <ul class="pts">
+      <li><b>AI自動化</b>：分析・図解・UGC・CADまで、作業の各段を自動化する事例が一気に流れた</li>
+      <li><b>つくる衝動</b>：3Dプリント・DIY・タイポと、手を動かすネタが情報収集と対になって出た</li>
+      <li><b>日本語の空白</b>：Google Earth×Photoshopマッピング、Walking City×AI は英語圏に多く日本語解説がない＝建築学生目線で日本語化する余地</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>「作りたい」系を一つでも実際に手を動かすなら何から始める／Claude Code＋Figmaで自分のブランドデザインを回す仕組みは組めるか／建築×マッピング×日本語のコンテンツを1本作るならどの事例から入るか</div>
+  </section>
+
+  <h2>🤖 AI × ツール活用（9件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.instagram.com/reel/DZRvU7aETRk/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">LLM Wiki × Obsidian 知識管理</div><div class="vdesc">AIの知識をWiki化しObsidianで参照する外部脳の仕組み（masatomerci）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZf3wbbzFov/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Claude Codeで図解を即生成</div><div class="vdesc">スライドの図解をコードから一発で作る（koji_aionisan）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZfYBY0zdQ3/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Claude Codeでインスタ分析</div><div class="vdesc">インサイトデータをClaude Codeで読み解く（koji_aionisan）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZfSByFNKlX/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Claude Code + Higgsfield でUGC動画</div><div class="vdesc">APIを叩いてUGCスタイル動画を自動大量生成（theaiagents）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZfMJxqTuaJ/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">TBPN × OpenAI買収 ポッドキャスト</div><div class="vdesc">AI情報を追うためのポッドキャスト紹介（masatomerci）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZdDqJ8s78o/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Claude Fable 5 でCAD操作</div><div class="vdesc">SolidWorksをAIエージェントが操作する（MecAgent）</div></div>
+    </a>
+    <a class="vcard" href="https://www.threads.net/@chroniki_claude" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Threads</span></div>
+      <div class="vbody"><div class="vtitle">クロニキ｜Claude Code専門家</div><div class="vdesc">Claude Code情報を発信するThreadsアカウント</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZeVZGOT1Cc/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">次に作るべきモバイルアプリ案</div><div class="vdesc">個人開発向けのアプリアイデア集（Rifqi）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZdGFgZLBHD/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">UGCとは何か？</div><div class="vdesc">ユーザーが商品を使う動画でPRする手法。AI×UGCで自動生成へ（Loveli）</div></div>
+    </a>
+  </div>
+
+  <h2>🏛 建築・空間ビジョン（4件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.instagram.com/p/DZNjQr8AgJe/?img_index=8" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Walking City × Archigram × AI</div><div class="vdesc">移動する都市像をAIで再解釈（Studio Tim Fu）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/p/DZfbIb-BwAl/?img_index=1" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">緑過剰のギャラリー空間コンセプト</div><div class="vdesc">植物に侵食された展示空間のビジョン（Larisa Bulibasa）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZd_4sOzBs9/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">登戸まちづくり建築を見学</div><div class="vdesc">地域に開いた建築のフィールド観察（Takuto Sando）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/p/DZdBgpyBezb/?img_index=1" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">「とらんじぇる」俯瞰写真</div><div class="vdesc">空間を俯瞰で捉えた建築写真（南俊允）</div></div>
+    </a>
+  </div>
+
+  <h2>🖨 3D・DIY（5件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.instagram.com/reel/DWWf4KtDGrN/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">花びら型クリップを3Dプリント</div><div class="vdesc">実用クリップのSTL作例（af_inventions）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZeKJZsR4Gq/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">インフィルパターン見本帳</div><div class="vdesc">充填パターンを一覧で比較できるスワッチ（LayerWorks）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZR0AcJCBFB/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">機能的キッチン用品5選</div><div class="vdesc">3Dプリントで作る実用ツール集（Gazzaladra Design）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZer9PUTrYB/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">モジュールシェルフで賃貸インテリア</div><div class="vdesc">ロングネジで組むDIYシェルフ（ちよこ）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZdGKa4NM4h/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">4ベイNASでプライベートクラウド</div><div class="vdesc">自宅にデータ基盤を構築する（WimLi Tech）</div></div>
+    </a>
+  </div>
+
+  <h2>🎨 デザインツール・タイポ（3件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.instagram.com/reel/DZf1wpTpksv/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">ジェネラティブな動くタイポツール</div><div class="vdesc">生成的に動くタイポグラフィを作るツール（fiona）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZeLVZ6oE-O/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">今知るべきデザイントレンド4選</div><div class="vdesc">直近のビジュアル傾向のインデックス（fiona / fifbuilds）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZeKfbAtBrF/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">センスを磨く3サイト</div><div class="vdesc">開発者向けのテイスト養成リソース（theedgarr）</div></div>
+    </a>
+  </div>
+
+  <h2>🛠 建築・設計ツール（2件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.instagram.com/reel/DZeLEvfRnm9/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Finch で Grasshopper → Revit 連携</div><div class="vdesc">AI建築設計ツールがBIMと相互運用（Jesper Wallgren）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZeJaTrs1EK/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Google Earth + Photoshop マッピング</div><div class="vdesc">衛星画像を素材に創造的な地図表現（thearchpod）</div></div>
+    </a>
+  </div>
+
+  <h2>📌 その他（2件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.instagram.com/reel/DY4f-zqTcYp/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">事件解説インスタアカウント</div><div class="vdesc">凶悪事件を解説するメディア型コンテンツ（ジケンだヨ）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZdFEJ3i1_V/" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Riso印刷とは何か？</div><div class="vdesc">孔版印刷ならではの質感。ZINEやアーティストブックで人気（Aniek Weitkamp）</div></div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
