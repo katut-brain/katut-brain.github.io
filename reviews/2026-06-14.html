@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-06-14 の振り返り</title>
+<style>
+  :root {
+    --bg: #fafafa; --panel: #ffffff; --ink: #1c1c1e; --sub: #8a8a8e;
+    --line: #e3e3e6; --chip: #f1f1f3; --accent: #1e88c7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --panel: #161922; --ink: #e8e8ea; --sub: #8b91a0;
+      --line: #2b3140; --chip: #1e2230; --accent: #5ec8f9;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.7;
+    font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 22px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 23px; margin: 14px 0 2px; }
+  .meta { color: var(--sub); font-size: 12px; margin-bottom: 18px; }
+  h2 { font-size: 15px; margin: 28px 0 10px; font-weight: 700; }
+
+  .summary { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--ink); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--ink); }
+
+  .notes { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .04em; color: var(--accent);
+    background: var(--chip); border-radius: 999px; padding: 3px 10px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--ink); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--line); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--sub); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 700; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--sub); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 思考ネットワークへ戻る</a>
+  <h1>2026-06-14 の振り返り</h1>
+  <div class="meta">アート・建築・AI活用圏の31件｜ホックニー追悼・ループ設計・守山市プロポ</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>ホックニーの死という大きな文化的出来事がこの日の通奏低音になった。単なる訃報ではなく「絵画とは見ることの設計だ」という論点として複数ルートから保存されており、思考の奥まで届いたことがわかる。同日に磯崎新の「木製模型で理念を未来へ残す」論が並んだことで、<b>時間を超えて何を残すか</b>という問いが浮上した。</p>
+    <p>AI活用ではプロンプト設計からループ設計への意識シフトが明確になった日。Claude Code開発者の28分動画・ループ設計論・クロニキ投稿が三連符で並んだ。守山市ホタルの森プロポーザルでは当落両方が保存され、建築競技の観察眼が具体化している。</p>
+    <ul class="pts">
+      <li><b>ホックニー追悼</b>：3件保存。「見ることの設計」という論点を軸に追いかける価値がある</li>
+      <li><b>AIはループ設計へ</b>：Claude Code開発者動画・ループ設計論・クロニキが同日に揃った</li>
+      <li><b>建築競技の解像度</b>：守山市プロポの当選・落選両方を記録し、評価基準が見えてきた</li>
+      <li><b>素材の極端化</b>：空気膜・地形溶け込み・雲・木製模型——建築とアートで「素材の限界」を攻める事例が並んだ</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>ホックニーが「見ること」を問い直したようにAIは「作ること」を問い直している——この比較はどこまで有効か／磯崎新の木製模型とAI設計アーカイブは何が同じで何が違うのか／ループ設計を自分の作業に取り入れるなら何を「ループの単位」にするか</div>
+  </section>
+
+  <h2>やりたい・気になったこと</h2>
+  <section class="notes">
+    <div class="ntag">やりたい</div>
+    <ul class="ilist">
+      <li><a href="https://www.instagram.com/reel/DZSGDIJTL20/" target="_blank" rel="noopener"><b>AI活用した大学生の事例を参考に応用</b></a> <span>→ 自分のスキルセットで応用できるAI活用パターンを1つ実装する</span></li>
+      <li><a href="https://x.com/icextruths/status/2065717021158109638?s=12" target="_blank" rel="noopener"><b>Claude Code開発者の28分プロンプト動画を見る</b></a> <span>→ 「300ドルのコースを超える内容が無料で」——まず通しで見る</span></li>
+      <li><a href="https://x.com/koutarou_furuno/status/2065034757789073762?s=12" target="_blank" rel="noopener"><b>ループ設計を取り入れる</b></a> <span>→ プロンプト単発入力からエージェント的ループ設計へ。まず1タスクをループで組み直す</span></li>
+    </ul>
+    <div class="ntag">気になった</div>
+    <ul class="qlist">
+      <li><a href="https://www.instagram.com/reel/DZU3DBRIxt6/?igsh=MW5jdDJkb3RvajdlZw==" target="_blank" rel="noopener"><b>GrasshopperからレンダリングまでのAI自動化は？</b></a> <span>Datasmith/Twinmotion連携やMecAgent（Claude×CAD）が近接技術。動画内容は未確認→次ラン</span></li>
+      <li><a href="https://www.instagram.com/reel/DZIuNfYobeS/" target="_blank" rel="noopener"><b>雲を使った現代アートの系譜は？</b></a> <span>Berndnaut Smilde（室内に霧で雲を作る）が著名な先行例。モニの作品は建築空間インスタレーション文脈で独自性あり</span></li>
+      <li><a href="https://x.com/fashionsnap/status/2065265240225243147?s=12" target="_blank" rel="noopener"><b>奈良美智のキュレーションとは？</b></a> <span>今回は「キュレーター」として陶芸家・桑田卓郎ら4人を選んだ。選評は未確認→次ラン</span></li>
+      <li><a href="https://www.threads.com/@coffee_nor_beer/post/DZiLm_BknjE?xmt=AQG0rPh1EpPx1stj5PV-q--8avcK7ebhq3hUYxOT9FBX1fLe9Y_kRp4-CE4BA0TGDTMuQJYp&slof=1" target="_blank" rel="noopener"><b>米津玄師スタイルの映像演出でムーブメントが？</b></a> <span>該当MV・動画は未確認→次ラン</span></li>
+      <li><a href="https://www.threads.com/@ghostpolyjs/post/DZi39stAdQv?xmt=AQG0hr3QkAnsJSSAm_9R9OyrQMznsa1HYfRWuoPFTh9qiBw_1OI0LxZ4Ah8mERqr4y1usyI&slof=1" target="_blank" rel="noopener"><b>GhostPolyの3Dモデリングとは？</b></a> <span>中身未取得→次ラン</span></li>
+      <li><a href="https://youtube.com/shorts/U0wWH9GQ7ng?si=jyG38Mlmw55NxcJT" target="_blank" rel="noopener"><b>世界バズの不動産マップに使ったサービス名は？</b></a> <span>動画未確認→次ラン</span></li>
+    </ul>
+  </section>
+
+  <h2>🎨 アート・文化（9件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://note.com/noble_dog3934/n/n03796813bf8f" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://assets.st-note.com/production/uploads/images/285070954/rectangle_large_type_2_681e67652c68eb88389dad9410adf431.jpg?fit=bounds&quality=85&width=1280" onerror="this.remove()"><span class="ph">note</span></div>
+      <div class="vbody"><div class="vtitle">ホックニーの死が示す、現代絵画のひとつの終わり</div><div class="vdesc">「絵画は再現技術でなく、見る行為の設計」——画廊視点からの追悼論考</div></div>
+    </a>
+    <a class="vcard" href="https://artnewsjapan.com/article/76761" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://media.artnewsjapan.com/wp-content/uploads/2026/06/12200920/GettyImages-1040616208-1024x630.jpg" onerror="this.remove()"><span class="ph">artnewsjapan</span></div>
+      <div class="vbody"><div class="vtitle">訃報：デイヴィッド・ホックニーが88歳で死去</div><div class="vdesc">プール絵画・iPad作品・《A Bigger Splash》で知られる英国現代美術の巨匠</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/sohsai/status/2065634301795016867?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://jf.x.com/images/media-preview/2065634301795016867" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">ホックニーの著作は「最上の写真論」</div><div class="vdesc">『秘密の知識』『絵画の歴史』を写真論として読む視点。『新写真論』への引用エピソード</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/fashionsnap/status/2065265240225243147?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HKlLyNfWkAAfW5w.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">奈良美智のキュレーション展が天王洲で開催</div><div class="vdesc">約30点の陶芸作品を展示。桑田卓郎ら4人が参加</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZIuNfYobeS/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-fra5-2.cdninstagram.com/v/t51.71878-15/713684229_4383246091950161_4316539157353226306_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=106&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=BfS7JMyRuC4Q7kNvwF2WWop&_nc_oc=AdotTpF41oWSvb6LWE1DuJJQM-EDy3H6dYJgSvjZZkBIL7-v9iEGwtFfObGv1WnOLrE&_nc_zt=23&_nc_ht=scontent-fra5-2.cdninstagram.com&_nc_gid=q1NlTg2lNWB7EmLai097JQ&_nc_ss=7b60f&oh=00_Af-zPdBynV4MzJxvI4Fj019uT_g5-VXfO60WCBTpow35sA&oe=6A341A32" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Moni Ibarra — 雲を素材にした新作、パリ</div><div class="vdesc">パリ・ブルス・ドゥ・コメルスに発表。いいね61K件の雲インスタレーション</div></div>
+    </a>
+    <a class="vcard" href="https://www.udiscovermusic.jp/stories/what-is-bebop-jazz?amp=1" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://www.udiscovermusic.jp/wp-content/uploads/2018/04/1000x600_whatisbebop-web-optimised-1000.jpg" onerror="this.remove()"><span class="ph">記事</span></div>
+      <div class="vbody"><div class="vtitle">ビバップとは何か？ジャズの最も重要な進化形</div><div class="vdesc">チャーリー・パーカーとガレスピーが1942年に創出。「既存様式からの逸脱」が本質</div></div>
+    </a>
+    <a class="vcard" href="https://www.threads.com/@coffee_nor_beer/post/DZiLm_BknjE?xmt=AQG0rPh1EpPx1stj5PV-q--8avcK7ebhq3hUYxOT9FBX1fLe9Y_kRp4-CE4BA0TGDTMuQJYp&slof=1" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-fra5-1.xx.fbcdn.net/v/t39.92108-6/724222009_2282002772627432_8957467208224076722_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=554f3c&_nc_ohc=VcZCzg6ePs8Q7kNvwE-UoJt&_nc_oc=Adr1smRLlt4dfOMXfTgibMkLDnUtyfH6uQi6UaeU_gUen5D87ArN1e6_Wz0xQVCjLUo&_nc_zt=14&_nc_ht=scontent-fra5-1.xx&_nc_gid=fKv7xvBhS5cIikzskvShyA&_nc_ss=7b20f&oh=00_Af8ad0mUCTQZJyE-Up1KaFfB5jCNHNbyUOarJZxZqeqh0Q&oe=6A33F4AC" onerror="this.remove()"><span class="ph">Threads</span></div>
+      <div class="vbody"><div class="vtitle">米津玄師パフォーマンスと海外MV比較</div><div class="vdesc">似た構成の海外作品と並ぶ——ムーブメントが発生している？</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/creative_i_p/status/1750102349421637681?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://jf.x.com/images/media-preview/1750102349421637681" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">台湾デザイナーが装丁した日本の近代文学名著</div><div class="vdesc">異文化の視点で再解釈された装丁デザインシリーズ</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/creative_i_p/status/2065781136769646953?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://jf.x.com/images/media-preview/2065781136769646953" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">FormarkivetのコーヒーテーブルCubio</div><div class="vdesc">デンマークの家具ブランドによる北欧プロダクトデザイン</div></div>
+    </a>
+  </div>
+
+  <h2>🏛 建築・空間（11件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://mag.tecture.jp/culture/20260511-olimpo-nomade/?utm_source=x&utm_medium=social&utm_term=post&utm_content=text&utm_campaign=20260511_1700_culture" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://magazine-asset.tecture.jp/wpcms/wp-content/uploads/2026/05/08153322/Afro_Nation_Backstage_by_Langarita_Navarro_photo_luis_diaz_diaz_02_recortada.jpg" onerror="this.remove()"><span class="ph">tecture.jp</span></div>
+      <div class="vbody"><div class="vtitle">空気膜で生み出す移動都市〈オリンポ・ノマド〉</div><div class="vdesc">500㎡の空気膜ドーナツ・鏡面の立方体宮殿。輸送・保管はコンテナで（ランガリタ・ナバロ）</div></div>
+    </a>
+    <a class="vcard" href="https://mag.tecture.jp/culture/20260611-spaziu-davia-franceschini/?utm_source=x&utm_medium=social&utm_term=post&utm_content=text&utm_campaign=20260611_1700_culture" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://magazine-asset.tecture.jp/wpcms/wp-content/uploads/2026/06/09190635/AFABRICA_CORBARA_02.jpg" onerror="this.remove()"><span class="ph">tecture.jp</span></div>
+      <div class="vbody"><div class="vtitle">〈Spaziu Davia Franceschini〉コルシカの文化施設</div><div class="vdesc">「消し去ること」を原則に地形に溶け込む段状テラス。教会と風景を引き立てる（A FABRiCA）</div></div>
+    </a>
+    <a class="vcard" href="https://www.nationalgallery.org.uk/about-us/press-and-media/press-releases/winner-of-project-domani-architectural-competition-announced" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">nationalgallery</span></div>
+      <div class="vbody"><div class="vtitle">Project Domani 建築コンペ優勝者発表</div><div class="vdesc">ナショナル・ギャラリー・ロンドンの拡張コンペ（内容未確認）</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/taroigarashi/status/2065673983442534895?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">磯崎新：木製模型で理念を未来へ残す</div><div class="vdesc">現代建築は百年以内に解体される——だから木製模型を作った。実現・非実現がいずれ等価になる</div></div>
+    </a>
+    <a class="vcard" href="https://note.com/kaigailandscape/n/n6ae538c3adea" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://assets.st-note.com/production/uploads/images/284734359/rectangle_large_type_2_44226d1c608cb300513a919946ab3a44.png?fit=bounds&quality=85&width=1280" onerror="this.remove()"><span class="ph">note</span></div>
+      <div class="vbody"><div class="vtitle">ランドスケープとヴォイド・20%理論</div><div class="vdesc">ヤン・ゲール25m視覚閾値。情報量の20〜40%が余白の環境でストレス軽減が最大化</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/p/DZEAbw7Gnxz/?img_index=6" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-fra3-2.cdninstagram.com/v/t39.30808-6/707415122_1027691876529057_3483909847108162079_n.jpg?stp=c160.0.480.480a_dst-jpg_e35_s640x640_tt6&_nc_cat=111&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0FST1VTRUxfSVRFTS5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&_nc_ohc=lj6BusoENMcQ7kNvwEqP3qD&_nc_oc=AdoupfIUnVDthZMO4mNq1oXLWD2afAr00ZzkxjSm8PzxDrRLYgv-ePs5tZFvE4WhKuQ&_nc_zt=23&_nc_ht=scontent-fra3-2.cdninstagram.com&_nc_gid=O4XBJcOcvAXzssNiDs01Cg&_nc_ss=7b60f&oh=00_Af8tiRR_t8yGW5ibNXSueUrcIh_AMp_pQMwz1UaLwG6jvg&oe=6A340B64" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Dereave architecture</div><div class="vdesc">建築写真（Louisiana関連）。いいね1,939件</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/p/DYxH_1aCgjC/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-lis1-1.cdninstagram.com/v/t39.30808-6/678131552_122295508970219532_5939630666203823291_n.jpg?stp=c327.0.983.982a_dst-jpg_e35_s640x640_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0FST1VTRUxfSVRFTS5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&_nc_ohc=9oDsL2wNUJEQ7kNvwGG0WoH&_nc_oc=AdrTOY-jAlgn-OI6dsKmo7_6ZvAXca88KUPg0I5oCv7IjnynlcmeDeciYSniKlf0e5s&_nc_zt=23&_nc_ht=scontent-lis1-1.cdninstagram.com&_nc_gid=EBQveL4HQxrlMVlLvG_a7w&_nc_ss=7b60f&oh=00_Af8xqyNJQaZKftowAy6FBQTJHXFMq1oS-Udn2ZBM1eXxtg&oe=6A3403BB" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Territorio — 紫禁城（北京）の建築写真</div><div class="vdesc">La Ciudad Prohibida。いいね8,288件（re_territorio）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZU3DBRIxt6/?igsh=MW5jdDJkb3RvajdlZw==" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.71878-15/719900155_27693734623557562_8832924141680381303_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=108&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=VaLDHH6Akw4Q7kNvwF1lxsz&_nc_oc=AdpEC4_ttl2i7wySilXEVlJTvm5MopB21D4UdkKRlZk5vSPZfT-ftaQUFZTjnunBmUU&_nc_zt=23&_nc_ht=scontent-fra3-1.cdninstagram.com&_nc_gid=o_uQijFwfYbtzhGT4XUq5Q&_nc_ss=7b60f&oh=00_Af_efCRXHsfKrcon1fm_bhBrvTzYzYVNo2ocExnuMO-gCg&oe=6A3421E3" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Efe Topçu — Grasshopper→レンダリングワークフロー</div><div class="vdesc">パラメトリック設計からレンダリングまでの自動化ワークフロー紹介</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/p/DY5p4UKkuQc/?igsh=ZGQzMGo1ajJ4eHh4" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-lis1-1.cdninstagram.com/v/t51.82787-15/708890304_18103667711094419_2557719315726550208_n.jpg?stp=c180.0.540.540a_dst-jpg_e35_s640x640_tt6&_nc_cat=109&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0FST1VTRUxfSVRFTS5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&_nc_ohc=OXSCulusJuYQ7kNvwH3De_D&_nc_oc=AdqiiyUyz3DEE2stKXrHCrYKKG3gVtaw2t2GAFu14QZZ4nubfZEGi6-LcuKFIJMXThA&_nc_zt=23&_nc_ht=scontent-lis1-1.cdninstagram.com&_nc_gid=ZL98UoR8HVanGsMRlmJMtA&_nc_ss=7b60f&oh=00_Af-DeB_jN6GvVAaI2SiAiyBqC45nMlvGsX8QV4YqVaLEbg&oe=6A33EDFA" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">TECTURE — House in Nakano</div><div class="vdesc">中野の住宅作品（tecture_official）</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/ryokoiwase/status/2062848920439689440?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">守山市ホタルの森資料館 プロポーザル最優秀賞</div><div class="vdesc">@ryokoiwaせによる受賞報告</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/youshimada/status/2065712023875236191?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://jf.x.com/images/media-preview/2065712023875236191" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">守山市ほたるの森資料館 プロポーザル落選の反省</div><div class="vdesc">「建築的インパクトに欠ける」評価で及ばず。同じコンペへの異なる目線（@youshimada）</div></div>
+    </a>
+  </div>
+
+  <h2>🤖 AI・ツール（10件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/koutarou_furuno/status/2065034757789073762?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HKh5_eoacAAaWXU.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">2026年AI必須スキル：ループ設計</div><div class="vdesc">プロンプト時代の終わり——エージェント的ループ設計へのパラダイムシフト</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/icextruths/status/2065717021158109638?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://jf.x.com/images/media-preview/2065717021158109638" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claude Code開発者が28分のプロンプト動画を公開</div><div class="vdesc">「300ドルのコースを超える内容が無料で」——本当に機能するプロンプトの書き方</div></div>
+    </a>
+    <a class="vcard" href="https://www.threads.com/@chroniki_claude/post/DZjA0dOiJ-X?xmt=AQG0ir1Fk99yntyteuuhLz6n3iIDjPC9ehAeROmiNtR1Lf9BV2lhYGjyQ7uGBZ0Pu1g_ENAh&slof=1" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-lis1-1.xx.fbcdn.net/v/t39.92108-6/724300563_1621316402304552_313865773797427141_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=554f3c&_nc_ohc=lqSlTQKFzxsQ7kNvwG9zVtz&_nc_oc=AdqI9fxRPO2kWMbhuiwykbKLwESp6HpE8rghPB_CMz7c1KIEdGQL4nqFspmIlVrWfX8&_nc_zt=14&_nc_ht=scontent-lis1-1.xx&_nc_gid=AHs6HCIGpt5TsPiZ_oyGQw&_nc_ss=7b20f&oh=00_Af_2NtLyzE6V7o-JPC940V91TNMYbXVDtmFEL04jX_GsbQ&oe=6A33F567" onerror="this.remove()"><span class="ph">Threads</span></div>
+      <div class="vbody"><div class="vtitle">クロニキ｜Claude Code専門家（Threads）</div><div class="vdesc">Claude Code専門家による最新投稿</div></div>
+    </a>
+    <a class="vcard" href="https://www.threads.com/@manetaros_ada/post/DZilVveCT3j?xmt=AQG0nZPknny8Or3NV1GcH-RRZCBBWeSQW9dp5nDkc6HAwfQoG72dnBeycP1PuxZt20Uqmco&slof=1" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-fra3-2.xx.fbcdn.net/v/t39.92108-6/721667291_833842316210232_3447195963851362997_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=554f3c&_nc_ohc=DKM09_F5pzwQ7kNvwEQafXe&_nc_oc=AdrrDcy4SQqD3JqM7XuJ7F6kyI22Zy2cO1vVAAuMjxqA5dygAo5hV5A7Gk3wEnGyE4U&_nc_zt=14&_nc_ht=scontent-fra3-2.xx&_nc_gid=8znkuapVlT8qmjSHoKhOew&_nc_ss=7b20f&oh=00_Af8jCeW-TN9v-WRqhKv5OWtCXWHz1p6ABUvg4behPT__5w&oe=6A33C821" onerror="this.remove()"><span class="ph">Threads</span></div>
+      <div class="vbody"><div class="vtitle">まねたろす（Threads）</div><div class="vdesc">AI収益化系Threadsアカウントの投稿</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/p/DYeCfOgjmtq/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-fra3-2.cdninstagram.com/v/t51.82787-15/702364559_18406896859146915_4776566420478535916_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=104&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0FST1VTRUxfSVRFTS5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&_nc_ohc=7Z7cl0S07vsQ7kNvwEzvjqG&_nc_oc=AdqmquP_sWikODsvd8vh6fjQu4lMvZ-NMfv0sLQoVJnqO2MCqxM7GfIaiuj9wszUoAw&_nc_zt=23&_nc_ht=scontent-fra3-2.cdninstagram.com&_nc_gid=KP8lQcNOtydUBxCrRzhTag&_nc_ss=7b60f&oh=00_Af-cGTPBw56CWIm5Zsos-Ft4jxq5A9tEA8c_F83pDYayfQ&oe=6A341B00" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Slava Design — デザイン特化バイブコーディング</div><div class="vdesc">既存技術をデザインに特化させて使うアプリ作成（slava7118）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DWGv4LfDOfx/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-fra3-2.cdninstagram.com/v/t51.71878-15/654675221_1213149807566948_9027336747594660070_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=111&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=wt7lv3ZV-RgQ7kNvwFaGZ4O&_nc_oc=AdrLV32WB5gPO5UtM_RqnNk0i2XbLRCtgH28889Ye7SF0GAOD5PoxRO5Frwyn44Wrj4&_nc_zt=23&_nc_ht=scontent-fra3-2.cdninstagram.com&_nc_gid=xPatFterNhdimMMRP5IeCw&_nc_ss=7b60f&oh=00_Af8d74HDI3PdIvdy8wPKU5dxLm8fyFaYNn7Fx_rl5a5YTg&oe=6A33FE8F" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Rainfrog AIデザインツール</div><div class="vdesc">いいね2,325件・コメント2,359件の異例の反響。コメントで何かが起動する（rainfrog.ai）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZSGDIJTL20/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-fra3-2.cdninstagram.com/v/t51.71878-15/718906900_1313188971014394_494217405752531680_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=104&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=scmLQY0woUYQ7kNvwE2L7wL&_nc_oc=AdqZP9PS0BcxvYxaV4ihgKT7Y8akaAAQD3S7sLki4P5e02oR6Ag0WqfH0e5W8r89FE0&_nc_zt=23&_nc_ht=scontent-fra3-2.cdninstagram.com&_nc_gid=VdaGbv5kq3PgnTwapQ42CQ&_nc_ss=7b60f&oh=00_Af980kFh21gmrgZVPwGrL-Rd23-NVj8Yj3iTbPOaGwQjHA&oe=6A33E93E" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">AIを使いこなした大学生の事例</div><div class="vdesc">「この大学生なんなの！」——活用事例リール（yu_ai_tukaitai）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZhdSQ2vDRF/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-lis1-1.cdninstagram.com/v/t51.82787-15/720721757_17871669429681370_4502614031133819265_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=Q0FvVS0PH1YQ7kNvwGYC020&_nc_oc=AdoH5qCQ639uM_D7t24_er1YtSnk4b1mYWtlRDsgEk0gOYTBC7lZpczaEVGIeq0USEE&_nc_zt=23&_nc_ht=scontent-lis1-1.cdninstagram.com&_nc_gid=AZp0E2Tkjez45yJrRruDTw&_nc_ss=7b60f&oh=00_Af_gao6LDH2qIgGKPBxzEWv1YNUZCZSUqHk4WwNAdeuhRA&oe=6A33FC79" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">AIで作った人物の不気味さ</div><div class="vdesc">「AIで作られた人物は気持ち…」——不気味の谷の観察（yamatoskgc_ai）</div></div>
+    </a>
+    <a class="vcard" href="https://youtube.com/shorts/U0wWH9GQ7ng?si=jyG38Mlmw55NxcJT" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://i.ytimg.com/vi/U0wWH9GQ7ng/oardefault.jpg?sqp=-oaymwEnCJUDENAFSFqQAgHyq4qpAxYIARUAAAAAJQAAyEI9AICiQ3gBwAIB&rs=AOn4CLBKbUX41PgNpV7H6r-kGORHcfyNuw&usqp=CCk" onerror="this.remove()"><span class="ph">YouTube</span></div>
+      <div class="vbody"><div class="vtitle">世界でバズった不動産マップの高速製作</div><div class="vdesc">どのサービスを使っているのか気になる（YouTube Shorts）</div></div>
+    </a>
+    <a class="vcard" href="https://note.com/tomo_labo_0223/n/n977039620644" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://assets.st-note.com/production/uploads/images/285311910/rectangle_large_type_2_2be82012c988a6841cd8ce97676999b0.png?fit=bounds&quality=85&width=1280" onerror="this.remove()"><span class="ph">note</span></div>
+      <div class="vbody"><div class="vtitle">【素人視点】Obsidianを使うと何が嬉しいのか？</div><div class="vdesc">ローカル性・発見性・AI活用の3つの利点。Zettelkastenの学習コストも指摘</div></div>
+    </a>
+  </div>
+
+  <h2>📚 その他（1件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.threads.com/@ghostpolyjs/post/DZi39stAdQv?xmt=AQG0hr3QkAnsJSSAm_9R9OyrQMznsa1HYfRWuoPFTh9qiBw_1OI0LxZ4Ah8mERqr4y1usyI&slof=1" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-lis1-1.xx.fbcdn.net/v/t39.92108-6/724103810_1620433376758539_5463971523927499420_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=554f3c&_nc_ohc=d-9S6b6xB6oQ7kNvwGuMh7a&_nc_oc=AdqPaBEk_4F7kNv5MwhrS6sO1H522w4gROGILY42L2a8g3Gjj95R2mg_T2J9B52BuPA&_nc_zt=14&_nc_ht=scontent-lis1-1.xx&_nc_gid=1mzAlRR2CgK_j3mpvcrlHQ&_nc_ss=7b20f&oh=00_Af9T9WZPQ6_PVnZp51ZWfxe7MVk7HdSxRdTLJIYOSyLtIg&oe=6A33E4A1" onerror="this.remove()"><span class="ph">Threads</span></div>
+      <div class="vbody"><div class="vtitle">GhostPoly（@ghostpolyjs）on Threads</div><div class="vdesc">3Dモデリング関連の投稿と思われる（内容未確認・次ラン）</div></div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
