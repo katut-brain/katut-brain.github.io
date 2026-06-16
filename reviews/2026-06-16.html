@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-06-16 の振り返り</title>
+<style>
+  :root {
+    --bg: #fafafa; --panel: #ffffff; --ink: #1c1c1e; --sub: #8a8a8e;
+    --line: #e3e3e6; --chip: #f1f1f3; --accent: #1e88c7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --panel: #161922; --ink: #e8e8ea; --sub: #8b91a0;
+      --line: #2b3140; --chip: #1e2230; --accent: #5ec8f9;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.7;
+    font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 22px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 23px; margin: 14px 0 2px; }
+  .meta { color: var(--sub); font-size: 12px; margin-bottom: 18px; }
+  h2 { font-size: 15px; margin: 28px 0 10px; font-weight: 700; }
+
+  .summary { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--ink); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--ink); }
+
+  .notes { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .04em; color: var(--accent);
+    background: var(--chip); border-radius: 999px; padding: 3px 10px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--ink); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--line); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--sub); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 700; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--sub); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 思考ネットワークへ戻る</a>
+  <h1>2026-06-16 の振り返り</h1>
+  <div class="meta">AI×ツール接続・SANAA建築・3D自動化の11件</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存コンテンツは「AIを既存ツールに接続する」という一本の軸に収束している。ClaudeがAutoCADを操作し、ChatGPTがRhinoでモデリングし、HiggsieldがClaudeのMCPで動画を生成する——それぞれ異なるツールだが、すべて「AIを実務ソフトの操作レイヤーに置く」発想だ。SANAA設計の道の駅というリアルな建築ニュースが混ざることで、「AIで設計する」と「AIで実際に建てる」の距離が一気に縮まって見える。</p>
+    <p>AI情報収集リテラシーの問いと、設計ツール連携という実践は、「情報をどう消化して仕事につなげるか」という同じ問いの両面かもしれない。</p>
+    <ul class="pts">
+      <li>Claude×AutoCAD、ChatGPT×Rhinoと建築設計ツールへのAI統合が加速</li>
+      <li>SANAAが道の駅を設計——公共建築でのスターアーキテクト起用が地方でも（41.5億円・2029年開業）</li>
+      <li>Higgsfield MCP＋Claude でコンテンツ制作ループが完結しつつある</li>
+      <li>AI時代の情報収集：LLMとの対話が「読む」ではなく「対話で精製する」に変わりつつある</li>
+    </ul>
+    <div class="q">
+      <b>次に考えるとよい問い</b><br>
+      AutoCAD/Rhinoへの自動指示は「CADを知っているAI」なのか「操作を覚えるAI」なのか——どちらが設計の本質に近いか？<br>
+      MCPで繋げるツールが増える中で、自分が本当に「使いたい」外部APIは何か？<br>
+      公共建築でSANAAを起用するほどの投資（41.5億円）と地方活性化の費用対効果をどう考えるか？
+    </div>
+  </section>
+
+  <h2>やりたいこと・気になること</h2>
+  <div class="notes">
+    <div class="ntag">意図</div>
+    <ul class="ilist">
+      <li><b><a href="https://www.instagram.com/reel/DWWEav7k_3T/" target="_blank" rel="noopener">yusukeokawa_jp — Meta AI買収・moltbook</a></b>「これ取り入れよう」<br>
+        <span>moltbookを確認し、AI業界動向の収集フローに組み込む方法を探る</span></li>
+      <li><b><a href="https://www.instagram.com/reel/DZkjuHigJRx/" target="_blank" rel="noopener">Higgsfield MCP × Claude</a></b>「これはめちゃめちゃやりたい」<br>
+        <span>Higgsfield MCPのセットアップを試す。<code>~/.claude/settings.json</code>にHiggsfield MCPを追加し、動画生成ループを組む</span></li>
+    </ul>
+    <div class="ntag">好奇心</div>
+    <ul class="qlist">
+      <li><b><a href="https://www.instagram.com/reel/DWD2mTyjzKE/" target="_blank" rel="noopener">寺尾昌人 — AI時代の情報収集BP</a></b>「具体的にAIとの会話による情報収集とは」<br>
+        <span>LLMと対話することで記事の要点を抽出・整理するアプローチ。動画内の具体フローは <em>要調査・次ラン</em></span></li>
+      <li><b><a href="https://www.instagram.com/reel/DYdK1OJB3qD/" target="_blank" rel="noopener">Rork — iPhoneアプリ生成</a></b>「Windowsでアプリ作れるってこと？」<br>
+        <span>RorkはWebブラウザベースで動作するため、Windowsからも操作可能。ただし生成物はiOSアプリ向けが主</span></li>
+      <li><b><a href="https://www.instagram.com/reel/DYPI4ESy7cU/" target="_blank" rel="noopener">Ella — 10分でプロダクトブランディング完成</a></b>「なにこれ」<br>
+        <span>どのAIツールを使ったか動画内の詳細は <em>要調査・次ラン</em>。Claude+Canvaかv0+AI画像系の組み合わせが定番パターン</span></li>
+      <li><b><a href="https://www.instagram.com/reel/DZkDnSOpKDH/" target="_blank" rel="noopener">Claude Code × API ランキング5選</a></b>「APIでほかのAIに繋ぐのは面白い」<br>
+        <span>Claude CodeからOpenAI（GPT Image 2）、Gemini、ElevenLabsなどを直接APIで叩き、Anthropicが持っていない能力を補完できる。第1位はGPT Image 2（画像生成）</span></li>
+    </ul>
+  </div>
+
+  <h2>見たもの（11件）</h2>
+
+  <div class="ntag">🤖 AI / Claude</div>
+  <div class="cards">
+    <a class="vcard" href="https://www.instagram.com/reel/DZkDnSOpKDH/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-fra3-2.cdninstagram.com/v/t51.71878-15/721995442_1633179567976016_5547022942040981263_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=111&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=hddINXPnRj0Q7kNvwG-Knbe&_nc_oc=AdpRy1o9ifFePlbsvO_g0-nVeDsh7OjS7og_Y7DSP_l1mOwYdI9vrAByJdPYK5hBPB0&_nc_zt=23&_nc_ht=scontent-fra3-2.cdninstagram.com&_nc_gid=Zl5KgIRGuff741pxCA5rRA&_nc_ss=7b60f&oh=00_Af_UerVl05UHICLqC3eT1OTbupj6rE2FjgnkE1zI8USY-w&oe=6A374688" alt="" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Claude Codeに繋ぐべきAPI ランキング5選</div><div class="vdesc">Claude Code開発者のチャエン（Masa）。MCPとAPI直結の使い分け、第1位はGPT Image 2</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZpkYYGRstP/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.71878-15/723883143_1518497249762119_2571370364649005308_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=108&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=QtAGGRrpkNMQ7kNvwEkfsfO&_nc_oc=AdqM03aNeYQn53rYgkrlLLCMwMlJkrjsU3_t9nnzKtrwyO33A2DAQZeBOYpdYL3J2Fg&_nc_zt=23&_nc_ht=scontent-fra3-1.cdninstagram.com&_nc_gid=oAaSUIJ1lLTGRFHn0f-KsQ&_nc_ss=7b60f&oh=00_Af_LRT_aUXYBmXA6nnGzetsJe4C2znqGVA3NnuhnN4Fy3w&oe=6A3715F9" alt="" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">ClaudeにAutoCADを操作させる検証（オークラ社長）</div><div class="vdesc">5000mmの正方形をClaude Computer Useで自動作図。建築設計業務へのAI適用の先行デモ</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZkjuHigJRx/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-fra3-2.cdninstagram.com/v/t51.71878-15/724119028_1966950317309153_2931553359448185099_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=111&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=wupvibMCWHcQ7kNvwExEv-9&_nc_oc=Adp3BuNfaRIwEmmtgJHrK21iPub0vLwKjrHe03NjZqQvFo1yYN-Mh_i8JC7n7Tz7e5I&_nc_zt=23&_nc_ht=scontent-fra3-2.cdninstagram.com&_nc_gid=7Em-QrGvkuFoil4xug81NA&_nc_ss=7b60f&oh=00_Af_6US-PxkCllccZOkGlAeRLEPnZbU7mxIN4lfUSkPhWCw&oe=6A371892" alt="" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Higgsfield MCP × Claude でコンテンツ生成完全自動化</div><div class="vdesc">michelletech2026。Claude MCP経由でHiggsfield動画生成、コンテンツ制作を自動化</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DYPI4ESy7cU/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-fra3-2.cdninstagram.com/v/t51.71878-15/696674124_27678787205056619_5080342317128124074_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=104&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=f3cU_zKbrEoQ7kNvwFXb69n&_nc_oc=AdqISyTW0wkmZw8tZ6aPXjjbUei1Z2A1f0OdMapGwZ_mIPzGE4GlRtbe5bvpGBJEtnw&_nc_zt=23&_nc_ht=scontent-fra3-2.cdninstagram.com&_nc_gid=otppHCU6j1POFCrAfBhZww&_nc_ss=7b60f&oh=00_Af87_nOO7QPeNf5wNpHZBHoheg90t--feWlsfXtoQ_SV0A&oe=6A371F50" alt="" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Ella（ella.designtips）— 10分でプロダクトブランディング全完成</div><div class="vdesc">AIで10分以内にブランディングコンセプト完成。7,522いいね、2,359コメントのバズ投稿</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZmjRjDxqhl/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.71878-15/723208298_1332182401615441_4423814932353198714_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=101&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=cxN64F-weG4Q7kNvwGuIAkX&_nc_oc=AdpTCWJ6phYGr_HFIlEFJVmuucqmzexeFBM-s09XYvXMyzrYwCfRb_fSWrljKGWrllM&_nc_zt=23&_nc_ht=scontent-fra3-1.cdninstagram.com&_nc_gid=UUOFcPMtGYbHvMWyMjWAPA&_nc_ss=7b60f&oh=00_Af-V06SLX0WdM22VPtRMl7b4xa_Lx7sdLjXZKYSpthhCQQ&oe=6A3746BE" alt="" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">おくやま — 「このAIの使い方してる人は終わってます」</div><div class="vdesc">chatgpt_dojo。警告系リール。#タゴサク構文</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DWD2mTyjzKE/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-lhr11-1.cdninstagram.com/v/t51.71878-15/654094457_1292967809406745_7595954485192335146_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=111&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=054v-yufp-kQ7kNvwEYge4m&_nc_oc=AdqCwKsgrfXLJY6MwdENiQzrquoyLi6fBTY6iy331eLlEvyAhcigEat-8Bw9srWNWxU&_nc_zt=23&_nc_ht=scontent-lhr11-1.cdninstagram.com&_nc_gid=W1x3fxyCZAjXb-bTzWNeAA&_nc_ss=7b60f&oh=00_Af9nqgSSftflMkN4SZpR4nNKzH5HDrfr9Vp60OszN5Krdg&oe=6A371DB4" alt="" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">寺尾昌人 — AI時代の情報収集ベストプラクティス</div><div class="vdesc">Marc Andreessenのツイートに便乗、信頼できる情報源の選別とLLM活用について</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DWWEav7k_3T/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-fra3-2.cdninstagram.com/v/t51.71878-15/656846415_1973251633606089_5253151647970971458_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=111&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=ws7UsnaZT_oQ7kNvwFN-5OI&_nc_oc=Adpatx0qMCTnyD0tyEJ-bY-mS8rMTk3kI-VsSkFzDezumKt9lNGB0FwOCjXGWr2V6e0&_nc_zt=23&_nc_ht=scontent-fra3-2.cdninstagram.com&_nc_gid=Oi6fgz_dUxIgdXKajfxNdg&_nc_ss=7b60f&oh=00_Af9MkCngHPFZtqr_lxq2ZvsgN_QUqKn8P2P9lZpYcNVXAg&oe=6A3728A9" alt="" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">yusukeokawa_jp — MetaまたAI企業買収・moltbook</div><div class="vdesc">Meta買収ニュース。moltbookタグ付き</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DYdK1OJB3qD/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.71878-15/675441004_1522229422895344_2265484540555864708_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=102&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=v5S3jtB3XpMQ7kNvwFWo3W5&_nc_oc=AdpemmcqsawvYxm97rK4N_FgudWvxXWhWOMzcjWdI7ulJBkf-G8VlyFO1Y9IV6E-9dc&_nc_zt=23&_nc_ht=scontent-fra5-1.cdninstagram.com&_nc_gid=lQO3t8T3xcoAZ41GRFUvgA&_nc_ss=7b60f&oh=00_Af9eo0J2o2sYmQZDZNIolUFmSk40iLtqPljoPSVusqiZKQ&oe=6A374380" alt="" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Rork — iPhoneアプリ生成AIツール（weekend_startup紹介）</div><div class="vdesc">「iPhoneアプリ生成なら一番！」プロンプトからiOSアプリを自動生成するAIサービス</div></div>
+    </a>
+  </div>
+
+  <div class="ntag">🏛 建築</div>
+  <div class="cards">
+    <a class="vcard" href="https://news.yahoo.co.jp/articles/1f86c942130440e75f80d859f220a991ec433c0a?source=sns&dv=pc&mid=other&date=20260615&ctg=loc&bt=tw_up" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://newsatcl-pctr.c.yimg.jp/t/amd-img/20260614-00000006-yamagatan-000-1-view.jpg?exp=10800" alt="" onerror="this.remove()"><span class="ph">記事</span></div>
+      <div class="vbody"><div class="vtitle">村山市 新「道の駅むらやま」— SANAA設計、2029年春開業予定</div><div class="vdesc">直径100mの丸い大屋根。展望デッキ・産直・フードコート完備。事業費41.5億円</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/p/DZlez7ljWmo/?img_index=9" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-lhr11-1.cdninstagram.com/v/t39.30808-6/718277984_1039941918637386_20339617945004979_n.jpg?stp=c266.0.800.799a_dst-jpg_e35_s640x640_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0FST1VTRUxfSVRFTS5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&_nc_ohc=-tepm8UDEh0Q7kNvwGpxH_R&_nc_oc=AdrgTSynvNrEZeginVfz7K7O08cLAdIJ0_5ByvJ5f7TWGy0r0vul2dTxc6ypuX35ne8&_nc_zt=23&_nc_ht=scontent-lhr11-1.cdninstagram.com&_nc_gid=TgBpkVgpVnvdZn08vLoiGg&_nc_ss=7b60f&oh=00_Af8E2GNAwgm3bRAoLGApR3af3FPVYlqGNM_AijvBq9Njmw&oe=6A372F23" alt="" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Dereave — Future Archaeologies（ブラガ2025文化首都）</div><div class="vdesc">PARTOによるインスタレーション。考古学的ビジュアル言語を用いた現代建築アート</div></div>
+    </a>
+  </div>
+
+  <div class="ntag">🖨 3D / デジタル設計</div>
+  <div class="cards">
+    <a class="vcard" href="https://www.instagram.com/reel/DZpHEXbyJK6/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.71878-15/724261721_1496902321455273_5863419457785911653_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=102&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=3-gX5B1m9SYQ7kNvwHHQzh4&_nc_oc=AdrG0iSmXOxeyB5RzSp7GSSSr4dTc3ThU0HvLZjW_YzsOA7PSONY4sgXkO2ZNTx1x28&_nc_zt=23&_nc_ht=scontent-fra5-1.cdninstagram.com&_nc_gid=kHuifZBSM1atQWwo6B5XEg&_nc_ss=7b60f&oh=00_Af_8WtwESl_wIOMQr6xPGsrvX8_HSi4R3othY8yX7YBSuA&oe=6A3719CC" alt="" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">sena — ChatGPT（Codex）× Rhinoceros 自動モデリング</div><div class="vdesc">プロンプト入力だけで自動モデリングからパース生成まで一気通貫。「建築設計の未来が変わる」</div></div>
+    </a>
+  </div>
+
+  <footer>katut-brain · 2026-06-16 の振り返り</footer>
+</div>
+</body>
+</html>
