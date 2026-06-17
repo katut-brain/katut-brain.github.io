@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-06-17 の振り返り</title>
+<style>
+  :root {
+    --bg: #fafafa; --panel: #ffffff; --ink: #1c1c1e; --sub: #8a8a8e;
+    --line: #e3e3e6; --chip: #f1f1f3; --accent: #1e88c7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --panel: #161922; --ink: #e8e8ea; --sub: #8b91a0;
+      --line: #2b3140; --chip: #1e2230; --accent: #5ec8f9;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.7;
+    font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 22px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 23px; margin: 14px 0 2px; }
+  .meta { color: var(--sub); font-size: 12px; margin-bottom: 18px; }
+  h2 { font-size: 15px; margin: 28px 0 10px; font-weight: 700; }
+
+  .summary { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--ink); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--ink); }
+
+  .notes { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .04em; color: var(--accent);
+    background: var(--chip); border-radius: 999px; padding: 3px 10px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--ink); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--line); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--sub); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 700; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--sub); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 思考ネットワークへ戻る</a>
+  <h1>2026-06-17 の振り返り</h1>
+  <div class="meta">AI×Claude Code・3D/CAD・レンダリングの5件</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>「道具を繋げる」と「ループ化する」が今日の通底テーマ。MecAgent のCAD自動生成、Boris Cherny の「もうプロンプトを書かない」発言、X × Claude 連携——いずれも道具を主体的に組み合わせ、繰り返し作業を自律化する方向性への関心。3D レンダリング側では「重ねる」手法への美的共感も。</p>
+    <ul class="pts">
+      <li><b>CAD自動化</b>：MecAgent × Claude Opus 4.8 でSolidWorksの機械部品がテキストから生成できる段階へ</li>
+      <li><b>エージェントループ</b>：Boris Cherny の発言が示す「プロンプトを書かない」未来——タスクをループとして設計する思想</li>
+      <li><b>重ねる美学</b>：3種のレンダリングを合成するbwijayaのスタイルは「情報を積層させる」という自分の作業観と重なる</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>自分が繰り返している「手作業」をループ化できるものは何か／Rhino × Claude で簡単なパラメトリック生成を試すなら何から始めるか／V-Ray nanobanana の機能を次回Chromeで確認する</div>
+  </section>
+
+  <h2>気になったこと</h2>
+  <section class="notes">
+    <div class="ntag">気になった</div>
+    <ul class="qlist">
+      <li><a href="https://www.threads.com/@chroniki_claude/post/DZsBmoDAot6?xmt=AQG0KJ7DZ4wSHc_qIVhvoroI2pLH6gypHbv_sII4pj8cE8ai20zqAiYazl0JruSUkK4JITI3&slof=1" target="_blank" rel="noopener"><b>ループの作り方？</b></a> <span>→ Claude Code のループ化は <code>/loop</code> コマンド（定期実行）と SKILL.md によるscheduled tasks の2系統。Boris Cherny が言う「プロンプトを書かない」とは、単発指示からエージェントループ設計へのシフトのこと——このキャプチャ同期ルーティン自体がその一例</span></li>
+      <li><a href="https://www.instagram.com/reel/DZpkDtiMWP2/?igsh=ZmRhdGc1OWdhZTN5" target="_blank" rel="noopener"><b>V-Ray の nanobanana プラグインとは？</b></a> <span>→ archi.hacks が解説。コメント欄に「plugin」と書くとリンクが届く形式。詳細は Chrome 接続時に補完予定</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI × Claude Code（2件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.threads.com/@chroniki_claude/post/DZsBmoDAot6?xmt=AQG0KJ7DZ4wSHc_qIVhvoroI2pLH6gypHbv_sII4pj8cE8ai20zqAiYazl0JruSUkK4JITI3&slof=1" target="_blank" rel="noopener">
+      <div class="thumb">
+        <img src="https://scontent-mrs2-2.cdninstagram.com/v/t51.71878-15/724123328_852627230829102_7325314298341075347_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=106&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiRkVFRC5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&_nc_ohc=0u7ShFdgkRcQ7kNvwHfIhDv&_nc_oc=Adq7xRtylwTKVCHes1t1TiAFdQzYogZdlMPGtSo_Nwu42R683MQ77G-RkK8zJRKt-4A&_nc_zt=23&_nc_ht=scontent-mrs2-2.cdninstagram.com&_nc_gid=eW6-j24pIvp40GxKl6N0yg&_nc_ss=7b20f&oh=00_Af9V1moVILjvbNhQnF53ZWNcwiIEpt54NJot2tIe5Wn3FQ&oe=6A386B98" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="ph">Threads</span>
+      </div>
+      <div class="vbody"><div class="vtitle">Claude Code生みの親「もうプロンプトは書かない」</div><div class="vdesc">Boris Cherny がエージェントループへの移行を示唆（chroniki_claude）</div></div>
+    </a>
+    <a class="vcard" href="https://www.threads.com/@neet_ai_creator/post/DZrpCPYFnAe?xmt=AQG0Z8NClc3-7RvMUKZZVItUQqYUA_9pPurVdnshe2R2NPNRoABuOWWpaWY4HEkBnBFzrHDB&slof=1" target="_blank" rel="noopener">
+      <div class="thumb">
+        <img src="https://scontent-fra5-2.xx.fbcdn.net/v/t39.92108-6/724937513_1561404902213864_8305901022624747437_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=554f3c&_nc_ohc=XLckN7hVBfgQ7kNvwGlWt_p&_nc_oc=AdrPOLcF3wg6T9xFaZXEdYeAhjpoBcRBTlONSk3okFYvUoXN4SqBaIvJJ0WWqENY5k0&_nc_zt=14&_nc_ht=scontent-fra5-2.xx&_nc_gid=j4ztvEaZ8rEks92dArqY-w&_nc_ss=7b20f&oh=00_Af_qz4gDXLZfasiIiWokqMXSaeiPkwEHDhJJs2o_uIwJpQ&oe=6A3889EB" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="ph">Threads</span>
+      </div>
+      <div class="vbody"><div class="vtitle">X（Twitter）と Claude を繋げる</div><div class="vdesc">道具を接続する実践ワークフロー（にと｜ニートAIクリエイター）</div></div>
+    </a>
+  </div>
+
+  <h2>🖨 3D・CAD・レンダリング（3件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.instagram.com/reel/DZNFj8st4bV/" target="_blank" rel="noopener">
+      <div class="thumb">
+        <img src="https://scontent-mrs2-3.cdninstagram.com/v/t51.82787-15/718378763_17905899147431577_8197464634481699437_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=104&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=lHCUNqNcwnkQ7kNvwG9FK-l&_nc_oc=AdrQ_6_4EXQ7WehBBCL0JcsssG63OKQhC2RIEDXZ6a401jIk1omQCspHEcEMjpzaIp8&_nc_zt=23&_nc_ht=scontent-mrs2-3.cdninstagram.com&_nc_gid=dUzsXdYa1LmmmnZ-6f3E1Q&_nc_ss=7b60f&oh=00_Af-uWZpCrkM4bx3TbrI8ddcSmfX5EzQq-U3HhMhx3mIGcA&oe=6A38A3CA" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="ph">Instagram</span>
+      </div>
+      <div class="vbody"><div class="vtitle">MecAgent × Claude Opus 4.8 でブレーキディスクを自動生成</div><div class="vdesc">SolidWorks 2026 上でテキストからパラメトリック部品を生成（MecAgent）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DYx_h2AMcrC/" target="_blank" rel="noopener">
+      <div class="thumb">
+        <img src="https://scontent-fra5-2.cdninstagram.com/v/t51.82787-15/706745067_18108321466819350_1844337932760710634_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=106&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=FJA-nhWuvV4Q7kNvwGvkVOF&_nc_oc=AdqjosVd9fzMSd1JA7XAddMNFfybu0KFmwC9OWmiUYfWFIzRjP9UbWa60s-28qgG3zU&_nc_zt=23&_nc_ht=scontent-fra5-2.cdninstagram.com&_nc_gid=TJmkvYVKDhEQW85QSNwrng&_nc_ss=7b60f&oh=00_Af-pDlAahJZvpFx4ZFF-wivEjvz7l3hxaPX6RpX9q6U9Cg&oe=6A38949C" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="ph">Instagram</span>
+      </div>
+      <div class="vbody"><div class="vtitle">3種のレンダリングを重ねる後処理パース</div><div class="vdesc">「この雰囲気好きだな」——レイヤリングで深みを出す手法（bwijaya.arch）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZpkDtiMWP2/?igsh=ZmRhdGc1OWdhZTN5" target="_blank" rel="noopener">
+      <div class="thumb">
+        <img src="https://scontent-mrs2-1.cdninstagram.com/v/t51.71878-15/724639926_1039263251956913_9019996157452248953_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=100&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=wPR2dRLcV8IQ7kNvwFAfflI&_nc_oc=AdoNNaB3wO2BkFUYgApu9pkWwqcnSKpgNu50SrG_ujla8Otrct02ddzhbmw394FcwvM&_nc_zt=23&_nc_ht=scontent-mrs2-1.cdninstagram.com&_nc_gid=nwg73awg04soMB-kdyxwOg&_nc_ss=7b60f&oh=00_Af_q73t8vgemYXOuuHYYP6yJyNShO9R7_kvk7TDbUrVWWA&oe=6A3848A6" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="ph">Instagram</span>
+      </div>
+      <div class="vbody"><div class="vtitle">V-Ray プラグインのチュートリアル</div><div class="vdesc">nanobanana プラグイン解説（どんな機能？→次ラン確認）（archi.hacks）</div></div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
