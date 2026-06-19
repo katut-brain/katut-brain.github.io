@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-06-19 の振り返り</title>
+<style>
+  :root {
+    --bg: #fafafa; --panel: #ffffff; --ink: #1c1c1e; --sub: #8a8a8e;
+    --line: #e3e3e6; --chip: #f1f1f3; --accent: #1e88c7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --panel: #161922; --ink: #e8e8ea; --sub: #8b91a0;
+      --line: #2b3140; --chip: #1e2230; --accent: #5ec8f9;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.7;
+    font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 22px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 23px; margin: 14px 0 2px; }
+  .meta { color: var(--sub); font-size: 12px; margin-bottom: 18px; }
+  h2 { font-size: 15px; margin: 28px 0 10px; font-weight: 700; }
+
+  .summary { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--ink); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--ink); }
+
+  .notes { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .04em; color: var(--accent);
+    background: var(--chip); border-radius: 999px; padding: 3px 10px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--ink); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--line); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--sub); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 700; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--sub); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 思考ネットワークへ戻る</a>
+  <h1>2026-06-19 の振り返り</h1>
+  <div class="meta">建築×文化×AI外部脳の8件</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>「旧い器を更新する」と「何が本質か選ぶ」が今日の二本柱。建築側では発電所→複合施設（H&dM）、展覧会で住宅の再定義（シンガタ展）、ポルトガルの洗練（Aires Mateus）と更新・再解釈の視座が並んだ。文化側では椎名林檎の「ヘルシー」発言——評論家・インフルエンサー過多への批判が、AI時代のノイズ過多と重なって響く。外部脳側ではObsidian iOS共有機能がRaindropパイプラインを揺さぶる更新として保存された。</p>
+    <ul class="pts">
+      <li><b>ヘルツォーグ SF Power Station</b>：産業遺産×現代複合施設の大規模改修（12万㎡）——「旧い器を新しい用途に」の建築版</li>
+      <li><b>シンガタ展（横浜、7月）</b>：若手10組が住宅の「新しいかたち」を問う——行けそうなら足を運ぶ価値あり</li>
+      <li><b>Obsidian iOS共有機能</b>：X/YouTube → AIの記憶が直接繋がる可能性——Raindropとのハイブリッド運用も視野に</li>
+      <li><b>椎名林檎「ヘルシー」</b>：批評・キュレーションの密度・質への問い——curator-makerに刺さる評価軸</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>「ヘルシーな情報環境」とは何か——量より質、批評より感性？／Obsidian iOS機能が成熟したとき Raindrop パイプラインをそのまま使い続けるか？／シンガタ展に実際に足を運べるか（7月25〜28日、横浜黄金町）？</div>
+  </section>
+
+  <h2>気になったこと</h2>
+  <section class="notes">
+    <div class="ntag">やりたい</div>
+    <ul class="ilist">
+      <li><a href="https://www.instagram.com/p/DZj9G-hEiZW/" target="_blank" rel="noopener"><b>カラーピッカー参考</b></a> <span>→ Chrome未接続のため中身未取得。次回ランでInstagramを開いてリスト内のカラーピッカーサイトを特定する。候補として coolors.co / paletton.com / uicolors.app など。? 要調査・次ラン</span></li>
+    </ul>
+    <div class="ntag">気になった</div>
+    <ul class="qlist">
+      <li><a href="https://x.com/obsidianotaku/status/2067850630966972641?s=12" target="_blank" rel="noopener"><b>これraindropいらなくなるやん</b></a> <span>→ ObsidianのiOS機能はRaindrop「保存→取り込み」を一部代替しうる。ただし現時点の差分は（1）Raindropはlink/excerpt/cover/noteを一括取得できる（2）バッチ処理・グラフ公開統合は既存パイプラインが深い。重要なXポストはObsidian直送、ブラウジング保存はRaindrop経由のハイブリッド運用も検討の価値あり。</span></li>
+      <li><a href="https://x.com/sorasepint/status/2067569307362680878?s=12" target="_blank" rel="noopener"><b>ヘルシーという表現が興味深い</b></a> <span>→ 「ヘルシー」を文化的環境の評価軸に使うのは身体的健康の比喩転用。「健全」より軽く、批判より温度低め。AI過多・コンテンツ飽和の時代に何を入れて何を入れないかを決める「情報の健康」という軸は curator-maker にとって使える視点。</span></li>
+    </ul>
+  </section>
+
+  <h2>🏛 建築・空間ビジョン（3件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/archiphoto/status/2067502582902468805?s=12" target="_blank" rel="noopener">
+      <div class="thumb">
+        <img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Farchiphoto%2Fstatus%2F2067502582902468805%3Fs%3D12" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="ph">X</span>
+      </div>
+      <div class="vbody">
+        <div class="vtitle">ヘルツォーグ＆ド・ムーロン：SF湾岸「Power Station」</div>
+        <div class="vdesc">20世紀初頭の発電所を約12万㎡の複合施設に改修（湾岸再開発の一部）</div>
+      </div>
+    </a>
+    <a class="vcard" href="https://x.com/japanarchitects/status/2067591892448297263?s=12" target="_blank" rel="noopener">
+      <div class="thumb">
+        <img src="https://pbs.twimg.com/media/HLGMH5vawAA9Z3V.jpg:large" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="ph">X</span>
+      </div>
+      <div class="vbody">
+        <div class="vtitle">シンガタ展 ― 横浜の街と住宅の新しいかたち（7/25-28）</div>
+        <div class="vdesc">横浜黄金町 高架下スタジオ。10組の建築家が住宅の「新しいかたち」を問う展覧会</div>
+      </div>
+    </a>
+    <a class="vcard" href="https://www.archdaily.com/office/aires-mateus" target="_blank" rel="noopener">
+      <div class="thumb">
+        <img src="https://images.adsttc.com/media/images/6095/b66c/f91c/810b/b000/0009/medium_jpg/JG-ESTRELA-DSC_6442-low.jpg?1620424296" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="ph">記事</span>
+      </div>
+      <div class="vbody">
+        <div class="vtitle">Aires Mateus — ポルトガルの建築事務所</div>
+        <div class="vdesc">住宅・文化施設を中心に30件以上、Building of the Year 2014・2020受賞</div>
+      </div>
+    </a>
+  </div>
+
+  <h2>🤖 AI・外部脳（1件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/obsidianotaku/status/2067850630966972641?s=12" target="_blank" rel="noopener">
+      <div class="thumb">
+        <img src="https://jf.x.com/images/media-preview/2067850630966972641" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="ph">X</span>
+      </div>
+      <div class="vbody">
+        <div class="vtitle">ObsidianのiOS共有 → X/YouTube がそのままAIの記憶に</div>
+        <div class="vdesc">Obsidian CEOが公開した新機能——iPhoneの共有ボタンからObsidianに送るだけでAIの記憶になる</div>
+      </div>
+    </a>
+  </div>
+
+  <h2>🎨 文化・カルチャー（1件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/sorasepint/status/2067569307362680878?s=12" target="_blank" rel="noopener">
+      <div class="thumb">
+        <img src="https://jf.x.com/images/media-preview/2067569307362680878" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="ph">X</span>
+      </div>
+      <div class="vbody">
+        <div class="vtitle">椎名林檎「評論家・フォロワー多い人がいるのはヘルシーじゃない」</div>
+        <div class="vdesc">インフルエンサー文化・批評の希薄化に対する批判。「ヘルシー」という評価軸が印象的</div>
+      </div>
+    </a>
+  </div>
+
+  <h2>🔧 デザインツール（1件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.instagram.com/p/DZj9G-hEiZW/" target="_blank" rel="noopener">
+      <div class="thumb">
+        <img src="https://scontent-lhr8-1.cdninstagram.com/v/t51.82787-15/723999719_18596221246055991_8554371788277750557_n.jpg?stp=c432.0.1296.1296a_dst-jpg_e35_s640x640_tt6&_nc_cat=108&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0FST1VTRUxfSVRFTS5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&_nc_ohc=G-ZgxD5oq1wQ7kNvwGJ9PlR&_nc_oc=AdqITsmmj2Dd6zU1UmE5JCQmAE4-SMpBa9nLXs-oE1BT4UsLXbpKonExkNR3xD2Hnws&_nc_zt=23&_nc_ht=scontent-lhr8-1.cdninstagram.com&_nc_gid=0fyml6S4lmAnSDoYN2PlLw&_nc_ss=7b60f&oh=00_Af9SLN39-R7OHlq5I_dZsVNVgj2Mnc-LAJoLBXBYgf4ORg&oe=6A3B82B6" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="ph">Instagram</span>
+      </div>
+      <div class="vbody">
+        <div class="vtitle">Kalypso: デザイナー向けサイト集 "Sites for designers"</div>
+        <div class="vdesc">カラーピッカーを含む複数のデザインリソースサイトまとめ（中身は次回確認）</div>
+      </div>
+    </a>
+  </div>
+
+  <h2>🎲 その他（2件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/zehf/status/2067253391705743575?s=12" target="_blank" rel="noopener">
+      <div class="thumb">
+        <img src="https://jf.x.com/images/media-preview/2067253391705743575" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="ph">X</span>
+      </div>
+      <div class="vbody">
+        <div class="vtitle">フランス vs セネガル — "What a beautiful game"</div>
+        <div class="vdesc">前日のフランス対セネガル戦への感嘆ポスト</div>
+      </div>
+    </a>
+    <a class="vcard" href="https://x.com/shirasu_/status/2067806755695087740?s=12" target="_blank" rel="noopener">
+      <div class="thumb">
+        <img src="https://pbs.twimg.com/media/HLJTPumaIAA26B8.jpg:large" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="ph">X</span>
+      </div>
+      <div class="vbody">
+        <div class="vtitle">@shirasu_ 「これと？」</div>
+        <div class="vdesc">ユーモアのあるポスト</div>
+      </div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
