@@ -4,6 +4,7 @@
 # 設計（capture-pipeline 機能A）: ドメインで振り分ける1モジュール。
 #   x.com / twitter.com → syndication endpoint（無料・無認証）
 #   instagram.com       → og:meta を facebookexternalhit UA で取得（無料・無認証）
+#   threads.com/net     → oEmbed（1次）→ og:meta/facebookexternalhit（2次）
 #   それ以外（ニュース等）→ 汎用Webリーダー（og/meta + 本文テキスト抽出）
 # 依存は標準ライブラリのみ（urllib）。クラウドでも追加インストール不要。
 # 各取得は失敗しても例外で落とさず ok=False を返す（完走優先）。
@@ -12,7 +13,7 @@
 #   python3 fetch_content.py <url> [<url> ...]   # 指定URLを取得してJSON表示
 #   python3 fetch_content.py                     # 内蔵テストURLで動作確認
 
-import sys, re, json, html, string, urllib.request, urllib.error
+import sys, re, json, html, string, urllib.request, urllib.error, urllib.parse
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -39,7 +40,7 @@ def _get(url, ua, timeout=12, max_bytes=600_000):
 def _meta(htmltext, prop):
     """<meta property|name="prop" content="..."> を拾って unescape。"""
     for attr in ("property", "name"):
-        m = re.search(r'<meta\s+%s=["\']%s["\']\s+content=["\'](.*?)["\']\s*/?>' % (attr, re.escape(prop)),
+        m = re.search(r'<meta\s+%s=["\']%s["\'\]\s+content=["\'](.*?)["\'\]\s*/?>' % (attr, re.escape(prop)),
                       htmltext, re.I | re.S)
         if m:
             return html.unescape(m.group(1)).strip()
@@ -101,7 +102,7 @@ def fetch_instagram(url):
         return {"ok": False, "type": "instagram", "reason": "og:meta無し（JS殻/ログイン壁の可能性）", "url": url}
     # og_title 例: 'Kalypso on Instagram: "Sites for designers"'
     cap = ""
-    mc = re.search(r':\s*"(.*)"\s*$', og_title)
+    mc = re.search(r':\s*"(.*)"\'\s*$', og_title)
     if mc: cap = mc.group(1)
     # 表示名 = og_title の "… on/- /• Instagram" より前（区切りはロケールで揺れる）
     name = re.split(r"\s+(?:on|[-•|·])\s*Instagram", og_title)[0].strip() if og_title else ""
@@ -123,7 +124,55 @@ def fetch_instagram(url):
             "title": (cap or og_title)[:80], "text": cap,
             "author": name, "handle": handle, "date": date,
             "likes": likes, "comments": comments, "cover": og_img,
-            "note": "og:descriptionは長文截断あり。フル要時はoEmbedへ昇格"}
+            "note": "og:descriptionは長文辝断あり。フル要時はoEmbedへ昇格"}
+
+
+# ---------- Threads ----------
+def fetch_threads(url):
+    """1次: Threads oEmbed（無認証・無料）→ 2次: og:meta（facebookexternalhit）"""
+    # 1次: oEmbed
+    oe_url = "https://www.threads.net/oembed/?url=" + urllib.parse.quote(url, safe="")
+    st, txt = _get(oe_url, BROWSER_UA)
+    post_text = ""
+    author_name = ""
+    if st == 200 and txt.strip():
+        try:
+            d = json.loads(txt)
+            author_name = d.get("author_name", "")
+            post_html = d.get("html", "")
+            bq = re.search(r"<blockquote[^>]*>(.*?)</blockquote>", post_html, re.I | re.S)
+            if bq:
+                raw = bq.group(1)
+                # 末尾の attribution 行（"— @handle"）を除去
+                raw = re.sub(r"<p[^>]*>[^<]*—[^<]*</p>", "", raw, flags=re.I | re.S)
+                raw = re.sub(r"<br\s*/?>", "\n", raw, flags=re.I)
+                raw = re.sub(r"<[^>]+>", "", raw)
+                post_text = html.unescape(re.sub(r"[ \t]+", " ", raw)).strip()
+        except Exception:
+            pass
+
+    mh = re.search(r"threads\.(?:com|net)/@([^/?&#]+)", url, re.I)
+    handle = mh.group(1) if mh else ""
+
+    if post_text:
+        return {"ok": True, "type": "threads", "url": url,
+                "title": post_text[:80], "text": post_text,
+                "author": author_name, "handle": handle, "cover": ""}
+
+    # 2次: og:meta（facebookexternalhit UA）
+    st, txt = _get(url, CRAWLER_UA)
+    if txt:
+        og_title = _meta(txt, "og:title")
+        og_desc  = _meta(txt, "og:description")
+        og_img   = _meta(txt, "og:image")
+        if og_title or og_desc:
+            return {"ok": True, "type": "threads", "url": url,
+                    "title": (og_title or "")[:80],
+                    "text": og_desc or og_title,
+                    "author": author_name, "handle": handle,
+                    "cover": og_img or "", "note": "og:meta fallback"}
+
+    return {"ok": False, "type": "threads", "reason": "oEmbed & og:meta 失敗", "url": url}
 
 
 # ---------- 汎用Web ----------
@@ -153,6 +202,8 @@ def fetch_content(url):
         return fetch_x(url)
     if host.endswith("instagram.com"):
         return fetch_instagram(url)
+    if host.endswith("threads.com") or host.endswith("threads.net"):
+        return fetch_threads(url)
     return fetch_web(url)
 
 
@@ -160,6 +211,7 @@ if __name__ == "__main__":
     urls = sys.argv[1:] or [
         "https://x.com/obsidianotaku/status/2067951785298522305",
         "https://www.instagram.com/p/DZj9G-hEiZW/",
+        "https://www.threads.com/@nft_web3_reo/post/DZzHeryknsF",
         "https://en.wikipedia.org/wiki/Curator",
     ]
     for u in urls:
