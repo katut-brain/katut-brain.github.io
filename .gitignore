@@ -1,5 +1,3 @@
-_build_graph.py
-_build_feed.py
 seed_captures_from_vault.py
 _index_graph_backup.html
 _preview_feed.html
