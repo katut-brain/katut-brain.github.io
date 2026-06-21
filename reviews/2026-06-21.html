@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-06-21 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-06-21 の振り返り</h1>
+  <div class="meta">AIツール・セカンドブレイン・建築×AI圏の20件｜Obsidian祭り・Claude実装・learner-builderモード全開</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日20件を貫く通奏低音は「<b>ツールが自分を育てる・システムが動き続ける</b>」という感覚への惹かれ。ObsidianのWeb Clipper×AIエージェント・Claude Codeのスキル自動改善（会話履歴から問題を拾って13日で40コミット）・LaserFishのRhino自動化・AI洪水リスクスタディ（GIS不要）——いずれも「後で使う」道具ではなく「今動き続ける仕組み」への牽引力が強く出た。建築学生の文脈で読むと、建築制作の自動化軸（GIS×AI・Rhino×レーザーカット）と知識管理の自動化軸（Obsidian×Claude）が交差した一日で、「紹介したい」よりlearner-builderモードが全開——「めっちゃ参考にしたいです」「学習したいね」「勉強しなきゃな」という能動的な語が並んだ。</p>
+    <p>Obsidianとセカンドブレインはこれで4日連続（6/18〜）の登場。毎日新しい実装パターンが保存されており、「いつか使う」ではなく「どう構築するか」への問いが今週の軸として育っている。ドメインをまたぐ接続として、造形ファイル（美術の百科事典）とObsidianセカンドブレインは一見遠いが、どちらも「知をアーカイブして次の思考の踏み台にする」という同じ問いから来ている——この問いが建築×AI×アートを結んでいる。</p>
+    <ul class="pts">
+      <li><b>Obsidian 5件</b>：Web Clipper・Claude Code連携・ワークフロー・個人 vs エンタープライズ・セットアップ——一日でエコシステムを総点検。4日連続の関心</li>
+      <li><b>建築×AI</b>：GIS不要の洪水リスクスタディ + LaserFishでレーザー図面3分——「制作の手間を自動化する」方向性が今日で明確になった</li>
+      <li><b>Claude Design実使用レポート</b>：Opus 4.8でスライド設計→Codexで確認という具体フローが出た。トークン消費コストも含めてリアル</li>
+      <li><b>MCPでデザインコピー</b>：Claude CodeにMCPを持たせてHTML/CSS・色・タイポグラフィを抽出——「ウェブを学習素材にする」という発想転換がある</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>ObsidianとClaude Codeを繋げてセカンドブレインを構築するなら最初の「ノードの単位」は何か——キャプチャ（URL）か自分の問い（noteのコメント）か両者の接続か？／LaserFishとGIS不要AI地図を同日に保存したのは「建築制作の自動化」という方向性が固まりつつある信号か？</div>
+  </section>
+
+  <h2>やりたい・気になったこと</h2>
+  <section class="notes">
+    <div class="ntag">やりたい</div>
+    <ul class="ilist">
+      <li><a href="https://www.instagram.com/reel/DZ1n9k1TcJh/" target="_blank" rel="noopener"><b>LaserFishをRhinoで試す</b></a> <span>→ Rhinoプラグインをインストールしてレーザーカット図面の3分完成を体験してみる</span></li>
+      <li><a href="https://x.com/takuyanokaiga/status/2068544437244903466?s=12" target="_blank" rel="noopener"><b>造形ファイルを読み込む</b></a> <span>→ 絵画・立体・デジタルの技法項目を週1時間ペースで読む</span></li>
+      <li><a href="https://x.com/marcusyul/status/2068302048836166112?s=12" target="_blank" rel="noopener"><b>Claude Code 6時間コースを学習する</b></a> <span>→ 最初の1時間（設定〜ワークフロー構築）だけでも通しで見る</span></li>
+      <li><a href="https://x.com/fashionsnap/status/2068133378587595102?s=12" target="_blank" rel="noopener"><b>ラグジュアリーブランドのCD年表を把握する</b></a> <span>→ 主要10ブランドの現任CD・前任CDと代表作を整理する</span></li>
+      <li><a href="https://x.com/tetumemo/status/2068499081639632914?s=12" target="_blank" rel="noopener"><b>Claude Designでスライドを1枚試作する</b></a> <span>→ Claude Design + Codexの実フローを自分で踏んでみる</span></li>
+    </ul>
+    <div class="ntag">気になった</div>
+    <ul class="qlist">
+      <li><a href="https://www.instagram.com/reel/DXTTbK8AZl2/" target="_blank" rel="noopener"><b>Obsidian Web Clipperはどのように色付けしてるんだろう？</b></a> <span>TemplaterやDataviewでタグ色付けが実装できる。動画内の具体手順は未確認→次ラン</span></li>
+      <li><a href="https://www.instagram.com/reel/DY92L7bu27j/?igsh=MWx5am43NXBhNW52dg==" target="_blank" rel="noopener"><b>AIセカンドブレインワークフローは何を解説してるんだろう？</b></a> <span>Jarvis型の自動化フロー動画と思われる（#jarvis #secondbrain #automation）。詳細未確認→次ラン</span></li>
+      <li><a href="https://www.instagram.com/reel/DZZcuYPxaBk/?igsh=MWF0b29vZGliZmRtcQ==" target="_blank" rel="noopener"><b>AI変更管理ソフトのビルドインパブリック、これはなにか？</b></a> <span>AIを使った組織変更管理ソフトウェアの開発過程を公開するシリーズ。構造は未確認→次ラン</span></li>
+      <li><a href="https://www.instagram.com/reel/DYBSB8NsFYE/?igsh=MWJqbGhxc3p1c2JycA==" target="_blank" rel="noopener"><b>KZZY Pulseはなんだよ？</b></a> <span>複数のビジネスワークフローをリアルタイム調整するAIオーケストレーションシステム。チャットラッパーではなくメモリ・ルーティング・永続化が設計の核心</span></li>
+      <li><a href="https://x.com/1stegon_ai/status/2068194409901105547?s=12" target="_blank" rel="noopener"><b>Gemini Omni、動画生成もできるの？</b></a> <span>Gemini Omniは動画生成含む多機能LLM。10個の活用法の中に動画生成ユースケースが含まれる可能性あり→動画で確認</span></li>
+      <li><a href="https://www.instagram.com/reel/DYTJRE6oRwP/" target="_blank" rel="noopener"><b>Obsidianセットアップガイド、llmwikiみたいなもの？</b></a> <span>Obsidianで知識ネットワークを構築するセットアップガイド。LLM wikiに近い構造を持つと推測——詳細はガイドを見て確認</span></li>
+    </ul>
+  </section>
+
+  <h2>🧠 セカンドブレイン・知識管理（5件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.instagram.com/reel/DXTTbK8AZl2/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-ord5-3.cdninstagram.com/v/t51.82787-15/670552265_18068302244443872_6525943085236674001_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=100&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=xiWv_4FUKnYQ7kNvwES_F_j&_nc_oc=AdrE-YZ2pr75xn-3-Jp0lIZVHrYrwcK6shaKVmA2yBwncI71TIcPticF3h2y4vXPSC0&_nc_zt=23&_nc_ht=scontent-ord5-3.cdninstagram.com&_nc_gid=S1u107fP2rbDqtHk0--utg&_nc_ss=7b60f&oh=00_Af8ayLNovr935d-nwFsj81oJmCk14tun98hPj4591cM8TQ&oe=6A3E20ED" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Obsidian Web Clipper × AIエージェントでセカンドブレイン</div><div class="vdesc">Chrome拡張でクリップ→Markdownへ自動変換→AIエージェントが内容を抽出してノートを書く。手動入力のフリクションを消す（@bryrobbie）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DYNsP4_pRLO/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-ord5-3.cdninstagram.com/v/t51.82787-15/671158122_18082254005628782_6378581577020032712_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=109&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=ZDR_1eBDRz8Q7kNvwHgO1pE&_nc_oc=AdpuIk7tvxGNXQTQYCB9Q5B40EMp73eWGTgwf40j43ewtoQ8bHqObffo5XXj2uqBfo8&_nc_zt=23&_nc_ht=scontent-ord5-3.cdninstagram.com&_nc_gid=sFAMy6AqQTAW7ZR0lLqXCQ&_nc_ss=7b60f&oh=00_Af9Hh7Ebv-TwFEKgUriWRZgj6ECoC3e2AihRqNa7pow6Dw&oe=6A3E015E" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Obsidian + Claude Code でセカンドブレインを構築する</div><div class="vdesc">PARA方式のClaudesidian（2.3kスター）とゴール管理型のobsidian-claude-pkm（1.4kスター）——2つの主要スターターキット（@jakebeau_）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DY92L7bu27j/?igsh=MWx5am43NXBhNW52dg==" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-ord5-3.cdninstagram.com/v/t51.71878-15/709689413_1007136365503555_7270499633333073880_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=107&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=cqXuQEZZiO0Q7kNvwG-cYQS&_nc_oc=AdrmVxZkAbvGWQUbHUk2nN0LigP6hEsZaJUysewL4dq8ivK0upTGcaev-PcziMV68k&_nc_zt=23&_nc_ht=scontent-ord5-3.cdninstagram.com&_nc_gid=UMDDq2f_c_8UpaKY1cHGKw&_nc_ss=7b60f&oh=00_Af_BXoxGqaGuFdagM1UYxjcg1tOwqOmnNWlWMaf5VigpTA&oe=6A3E01B6" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">AIセカンドブレイン完全ワークフロー（動画）</div><div class="vdesc">10K いいね。Jarvis型のAI自動化フローを一から解説——何を組んでいるかは動画で確認（@_no_hype_ai）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZT5cH-RLsV/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.82787-15/718727432_18367088005228187_554766584773313695_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=102&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=bdA4aMT4SFUQ7kNvwG0LPJb&_nc_oc=AdomAYKWtZtXrY0Lp3UDtcaNYr9Kr_4jDPFp0QQ8CeVgCcQJ78WelR1qtqI4LDei-4s&_nc_zt=23&_nc_ht=scontent-ord5-2.cdninstagram.com&_nc_gid=FpmLHf0MAP7s2KA2cpLZNA&_nc_ss=7b60f&oh=00_Af_A9YK5vcY_cl-GWImbULjvfDzLeMWHfQ2fIjXYUYHi8A&oe=6A3DFE25" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">個人AIブレイン vs エンタープライズAIブレイン——ネットワーク図</div><div class="vdesc">7886いいね。個人用と企業用のAI知識ネットワークの設計の違いを図解。ネットワーク図の参考に（@benjamlns）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DYTJRE6oRwP/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-ord5-3.cdninstagram.com/v/t51.71878-15/687797133_981366007595505_7877736156503692407_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=107&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=TIU5UzNhFWcQ7kNvwGfHr0L&_nc_oc=AdoNdzUa5zyVeQ8z0eFGOW6X3zKhvvkqdopmnwV0-cM48COcXT3Fr6i2Qc7H_Ti0LSE&_nc_zt=23&_nc_ht=scontent-ord5-3.cdninstagram.com&_nc_gid=YbaMwS709dUsna57jUoSUw&_nc_ss=7b60f&oh=00_Af88IaS86-V2seHDKSXVr9c2hcKTjoj2ii8lUYqJ2jts2g&oe=6A3E0E45" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Obsidian セカンドブレイン セットアップガイド</div><div class="vdesc">3653いいね・4139コメント。コメント「Obsidian」でガイドを受け取れる形式。LLM wikiに近い構造のセットアップ（@dominikr_ai）</div></div>
+    </a>
+  </div>
+
+  <h2>🤖 Claude & AI開発ツール（7件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/marcusyul/status/2068302048836166112?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2054931287190700032/img/MP3mqjJjQ-SJ9KAo.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claude Code 完全無料6時間コース——ゼロからプロへ</div><div class="vdesc">設定・ワークフロー・ウェブデプロイ・AIチームまで網羅。「ネットで一番充実した無料コース」（@marcusyul、667いいね）</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/tetumemo/status/2068499081639632914?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HLTIve-aEAABeil.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claude Design実使用レポート——Opus 4.8でスライドを作る</div><div class="vdesc">設計にOpus 4.8、確認にCodexが最適（画像生成でスライドをリッチに）。トークンが飛ぶほど使い込んだ実証レポート（@tetumemo）</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/franpradasai/status/2068314783963640098?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HLQhVQqW0AEp0sK.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claudeで /loop コマンドを使うAIループ活用法</div><div class="vdesc">Claude上で /loop と10種類のループコマンドを組み合わせる活用法。667いいね（@franpradasAI）</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/so_ainsight/status/2068305375338885402?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HLQYxWxacAAb0aL.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">無料で使えるGitHubツール10選</div><div class="vdesc">yt-dlp（172Kスター）・Stirling-PDF等。「そもそもGitHubツールとは」から始まる実用ガイド。4462いいね（@so_ainsight）</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/moneymog/status/2068271038283026679?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fmoneymog%2Fstatus%2F2068271038283026679%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claude Code のスキルが毎日自動改善される仕組み</div><div class="vdesc">会話履歴から問題を自動でIssue化→修正、13日で40コミット。「ふりかえりを仕組みに落とす」発想が秀逸（@moneymog、522いいね）</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/ftcarpe/status/2068431070983270497?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2068431015626862592/img/m1RjjGxXgwgLoiIK.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">MCPでウェブデザインをコピーする——色・タイポ・コンポーネントを抽出</div><div class="vdesc">Claude CodeにMCPを持たせてHTML/CSSを読み込み、デザインシステムを抽出。「ウェブを学習素材にする」（@ftcarpe、727いいね）</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/1stegon_ai/status/2068194409901105547?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Gemini Omniの狂った使い方10選</div><div class="vdesc">「みんな創造性が止まらんw」——Gemini Omniの可能性を広げる10の活用法。動画生成も含む多機能LLM（@1stegon_ai）</div></div>
+    </a>
+  </div>
+
+  <h2>🏛 建築×AI（3件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.instagram.com/reel/DZ1n9k1TcJh/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-ord5-1.cdninstagram.com/v/t51.82787-15/725112936_18095005256123916_2382391252349817524_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=108&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=-2qgVm4aGK4Q7kNvwEqvPLm&_nc_oc=AdpOD_IZ9g4wvG_JR0cMjQ500zDkgVuMTHsPcJmafOh4gw8dYTyxL0ChDYI2al0Aefg&_nc_zt=23&_nc_ht=scontent-ord5-1.cdninstagram.com&_nc_gid=aHImWao96tF7YF6DKLbEdQ&_nc_ss=7b60f&oh=00_Af9GGsCg93riZ1yFBR4Xw7WMrkH3ZRlgLq9o0kivhJ1Gww&oe=6A3E04F8" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">LaserFish — Rhinoプラグインでレーザーカット図面を3分で完成</div><div class="vdesc">4483いいね・4573コメント。モデル制作時間を劇的短縮するRhinoプラグイン。建築模型制作の自動化（@masslabs_archi）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZfsiA-pu0R/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-ord5-3.cdninstagram.com/v/t51.82787-15/722857593_18184512475389254_1832092843691637439_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=107&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=t7V5YLLBwBUQ7kNvwGb976j&_nc_oc=AdqKJs_gqJ751AtoWZB-hqLPCzCqx-HVpenrEelmp5Pu8Iofj8-6prErARChVQA5uV0&_nc_zt=23&_nc_ht=scontent-ord5-3.cdninstagram.com&_nc_gid=B-MtYJ1AOx1fVdk06qeAiQ&_nc_ss=7b60f&oh=00_Af_6VhP77u_slTAnOgIeKvyXUJJdfwB8CAOb8Eu1-Ls14Q&oe=6A3E1F18" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">AIで洪水リスクスタディを作る——GIS不要</div><div class="vdesc">コメント「flood map」でチュートリアルを受け取れる。GISなしでAIを使って洪水ハザードマップを作る建築×都市設計の実践（@landspace.arch）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/p/DZy56ppC-GJ/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-ord5-1.cdninstagram.com/v/t51.82787-15/728226040_18395180692093111_8357211220245683135_n.jpg?stp=c819.0.2457.2457a_dst-jpg_e35_s640x640_tt6&_nc_cat=101&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiRkVFRC5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&_nc_ohc=ukrmUqKQBtcQ7kNvwHtjkBo&_nc_oc=AdpfXplJoh_s10fr5uR4v-62ZqNYLleKcNQCzYponmIp-DLjtJ7jfLbPSWDlZmY2xqo&_nc_zt=23&_nc_ht=scontent-ord5-1.cdninstagram.com&_nc_gid=hWBrA6UCE31KcyBxZ9O8vw&_nc_ss=7b60f&oh=00_Af-3aZFuKNWamCg_J4-LHecDjbQATM566eTnZpD4-h4yjg&oe=6A3DEE6A" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">西澤立衛〈Garden &amp; House〉東京——初見のスケッチ</div><div class="vdesc">2026年6月19日投稿。Garden &amp; Houseのスケッチを初めて見た——設計の初期思考が見える記録（@takeshimurakuni）</div></div>
+    </a>
+  </div>
+
+  <h2>🎨 アート・ファッション・デザイン（3件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/takuyanokaiga/status/2068544437244903466?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Ftakuyanokaiga%2Fstatus%2F2068544437244903466%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">「造形ファイル」——まるで美術のウィキペディア</div><div class="vdesc">絵画・立体・デジタルの道具・用語・技法を図や動画で解説。ものづくりをする人向けの包括的リソース。3479いいね（@takuyanokaiga）</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/fashionsnap/status/2068133378587595102?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HLN8VQyXkAAaIJy.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">有名ラグジュアリーブランドのクリエイティブディレクター年表</div><div class="vdesc">「今このブランドのCDは誰だっけ？」を解決する年表。交代があれば随時更新。378いいね（@fashionsnap）</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/valeria_tech/status/2068297916176114039?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HLQR_jeaQAAPnsK.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">ブランドのビジュアルアイデンティティを作る無料スーパープロンプト</div><div class="vdesc">どんなブランドにも使えるプレミアムな視覚的アイデンティティ生成プロンプト。洗練されたデザインアウトプット。3282いいね（@ValeriA_Tech）</div></div>
+    </a>
+  </div>
+
+  <h2>⚡ AIシステム・実験（2件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.instagram.com/reel/DYBSB8NsFYE/?igsh=MWJqbGhxc3p1c2JycA==" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-ord5-1.cdninstagram.com/v/t51.71878-15/684670707_1278669111080405_4579769309011497084_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=111&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=th7iLIuihgIQ7kNvwG6IRs8&_nc_oc=AdqQyOylpgsZkm_glkzx_RluCS9a7AoyxDEU0W_0RcRp64cfojbiA1lJhXrFLqjtM8U&_nc_zt=23&_nc_ht=scontent-ord5-1.cdninstagram.com&_nc_gid=Dca7zdutbbtQe2sSk14qFA&_nc_ss=7b60f&oh=00_Af_IiIy5rmpuGSasa4YkwhpVvI_uB0455eZOPCqxxdePaA&oe=6A3E0D61" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">KZZY Pulse——47業界で動くAIオーケストレーションシステム</div><div class="vdesc">チャットラッパーではない。メモリ・ルーティング・永続化・回復ロジックが核心。複数ビジネスワークフローをリアルタイム調整（@kzzy47、3562いいね）</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DZZcuYPxaBk/?igsh=MWF0b29vZGliZmRtcQ==" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.82787-15/721340061_18367389085228187_260338979558585977_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=103&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=-O0DmjvQ3XIQ7kNvwHGx0Q4&_nc_oc=Adp7Pv7zZmq2hRZ44VoosJ0eydEuc1S2dUgYk_ys9LXxVT8-zc1PsEcDcG25WmSX7ow&_nc_zt=23&_nc_ht=scontent-ord5-2.cdninstagram.com&_nc_gid=Us05MuWtUFLbCGAT3Z_R8g&_nc_ss=7b60f&oh=00_Af901pWTwcOJHKcTO-d41JpJbI6q4SpTJhqD_quWSenHzw&oe=6A3DFCFF" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">AI変更管理ソフトウェア ビルドインパブリックシリーズ</div><div class="vdesc">「これはなにか早く教えてくれー！」——AI Change Management Softwareを公開開発するシリーズ。2738いいね（@benjamlns）</div></div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
