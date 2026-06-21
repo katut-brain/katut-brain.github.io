@@ -4,7 +4,6 @@
 # 設計（capture-pipeline 機能A）: ドメインで振り分ける1モジュール。
 #   x.com / twitter.com → syndication endpoint（無料・無認証）
 #   instagram.com       → og:meta を facebookexternalhit UA で取得（無料・無認証）
-#   threads.com/net     → oEmbed（1次）→ og:meta/facebookexternalhit（2次）
 #   それ以外（ニュース等）→ 汎用Webリーダー（og/meta + 本文テキスト抽出）
 # 依存は標準ライブラリのみ（urllib）。クラウドでも追加インストール不要。
 # 各取得は失敗しても例外で落とさず ok=False を返す（完走優先）。
@@ -102,7 +101,7 @@ def fetch_instagram(url):
         return {"ok": False, "type": "instagram", "reason": "og:meta無し（JS殻/ログイン壁の可能性）", "url": url}
     # og_title 例: 'Kalypso on Instagram: "Sites for designers"'
     cap = ""
-    mc = re.search(r':\s*"(.*)"\'\s*$', og_title)
+    mc = re.search(r':\s*"(.*)"\s*$', og_title)
     if mc: cap = mc.group(1)
     # 表示名 = og_title の "… on/- /• Instagram" より前（区切りはロケールで揺れる）
     name = re.split(r"\s+(?:on|[-•|·])\s*Instagram", og_title)[0].strip() if og_title else ""
@@ -124,7 +123,7 @@ def fetch_instagram(url):
             "title": (cap or og_title)[:80], "text": cap,
             "author": name, "handle": handle, "date": date,
             "likes": likes, "comments": comments, "cover": og_img,
-            "note": "og:descriptionは長文辝断あり。フル要時はoEmbedへ昇格"}
+            "note": "og:descriptionは長文截断あり。フル要時はoEmbedへ昇格"}
 
 
 # ---------- Threads ----------
@@ -166,13 +165,45 @@ def fetch_threads(url):
         og_desc  = _meta(txt, "og:description")
         og_img   = _meta(txt, "og:image")
         if og_title or og_desc:
+            # og_title 例: "レオ｜AI使って賢く時短| (@nft_web3_reo) on Threads"
+            author_from_title = re.sub(r'\s*\(@[^)]+\)\s*(?:on\s+Threads)?\s*$', '', og_title or "").strip()
+            post_text = og_desc or og_title
             return {"ok": True, "type": "threads", "url": url,
-                    "title": (og_title or "")[:80],
-                    "text": og_desc or og_title,
-                    "author": author_name, "handle": handle,
+                    "title": post_text[:80],
+                    "text": post_text,
+                    "author": author_from_title or author_name, "handle": handle,
                     "cover": og_img or "", "note": "og:meta fallback"}
 
     return {"ok": False, "type": "threads", "reason": "oEmbed & og:meta 失敗", "url": url}
+
+
+# ---------- YouTube ----------
+def fetch_youtube(url):
+    """YouTube oEmbed（無認証・無料）: タイトル・チャンネル名・サムネ取得"""
+    oe_url = "https://www.youtube.com/oembed?url=" + urllib.parse.quote(url, safe="") + "&format=json"
+    st, txt = _get(oe_url, BROWSER_UA)
+    if st == 200 and txt.strip():
+        try:
+            d = json.loads(txt)
+            title = d.get("title", "")
+            return {"ok": True, "type": "youtube", "url": url,
+                    "title": title[:80], "text": title,
+                    "author": d.get("author_name", ""), "handle": "",
+                    "cover": d.get("thumbnail_url", "")}
+        except Exception:
+            pass
+    # フォールバック: og:meta
+    st, txt = _get(url, BROWSER_UA)
+    if txt:
+        og_title = _meta(txt, "og:title")
+        og_desc  = _meta(txt, "og:description")
+        og_img   = _meta(txt, "og:image")
+        if og_title:
+            return {"ok": True, "type": "youtube", "url": url,
+                    "title": og_title[:80], "text": og_desc or og_title,
+                    "author": "", "handle": "", "cover": og_img or "",
+                    "note": "og:meta fallback"}
+    return {"ok": False, "type": "youtube", "reason": "oEmbed & og:meta 失敗", "url": url}
 
 
 # ---------- 汎用Web ----------
@@ -204,6 +235,8 @@ def fetch_content(url):
         return fetch_instagram(url)
     if host.endswith("threads.com") or host.endswith("threads.net"):
         return fetch_threads(url)
+    if host.endswith("youtube.com") or host.endswith("youtu.be"):
+        return fetch_youtube(url)
     return fetch_web(url)
 
 
@@ -212,6 +245,7 @@ if __name__ == "__main__":
         "https://x.com/obsidianotaku/status/2067951785298522305",
         "https://www.instagram.com/p/DZj9G-hEiZW/",
         "https://www.threads.com/@nft_web3_reo/post/DZzHeryknsF",
+        "https://youtube.com/shorts/U0wWH9GQ7ng",
         "https://en.wikipedia.org/wiki/Curator",
     ]
     for u in urls:
