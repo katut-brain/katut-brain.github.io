@@ -6,58 +6,53 @@
 <title>毎朝の振り返り ｜ katut-brain</title>
 <style>
   :root {
-    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
-    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
-    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
-    --chip: #f5f5f7; --accent: #0071e3;
+    --bg: #fafafa; --panel: #ffffff; --ink: #1c1c1e; --sub: #8a8a8e;
+    --line: #e3e3e6; --chip: #f1f1f3; --accent: #1e88c7;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
-      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
-      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
-      --chip: #1c1c1e; --accent: #0a84ff;
+      --bg: #0f1115; --panel: #161922; --ink: #e8e8ea; --sub: #8b91a0;
+      --line: #2b3140; --chip: #1e2230; --accent: #5ec8f9;
     }
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
-    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased; font-size: 15px; }
-  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
-  h1.site { font-size: 20px; margin: 0; font-weight: 600; letter-spacing: -.01em; }
-  .tagline { color: var(--sub); font-size: 13px; margin: 4px 0 0; }
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; }
-  .chip { background: var(--chip); color: var(--sub); border-radius: 9999px; padding: 3px 10px; font-size: 12px; border: 0.5px solid var(--border); }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.7;
+    font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 22px 16px 64px; }
+  h1.site { font-size: 22px; margin: 0; font-weight: 700; }
+  .tagline { color: var(--sub); font-size: 13px; margin: 3px 0 4px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 8px; }
+  .chip { background: var(--chip); color: var(--sub); border-radius: 999px; padding: 4px 10px; font-size: 12px; }
 
-  .day { margin-top: 40px; }
-  .dayhead { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
-  .dayhead .date { font-size: 17px; font-weight: 600; }
-  .dayhead .count { color: var(--ter); font-size: 12px; }
+  .day { margin-top: 30px; }
+  .dayhead { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+  .dayhead .date { font-size: 19px; font-weight: 700; }
+  .dayhead .count { color: var(--sub); font-size: 12px; }
   .theme { color: var(--sub); font-size: 13px; margin-bottom: 12px; }
 
-  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 16px 18px; }
-  .summary p { margin: 0; font-size: 14px; line-height: 1.7; color: var(--text); }
+  .summary { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px 14px; }
+  .summary p { margin: 0; font-size: 14px; }
 
-  .strip { display: flex; gap: 8px; overflow-x: auto; margin: 12px 0 0; padding-bottom: 4px; }
-  .strip::-webkit-scrollbar { display: none; }
-  .strip a { flex: none; width: 88px; height: 66px; border-radius: 10px; overflow: hidden; position: relative;
-    background: var(--chip); border: 0.5px solid var(--border); text-decoration: none; }
+  .strip { display: flex; gap: 8px; overflow-x: auto; margin: 12px 0 2px; padding-bottom: 2px; }
+  .strip a { flex: none; width: 96px; height: 72px; border-radius: 10px; overflow: hidden; position: relative;
+    background: var(--chip); border: 1px solid var(--line); text-decoration: none; }
   .strip img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
   .strip .ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    font-size: 10px; color: var(--ter); }
+    font-size: 10px; color: var(--sub); }
 
-  .notes { margin-top: 12px; }
+  .notes { margin-top: 10px; }
   .ilist { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
-  .ilist li { font-size: 13px; padding-left: 16px; position: relative; color: var(--sub); }
-  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); font-size: 12px; }
-  .ilist b { color: var(--text); }
+  .ilist li { font-size: 13px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "\1F4AC"; position: absolute; left: 0; font-size: 11px; }
+  .ilist b { color: var(--ink); }
+  .ilist span { color: var(--sub); }
 
-  .more { display: inline-flex; align-items: center; gap: 4px; margin-top: 14px; color: var(--accent);
-    text-decoration: none; font-size: 13px; font-weight: 500; }
-  .more:hover { opacity: .75; }
+  .more { display: inline-block; margin-top: 12px; color: var(--accent); text-decoration: none; font-size: 13px; font-weight: 700; }
+  .more:hover { text-decoration: underline; }
 
-  hr.sep { border: none; border-top: 0.5px solid var(--border); margin: 40px 0 0; }
-  footer { color: var(--ter); font-size: 11px; margin-top: 48px; text-align: center; }
+  hr.sep { border: none; border-top: 1px solid var(--line); margin: 30px 0 0; }
+  footer { color: var(--sub); font-size: 11px; margin-top: 40px; text-align: center; opacity: .8; }
 </style>
 </head>
 <body>
@@ -65,9 +60,39 @@
   <h1 class="site">毎朝の振り返り</h1>
   <div class="tagline">見たもの・読んだものから、その日の気づきを残す</div>
   <div class="chips">
-    <span class="chip">最終更新 2026-06-20</span>
-    <span class="chip">キャプチャ 164件</span>
+    <span class="chip">最終更新 2026-06-21</span>
+    <span class="chip">キャプチャ 171件</span>
   </div>
+
+  <div class="day">
+    <div class="dayhead"><span class="date">2026-06-21</span><span class="count">20件</span></div>
+    <div class="theme">AIツール・セカンドブレイン・建築×AI圏｜Obsidian祭り・Claude実装・learner-builderモード全開</div>
+    <section class="summary"><p>この日20件を貫く通奏低音は「ツールが自分を育てる・システムが動き続ける」という感覚への惹かれ。ObsidianのWeb Clipper×AIエージェント・Claude Codeのスキル自動改善（会話履歴から問題を拾って13日で40コミット）・LaserFishのRhino自動化・AI洪水リスクスタディ（GIS不要）——いずれも「後で使う」道具ではなく「今動き続ける仕組み」への牽引力が強く出た。建築学生の文脈で読むと、建築制作の自動化軸（GIS×AI・Rhino×レーザーカット）と知識管理の自動化軸（Obsidian×Claude）が交差した一日で、「紹介したい」よりlearner-builderモードが全開——「めっちゃ参考にしたいです」「学習したいね」「勉強しなきゃな」という能動的な語が並んだ。</p></section>
+    <div class="strip">
+    <a><img src="https://scontent-ord5-3.cdninstagram.com/v/t51.82787-15/670552265_18068302244443872_6525943085236674001_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=100&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=xiWv_4FUKnYQ7kNvwES_F_j&amp;_nc_oc=AdrE-YZ2pr75xn-3-Jp0lIZVHrYrwcK6shaKVmA2yBwncI71TIcPticF3h2y4vXPSC0&amp;_nc_zt=23&amp;_nc_ht=scontent-ord5-3.cdninstagram.com&amp;_nc_gid=S1u107fP2rbDqtHk0--utg&amp;_nc_ss=7b60f&amp;oh=00_Af8ayLNovr935d-nwFsj81oJmCk14tun98hPj4591cM8TQ&amp;oe=6A3E20ED" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">Instagram</span></a>
+    <a><img src="https://scontent-ord5-3.cdninstagram.com/v/t51.82787-15/671158122_18082254005628782_6378581577020032712_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=109&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=ZDR_1eBDRz8Q7kNvwHgO1pE&amp;_nc_oc=AdpuIk7tvxGNXQTQYCB9Q5B40EMp73eWGTgwf40j43ewtoQ8bHqObffo5XXj2uqBfo8&amp;_nc_zt=23&amp;_nc_ht=scontent-ord5-3.cdninstagram.com&amp;_nc_gid=sFAMy6AqQTAW7ZR0lLqXCQ&amp;_nc_ss=7b60f&amp;oh=00_Af9Hh7Ebv-TwFEKgUriWRZgj6ECoC3e2AihRqNa7pow6Dw&amp;oe=6A3E015E" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">Instagram</span></a>
+    <a><img src="https://scontent-ord5-3.cdninstagram.com/v/t51.71878-15/709689413_1007136365503555_7270499633333073880_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=107&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=cqXuQEZZiO0Q7kNvwG-cYQS&amp;_nc_oc=AdrmVxZkAbvGWQUbHUk2nN0LigP6hEsZaJUysewL4dq8ivK0upTGcaev-PcziMV68k&amp;_nc_zt=23&amp;_nc_ht=scontent-ord5-3.cdninstagram.com&amp;_nc_gid=UMDDq2f_c_8UpaKY1cHGKw&amp;_nc_ss=7b60f&amp;oh=00_Af_BXoxGqaGuFdagM1UYxjcg1tOwqOmnNWlWMaf5VigpTA&amp;oe=6A3E01B6" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">Instagram</span></a>
+    <a><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.82787-15/718727432_18367088005228187_554766584773313695_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=102&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=bdA4aMT4SFUQ7kNvwG0LPJb&amp;_nc_oc=AdomAYKWtZtXrY0Lp3UDtcaNYr9Kr_4jDPFp0QQ8CeVgCcQJ78WelR1qtqI4LDei-4s&amp;_nc_zt=23&amp;_nc_ht=scontent-ord5-2.cdninstagram.com&amp;_nc_gid=FpmLHf0MAP7s2KA2cpLZNA&amp;_nc_ss=7b60f&amp;oh=00_Af_A9YK5vcY_cl-GWImbULjvfDzLeMWHfQ2fIjXYUYHi8A&amp;oe=6A3DFE25" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">Instagram</span></a>
+    <a><img src="https://scontent-ord5-3.cdninstagram.com/v/t51.71878-15/687797133_981366007595505_7877736156503692407_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=107&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=TIU5UzNhFWcQ7kNvwGfHr0L&amp;_nc_oc=AdoNdzUa5zyVeQ8z0eFGOW6X3zKhvvkqdopmnwV0-cM48COcXT3Fr6i2Qc7H_Ti0LSE&amp;_nc_zt=23&amp;_nc_ht=scontent-ord5-3.cdninstagram.com&amp;_nc_gid=YbaMwS709dUsna57jUoSUw&amp;_nc_ss=7b60f&amp;oh=00_Af88IaS86-V2seHDKSXVr9c2hcKTjoj2ii8lUYqJ2jts2g&amp;oe=6A3E0E45" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">Instagram</span></a>
+    <a><span class="ph">+15</span></a>
+    </div>
+    <div class="notes"><ul class="ilist">
+    <li><b>LaserFishをRhinoで試す</b> <span>→ → Rhinoプラグインをインストールしてレーザーカット図面の3分完成を体験してみる</span></li>
+    <li><b>造形ファイルを読み込む</b> <span>→ → 絵画・立体・デジタルの技法項目を週1時間ペースで読む</span></li>
+    <li><b>Claude Code 6時間コースを学習する</b> <span>→ → 最初の1時間（設定〜ワークフロー構築）だけでも通しで見る</span></li>
+    <li><b>ラグジュアリーブランドのCD年表を把握する</b> <span>→ → 主要10ブランドの現任CD・前任CDと代表作を整理する</span></li>
+    <li><b>Claude Designでスライドを1枚試作する</b> <span>→ → Claude Design + Codexの実フローを自分で踏んでみる</span></li>
+    <li><b>Obsidian Web Clipperはどのように色付けしてるんだろう？</b> <span>→ TemplaterやDataviewでタグ色付けが実装できる。動画内の具体手順は未確認→次ラン</span></li>
+    <li><b>AIセカンドブレインワークフローは何を解説してるんだろう？</b> <span>→ Jarvis型の自動化フロー動画と思われる（#jarvis #secondbrain #automation）。詳細未確認→次ラン</span></li>
+    <li><b>AI変更管理ソフトのビルドインパブリック、これはなにか？</b> <span>→ AIを使った組織変更管理ソフトウェアの開発過程を公開するシリーズ。構造は未確認→次ラン</span></li>
+    <li><b>KZZY Pulseはなんだよ？</b> <span>→ 複数のビジネスワークフローをリアルタイム調整するAIオーケストレーションシステム。チャットラッパーではなくメモリ・ルーティング・永続化が設計の核心</span></li>
+    <li><b>Gemini Omni、動画生成もできるの？</b> <span>→ Gemini Omniは動画生成含む多機能LLM。10個の活用法の中に動画生成ユースケースが含まれる可能性あり→動画で確認</span></li>
+    <li><b>Obsidianセットアップガイド、llmwikiみたいなもの？</b> <span>→ Obsidianで知識ネットワークを構築するセットアップガイド。LLM wikiに近い構造を持つと推測——詳細はガイドを見て確認</span></li>
+    </ul></div>
+    <a class="more" href="reviews/2026-06-21.html">全文の振り返りを読む →</a>
+    </div>
+
+  <hr class="sep">
 
   <div class="day">
     <div class="dayhead"><span class="date">2026-06-20</span><span class="count">11件</span></div>
