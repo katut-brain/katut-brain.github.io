@@ -3,210 +3,212 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>思考ネットワーク</title>
-<script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
-<script src="data.js"></script>
+<title>毎朝の振り返り ｜ katut-brain</title>
 <style>
   :root {
     --bg: #fafafa; --panel: #ffffff; --ink: #1c1c1e; --sub: #8a8a8e;
     --line: #e3e3e6; --chip: #f1f1f3; --accent: #1e88c7;
-    --node-concept: #7b8190; --node-capture: #b2b7c0; --node-new: #29b6f6;
-    --node-hi: #2c3038; --edge: #c9c9cf;
-    --shadow: 0 1px 12px rgba(0,0,0,.08);
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #0f1115; --panel: #161922; --ink: #e8e8ea; --sub: #8b91a0;
       --line: #2b3140; --chip: #1e2230; --accent: #5ec8f9;
-      --node-concept: #c2c8d3; --node-capture: #727a8a; --node-new: #5ec8f9;
-      --node-hi: #ffffff; --edge: #3a4150;
-      --shadow: 0 2px 16px rgba(0,0,0,.5);
     }
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; background: var(--bg); color: var(--ink);
+  html, body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.7;
     font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased; }
-  .wrap { max-width: 940px; margin: 0 auto; padding: 20px 16px 48px; }
-  h1 { margin: 0; font-size: 22px; letter-spacing: .01em; font-weight: 700; }
-  .tagline { color: var(--sub); font-size: 13px; margin-top: 3px; }
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 22px 16px 64px; }
+  h1.site { font-size: 22px; margin: 0; font-weight: 700; }
+  .tagline { color: var(--sub); font-size: 13px; margin: 3px 0 4px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 8px; }
   .chip { background: var(--chip); color: var(--sub); border-radius: 999px; padding: 4px 10px; font-size: 12px; }
-  #net { height: 70vh; min-height: 440px; background: var(--bg);
-    border: 1px solid var(--line); border-radius: 14px; margin-top: 14px; box-shadow: var(--shadow); }
-  .hint { color: var(--sub); font-size: 11px; margin-top: 8px; text-align: center; }
-  #err { display: none; padding: 20px; color: #d05; font-size: 14px; }
-  h2 { font-size: 15px; margin: 34px 0 10px; font-weight: 700; }
-  .reviews { display: grid; gap: 10px; }
-  .card { display: block; text-decoration: none; color: inherit; background: var(--panel);
-    border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; transition: border-color .15s, transform .15s; }
-  .card:hover { border-color: var(--accent); transform: translateY(-1px); }
-  .card .date { font-weight: 700; font-size: 15px; }
-  .card .sub { color: var(--sub); font-size: 12.5px; margin-top: 4px; }
-  footer { color: var(--sub); font-size: 11px; margin-top: 36px; text-align: center; opacity: .8; }
-  /* ノードホバー時のコメント吹き出し（vis-networkのtitle） */
-  .vis-tooltip { background: var(--panel) !important; color: var(--ink) !important;
-    border: 1px solid var(--line) !important; border-radius: 8px !important;
-    padding: 6px 10px !important; font-family: inherit !important; font-size: 12.5px !important;
-    box-shadow: var(--shadow) !important; max-width: 240px !important; white-space: normal !important; }
-  .vtip-note { font-weight: 600; }
-  .vtip-ttl { color: var(--sub); font-size: 11.5px; margin-top: 3px; }
+
+  .day { margin-top: 30px; }
+  .dayhead { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+  .dayhead .date { font-size: 19px; font-weight: 700; }
+  .dayhead .count { color: var(--sub); font-size: 12px; }
+  .theme { color: var(--sub); font-size: 13px; margin-bottom: 12px; }
+
+  .summary { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px 14px; }
+  .summary p { margin: 0; font-size: 14px; }
+
+  .strip { display: flex; gap: 8px; overflow-x: auto; margin: 12px 0 2px; padding-bottom: 2px; }
+  .strip a { flex: none; width: 96px; height: 72px; border-radius: 10px; overflow: hidden; position: relative;
+    background: var(--chip); border: 1px solid var(--line); text-decoration: none; }
+  .strip img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .strip .ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: var(--sub); }
+
+  .notes { margin-top: 10px; }
+  .ilist { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .ilist li { font-size: 13px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "\1F4AC"; position: absolute; left: 0; font-size: 11px; }
+  .ilist b { color: var(--ink); }
+  .ilist span { color: var(--sub); }
+
+  .more { display: inline-block; margin-top: 12px; color: var(--accent); text-decoration: none; font-size: 13px; font-weight: 700; }
+  .more:hover { text-decoration: underline; }
+
+  hr.sep { border: none; border-top: 1px solid var(--line); margin: 30px 0 0; }
+  footer { color: var(--sub); font-size: 11px; margin-top: 40px; text-align: center; opacity: .8; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>思考ネットワーク</h1>
-  <div class="tagline">見たもの・読んだものから浮かぶ、関心のかたち</div>
-
+  <h1 class="site">毎朝の振り返り</h1>
+  <div class="tagline">見たもの・読んだものから、その日の気づきを残す</div>
   <div class="chips">
-    <span class="chip" id="chip-updated">最終更新 —</span>
-    <span class="chip" id="chip-count">キャプチャ —</span>
-    <span class="chip">ドラッグ / ピンチでズーム</span>
+    <span class="chip">最終更新 2026-06-19</span>
+    <span class="chip">キャプチャ 152件</span>
   </div>
 
-  <div id="net"></div>
-  <div id="err">⚠️ ネットワークを読み込めませんでした。再読み込みしてください。</div>
-  <div class="hint">ノードに触れると、つながりだけが浮かびます（コメントを付けたものは💬で一言が出ます）／ キャプチャ（小さい円）をクリックすると元の投稿・記事が開きます ／ 水色＝最近追加</div>
+  <div class="day">
+    <div class="dayhead"><span class="date">2026-06-19</span><span class="count">8件</span></div>
+    <div class="theme">建築×文化×AI外部脳</div>
+    <section class="summary"><p>「旧い器を更新する」と「何が本質か選ぶ」が今日の二本柱。建築側では発電所→複合施設（H&amp;dM）、展覧会で住宅の再定義（シンガタ展）、ポルトガルの洗練（Aires Mateus）と更新・再解釈の視座が並んだ。文化側では椎名林檎の「ヘルシー」発言——評論家・インフルエンサー過多への批判が、AI時代のノイズ過多と重なって響く。外部脳側ではObsidian iOS共有機能がRaindropパイプラインを揺さぶる更新として保存された。</p></section>
+    <div class="strip">
+    <a><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Farchiphoto%2Fstatus%2F2067502582902468805%3Fs%3D12" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">X</span></a>
+    <a><img src="https://pbs.twimg.com/media/HLGMH5vawAA9Z3V.jpg:large" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">X</span></a>
+    <a><img src="https://images.adsttc.com/media/images/6095/b66c/f91c/810b/b000/0009/medium_jpg/JG-ESTRELA-DSC_6442-low.jpg?1620424296" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">記事</span></a>
+    <a><img src="https://jf.x.com/images/media-preview/2067850630966972641" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">X</span></a>
+    <a><img src="https://jf.x.com/images/media-preview/2067569307362680878" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">X</span></a>
+    <a><span class="ph">+3</span></a>
+    </div>
+    <div class="notes"><ul class="ilist">
+    <li><b>カラーピッカー参考</b> <span>→ → Chrome未接続のため中身未取得。次回ランでInstagramを開いてリスト内のカラーピッカーサイトを特定する。候補として coolors.co / paletton.com / uicolors.app など。? 要調査・次ラン</span></li>
+    <li><b>これraindropいらなくなるやん</b> <span>→ → ObsidianのiOS機能はRaindrop「保存→取り込み」を一部代替しうる。ただし現時点の差分は（1）Raindropはlink/excerpt/cover/noteを一括取得できる（2）バッチ処理・グラフ公開統合は既存パイプラインが深い。重要なXポストはObsidian直送、ブラウジング保存はRaindrop経由のハイブリッド運用も検討の価値あり。</span></li>
+    <li><b>ヘルシーという表現が興味深い</b> <span>→ → 「ヘルシー」を文化的環境の評価軸に使うのは身体的健康の比喩転用。「健全」より軽く、批判より温度低め。AI過多・コンテンツ飽和の時代に何を入れて何を入れないかを決める「情報の健康」という軸は curator-maker にとって使える視点。</span></li>
+    </ul></div>
+    <a class="more" href="reviews/2026-06-19.html">全文の振り返りを読む →</a>
+    </div>
 
-  <h2>最近の振り返り</h2>
-  <div class="reviews">
-    <a class="card" href="reviews/2026-06-19.html">
-      <div class="date">2026-06-19 の振り返り</div>
-      <div class="sub">旧い器を更新する・ヘルシーな選択 ／ H&dM発電所改修・シンガタ展・椎名林檎・Obsidian iOS連携の8件</div>
-    </a>
-    <a class="card" href="reviews/2026-06-18.html">
-      <div class="date">2026-06-18 の振り返り</div>
-      <div class="sub">Claude Design 大型アップデート ／ Claude Code との双方向連携・<code>/design-sync</code> の1件</div>
-    </a>
-    <a class="card" href="reviews/2026-06-17.html">
-      <div class="date">2026-06-17 の振り返り</div>
-      <div class="sub">道具を繋ぐ・ループ化 ／ CAD×Claude Opus・「もうプロンプトを書かない」・X×Claude連携の5件</div>
-    </a>
-    <a class="card" href="reviews/2026-06-16.html">
-      <div class="date">2026-06-16 の振り返り</div>
-      <div class="sub">AI×ツール接続・SANAA建築・3D自動化 ／ 「AIが設計ソフトを操作する」実践段階の11件</div>
-    </a>
-    <a class="card" href="reviews/2026-06-14.html">
-      <div class="date">2026-06-14 の振り返り</div>
-      <div class="sub">ホックニー追悼・ループ設計・守山市プロポ当落両方 ／ 「何を残すか」が通底した31件</div>
-    </a>
-    <a class="card" href="reviews/2026-06-13.html">
-      <div class="date">2026-06-13 の振り返り</div>
-      <div class="sub">AI自動化（分析・図解・UGC・CAD）と「作りたい」3D/DIYが対になった25件 ／ 日本語の空白に芽</div>
-    </a>
-    <a class="card" href="reviews/2026-06-12.html">
-      <div class="date">2026-06-12 の振り返り</div>
-      <div class="sub">建築言説・AIアート・アーカイブの4件 ／ 「観て書く」「収集→継承」 ／ curator-maker志向</div>
-    </a>
-  </div>
+  <hr class="sep">
 
-  <footer>毎朝の振り返りから育つ地図 ｜ katut-brain</footer>
+  <div class="day">
+    <div class="dayhead"><span class="date">2026-06-18</span><span class="count">1件</span></div>
+    <div class="theme">Claude Design 大型アップデート</div>
+    <section class="summary"><p>今日の保存は1件のみ——Claude Design 大型アップデート。Claude CodeとUI制作の境界が溶けていく変化。「道具を繋げる」から「道具が繋がっている前提で設計する」フェーズへのシフトを示す更新。Boris Cherny「プロンプトを書かない」の翌日に保存されており、同じ時代感覚の文脈にある。</p></section>
+    <div class="strip">
+    <a><img src="https://pc.watch.impress.co.jp/img/pcw/list/2118/066/01.png" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">記事</span></a>
+    </div>
+    <a class="more" href="reviews/2026-06-18.html">全文の振り返りを読む →</a>
+    </div>
+
+  <hr class="sep">
+
+  <div class="day">
+    <div class="dayhead"><span class="date">2026-06-17</span><span class="count">5件</span></div>
+    <div class="theme">AI×Claude Code・3D/CAD・レンダリング</div>
+    <section class="summary"><p>「道具を繋げる」と「ループ化する」が今日の通底テーマ。MecAgent のCAD自動生成、Boris Cherny の「もうプロンプトを書かない」発言、X × Claude 連携——いずれも道具を主体的に組み合わせ、繰り返し作業を自律化する方向性への関心。3D レンダリング側では「重ねる」手法への美的共感も。</p></section>
+    <div class="strip">
+    <a><img src="https://scontent-mrs2-2.cdninstagram.com/v/t51.71878-15/724123328_852627230829102_7325314298341075347_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=106&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiRkVFRC5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&amp;_nc_ohc=0u7ShFdgkRcQ7kNvwHfIhDv&amp;_nc_oc=Adq7xRtylwTKVCHes1t1TiAFdQzYogZdlMPGtSo_Nwu42R683MQ77G-RkK8zJRKt-4A&amp;_nc_zt=23&amp;_nc_ht=scontent-mrs2-2.cdninstagram.com&amp;_nc_gid=eW6-j24pIvp40GxKl6N0yg&amp;_nc_ss=7b20f&amp;oh=00_Af9V1moVILjvbNhQnF53ZWNcwiIEpt54NJot2tIe5Wn3FQ&amp;oe=6A386B98" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">Threads</span></a>
+    <a><img src="https://scontent-fra5-2.xx.fbcdn.net/v/t39.92108-6/724937513_1561404902213864_8305901022624747437_n.jpg?_nc_cat=109&amp;ccb=1-7&amp;_nc_sid=554f3c&amp;_nc_ohc=XLckN7hVBfgQ7kNvwGlWt_p&amp;_nc_oc=AdrPOLcF3wg6T9xFaZXEdYeAhjpoBcRBTlONSk3okFYvUoXN4SqBaIvJJ0WWqENY5k0&amp;_nc_zt=14&amp;_nc_ht=scontent-fra5-2.xx&amp;_nc_gid=j4ztvEaZ8rEks92dArqY-w&amp;_nc_ss=7b20f&amp;oh=00_Af_qz4gDXLZfasiIiWokqMXSaeiPkwEHDhJJs2o_uIwJpQ&amp;oe=6A3889EB" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">Threads</span></a>
+    <a><img src="https://scontent-mrs2-3.cdninstagram.com/v/t51.82787-15/718378763_17905899147431577_8197464634481699437_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=104&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=lHCUNqNcwnkQ7kNvwG9FK-l&amp;_nc_oc=AdrQ_6_4EXQ7WehBBCL0JcsssG63OKQhC2RIEDXZ6a401jIk1omQCspHEcEMjpzaIp8&amp;_nc_zt=23&amp;_nc_ht=scontent-mrs2-3.cdninstagram.com&amp;_nc_gid=dUzsXdYa1LmmmnZ-6f3E1Q&amp;_nc_ss=7b60f&amp;oh=00_Af-uWZpCrkM4bx3TbrI8ddcSmfX5EzQq-U3HhMhx3mIGcA&amp;oe=6A38A3CA" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">Instagram</span></a>
+    <a><img src="https://scontent-fra5-2.cdninstagram.com/v/t51.82787-15/706745067_18108321466819350_1844337932760710634_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=106&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=FJA-nhWuvV4Q7kNvwGvkVOF&amp;_nc_oc=AdqjosVd9fzMSd1JA7XAddMNFfybu0KFmwC9OWmiUYfWFIzRjP9UbWa60s-28qgG3zU&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-2.cdninstagram.com&amp;_nc_gid=TJmkvYVKDhEQW85QSNwrng&amp;_nc_ss=7b60f&amp;oh=00_Af-pDlAahJZvpFx4ZFF-wivEjvz7l3hxaPX6RpX9q6U9Cg&amp;oe=6A38949C" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">Instagram</span></a>
+    <a><img src="https://scontent-mrs2-1.cdninstagram.com/v/t51.71878-15/724639926_1039263251956913_9019996157452248953_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=100&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=wPR2dRLcV8IQ7kNvwFAfflI&amp;_nc_oc=AdoNNaB3wO2BkFUYgApu9pkWwqcnSKpgNu50SrG_ujla8Otrct02ddzhbmw394FcwvM&amp;_nc_zt=23&amp;_nc_ht=scontent-mrs2-1.cdninstagram.com&amp;_nc_gid=nwg73awg04soMB-kdyxwOg&amp;_nc_ss=7b60f&amp;oh=00_Af_q73t8vgemYXOuuHYYP6yJyNShO9R7_kvk7TDbUrVWWA&amp;oe=6A3848A6" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">Instagram</span></a>
+    </div>
+    <div class="notes"><ul class="ilist">
+    <li><b>ループの作り方？</b> <span>→ → Claude Code のループ化は /loop コマンド（定期実行）と SKILL.md によるscheduled tasks の2系統。Boris Cherny が言う「プロンプトを書かない」とは、単発指示からエージェントループ設計へのシフトのこと——このキャプチャ同期ルーティン自体がその一例</span></li>
+    <li><b>V-Ray の nanobanana プラグインとは？</b> <span>→ → archi.hacks が解説。コメント欄に「plugin」と書くとリンクが届く形式。詳細は Chrome 接続時に補完予定</span></li>
+    </ul></div>
+    <a class="more" href="reviews/2026-06-17.html">全文の振り返りを読む →</a>
+    </div>
+
+  <hr class="sep">
+
+  <div class="day">
+    <div class="dayhead"><span class="date">2026-06-16</span><span class="count">11件</span></div>
+    <div class="theme">AI×ツール接続・SANAA建築・3D自動化</div>
+    <section class="summary"><p>この日の保存コンテンツは「AIを既存ツールに接続する」という一本の軸に収束している。ClaudeがAutoCADを操作し、ChatGPTがRhinoでモデリングし、HiggsieldがClaudeのMCPで動画を生成する——それぞれ異なるツールだが、すべて「AIを実務ソフトの操作レイヤーに置く」発想だ。SANAA設計の道の駅というリアルな建築ニュースが混ざることで、「AIで設計する」と「AIで実際に建てる」の距離が一気に縮まって見える。</p></section>
+    <div class="strip">
+    <a><img src="https://scontent-fra3-2.cdninstagram.com/v/t51.71878-15/721995442_1633179567976016_5547022942040981263_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=111&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=hddINXPnRj0Q7kNvwG-Knbe&amp;_nc_oc=AdpRy1o9ifFePlbsvO_g0-nVeDsh7OjS7og_Y7DSP_l1mOwYdI9vrAByJdPYK5hBPB0&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-2.cdninstagram.com&amp;_nc_gid=Zl5KgIRGuff741pxCA5rRA&amp;_nc_ss=7b60f&amp;oh=00_Af_UerVl05UHICLqC3eT1OTbupj6rE2FjgnkE1zI8USY-w&amp;oe=6A374688" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">Instagram</span></a>
+    <a><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.71878-15/723883143_1518497249762119_2571370364649005308_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=108&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=QtAGGRrpkNMQ7kNvwEkfsfO&amp;_nc_oc=AdqM03aNeYQn53rYgkrlLLCMwMlJkrjsU3_t9nnzKtrwyO33A2DAQZeBOYpdYL3J2Fg&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-1.cdninstagram.com&amp;_nc_gid=oAaSUIJ1lLTGRFHn0f-KsQ&amp;_nc_ss=7b60f&amp;oh=00_Af_LRT_aUXYBmXA6nnGzetsJe4C2znqGVA3NnuhnN4Fy3w&amp;oe=6A3715F9" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">Instagram</span></a>
+    <a><img src="https://scontent-fra3-2.cdninstagram.com/v/t51.71878-15/724119028_1966950317309153_2931553359448185099_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=111&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=wupvibMCWHcQ7kNvwExEv-9&amp;_nc_oc=Adp3BuNfaRIwEmmtgJHrK21iPub0vLwKjrHe03NjZqQvFo1yYN-Mh_i8JC7n7Tz7e5I&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-2.cdninstagram.com&amp;_nc_gid=7Em-QrGvkuFoil4xug81NA&amp;_nc_ss=7b60f&amp;oh=00_Af_6US-PxkCllccZOkGlAeRLEPnZbU7mxIN4lfUSkPhWCw&amp;oe=6A371892" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">Instagram</span></a>
+    <a><img src="https://scontent-fra3-2.cdninstagram.com/v/t51.71878-15/696674124_27678787205056619_5080342317128124074_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=104&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=f3cU_zKbrEoQ7kNvwFXb69n&amp;_nc_oc=AdqISyTW0wkmZw8tZ6aPXjjbUei1Z2A1f0OdMapGwZ_mIPzGE4GlRtbe5bvpGBJEtnw&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-2.cdninstagram.com&amp;_nc_gid=otppHCU6j1POFCrAfBhZww&amp;_nc_ss=7b60f&amp;oh=00_Af87_nOO7QPeNf5wNpHZBHoheg90t--feWlsfXtoQ_SV0A&amp;oe=6A371F50" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">Instagram</span></a>
+    <a><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.71878-15/723208298_1332182401615441_4423814932353198714_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=101&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=cxN64F-weG4Q7kNvwGuIAkX&amp;_nc_oc=AdpTCWJ6phYGr_HFIlEFJVmuucqmzexeFBM-s09XYvXMyzrYwCfRb_fSWrljKGWrllM&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-1.cdninstagram.com&amp;_nc_gid=UUOFcPMtGYbHvMWyMjWAPA&amp;_nc_ss=7b60f&amp;oh=00_Af-V06SLX0WdM22VPtRMl7b4xa_Lx7sdLjXZKYSpthhCQQ&amp;oe=6A3746BE" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">Instagram</span></a>
+    <a><span class="ph">+6</span></a>
+    </div>
+    <a class="more" href="reviews/2026-06-16.html">全文の振り返りを読む →</a>
+    </div>
+
+  <hr class="sep">
+
+  <div class="day">
+    <div class="dayhead"><span class="date">2026-06-14</span><span class="count">31件</span></div>
+    <div class="theme">アート・建築・AI活用圏｜ホックニー追悼・ループ設計・守山市プロポ</div>
+    <section class="summary"><p>ホックニーの死という大きな文化的出来事がこの日の通奏低音になった。単なる訃報ではなく「絵画とは見ることの設計だ」という論点として複数ルートから保存されており、思考の奥まで届いたことがわかる。同日に磯崎新の「木製模型で理念を未来へ残す」論が並んだことで、時間を超えて何を残すかという問いが浮上した。</p></section>
+    <div class="strip">
+    <a><img src="https://assets.st-note.com/production/uploads/images/285070954/rectangle_large_type_2_681e67652c68eb88389dad9410adf431.jpg?fit=bounds&amp;quality=85&amp;width=1280" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">note</span></a>
+    <a><img src="https://media.artnewsjapan.com/wp-content/uploads/2026/06/12200920/GettyImages-1040616208-1024x630.jpg" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">artnewsjapan</span></a>
+    <a><img src="https://jf.x.com/images/media-preview/2065634301795016867" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">X</span></a>
+    <a><img src="https://pbs.twimg.com/media/HKlLyNfWkAAfW5w.jpg:large" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">X</span></a>
+    <a><img src="https://scontent-fra5-2.cdninstagram.com/v/t51.71878-15/713684229_4383246091950161_4316539157353226306_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=106&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=BfS7JMyRuC4Q7kNvwF2WWop&amp;_nc_oc=AdotTpF41oWSvb6LWE1DuJJQM-EDy3H6dYJgSvjZZkBIL7-v9iEGwtFfObGv1WnOLrE&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-2.cdninstagram.com&amp;_nc_gid=q1NlTg2lNWB7EmLai097JQ&amp;_nc_ss=7b60f&amp;oh=00_Af-zPdBynV4MzJxvI4Fj019uT_g5-VXfO60WCBTpow35sA&amp;oe=6A341A32" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">Instagram</span></a>
+    <a><span class="ph">+26</span></a>
+    </div>
+    <div class="notes"><ul class="ilist">
+    <li><b>AI活用した大学生の事例を参考に応用</b> <span>→ → 自分のスキルセットで応用できるAI活用パターンを1つ実装する</span></li>
+    <li><b>Claude Code開発者の28分プロンプト動画を見る</b> <span>→ → 「300ドルのコースを超える内容が無料で」——まず通しで見る</span></li>
+    <li><b>ループ設計を取り入れる</b> <span>→ → プロンプト単発入力からエージェント的ループ設計へ。まず1タスクをループで組み直す</span></li>
+    <li><b>GrasshopperからレンダリングまでのAI自動化は？</b> <span>→ Datasmith/Twinmotion連携やMecAgent（Claude×CAD）が近接技術。動画内容は未確認→次ラン</span></li>
+    <li><b>雲を使った現代アートの系譜は？</b> <span>→ Berndnaut Smilde（室内に霧で雲を作る）が著名な先行例。モニの作品は建築空間インスタレーション文脈で独自性あり</span></li>
+    <li><b>奈良美智のキュレーションとは？</b> <span>→ 今回は「キュレーター」として陶芸家・桑田卓郎ら4人を選んだ。選評は未確認→次ラン</span></li>
+    <li><b>米津玄師スタイルの映像演出でムーブメントが？</b> <span>→ 該当MV・動画は未確認→次ラン</span></li>
+    <li><b>GhostPolyの3Dモデリングとは？</b> <span>→ 中身未取得→次ラン</span></li>
+    <li><b>世界バズの不動産マップに使ったサービス名は？</b> <span>→ 動画未確認→次ラン</span></li>
+    </ul></div>
+    <a class="more" href="reviews/2026-06-14.html">全文の振り返りを読む →</a>
+    </div>
+
+  <hr class="sep">
+
+  <div class="day">
+    <div class="dayhead"><span class="date">2026-06-13</span><span class="count">25件</span></div>
+    <div class="theme">AI×ツール活用・建築ビジョン・3D/DIY・デザインツール圏</div>
+    <section class="summary"><p>この日のキャプチャは25件（午後〜夕方のInstagram/Threads保存）。テーマがはっきり2つの軸に割れた日だった。ひとつは AI×作業自動化の加速——Claude CodeをSNS分析・図解生成・UGC動画量産・CAD操作・ブランドデザインに使う事例が集中。もうひとつは 手を動かしたい衝動——3Dプリント、モジュールシェルフ、動くタイポツールなど「物理的にアウトプットしたい」欲求で、机上のAI情報収集と対になっている。</p></section>
+    <div class="strip">
+    <a><span class="ph">Instagram</span></a>
+    <a><span class="ph">Instagram</span></a>
+    <a><span class="ph">Instagram</span></a>
+    <a><span class="ph">Instagram</span></a>
+    <a><span class="ph">Instagram</span></a>
+    <a><span class="ph">+20</span></a>
+    </div>
+    <div class="notes"><ul class="ilist">
+    <li><b>ロングネジでモジュールシェルフをDIY</b> <span>→ → rhombus_labの構造を参考に自作設計</span></li>
+    <li><b>花びら型クリップを3Dプリント</b> <span>→ → af_inventionsのSTLをダウンロード</span></li>
+    <li><b>インフィルスワッチを作る</b> <span>→ → Makerworld model 2014875をダウンロード</span></li>
+    <li><b>ジェネラティブなタイポツールを試す</b> <span>→ → fionaのリールコメントからリンク入手</span></li>
+    <li><b>事件系インスタリールの自動投稿</b> <span>→ → Instagram自動投稿の仕組みを検討</span></li>
+    <li><b>日本語版の建築マッピングコンテンツ</b> <span>→ → thearchpodのスタイルを日本語で再現</span></li>
+    <li><b>Claude×デザインを実務に</b> <span>→ → Claude Code + Figma連携から始める</span></li>
+    <li><b>LLM Wiki×Obsidianの外部脳</b> <span>→ → すでにやっていることと同じ。続ける</span></li>
+    <li><b>UGCとは？</b> <span>→ User Generated Content＝ユーザーが商品を使う動画でブランドをPRする手法。AI×UGCはClaudeやHiggsfieldのAPIで自動大量生成できる段階へ</span></li>
+    <li><b>Claude Code + Higgsfieldって何？</b> <span>→ HiggsfieldはAI動画生成ツール。Claude CodeでAPIを叩いてUGCスタイル動画を自動量産するワークフロー</span></li>
+    <li><b>FinchとGrasshopperの関係は？</b> <span>→ FinchはGrasshopper上で動くAI建築設計ツール。RevitはBIMソフトで、Finchが両者を橋渡ししつつ2026年中に機能拡張予定</span></li>
+    <li><b>Riso印刷とは？</b> <span>→ RISO社製の孔版印刷機。インクのにじみ・版ズレが独自の質感を生み、ZINEやアーティストブックで人気</span></li>
+    <li><b>Rhinoの神コマンドとは？</b> <span>→ 投稿者(kenzozozoy)いわく「これ以降ずっと動作が軽い」＝ビューポートのラグを減らすコマンド。具体名は動画内（建築学生向けTips）</span></li>
+    </ul></div>
+    <a class="more" href="reviews/2026-06-13.html">全文の振り返りを読む →</a>
+    </div>
+
+  <hr class="sep">
+
+  <div class="day">
+    <div class="dayhead"><span class="date">2026-06-12</span><span class="count">4件</span></div>
+    <div class="theme">建築の言説・展覧会 / アート・デザイン・キュレーション圏</div>
+    <section class="summary"><p>この日見た4件はすべて「建築・アート・デザインの言説とキュレーション」圏。媒体は建築展・SNS論考・AIアート・ファッションアーカイブとバラバラだが、通底するのは作品そのものより「観る・読む・束ねる・語り継ぐ」側への関心。自分で作るより、他人の表現を観て位置づける——curator-maker志向がはっきり出ている。</p></section>
+    <div class="strip">
+    <a><img src="https://u35.aaf.ac/2026/img/fb251025.jpg" alt="" loading="lazy" onerror="this.style.display='none'"><span class="ph">記事</span></a>
+    <a><span class="ph">X</span></a>
+    <a><span class="ph">Instagram</span></a>
+    <a><span class="ph">Instagram</span></a>
+    </div>
+    <a class="more" href="reviews/2026-06-12.html">全文の振り返りを読む →</a>
+    </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
 </div>
-
-<script>
-const root = document.documentElement;
-function cssVar(n){ return getComputedStyle(root).getPropertyValue(n).trim(); }
-
-if (typeof vis === "undefined" || typeof window.GRAPH === "undefined") {
-  document.getElementById("net").style.display = "none";
-  document.getElementById("err").style.display = "block";
-} else {
-  const G = window.GRAPH;
-  const rawNodes = G.nodes, rawEdges = G.edges, clusters = G.clusters;
-  document.getElementById("chip-updated").textContent = "最終更新 " + G.updated;
-  document.getElementById("chip-count").textContent = "キャプチャ " + (G.count || rawNodes.filter(n=>n.kind==="capture").length) + "件";
-
-  // クラスタごとに親ノードを定位置にアンカー（重なり防止・配置を安定させる）
-  const anchors = { arch:{x:-360,y:-240}, culture:{x:380,y:-230}, ai:{x:120,y:310}, d3d:{x:-380,y:220}, misc:{x:40,y:-370} };
-  const leadIds = new Set(Object.values(clusters).map(c => c.ids[0]));
-  const nodes = new vis.DataSet(rawNodes.map(n => {
-    const o = { ...n, value: n.value != null ? n.value : (n.kind === "concept" ? 16 : 9) };
-    if (leadIds.has(n.id) && anchors[n.cluster]) { o.x = anchors[n.cluster].x; o.y = anchors[n.cluster].y; o.fixed = { x: true, y: true }; }
-    // ユーザーの一言コメントがあれば、ホバーで吹き出し表示（あなたの声＝なぜ刺さったか）
-    if (n.note) {
-      const tip = document.createElement("div");
-      const c = document.createElement("div"); c.className = "vtip-note"; c.textContent = "💬 " + n.note; tip.appendChild(c);
-      if (n.label) { const t = document.createElement("div"); t.className = "vtip-ttl"; t.textContent = n.label; tip.appendChild(t); }
-      o.title = tip;
-    }
-    return o;
-  }));
-  const edges = new vis.DataSet(rawEdges.map((e, i) => ({ id: "e"+i, ...e })));
-
-  function fillOf(n){ return n.new ? cssVar("--node-new") : n.kind === "concept" ? cssVar("--node-concept") : cssVar("--node-capture"); }
-  function paint(){
-    nodes.update(rawNodes.map(n => ({ id: n.id, color: {
-      background: fillOf(n), border: fillOf(n),
-      highlight: { background: cssVar("--node-hi"), border: cssVar("--node-hi") } } })));
-    net.setOptions({ nodes: { font: { color: cssVar("--ink") } },
-                     edges: { color: { color: cssVar("--edge"), highlight: cssVar("--sub"), opacity: .65 } } });
-    net.redraw();
-  }
-
-  const options = {
-    layout: { randomSeed: 7 },
-    nodes: { shape: "dot", borderWidth: 0,
-      scaling: { min: 7, max: 30, label: { min: 11, max: 19, drawThreshold: 9 } },
-      font: { face: "Segoe UI, Hiragino Sans, sans-serif", strokeWidth: 0 } },
-    edges: { width: 1, smooth: false, font: { size: 11, color: "#9a9aa2", strokeWidth: 0 } },
-    physics: { solver: "barnesHut",
-      barnesHut: { gravitationalConstant: -2200, centralGravity: 0.05, springLength: 70, springConstant: 0.05, damping: 0.5, avoidOverlap: 0.25 },
-      stabilization: { iterations: 400 } },
-    interaction: { hover: true, tooltipDelay: 120 },
-  };
-  const net = new vis.Network(document.getElementById("net"), { nodes, edges }, options);
-  window._net = net;
-
-  net.on("beforeDrawing", ctx => {
-    const pos = net.getPositions();
-    for (const key in clusters) {
-      const c = clusters[key];
-      const pts = c.ids.map(id => pos[id]).filter(Boolean);
-      if (!pts.length) continue;
-      const R = 95;
-      pts.forEach(p => {
-        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, R);
-        g.addColorStop(0, "rgba(" + c.rgb + ",0.13)");
-        g.addColorStop(1, "rgba(" + c.rgb + ",0)");
-        ctx.fillStyle = g;
-        ctx.beginPath(); ctx.arc(p.x, p.y, R, 0, Math.PI*2); ctx.fill();
-      });
-      let cx = 0, minY = Infinity;
-      pts.forEach(p => { cx += p.x; minY = Math.min(minY, p.y); });
-      cx /= pts.length;
-      ctx.fillStyle = "rgba(" + c.rgb + ",0.7)";
-      ctx.font = "13px Segoe UI, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText(c.name, cx, minY - 70);
-      ctx.textAlign = "left";
-    }
-  });
-
-  paint();
-  net.once("stabilizationIterationsDone", () => { net.setOptions({ physics: false }); net.fit({ animation: true }); });
-
-  const mq = window.matchMedia("(prefers-color-scheme: dark)");
-  mq.addEventListener ? mq.addEventListener("change", paint) : mq.addListener(paint);
-
-  const allNodeIds = rawNodes.map(n => n.id);
-  function focus(id){
-    const keep = new Set([id, ...net.getConnectedNodes(id)]);
-    nodes.update(allNodeIds.map(nid => ({ id: nid, opacity: keep.has(nid) ? 1 : 0.1 })));
-    edges.update(rawEdges.map((e,i)=> ({ id: "e"+i,
-      color: (e.from===id||e.to===id) ? { color: cssVar("--sub"), opacity: 1 } : { color: cssVar("--edge"), opacity: 0.05 } })));
-  }
-  function clear(){
-    nodes.update(allNodeIds.map(nid => ({ id: nid, opacity: 1 })));
-    edges.update(rawEdges.map((e,i)=> ({ id: "e"+i, color: { color: cssVar("--edge"), opacity: .65 } })));
-  }
-  net.on("hoverNode", p => focus(p.node));
-  net.on("blurNode", clear);
-  net.on("click", p => {
-    if (!p.nodes.length) return;
-    const n = rawNodes.find(x => x.id === p.nodes[0]);
-    if (n && n.url) window.open(n.url, "_blank", "noopener");
-  });
-}
-</script>
 </body>
 </html>
