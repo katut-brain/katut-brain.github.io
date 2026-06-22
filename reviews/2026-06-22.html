@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-06-22 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-06-22 の振り返り</h1>
+  <div class="meta">Claude Code・AIシステム化圏の7件｜ループ設計・Obsidian連携・ルーブル危機</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存7件のうち6件がClaude Code周辺に集中した。単にツールを「使う」ではなく、Claude Code × NotebookLM × Obsidianをどうつなぐか、Hermes Agentをどう組むか、AIループをどう理解するか——あらゆる保存が「AIを仕組みとして内在化する」という一つの問い意識を向いている。「知る・紹介したい」より「作りたい・動かしたい」軸が今日は明確に活性化した。</p>
+    <p>Claude Code系の関心は今週6日連続で続いており、6/14のループ設計論→6/18の「もうプロンプトは書かない」→6/22の「Loops explained」という流れで、AI活用がプロンプト単発→ループ設計→システム化へ段階的に深化している軌跡が見える。この関心は今週6日続いている。唯一の異質な保存・ルーブル美術館の「限界」記事も、世界最多訪問者を抱えながらインフラが崩壊する「規模と仕組みの乖離」として読むと、AI仕組み化への問いと奇妙に共鳴する。</p>
+    <ul class="pts">
+      <li><b>Claude Code体系化</b>：複数アカウントが同日に「体系的理解」「節約術」「保存版」を投稿——学習リソースが今この瞬間に揃っているという含意がある</li>
+      <li><b>リサーチシステムの設計</b>：Obsidian×NotebookLM×Claude Codeの三角形は「情報が自動的に知識になる」仕組みへの布石を立てる問いを生む</li>
+      <li><b>ループ＝学習の単位</b>：「プロンプトを書く」から「ループを設計する」へ——この認識シフトが今日の核心で、建築設計のイテレーション構造と構造的に似ている</li>
+      <li><b>ルーブルの限界</b>：文化機関の老朽化問題は設計の問題でなくオペレーションの問題として浮かんでいる——10億ユーロの改修を「仕組みの再設計」として読む視点がある</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>Obsidian×NotebookLM×Claude Codeをつないだとき「自分が何を知っているか」の輪郭はどう変わるか？ Hermes Agentの「まずllms-full.txtを読ませてsetupを作らせる」手法は、自分のRaindrop→PKM→振り返りのループに応用できるか？</div>
+  </section>
+
+  <h2>やりたい・気になったこと</h2>
+  <section class="notes">
+    <div class="ntag">やりたい</div>
+    <ul class="ilist">
+      <li><a href="https://x.com/obsidianstudio9/status/2068632931808010347?s=12" target="_blank" rel="noopener"><b>NotebookLMとClaude Codeをつなぐリサーチシステムを作る</b></a> <span>→ 保存版記事の手順を読み、自分のObsidian vaultへの組み込みを1ステップ試す</span></li>
+      <li><a href="https://x.com/anatolikopadze/status/2068328135611822149?s=12" target="_blank" rel="noopener"><b>Loops explainedの中身を完全に理解する</b></a> <span>→ Claude・GPT・Mira各ループ実装の違いを比較し、どのパターンを自分の作業フローに使うか決める</span></li>
+      <li><a href="https://x.com/hedgehogpython/status/2068604287933174245?s=12" target="_blank" rel="noopener"><b>Claude Codeの体系的理解を一から見直す</b></a> <span>→ 紹介されている記事を通しで読み、なんとなく使っていた部分を整理する</span></li>
+    </ul>
+    <div class="ntag">気になった</div>
+    <ul class="qlist">
+      <li><a href="https://x.com/obsidianstudio9/status/2068660208021520645?s=12" target="_blank" rel="noopener"><b>「パームスエージェント」＝Hermes Agentとは何か？</b></a> <span>HermesはAIエージェントフレームワーク。「llms-full.txtをAIに読ませ、文脈を全部渡してsetupを作らせる」手法が本質——詳細ワークフローは紹介スレッドへ→次ラン</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 Claude Code・AIシステム（6件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/obsidianstudio9/status/2068632931808010347?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HLVCXFxbMAALO3H.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">【保存版】Claude Code × NotebookLM × Obsidian「使うほど賢くなるリサーチシステム」</div><div class="vdesc">ノートブックLMとClaude Codeのつなぎ方を解説（@obsidianstudio9）</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/monokern/status/2061044198418031017?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HJf-FNjXsAE5Q3q.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claude Code + NotebookLM + Obsidian: Research Monster（英語解説）</div><div class="vdesc">英語で書かれたリサーチシステム構築ガイド。日本語訳が欲しいと感じた内容（@monokern、いいね881）</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/claudecode_ut/status/2060592264154419711?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HJiuYvSasAAS1uN.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">【保存版】プロが実践するClaude Code節約術</div><div class="vdesc">東大ClaudeCode研究所によるコスト最適化テクニック集（@ClaudeCode_UT）</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/anatolikopadze/status/2068328135611822149?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HLQR6x3WgAAoX0v.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Loops explained: Claude・GPT・Miraで何が実際に機能するか</div><div class="vdesc">AIエージェントのループ設計を3システムで比較解説（@AnatoliKopadze、いいね3,497）</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/hedgehogpython/status/2068604287933174245?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fhedgehogpython%2Fstatus%2F206860428" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claude Codeを体系的に理解するのに最適な記事</div><div class="vdesc">「なんとなく使っていた」から「体系的に理解する」への橋渡し（@HedgehogPython、いいね2,230）</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/obsidianstudio9/status/2068660208021520645?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HLVbfs_aUAEOE00.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Hermes Agentのsetup手順：まずllms-full.txtを読ませる</div><div class="vdesc">「文脈を全部渡してsetupを作らせる」流れを共有——Obsidianガチ勢流のエージェント構築法（@obsidianstudio9）</div></div>
+    </a>
+  </div>
+
+  <h2>🏛 アート・文化（1件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://artnewsjapan.com/article/77406?fbclid=PAdGRleASmOnBleHRuA2FlbQIxMQBzcnRj" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://media.artnewsjapan.com/wp-content/uploads/2026/06/19112012/GettyImages-2209066050-1000x630.webp" onerror="this.remove()"><span class="ph">ARTnews JAPAN</span></div>
+      <div class="vbody"><div class="vtitle">ルーブル美術館は「限界」に達している──新館長がフランス上院で危機感示す</div><div class="vdesc">老朽化・資金不足・2025年10月窃盗事件後の改修急務。10億ユーロ超の「ルーブル・ヌーヴェル・ルネサンス計画」進行中</div></div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
