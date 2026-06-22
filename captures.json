@@ -10,7 +10,7 @@
     "captured": "2026-06-21T00:29:24.685Z",
     "title": "DYTJREoRwP",
     "note": "llmwikiみたいなもの？",
-    "summary": ""
+    "summary": "Comment \"Obsidian\" to get the setup guide"
   },
   {
     "rid": 1766037002,
@@ -23,7 +23,7 @@
     "captured": "2026-06-20T12:55:46.189Z",
     "title": "レオ |AI使って賢く時短| (@nft_web3_reo) on Threads",
     "note": "GPT画像生成",
-    "summary": ""
+    "summary": "ChatGPTで画像生成した時に、AIっぽさを一気に変える方法。これらの画像は全く同じ解説なのに、全く違うイラストで印象が変わる。このやり方↓"
   },
   {
     "rid": 1766036411,
@@ -36,7 +36,7 @@
     "captured": "2026-06-20T12:54:13.412Z",
     "title": "Supremeのロゴに対する芸術家の痛烈なカウンター",
     "note": "",
-    "summary": ""
+    "summary": "Supremeのロゴに対する芸術家の痛烈なカウンター\n\nストリートブランドとして有名な「Supreme」のあの赤いボックスロゴ。実は、現代美術家バーバラ・クルーガー（Barbara Kruger）の作品を直接サンプリング（模倣）したものだというのは有名な話です。\nでも、その後に起きた「本家 vs 模倣」の泥沼劇と、それに対するクルーガー本人の返しが最高にパンクなので、ソース付きでディテールをまとめました。"
   },
   {
     "rid": 1765978036,
@@ -49,7 +49,7 @@
     "captured": "2026-06-20T11:57:37.114Z",
     "title": "Studio Tim Fu (@studiotimfu) • Instagram photos and videos",
     "note": "表現としてこれは面白いかも",
-    "summary": ""
+    "summary": "9,578 likes, 34 comments - studiotimfu on June 19, 2026: \"Buried Continuities\n\nexperimental sketching, a glimpse beneath the surface, where cultures continue to thrive around the monuments that define them. \n\npublished by STF Visuals\n\nIndia - Qutub Minar \n\nJapan - Horyu Ji\n\nItaly - Pisa\n\nPersia - Isfahan\n\nChina - Tang\n\nUzbekistan - Bukhara\"."
   },
   {
     "rid": 1765793273,
@@ -62,7 +62,7 @@
     "captured": "2026-06-20T08:51:23.347Z",
     "title": "Seven steps for critically analysing research papers",
     "note": "論文の読み方\n素晴らしく丁寧",
-    "summary": ""
+    "summary": "A required part of this site couldn’t load. This may be due to a browser extension, network issues, or browser settings. Please check your connection, disable any ad blockers, or try using a different browser."
   },
   {
     "rid": 1765790957,
@@ -75,7 +75,7 @@
     "captured": "2026-06-20T08:48:41.159Z",
     "title": "Netflixのエンジニアが、AIのトークンを最大95%カットするOSSを公開した。",
     "note": "導入してみたい",
-    "summary": ""
+    "summary": "Netflixのエンジニアが、AIのトークンを最大95%カットするOSSを公開した。\n\nしかも精度は落ちない。元に戻せる「可逆圧縮」だから。\n\nClaudeやCursorを使っていると、地味にきついのがトークン消費。\n長いログ、RAGで取得したテキスト、複数ファイルの読み込み。\nAIに渡すたびにトークンが溶けていく。 https://t.co/kHg5dThbYU"
   },
   {
     "rid": 1765789424,
@@ -88,7 +88,7 @@
     "captured": "2026-06-20T08:47:37.090Z",
     "title": "値のつかない「ただのもの」を、美術にした人がいた。",
     "note": "民藝",
-    "summary": ""
+    "summary": "値のつかない「ただのもの」を、美術にした人がいた。\n東京・目白の「古道具坂田」。 https://t.co/kIOXZAu7A1"
   },
   {
     "rid": 1765785688,
@@ -101,7 +101,7 @@
     "captured": "2026-06-20T08:44:55.501Z",
     "title": "【実は】「メモアプリを探すより、今夜1時間だけLLM wikiを作れ」が海外で刺さっている😳",
     "note": "私が作ろうとしてるのはLLMwikiってやつだね",
-    "summary": ""
+    "summary": "【実は】「メモアプリを探すより、今夜1時間だけLLM wikiを作れ」が海外で刺さっている😳\nKarpathy発のsecond brain pattern。\nhttps://t.co/l9W8fTUxOr\n\nObsidian + LLM wiki = 知識が勝手にリンクされて育つAI。\n\n1時間で何ができるか👇\n\n・sourceをObsidianに入れる\n・LLMに読ませる"
   },
   {
     "rid": 1765717852,
@@ -114,7 +114,7 @@
     "captured": "2026-06-20T06:59:21.672Z",
     "title": "チャエン（Masa）｜ Digirise CEO，AI Company (@masahirochaen) • Instagram reel",
     "note": "セキュリティ対策大事",
-    "summary": ""
+    "summary": "33 likes, 0 comments - masahirochaen on June 19, 2026: \"【保存版】Claude Codeで絶対にしておくべきセキュリティ対策５選\n\nClaude Codeはあなたのパソコンを代わりに操作する道具。最初の設定だけで事故の多くは防げます。初心者が押さえたい5つを効く順に。\n\n①許可プロンプトを飛ばさない（permission）\n実行・編集前の確認を一行読んで承認。全許可の「—dangerously-skip-permissions」は隔離環境以外で使わない。\n\n②設定ファイルで線を引く（settings.json / permissions）\nallow・ask・denyを設定。denyにRead(./.env)やBash(rm:*)を入れ危険操作と秘密ファイルを遮断（deny最優先）。\n\n③秘密の鍵を渡さない（APIキー / .env）\nキーは貼らない・直書きしない。.envやKeychainで管理し.gitignoreへ。読み取り遮断は②のdenyで。\n\n④あやしい外部とつながない（MCP / プロンプトインジェクション）\n外部ツールやWebに悪意ある指示が紛れ、AIが乗っ取られることも。出どころ不明は拒否。\n\n⑤いきなり本番で動かさない（Git / サンドボックス）\nGit管理下でコミットしつつ作業し、/sandboxで範囲を限定。本番やホーム直下では起動しない。\n\nまずは①だけでも今日から。気になった対策はコメントで教えてください。\n\n@masahirochaen｜AIの安全な使い方を毎日発信中\n\n#ClaudeCode #生成AI #AI活用 #セキュリティ #AI初心者 プログラミング AI研修\"."
   },
   {
     "rid": 1765493949,
@@ -127,7 +127,7 @@
     "captured": "2026-06-20T04:33:14.381Z",
     "title": "レオ |AI使って賢く時短| (@nft_web3_reo) on Threads",
     "note": "これ無料？",
-    "summary": ""
+    "summary": "Claude のMCPに「OpenArt」が登場。Claudeなどのエージェントの中から直接画像・動画を生成できるのが特徴。Seedance 2.0 · GPT Image 2が使えていいですね。"
   },
   {
     "rid": 1765153773,
@@ -140,7 +140,7 @@
     "captured": "2026-06-20T00:33:51.961Z",
     "title": "谷繁さんとともに、石山さんへのインタビュー。セルフビルドはよくない言葉だ。というのが一番心にきた。常に物や現象に基礎を置いている建築家は、それを呼び習わす言葉を不断に発明し続けなければいけない。いまだその途上にある。その凄まじさ。",
     "note": "現在の世田谷村の写真？",
-    "summary": ""
+    "summary": "谷繁さんとともに、石山さんへのインタビュー。セルフビルドはよくない言葉だ。というのが一番心にきた。常に物や現象に基礎を置いている建築家は、それを呼び習わす言葉を不断に発明し続けなければいけない。いまだその途上にある。その凄まじさ。\n白井晟一の怪しさの話も聞くことができました。 https://t.co/o9xnElax4p"
   },
   {
     "rid": 1765150739,
@@ -153,7 +153,7 @@
     "captured": "2026-06-20T00:32:41.365Z",
     "title": "【話題】",
     "note": "アンソロピック社員のクロードの使い方",
-    "summary": ""
+    "summary": "【話題】\nAnthropicのエンジニア、ほぼ全員が😳\n100個以上のエージェントを同時実行してるらしい\n\nself-improving loopsを組んでいて\n実行するたびにエージェントの精度が上がる設計👇\n\nhttps://t.co/34TDoO2nYS\n\n1時間のPodcastで紹介されていた話"
   },
   {
     "rid": 1764984119,
@@ -166,7 +166,7 @@
     "captured": "2026-06-19T23:44:32.174Z",
     "title": "デザインってざっくり言うと抽象的な概念を実体化させる行為だと思うんですが、慣れてないと考えたことを「実体化させる」のって難しいんだよな…と、昨夜学生と話していて感じました。",
     "note": "磯崎新\n間\n展覧会パンフレットが見れるサイトなんてあるの",
-    "summary": ""
+    "summary": "デザインってざっくり言うと抽象的な概念を実体化させる行為だと思うんですが、慣れてないと考えたことを「実体化させる」のって難しいんだよな…と、昨夜学生と話していて感じました。\n確かにぼくも昔はすごく苦手でした。 https://t.co/B42qiwZiVs"
   },
   {
     "rid": 1764762900,
@@ -764,7 +764,7 @@
     "captured": "2026-06-14T04:59:53.265Z",
     "title": "TECTURE |テクチャー |建築•インテリアのWEBメディア (@tecture_official) • Instagram photos and videos",
     "note": "",
-    "summary": ""
+    "summary": "747 likes, 0 comments - tecture_official on May 28, 2026: \"【House in Nakano】\nLocation: Nakano-ku, Tokyo, Japan\nPrincipal use: Residence\nClient: Individual\nCompletion: 2025\nArchitects: Hiroyuki Oinuma Architect & Associates\nDesign team: Hiroyuki Oinuma\nStructural design: Yuta Mino / Mino Structural Engineers\nConstruction: Yamashita Construction\nPhotographs: Takuya Seki, Hiroyuki Oinuma\nConstruction type: New Building\nMain structure: Wood\nBuilding scale: 2 stories\nSite area: 126.50m²\nBuilding area: 61.27m²\nTotal floor area: 96.38m²\nDesign term: 2022.07-2024.06\nConstruction term: 2024.07-2025.04\n\n【中野の住宅】\n所在地：東京都中野区\n用途：戸建住宅\nクライアント：個人\n竣工：2025年\n設計：生沼広之建築設計事務所\n担当：生沼広之\n構造設計：三野裕太（三野建築構造研究所）\n施工：山下工務店\n撮影：関 拓弥、生沼広之\n工事種別：新築\n構造：木造\n規模：地上2階\n敷地面積：126.50m²\n建築面積：61.27m²\n延床面積：96.38m²\n設計期間：2022.07-2024.06\n施工期間：2024.07-2025.04\n\n*TECTUREにプロジェクト投稿してみませんか？\n投稿はプロフィールのURL https://www.tecture.jp/ から！\n\n#tecture #tecturemag \n@shuhei_yamane @tecture_official\"."
   },
   {
     "rid": 1758019900,
@@ -894,7 +894,7 @@
     "captured": "2026-06-14T04:19:58.109Z",
     "title": "GhostPoly (@ghostpolyjs) on Threads",
     "note": "モデリング？",
-    "summary": ""
+    "summary": "low-poly tool with AI"
   },
   {
     "rid": 1757930024,
@@ -959,7 +959,7 @@
     "captured": "2026-06-14T02:26:56.016Z",
     "title": "まねたろす (@manetaros_ada) on Threads",
     "note": "",
-    "summary": ""
+    "summary": "正直、\n\nアダ〇トnoteって\nかなりズルい市場だと思ってます。w\n\n需要ある。競合少ない。AI使える。\n顔出し不要。スマホでok。\n\nしかも悩みが一生なくならない。\nレス。夫婦関係。男女関係。\n\nこの辺って流行り廃りないんですよ。\nだからnoteも資産になるってわけ。\n\n僕はこのジャンルだけで月50〜100万です。\n\nやり方は、"
   },
   {
     "rid": 1757914576,
@@ -972,7 +972,7 @@
     "captured": "2026-06-14T02:23:54.946Z",
     "title": "クロニキ｜Claude Code専門家 (@chroniki_claude) on Threads",
     "note": "",
-    "summary": ""
+    "summary": "ある中国人トレーダーが、Claudeだけで本物のトレードボットを作った動画が話題になってる🧵\n\nコード経験ゼロでも31分のチュートリアルを見れば最後まで作れる内容で、無料で全部公開されてる。\nAIの進化速度を実感できた。"
   },
   {
     "rid": 1757623240,
@@ -1310,7 +1310,7 @@
     "captured": "2026-06-13T14:20:52.740Z",
     "title": "【完全版】Claude Codeを使ってSNS運用を自動化し月10万円稼ぐ方法",
     "note": "",
-    "summary": ""
+    "summary": "【完全版】Claude Codeを使ってSNS運用を自動化し月10万円稼ぐ方法"
   },
   {
     "rid": 1757420402,
@@ -1323,7 +1323,7 @@
     "captured": "2026-06-13T12:18:15.390Z",
     "title": "うずら🌻threads×note攻略 (@uzura_note) on Threads",
     "note": "共感",
-    "summary": ""
+    "summary": "賛否両論あると思うけど、私は100円noteを作らない。確かに0→1は達成しやすい。でも、"
   },
   {
     "rid": 1757420025,
@@ -1336,7 +1336,7 @@
     "captured": "2026-06-13T12:17:06.523Z",
     "title": "おサボりくん｜ClaudeCodeで暮らす人 (@osabori_claudecode0) on Threads",
     "note": "",
-    "summary": ""
+    "summary": "正直に話します。Threads収益だけで暮らしてます。ClaudeCodeで投稿を作成→反応率高いnoteを書く→導線設置これだけ。Macbook1台とClaudeCodeがあれば全仕組み作れます。具体的な手順は、"
   },
   {
     "rid": 1757419202,
@@ -1349,7 +1349,7 @@
     "captured": "2026-06-13T12:16:11.351Z",
     "title": "Leon Tech (@leon.tech1) • Instagram reel",
     "note": "",
-    "summary": ""
+    "summary": "1,722 likes, 80 comments - leon.tech1 on April 11, 2026: \"Stop Wasting Money on Claude Code \n\n#AIcoding #ClaudeAI #OpenClaw #TechTips #SaveMoney\"."
   },
   {
     "rid": 1757386723,
@@ -1362,7 +1362,7 @@
     "captured": "2026-06-13T11:25:33.151Z",
     "title": "フーコ先生|CGパース×AIコーチング (@fuko_archviz_labo) on Threads",
     "note": "",
-    "summary": ""
+    "summary": "昨日学んだAI✕Archicad\nとても試行錯誤されている貴重なお話を伺えました。\n\nMCPが正式に出ていない状況で、パネル構造自動作成、立体ボリューム自動チェックなどなどとても興味深いお話でした。\n\nClaudeを活用されている方多くなってきました。\nそのなかで、きっとこの話は、ちょっと難易度高め！？と感じたお話があったので、\n主婦目線で再解釈。\n\n✅️スキル (Skill)・・・AIに渡す「手順書・マニュアル」料理のレシピ📖\n✅️エージェント (Agent)・・・目標を渡すと自分で考えて動くAIで、レシピを見ながら作る料理人👨‍🍳\n✅️ハーネス (Harness)・・・エージェントを動かす「実行環境・足場」キッチンそのもの🏠(コンロ、冷蔵庫、タイマー)"
   },
   {
     "rid": 1757385755,
@@ -1375,7 +1375,7 @@
     "captured": "2026-06-13T11:23:22.953Z",
     "title": "クロニキ｜Claude Code専門家 (@chroniki_claude) on Threads",
     "note": "",
-    "summary": ""
+    "summary": "Claude Codeに「なんとなくのUI指示」を渡し続けてた人、ちょっと待って。\n\nAnthropicのデザイン責任者が実演してる方法を試したら、毎回バラバラだったUIが一気に揃い始めた。\n何を渡したかを整理します。"
   },
   {
     "rid": 1757384545,
@@ -1388,7 +1388,7 @@
     "captured": "2026-06-13T11:21:03.595Z",
     "title": "レオ |AI使って賢く時短| (@nft_web3_reo) on Threads",
     "note": "",
-    "summary": ""
+    "summary": "AIで自動化するなら、これらの用語と意味を分かっておかないと上手くできないことが多い。特にClaude。"
   },
   {
     "rid": 1757040857,
@@ -1401,7 +1401,7 @@
     "captured": "2026-06-13T05:17:37.411Z",
     "title": "Dev (@dev.aicreator) • Instagram reel",
     "note": "",
-    "summary": ""
+    "summary": "9,096 likes, 434 comments - dev.aicreator on June 11, 2026: \"Claude + Higgsfield duo is unreal \n\nComment “claude” for prompt\"."
   },
   {
     "rid": 1757040746,
@@ -1414,7 +1414,7 @@
     "captured": "2026-06-13T05:17:11.532Z",
     "title": "@fumiya_ai • Instagram reel",
     "note": "",
-    "summary": ""
+    "summary": "6,564 likes, 12K comments - fumiya_ai on June 2, 2026: \"好きな映画教えて\n@fumiya_ai \n#ai\"."
   },
   {
     "rid": 1757010443,
@@ -1427,7 +1427,7 @@
     "captured": "2026-06-13T04:11:36.239Z",
     "title": "steven (@stee.ugc) • Instagram reel",
     "note": "",
-    "summary": ""
+    "summary": "Higgsfield MCP is printing for me rn 🤣 #higgsfield #higgsfieldpartner"
   },
   {
     "rid": 1757010109,
@@ -1440,7 +1440,7 @@
     "captured": "2026-06-13T04:10:09.043Z",
     "title": "Kuromi (@kurogamez) • Instagram reel",
     "note": "",
-    "summary": ""
+    "summary": "Can’t gatekeep motion anymore! Claude x Motion da method to print"
   },
   {
     "rid": 1757009195,
@@ -1453,7 +1453,7 @@
     "captured": "2026-06-13T04:07:30.851Z",
     "title": "あお｜Threads×AIで本業を超えた会社員 (@ao_threads_log) on Threads",
     "note": "",
-    "summary": ""
+    "summary": "有料noteで“需要が強いジャンル”整理してみた。\n実際、この辺は市場かなり強いです。"
   },
   {
     "rid": 1757008932,
@@ -1466,7 +1466,7 @@
     "captured": "2026-06-13T04:06:21.995Z",
     "title": "ナベ👨‍💻 | 仕事で使えるChatGPT・AI活用術 (@nabe_ai_chatgpt) • Instagram reel",
     "note": "",
-    "summary": ""
+    "summary": "2,881 likes, 8,556 comments - nabe_ai_chatgpt on April 10, 2026: \"リールの最後の部分で\n実はとっても大事な情報に触れています🤫\n\nぜひ見逃さずに\n受け取っていただきたいポイントです👍\n\n最近のAIって\n本当に驚くほど進化していて\nしかも使い方がめちゃくちゃ簡単なんです。\n\n「AIってなんだか難しそう…」\nと感じている人もまだまだ多いですが\n実際は専門的な知識や高度なスキルがなくても\n誰でもすぐに扱えてしまうんです。\n\nしかも\nただ“簡単”なだけじゃありません。\n\nAIを取り入れることで、\n普段自分でコツコツ時間をかけてやっていたことが、\nあっという間に、\nしかも高クオリティで仕上がってしまうんです🔥\n\n効率もスピードも段違いだから、\n「正直、もうこれを使わない理由はない」\nと言っても過言ではありません🙅‍♂️\n\n一度でも試してみれば、\n「これ、もっと早く知っていれば…」\nと思うはずです。\n\nそれくらい\n使った瞬間に生活や仕事の質が\n変わるようなインパクトがあります。\n\nだからこそ、\n少しでも気になったタイミングがあれば\nその瞬間に触れてみてほしいんです。\n\n“やってみるかどうか”の一歩で、\n未来の成果がまったく変わってきます。\n\nそして、これからも\n“本当に役立つ”AIツールや活用法を厳選して\n皆さんにわかりやすく共有していきます🫡\n\nただ流行りだから紹介するのではなく、\nちゃんと「便利さ」「実用性」「使いやすさ」\nを備えたものをお届けするので\nぜひ今後の発信も楽しみにしていてください💪\"."
   },
   {
     "rid": 1757008795,
@@ -1479,7 +1479,7 @@
     "captured": "2026-06-13T04:05:53.462Z",
     "title": "Archived (@archived) • Instagram photos and videos",
     "note": "",
-    "summary": ""
+    "summary": "16K likes, 26 comments - archived on June 3, 2026: \"Shiro Kuramata’s collaboration with Issey Miyake was one of the most significant relationships between fashion and interior design in postwar Japan. Beginning in the mid-1970s, Kuramata designed numerous Issey Miyake boutiques and showrooms, creating spaces that reflected Miyake’s experimental approach to clothing through minimalism, innovative materials, and a sense of lightness. Rather than treating stores as conventional retail environments, Kuramata conceived them as immersive spatial experiences that blurred the boundary between architecture, furniture, and fashion.\n\nBetween 1976 and 1988, Shiro Kuramata designed a number of retail environments for Issey Miyake, including the original From First boutique in Tokyo, the Matsuya Ginza and Shinjuku Marui stores, the Issey Miyake Men shops in Kyoto, Kokura, and Minami Aoyama, as well as Miyake’s installation at Bergdorf Goodman in New York. Across these projects, Kuramata translated Miyake’s experimental approach to fashion into physical space through minimalist interiors, innovative materials, and sculptural display systems. His stores emphasized lightness, openness, and spatial clarity, helping redefine the fashion boutique as a conceptual environment rather than simply a place to sell clothing.\"."
   },
   {
     "rid": 1757008514,
@@ -1492,7 +1492,7 @@
     "captured": "2026-06-13T04:05:23.742Z",
     "title": "こうじ｜本当使えるAIだけ教えるお兄さん (@koji_aionisan) • Instagram reel",
     "note": "",
-    "summary": ""
+    "summary": "138 likes, 0 comments - koji_aionisan on June 12, 2026: \"AIを使う時の作業効率爆上がりツールです！\n\nAIの最新情報は\n@koji_aionisan をフォロー！\n\n#ai #業務効率化 #claude\"."
   },
   {
     "rid": 1757008255,
@@ -1518,7 +1518,7 @@
     "captured": "2026-06-13T04:04:39.880Z",
     "title": "Tyler Payne (@imtylerpayne) • Instagram reel",
     "note": "",
-    "summary": ""
+    "summary": "1,910 likes, 1,598 comments - imtylerpayne on May 12, 2026: \"Copy this prompt into Claude ↓\n\nI made $300k with only 5,000 followers on Instagram (biggest month was $38.5k).\n\nI also helped a coach stuck at $1,000 a month, hit $13,000 a month. \nAnd experts who couldn’t sell at $500 start closing at $3,000+.\n\nSo yes these concepts work.\n\nHere’s the Claude prompt:\n\n“You are an expert in personal branding, AI leverage, and offer creation. You’re going to guide me, step by step, to build a profitable personal brand on Instagram.\n\nHere’s my information:\nWhat I know how to do / my area of expertise: [fill in]\nWhere I am on Instagram right now: [follower count]\nMy monthly revenue goal: [fill in]\n\nBased on this, give me a complete action plan:\n\nSTEP 1: FIND MY PROFITABLE POSITIONING\nAnalyze my expertise and identify 3 specific angles where it meets real market demand. For each: who I’m talking to, the exact problem I solve, and why someone would pay for it. Then help me choose the one with the highest successful potential.\n\nSTEP 2: BUILD MY SIMPLE OFFER\nBased on my positioning, help me build an offer plan: an irresistible title, the transformation I’m promising, the delivery structure, and the price in a ready to sell format.\n\nSTEP 3: BUILD MY CONTENT SYSTEM\nCreate a 30-day content plan to attract the right people and move them toward my offer. Give me: 3 messaging pillars, 10 specific reel and carousel ideas with hooks, and a posting cadence I can actually stick to.\n\nSTEP 4: BUILD MY SALES SYSTEM\nShow me how to turn content into clients. How to use stories to sell. How to use DMs and automation to turn my followers into customers. Give me the copy and paste scripts and templates.”\n\nTo be honest with you, this prompt can be very effective at a beginner level. \n\nBut if you’re ready to move beyond basic prompts… I built a plug and play Offer Concept Creator that will build you an entire offer concept ready to sell: an entire course outline, customer access levels, pricing structures, and more. \n\nComment “OFFER” and I’ll send you this plug and play Offer Concept Creator… so you can build a strong foundation for your profitable personal brand 🫡\"."
   },
   {
     "rid": 1757008058,
@@ -1531,7 +1531,7 @@
     "captured": "2026-06-13T04:04:16.757Z",
     "title": "雨宮 一聖 (@issey_amemiya_pg) • Instagram reel",
     "note": "",
-    "summary": ""
+    "summary": "51 likes, 0 comments - issey_amemiya_pg on June 9, 2026: \".\nClaude CodeでAIの秘書を手に入れた。\nスプレッドシートの限界を感じていた時の出会い。\nダッシュボードを作ったら、見やすい・入力できる・AIが動く。\n建築家の仕事が、また一段アップデートされた。\n\n※次回テーマ希望あればコメント欄へどうぞ\n\n#ClaudeCode #AI活用 #設計ノウハウ #建築学生 #建築家\"."
   },
   {
     "rid": 1757007836,
@@ -1544,7 +1544,7 @@
     "captured": "2026-06-13T04:03:57.400Z",
     "title": "優はAIを使いたいんだ (@yu_ai_tukaitai) • Instagram reel",
     "note": "",
-    "summary": ""
+    "summary": "日本でも遂に事例が…！#生成ai #chatgpt #ai活用"
   },
   {
     "rid": 1757007213,
@@ -1557,7 +1557,7 @@
     "captured": "2026-06-13T04:02:23.293Z",
     "title": "Toby Pham (@tobyinternetmoney) • Instagram reel",
     "note": "",
-    "summary": ""
+    "summary": "180 likes, 51 comments - tobyinternetmoney on June 12, 2026: \"Claude + Higgsfield is insane😭\n\nComment \"W\" for prompt!\"."
   },
   {
     "rid": 1757007033,
@@ -1570,7 +1570,7 @@
     "captured": "2026-06-13T04:01:34.354Z",
     "title": "キョウヘイ｜サクッと学べる最新AI活用 (@kyoheiai) • Instagram reel",
     "note": "",
-    "summary": ""
+    "summary": "2,060 likes, 500 comments - kyoheiai on April 4, 2026: \"【Claudeに「稼げ」と命令したら、90日プランが出てきた】\n\n稼げない理由、たぶん「迷い」です。\n\nだからAIに\n・オファーは1つ\n・チャネルも1つ\nって強制。\n\nさらに\nトッププレイヤーになりきらせて\n90日プランまで作らせる。\n\nすると\nアイデアじゃなくて\n行動が見える。\n\n結局、\n稼げる人って\nやることが明確な人。\n\n迷いを消したい人は一度試してみてください！！\n\n#claude #ai活用\"."
   },
   {
     "rid": 1757006347,
@@ -1583,7 +1583,7 @@
     "captured": "2026-06-13T04:00:30.447Z",
     "title": "Isaiah Rios (@zayluiss) • Instagram reel",
     "note": "",
-    "summary": ""
+    "summary": "How to install blender mcp on Claude"
   },
   {
     "rid": 1757005283,
@@ -1596,7 +1596,7 @@
     "captured": "2026-06-13T03:59:35.466Z",
     "title": "トム | マーケ社長のAI活用術 (@weekend_startup) • Instagram reel",
     "note": "サイト紹介いいね",
-    "summary": ""
+    "summary": "304 likes, 0 comments - weekend_startup on May 7, 2026: \"ECサイトやるならこのAIツール使って！\n\n#ai #おすすめ #web #起業\"."
   },
   {
     "rid": 1757004428,
@@ -1609,7 +1609,7 @@
     "captured": "2026-06-13T03:58:31.381Z",
     "title": "こうじ｜本当使えるAIだけ教えるお兄さん (@koji_aionisan) • Instagram reel",
     "note": "",
-    "summary": ""
+    "summary": "1,727 likes, 956 comments - koji_aionisan on April 23, 2026: \"Webサイトのクオリティを一段と上げる3Dモデリングの埋め込み方を徹底解説！\n3Dとコメントして動画で解説したスキルを受け取ってください！\n\nAIの最新情報は\n@koji_aionisan をフォロー！\n\n#ai #aiwebsites #業務効率化 #ウェブサイト #claude\"."
   },
   {
     "rid": 1756999069,
@@ -1622,7 +1622,7 @@
     "captured": "2026-06-13T03:44:13.259Z",
     "title": "ボンド｜最高月収7800万 (@bond_ai123) on Threads",
     "note": "マネタイズ",
-    "summary": ""
+    "summary": "みんな勘違いしてるけど、Claude Opus 4.8で月100万の最短ルートはこれ。\n\nPerplexity Deep Researchで「今売れてるnoteテーマ」を特定（30分）\n↓\nClaude Opus 4.8に構成から本文まで書かせる（2時間）\n↓\nClaude Codeで投稿テキストを100本量産（30分）\n↓\n毎日Xに10投稿して3ヶ月でフォロワー3,000人\n↓\nnote1冊5,000円でローンチ\n↓\n50〜100部売れて25〜50万\n↓\n高単価アフィと組み合わせて月100万超え\n\n全工程の課金額：月2万以下。\n1ヶ月で余裕で回収できる。\n\n参考になった人はいいね。"
   },
   {
     "rid": 1756997030,
@@ -1635,7 +1635,7 @@
     "captured": "2026-06-13T03:38:41.516Z",
     "title": "いっち｜売れないnoteをAIで月50万に (@note_income) on Threads",
     "note": "ノートマネタイズ",
-    "summary": ""
+    "summary": "【 7日でnoteのフォロワーを2倍にする手順 】\n\n❶ Day1：noteのプロフィールを「誰の・どんな悩み・どうなる」で書き直す\n❷ Day2：固定ピン記事の1行目を「結果を約束する文」に変える\n❸ Day3：過去記事のうち反応の良かった3本にスキ・コメントの引用を追記\n❹ Day4：Threadsで「noteで○○を書いてます」と自己紹介投稿\n❺ Day5：他の発信者のnoteを3本読んで、心に残った1文を自分のnoteで引用\n❻ Day6：自分のnote記事のタイトルを「開きたくなる形」に1本だけ書き直す\n❼ Day7：1週間のフォロワー増減を記録。0.5%超なら継続、未満なら❶に戻る\n\n「いいnote書いてるのにフォロワー増えない」の正体は、noteアカウント自体の整備不足。\n7日で動くから、今週末に試してみて。"
   },
   {
     "rid": 1756993318,
@@ -1648,7 +1648,7 @@
     "captured": "2026-06-13T03:29:35.359Z",
     "title": "Caimar Salizi (@caimarsalizi) • Instagram reel",
     "note": "3dプリンター\n収納",
-    "summary": ""
+    "summary": "20K likes, 540 comments - caimarsalizi on May 8, 2026: \"Organize\nI used the Gridfinity system to fix my drawer.\n\nIts soo tricky to find something that can organize cables that works and its simple.\nPrinted with @bambulab_official oo\n\nComment “OCD” and i’ll send you my organization guide\n\n#husky #gridfinity #3dprinting\"."
   },
   {
     "rid": 1756992486,
@@ -1661,7 +1661,7 @@
     "captured": "2026-06-13T03:27:31.418Z",
     "title": "Ciro Miguel (@sputnik__57) • Instagram photo",
     "note": "表現",
-    "summary": ""
+    "summary": "7,754 likes, 45 comments - sputnik__57 on June 8, 2026: \"Parthenon with Lina Bo Bardi’s MASP columns. Photomontage.\n\n@masp\"."
   },
   {
     "rid": 1756992394,
@@ -1674,7 +1674,7 @@
     "captured": "2026-06-13T03:26:56.427Z",
     "title": "qupe | diseño 3D (@qupe.estudio) • Instagram reel",
     "note": "3dprinter",
-    "summary": ""
+    "summary": "2,553 likes, 5 comments - qupe.estudio on May 23, 2026: \"Maqueta arquitectónica desmontable realizada en impresión 3D.\nUna forma de representar el proyecto con detalle, escala y lectura espacial.\n\n@estudiosm651 x @qupe.estudio \n\n#maquetasarquitectonicas #impresion3d #arquitetura #diseñoarquitectonico\"."
   },
   {
     "rid": 1756989320,
@@ -1687,7 +1687,7 @@
     "captured": "2026-06-13T03:19:59.099Z",
     "title": "AI寺子屋 Craft Lab | AIを教える×作る×繋げる (@terakoyacraftlab) on Threads",
     "note": "めちゃ大事かも",
-    "summary": ""
+    "summary": "Claude Code界隈で知らないと損かもしれません😳\n\nClaude Marketplaces\n\n20,000以上のSkills\n8,000以上のMCP Server\n2,500以上のMarketplace\n\nがまとまっているサイトです。\n\n最近話題の\n\n⚡ Superpowers\n🧠 Claude Mem\n📚 Context7\n\nもここから探せます。\n\nAIの性能差より\n「どのSkillを追加するか」の時代が来てるかも。\n\nこれはブックマーク推奨です🔖"
   },
   {
     "rid": 1756974534,
@@ -1700,7 +1700,7 @@
     "captured": "2026-06-13T03:04:52.774Z",
     "title": "【日本郵政グループ｜郵便ポストが見ている世界】",
     "note": "面白アイデア",
-    "summary": ""
+    "summary": "【日本郵政グループ｜郵便ポストが見ている世界】\n日本郵政グループのブランドコミュニケーション施策のアートディレクション、企画を担当しました。 https://t.co/t8qni9sVL4"
   },
   {
     "rid": 1756970684,
@@ -1713,7 +1713,7 @@
     "captured": "2026-06-13T02:58:51.832Z",
     "title": "生成AIプロダクトのUIトレンド12選",
     "note": "保存版",
-    "summary": ""
+    "summary": "https://t.co/KXKITcHMD2"
   },
   {
     "rid": 1756965733,
@@ -1726,7 +1726,7 @@
     "captured": "2026-06-13T02:47:25.655Z",
     "title": "あお｜Threads×AIで本業を超えた会社員 (@ao_threads_log) on Threads",
     "note": "マネタイズ参考",
-    "summary": ""
+    "summary": "僕が、note運用でClaude Codeに\n“自動”でやらせてること全部書く。"
   },
   {
     "rid": 1756965562,
@@ -1739,7 +1739,7 @@
     "captured": "2026-06-13T02:46:55.589Z",
     "title": "レオ |AI使って賢く時短| (@nft_web3_reo) on Threads",
     "note": "これ使いこなしたいね",
-    "summary": ""
+    "summary": "（厳選）各マネタイズに使うAIツールまとめ\n\nアフィリエイト動画 → Higgsfield\nアプリ販売 → Claude fable\nインスタリール → Manus\nアバター動画 → Hengen\nLINEスタンプ → ChatGPT\nnote販売 → cowork\n全自動タスク → Claudecode, Codex\n縦長ショート → Gemini Omni\nボイス生成 → Fish Audio\nデザイン → Claude Design\n公式LINE → Manus"
   },
   {
     "rid": 1756963206,
@@ -1752,7 +1752,7 @@
     "captured": "2026-06-13T02:41:30.822Z",
     "title": "AIの空白 (@ainokuhaku) on Threads",
     "note": "マネタイズ参考",
-    "summary": ""
+    "summary": "これでサブスク収益作れたww\nChatGPTチートすぎわろた"
   },
   {
     "rid": 1756961206,
@@ -1765,7 +1765,7 @@
     "captured": "2026-06-13T02:38:42.361Z",
     "title": "コード社長 (@codeshacho) on Threads",
     "note": "クロード情報",
-    "summary": ""
+    "summary": "これやばいです。\nClaude Code「v2.1.172」で、マルチレベルサブエージェント階層化が実装されました。サブエージェント（=分身）が、さらに別の分身を呼べるようになった神アプデです。これまでは、メインのClaude Codeが分身を呼ぶ「1階建て」構造でしたが、"
   },
   {
     "rid": 1756959796,
@@ -1778,7 +1778,7 @@
     "captured": "2026-06-13T02:35:13.109Z",
     "title": "おサボりくん｜ClaudeCodeで暮らす人 (@osabori_claudecode0) on Threads",
     "note": "数稼ぐ型のフローだよね",
-    "summary": ""
+    "summary": "正直に話すと、ClaudeCodeだけで暮らしています。人件費0円、オフィス不要、24時間稼働。おサボりの僕は旅行してるだけ。先月もこの体制で生活費を賄えた。ここに辿り着くまでにやった順番は、"
   },
   {
     "rid": 1756959517,
@@ -1791,7 +1791,7 @@
     "captured": "2026-06-13T02:34:37.528Z",
     "title": "カイゾウド_ラボ (@kaizoudo_lab) on Threads",
     "note": "便利機能サイト作成いいかもね",
-    "summary": ""
+    "summary": "Claude Fable 5でパターン描画サイトつくってみた\n有名パターンが枯渇したので、それもFableに開発させてる"
   },
   {
     "rid": 1756958172,
@@ -1804,7 +1804,7 @@
     "captured": "2026-06-13T02:32:39.435Z",
     "title": "きつねちゃん🦊|patreon=海外版note提唱者 (@kitsune_tyan_ai) on Threads",
     "note": "海外市場を相手にするのもありかもね",
-    "summary": ""
+    "summary": "Patreonってさ、海外版noteなんだよね。\n日本1.2億（1.5%）だけで戦うの、もったいない。\n世界80億（98.5%）に置くと、\n$10（約1,500円）がコーヒー代で入る。\n円安、逆手に取ろ。"
   },
   {
     "rid": 1756955279,
@@ -1817,7 +1817,7 @@
     "captured": "2026-06-13T02:27:31.365Z",
     "title": "はく｜初心者にAI教えるプロ (@haku_ai_gpt02) on Threads",
     "note": "noteクロードマネタイズ参考",
-    "summary": ""
+    "summary": "「いや、ライティングで月10万は無理だよ…？？」って思ってたフリーランスがClaudeに1,000円note書かせたら【￥410,570】発生してるんだけど、このプロンプト貼るだけでいいよ、￼"
   },
   {
     "rid": 1756954536,
@@ -1830,7 +1830,7 @@
     "captured": "2026-06-13T02:25:50.530Z",
     "title": "やっとtwinmotionに入れた、、、",
     "note": "これってなんのモデリングソフトなんだろう",
-    "summary": ""
+    "summary": "やっとtwinmotionに入れた、、、\n設備とかの森的要素をどう丁度よく目立たせようか、、、"
   },
   {
     "rid": 1756953618,
@@ -1843,7 +1843,7 @@
     "captured": "2026-06-13T02:24:27.945Z",
     "title": "りゅうと｜AI×スレッズで月7桁の人 (@ryuto_sns1) on Threads",
     "note": "マネタイズ解説",
-    "summary": ""
+    "summary": "やばいww 「Claude Fable5」でマイクラ作ったら再現性凄すぎww 誰でもプロンプト1発でOK。「アプリ」「ゲーム」「システム」開発すれば1日5万円も夢じゃない。やり方は、"
   },
   {
     "rid": 1756953469,
@@ -1856,7 +1856,7 @@
     "captured": "2026-06-13T02:23:40.647Z",
     "title": "イサム|AIで飯食う男 (@isamu_aimeshi) on Threads",
     "note": "",
-    "summary": ""
+    "summary": "Claudeに「文章書いて」「要約して」とだけ打ち続けてる人は、\nスーパーコンピューターで電卓を叩いているようなもの。\n\n指示の組み立てを10個変えたら、出力がまるで別物になった。\n\n全部書く。"
   },
   {
     "rid": 1756948237,
@@ -1869,7 +1869,7 @@
     "captured": "2026-06-13T02:13:12.684Z",
     "title": "Mietsu (@mietsu0704) • Instagram photos and videos",
     "note": "建築紹介アカウントもありかもね",
-    "summary": ""
+    "summary": "487 likes, 10 comments - mietsu0704 on June 7, 2026: \"🌳🌲🌳🌲🌳\n八ヶ岳美術館\n1979年\n村野藤吾　88歳\n諏訪土木建築(現スワテック建設株式会社)\n工期1978年12月12日-1970年11月27日\n\n鉄筋コンクリート造地上1階\n(屋根　PC製　半球型ドーム)\n\n文化庁近現代建造物緊急重要調査選定建築(長野県30建築選定)\n\n*-*-*-*-*-*-*-*\n🌲諏訪に別荘を持っていたフジサワ画廊社長・美津島氏から村野藤吾に依頼があったことが、この建物の始まり\n🍂 落葉松林の中に沈み込む建築\n村野は周囲の自然をできるだけ壊さないことを重視し、緑地を残せる現在の場所を選定。\n🦯来館者は車を降り、樹々の間の小径を歩いて建物へ向かいます。玄関前に車を横付けするのではなく、森の中を歩きながら少しずつ建築に近づくbyMurano\n🚶‍♂️ 村野藤吾が考えたアプローチ動線\n⛑️厳しい気候条件や工期、予算を考慮し、建築・設備工事ともに地元業者によって施工\n🍄地面に自然に沈み込み、森に隠れ、まるで岩やきのこが生えているかのような存在感\n🪨半円筒形の壁や半球状の屋根で構成一部に切妻屋根があるものの、全体としては丸いフォルムで統一\n*-*-*-*-*-*-*-*-*-*-*\n　\n👀八ヶ岳美術館へ。\n6月28日まで開催されている、村野藤吾氏の孫娘・アバロス村野敦子さんの個展「Side Stories: 建築と喪失」と、同時開催の「森との会話」へどうしても行きたくて、トークイベントの日を狙って5月に🚙訪れました。\n\nまずは八ヶ岳美術館の建築を体感し、「森との会話」で美術館が誕生するまでの経緯を学び、「Side Stories: 建築と喪失」では、失われた建築の姿や、ご家族だからこそ撮ることのできた視点の村野建築写真に失われていく村野建築への思いがさらに深まりました。そして親しみやすい敦子さんとお話しする機会にも恵まれ、夢のような時間を過ごしました。\n\nトークイベントでは、個展開催に至るまでのエピソードや建築家の方のお話も実に興味深く、とにかく内容が盛りだくさん。ここには書ききれません😅\n\nただ一つ言えるのは、村野藤吾建築に興味があるなら、ぜひ足を運ぶべきだということ。得るものが本当に多い。\n\n建築そのものの感想は――\n\n外観は、雪の中に現れるかまくらのようでもあり、北方民族の住居のようでもある不思議な佇まい。村野先生が最後までこだわったドアノブを押して中へ入ると、どこかアットホームな空気に迎えられます。\n\n靴を脱ぎ、さらに扉を開けた瞬間、目の前に広がるのはドレープが波打つ天井。その美しさに思わず口があんぐり。赤坂迎賓館で見せた、布を巧みに扱う村野先生の感性が、ここで新たな形となって花開いたかのような、品格と艶やかさを感じます。\n\n円形の内壁もまた有機的で心地よく、窓の外に目を向ければ、屋根と屋根の間からひょっこり顔を出すガーゴイル。\n\nこんな美術館、他にはありません。\n\n秋🍂や冬⛄️もまた格別の魅力があるそうです。違う季節にもぜひ訪れたい。\n\n八ヶ岳美術館は、よいぞー。\n\n#アバロス村野敦子#村野藤吾#八ヶ岳美術館#原村\"."
   },
   {
     "rid": 1756948019,
@@ -1882,7 +1882,7 @@
     "captured": "2026-06-13T02:12:13.679Z",
     "title": "Flashforge (@flashforge_official) • Instagram reel",
     "note": "いつかやってみたいね",
-    "summary": ""
+    "summary": "2,791 likes, 47 comments - flashforge_official on May 26, 2026: \"Customizing your T-shirt with 3D printing. 😼\n\nPrinted on: Flashforge Creator 5\nDesign by: ArtEleria(makerworld)\n\n#3dprinting #Creator5 #diy #flashforge\"."
   },
   {
     "rid": 1756947514,
@@ -1895,7 +1895,7 @@
     "captured": "2026-06-13T02:11:10.309Z",
     "title": "おもしろ雑学TV (@waku_wakutrivia) • Instagram reel",
     "note": "こういうアカウントってマネタイズしてるのかな",
-    "summary": ""
+    "summary": "17K likes, 158 comments - waku_wakutrivia on April 22, 2026: \"勝慎太郎の雑学\n\n#おもしろい #雑学\"."
   },
   {
     "rid": 1756945495,
@@ -1908,7 +1908,7 @@
     "captured": "2026-06-13T02:09:26.541Z",
     "title": "Jaky ✷ (@becometheory) • Instagram reel",
     "note": "CD収納参考",
-    "summary": ""
+    "summary": "becometheory on May 16, 2026: \"el organizador de mis sueños 🥹💘\n\n#cds #cdcollection\"."
   },
   {
     "rid": 1756944703,
@@ -1921,7 +1921,7 @@
     "captured": "2026-06-13T02:08:30.974Z",
     "title": "タピオカマンの世界バズ動画 (@tapiokamanbuzz) • Instagram reel",
     "note": "このアカウントどうやって運用してるんだろう",
-    "summary": ""
+    "summary": "建築学生のポテチ素養試験"
   },
   {
     "rid": 1756487204,

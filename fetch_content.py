@@ -5,7 +5,8 @@
 #   x.com / twitter.com → syndication endpoint（無料・無認証）
 #   instagram.com       → og:meta を facebookexternalhit UA で取得（無料・無認証）
 #   それ以外（ニュース等）→ 汎用Webリーダー（og/meta + 本文テキスト抽出）
-# 依存は標準ライブラリのみ（urllib）。クラウドでも追加インストール不要。
+# 依存は標準ライブラリのみ（urllib）＋オプション: youtube-transcript-api（pip install で追加）。
+# youtube-transcript-api が未インストールの場合も他の取得は正常動作する（graceful degradation）。
 # 各取得は失敗しても例外で落とさず ok=False を返す（完走優先）。
 #
 # 使い方:
@@ -15,6 +16,13 @@
 import sys, re, json, html, string, urllib.request, urllib.error, urllib.parse
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+# youtube-transcript-api（オプション依存）
+try:
+    from youtube_transcript_api import YouTubeTranscriptApi as _YTApi
+    _YT_TRANSCRIPT_AVAILABLE = True
+except ImportError:
+    _YT_TRANSCRIPT_AVAILABLE = False
 
 BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
               "(KHTML, like Gecko) Chrome/125.0 Safari/537.36")
@@ -177,18 +185,40 @@ def fetch_threads(url):
 
 
 # ---------- YouTube ----------
+def _yt_video_id(url):
+    """YouTube URL から 11文字の video ID を抽出。失敗時は ""。"""
+    m = re.search(r"(?:v=|youtu\.be/|shorts/)([A-Za-z0-9_-]{11})", url)
+    return m.group(1) if m else ""
+
+
+def _yt_transcript(vid_id):
+    """transcript を取得して先頭1500字の文字列を返す。失敗時は ""。"""
+    if not _YT_TRANSCRIPT_AVAILABLE or not vid_id:
+        return ""
+    try:
+        segs = _YTApi.get_transcript(vid_id, languages=["ja", "en"])
+        full = " ".join(s.get("text", "") for s in segs)
+        return full[:1500]
+    except Exception:
+        return ""
+
+
 def fetch_youtube(url):
-    """YouTube oEmbed（無認証・無料）: タイトル・チャンネル名・サムネ取得"""
+    """YouTube oEmbed（無認証・無料）: タイトル・チャンネル名・サムネ取得 + transcript"""
+    vid_id = _yt_video_id(url)
     oe_url = "https://www.youtube.com/oembed?url=" + urllib.parse.quote(url, safe="") + "&format=json"
     st, txt = _get(oe_url, BROWSER_UA)
     if st == 200 and txt.strip():
         try:
             d = json.loads(txt)
             title = d.get("title", "")
+            transcript = _yt_transcript(vid_id)
+            text = (title + "\n\n" + transcript).strip() if transcript else title
             return {"ok": True, "type": "youtube", "url": url,
-                    "title": title[:80], "text": title,
+                    "title": title[:80], "text": text,
                     "author": d.get("author_name", ""), "handle": "",
-                    "cover": d.get("thumbnail_url", "")}
+                    "cover": d.get("thumbnail_url", ""),
+                    "has_transcript": bool(transcript)}
         except Exception:
             pass
     # フォールバック: og:meta
@@ -198,9 +228,13 @@ def fetch_youtube(url):
         og_desc  = _meta(txt, "og:description")
         og_img   = _meta(txt, "og:image")
         if og_title:
+            transcript = _yt_transcript(vid_id)
+            text_base = og_desc or og_title
+            text = (og_title + "\n\n" + transcript).strip() if transcript else text_base
             return {"ok": True, "type": "youtube", "url": url,
-                    "title": og_title[:80], "text": og_desc or og_title,
+                    "title": og_title[:80], "text": text,
                     "author": "", "handle": "", "cover": og_img or "",
+                    "has_transcript": bool(transcript),
                     "note": "og:meta fallback"}
     return {"ok": False, "type": "youtube", "reason": "oEmbed & og:meta 失敗", "url": url}
 
