@@ -3,6 +3,15 @@ import urllib.request
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
+# fetch_content.py が同じディレクトリにある前提でインポート
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+  from fetch_content import fetch_content as _fetch_content
+  _FETCH_AVAILABLE = True
+except ImportError:
+  _FETCH_AVAILABLE = False
+  print("WARN: fetch_content.py が見つかりません。summary フェーズをスキップします。")
+
 # ============================================================================
 # Vault非依存版（A-1, 2026-06-20）
 #   真実源 = 公開リポ内の captures.json（このスクリプトと同じディレクトリ）。
@@ -140,6 +149,40 @@ for it in items:
 if created:
   recs = sorted(recs, key=lambda r: (r.get("captured") or r.get("date") or ""), reverse=True)
   save_captures(recs)
+
+# --- fetch フェーズ：新規アイテム（summary が空のもの）のコンテンツ取得 ---
+# 対象: 今回 Raindrop から新規取り込みした分のうち summary が空のもの
+# fetch_content.py を使い、取得結果の text を summary に書く。
+# 失敗時は空のまま記録してスキップ（エラーで止まらない）。
+if created and _FETCH_AVAILABLE:
+  # 今回新規に追加されたアイテムだけ対象（全件 backfill は行わない）
+  # "captured" が今回の Raindrop items の rid に含まれるものを特定
+  new_rids = {it["_id"] for it in items}
+  fetch_updated = 0
+  for r in recs:
+    if r["rid"] not in new_rids:
+      continue
+    if r.get("summary", "") != "":
+      continue
+    url = r.get("source", "")
+    if not url:
+      continue
+    try:
+      result = _fetch_content(url)
+      if result.get("ok"):
+        # text フィールドを summary として使用（title は触らない）
+        r["summary"] = (result.get("text") or "").strip()[:500]
+        fetch_updated += 1
+      else:
+        # 失敗時は空のまま（reason をログに出す）
+        print("WARN: fetch 失敗 rid=%s reason=%s" % (r["rid"], result.get("reason", "unknown")))
+    except Exception as e:
+      print("WARN: fetch 例外 rid=%s %s" % (r["rid"], e))
+  if fetch_updated:
+    save_captures(recs)
+    print("fetch_content: %d 件の summary を更新しました" % fetch_updated)
+  else:
+    print("fetch_content: summary 更新対象なし（新規 %d 件はすべて取得済みか失敗）" % created)
 
 # --- グラフ構築フェーズ：captures.json の全件から作る ---
 nodes = []

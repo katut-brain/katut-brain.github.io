@@ -38,11 +38,10 @@ def _get(url, ua, timeout=12, max_bytes=600_000):
 
 def _meta(htmltext, prop):
     """<meta property|name="prop" content="..."> を拾って unescape。"""
-    for attr in ("property", "name"):
-        m = re.search(r'<meta\s+%s=["\']%s["\'\]\s+content=["\'](.*?)["\'\]\s*/?>' % (attr, re.escape(prop)),
-                      htmltext, re.I | re.S)
-        if m:
-            return html.unescape(m.group(1)).strip()
+    m = re.search(r'<meta\s+(?:property|name)=["\']%s["\']\s+content=["\'](.*?)["\']' % re.escape(prop),
+                  htmltext, re.I | re.S)
+    if m:
+        return html.unescape(m.group(1)).strip()
     return ""
 
 
