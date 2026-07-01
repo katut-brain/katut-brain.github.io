@@ -1,0 +1,101 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-07-01 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-07-01 の振り返り</h1>
+  <div class="meta">保存1件｜Fableでの「記憶の再構成」体験がClaude Codeの記憶ファイル運用に接続</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存は1件のみだが、内容は普段AI活用で追っている論点の核心に触れている。conao_3氏はエージェント「Fable」との2日間の作業で「一番頼んで良かった」のはコード生成でも設計相談でもなく、<b>記憶／MEMORYの再構成</b>だったと述べている。自作の記憶システムを持つ開発者が、それでもエージェントに記憶の棚卸しを頼む価値を認めた点が signal。さらに本人は「ClaudeCodeビルトインの記憶ファイルを使っている場合も同じように適用できる」と一般化しており、CLAUDE.md的な永続コンテキストの運用そのものが、単なる指示の置き場ではなく定期的に再構成・整理すべき対象だという示唆になっている。</p>
+    <p>1件のみのため「作りたい」か「知る／紹介したい」かで言えば、直接自分の運用に跳ね返る「気づき」の保存であり、実装意欲に近い。</p>
+    <ul class="pts">
+      <li><b>記憶は書きっぱなしでは劣化する</b>：エージェントに記憶ファイルの棚卸し・再構成を定期的に依頼する運用が有効そう</li>
+      <li><b>自作システムとの比較検証</b>：既製の記憶運用（Fable）と自作システムの両方を知る人物の発言なので、比較の解像度が高い</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>自分のClaude Codeの記憶ファイル（CLAUDE.md等）は今どれくらい肥大化・散らかっているか／「記憶の再構成」を自分のワークフローに定期タスクとして組み込むならどのくらいの頻度が適切か</div>
+  </section>
+
+  <h2>🤖 AI・ツール（1件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/conao_3/status/2065815666310238330?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fconao_3%2Fstatus%2F2065815666310238330%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Fableで一番良かった依頼は「記憶の再構成」</div><div class="vdesc">自作の記憶システムを持つ開発者が語る、記憶ファイル運用の一般化可能な知見（@conao_3）</div></div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
