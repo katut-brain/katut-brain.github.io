@@ -1,0 +1,101 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-07-05 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-07-05 の振り返り</h1>
+  <div class="meta">保存1件｜Claude(Fable)にツール群を全部渡して「稼いでこい」と投げた報告</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存はThreadsの1件のみだが、内容は「AIに何を委ねられるか」という通奏低音を鋭く突く報告だった。投稿者はClaude Fableに対し、MCP・プラグイン・コネクタ・プロジェクト・スキルを全部組み合わせて「〇〇のビジネスで10万円稼いでこい」という抽象的な指示を投げたところ、本当に一通り実行して成果を出してきたという。指示の抽象度と実行の具体度のギャップをAIが自力で埋めた、という点が驚きの核。ただし文面は「ただ」で途切れており、その後に続くはずの留保・注意点（費用対効果・法的グレーゾーン・成果の再現性など）が読めていない。</p>
+    <p>ユーザーの興味軸で見ると、これは「作りたい」よりも「知る／仕組みを解剖したい」側の保存に近い——ツール統合によるエージェント自律実行という仕組み自体への関心が強く出ている一日だった。</p>
+    <ul class="pts">
+      <li><b>抽象指示→自律実行</b>：ゴールだけ渡せば手段はAIが選んで組み立てる、というエージェント運用の一例</li>
+      <li><b>「ただ」で切れている</b>：留保が本文に含まれている可能性が高く、続きを読む価値がある</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>自分の作業（建築リサーチ・キュレーション）で「ゴールだけ渡して手段はAIに委ねる」形に置き換えられるタスクはどれか／このスレッドの「ただ」の続きに何が書かれているか</div>
+  </section>
+
+  <h2>🤖 AI・ツール（1件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.threads.com/@nft_web3_reo/post/DaZST7rEtny?xmt=AQG0tj_qDAued8GtxzpxipF7jsqqwnF0uQI45S1wpCkAUzejKy_kNOxXoHj7IS1RMXCsPP22&slof=1" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-sea5-1.cdninstagram.com/v/t51.2885-19/438994557_451037874250335_4414586883994485425_n.jpg?efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4zMDAuYzIifQ&_nc_ht=scontent-sea5-1.cdninstagram.com&_nc_cat=103&_nc_oc=Q6cZ2gHTMHDYgs0uFlv6FMTDOmkV5O9LHIBggqbZIJUqrPFfgNPve93_lbrbFDz1YXPUVFg&_nc_ohc=ESrJ2OZaqOQQ7kNvwG2lMn-&_nc_gid=Tv_bSgjBkceCeWPl1xLLjg&edm=APs17CUBAAAA&ccb=7-5&oh=00_AQBHl0RSg4HvvLh0hE0xpOrpSZ5odwhp7w1trkIjLQWFUg&oe=6A5077D2&_nc_sid=10d13b" onerror="this.remove()"><span class="ph">Threads</span></div>
+      <div class="vbody"><div class="vtitle">Claude Fableにツール群を全部渡して「10万円稼いでこい」</div><div class="vdesc">MCP・プラグイン・コネクタ・プロジェクト・スキルを組み合わせ自律実行。成果は出た、ただし本文は「ただ」で途切れる（@nft_web3_reo）</div></div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
