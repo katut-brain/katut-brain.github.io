@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-07-21 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 思考ネットワークへ戻る</a>
+  <h1>2026-07-21 の振り返り</h1>
+  <div class="meta">SANAA「Estratos Vivos」がエクアドル国立博物館コンペを制した1件</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存はSANAA率いるチームの「Estratos Vivos（生きた地層）」案が、エクアドル国立博物館（MuNa）設計コンペで新たな勝者に選ばれたという1件のみ。件数は少ないが、背景には「炎上→撤回→やり直し→再炎上」という公共建築コンペ特有の意思決定プロセスが凝縮されている。当初は7月6日にスペインのカンポ・バエサ＋MAODA案「Ecos del Sol」が一度勝利したが、SNS上の批判を受けて政府が結果を撤回。再コンペの結果、国際審査員の評価85%と一般投票15%（5万681人が参加）を合算した81.7点でSANAA案が新たな勝者となった。それでもなお設計への批判は止まず、文化副大臣と博物館長が辞任するという異例の展開に至っている。</p>
+    <p>note「経緯を知りたい」という好奇心を掘り下げると、これは単に「誰が勝ったか」というニュースではなく、<b>公共建築の意思決定にどこまで一般投票を組み込むべきか</b>という問いを含んでいる。建築学生としては、審査員評価と世論のあいだで評価基準がどう揺れ動いたか——コンペの「見えない設計」を追う価値がある1件。</p>
+    <ul class="pts">
+      <li><b>やり直しコンペ</b>：先行案が世論の批判で撤回され、SANAA案に交代するという異例の経緯</li>
+      <li><b>評価の内訳</b>：審査員85%＋一般投票15%（5万681人参加）で81.7点。世論の重みが定量化されている</li>
+      <li><b>決着後も続く炎上</b>：再選出後も批判が止まず副大臣・館長が辞任——「コンペの勝敗」と「正当性」は別問題という含意がある</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>公共建築コンペで一般投票の比重を上げることは民主的な正当性を高めるのか、それとも評価軸を「わかりやすさ」へ引き寄せてしまうのか——SANAAの「地層」という抽象度の高い案は、この投票構造の中でどう評価されたのか</div>
+  </section>
+
+  <h2>やりたい・気になったこと</h2>
+  <section class="notes">
+    <div class="ntag">気になった</div>
+    <ul class="qlist">
+      <li><a href="https://x.com/arquitect_viva/status/2079192854040064256?s=12" target="_blank" rel="noopener"><b>SANAA案が選ばれた経緯は？</b></a> <span>当初は別チーム（カンポ・バエサ＋MAODA）の「Ecos del Sol」が7月6日に勝利したが世論の批判で政府が撤回、コンペをやり直した末の再選出。審査85%＋一般投票15%（5万681人）で81.7点。それでも批判は続き文化副大臣・館長が辞任した</span></li>
+    </ul>
+  </section>
+
+  <h2>🏛 建築・都市（1件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/arquitect_viva/status/2079192854040064256?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HNrG4bDXIAERKuP.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">SANAA「Estratos Vivos」がエクアドル国立博物館コンペで新たな勝者に</div><div class="vdesc">地層を重ねた造形で歴史・文化・景観を統合。審査85%+投票15%で81.7点、炎上を経ての再選出</div></div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
