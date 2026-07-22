@@ -1,0 +1,128 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-07-22 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-07-22 の振り返り</h1>
+  <div class="meta">AI活用圏の4件｜Claude Codeの「ループ」を巡る一日</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存は4件すべてがAI活用圏に集中し、しかもそのうち3件が「Claude Codeのループ」という同じ語を共有していた。OCRモデルの実用ネタ（軽量モデルでPDFを一括処理）から始まり、「単発プロンプトをやめてループを回す」という運用論、Claude Code開発者本人による28分のプロンプト解説動画、そしてAnthropic公式が示した「エージェントは1つのループではなく4種（ターンベース・目標ベース・時間ベース・プロアクティブ）で動く」という整理――と、粒度の違う4つの情報が同じ問いの周りを回っている。</p>
+    <p>とりわけ「ループが未だに理解できてない」という率直なメモは、同じ日にAnthropic公式の4分類が保存されている点と合わせて読むと構造的だ。理解のギャップとその答えの候補が同日中に揃っており、これは「作りたい」より「知りたい・仕組みを掴みたい」軸が強く活性化した一日と言える。しかもこの振り返り自体が夜間スケジュールで自動生成される「時間ベースのループ」の実例であり、captures→執筆→公開という一連の作業がまさに当日保存された概念の外側から動いていることになる。</p>
+    <ul class="pts">
+      <li><b>OCR実用ネタ</b>：30億パラメータの軽量モデルが100ページPDFを分割なしで読める、という主張。試す価値がありそうという反応</li>
+      <li><b>ループ理解のギャップ</b>：「単発プロンプト→ループ運用」への移行を語る投稿に対し、素直に「まだ分からない」と記録</li>
+      <li><b>プロンプト動画への期待</b>：Claude Code開発者本人が公開した28分動画を「ダウンロードして理解する」と明記</li>
+      <li><b>4つのループという回答</b>：Anthropic公式がターン/目標/時間/プロアクティブの4分類を提示。上のギャップに対する具体的な補助線になりうる</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>自分が普段使っているのはどのループ（ターン・目標・時間・プロアクティブ）か。この毎朝の自動振り返りは「時間ベース」の具体例だとして、他にどの作業をループ化すれば「単発プロンプト」から抜け出せるか。</div>
+  </section>
+
+  <h2>やりたい・気になったこと</h2>
+  <section class="notes">
+    <div class="ntag">やりたい</div>
+    <ul class="ilist">
+      <li><a href="https://x.com/s0n_ia/status/2079215814792683614?s=12" target="_blank" rel="noopener"><b>軽量OCRモデルでPDFを一括処理する</b></a> <span>→ Unlimited-OCR（30億パラメータ、100ページPDF一括読取を主張）を試し、実用に足るか確かめる</span></li>
+      <li><a href="https://x.com/0xjokker/status/2079585205438808490?s=12" target="_blank" rel="noopener"><b>Claude Code開発者のプロンプト動画を理解する</b></a> <span>→ 28分動画をダウンロードして通しで見る。CLAUDE.mdや実践テクニックの解説とのこと</span></li>
+    </ul>
+    <div class="ntag">気になった</div>
+    <ul class="qlist">
+      <li><a href="https://x.com/nicos_ai/status/2079308810791854555?s=12" target="_blank" rel="noopener"><b>Claude Codeの「ループ」運用とは何か？</b></a> <span>同日に保存されたAnthropic公式の4分類（ターン/目標/時間/プロアクティブ）が手がかりになりそう。ただしこの投稿自体はBoris Chernyの「loop engineering」という個人の運用手法で、公式定義とは別軸→次ランで深掘り</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI活用（4件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/s0n_ia/status/2079215814792683614?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2079215785365405696/img/Zj1vpxauiCJNFQHS.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">30億パラメータの軽量モデルが100ページPDFを一括OCR</div><div class="vdesc">ページ分割なし・文脈欠落なし・クラウド課金なしを謳う中国発モデル「Unlimited-OCR」の紹介</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/nicos_ai/status/2079308810791854555?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HNswV7mX0AAdRV8.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">「もうClaude Codeに直接プロンプトしない」ループ運用の宣言</div><div class="vdesc">Fable 5に指示を出すループを常時走らせ、自分の仕事は「ループを書くこと」になったという投稿。Boris Chernyの手法と紹介</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/0xjokker/status/2079585205438808490?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2079584825380401152/img/d8r4fGnKW9UdNQCk.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claude Code開発者本人が公開した28分のプロンプト解説動画</div><div class="vdesc">300ドルの有料コース以上の内容を無料公開、との評判。CLAUDE.mdやショートカットの実践テクニックを解説</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/claudecode84/status/2079761431856394701?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HNzL_3TbAAAloSZ.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Anthropic公式「AIエージェントは4つのループで動く」</div><div class="vdesc">ターンベース・目標ベース（/goal）・時間ベース（/loop, /schedule）・プロアクティブの4分類。特にプロアクティブが強力と紹介</div></div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
