@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-07-24 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-07-24 の振り返り</h1>
+  <div class="meta">AI活用一色の7件｜Claude運用の型・無料化ミーム・建築×CGビジュアル</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存は7件すべてがAI活用クラスタ、しかもそのうち6件がClaude Code周りという珍しい偏り方をした日だった。通奏低音にあるのは「AIの出力をどう型にはめて信頼できるものにするか」という問い——CLAUDE.mdでミスを先回りして防ぐ話、Markdownをやめて仕事の形式そのものを疑う話、ループ論からグラフ論への移行話が、いずれも「道具の使い方の設計」を語っている点でつながる。curator-maker軸で言えば、今日は紹介より「使いこなしたい」が明確に活性化した日。</p>
+    <p>一方で「Claude/Fable 5級のことをタダでやる」という中国語・スペイン語圏のミーム的投稿が2件並び、これは実用というより価格への不満・皮肉の可視化として読める。唯一AI以外の接続点が建築×CGで、NOT A HOTELのCGパース公開イベントにBIGの小池良平氏が登壇したという一件——建築業界がAIビジュアライゼーションを実務に取り込み始めている具体例として、他のAI活用術と地続きに読める。</p>
+    <ul class="pts">
+      <li><b>Claude運用の型</b>：CLAUDE.md（Karpathy発、19.2万スター）とMarkdown→HTML仕事術。どちらも「AIの予測可能なミスを指示・形式で先回りして防ぐ」という一貫した設計思想</li>
+      <li><b>ループ→グラフ</b>：エージェント設計の流行語が数週間でループからナレッジグラフへ移行——土台（会社の知識構造）は変わらないという指摘は、CLAUDE.md的な「型の整備」とも響き合う</li>
+      <li><b>無料化ミーム</b>：2件が独立に「GitHubリポジトリでClaude/Fable 5級を無料化」を話題にした。真偽より、フロンティアモデルの価格に対する不満が可視化されたことが信号</li>
+      <li><b>建築×CGビジュアル</b>：NOT A HOTELのCGパース公開イベント。建築とAIビジュアライゼーションの接続が実務レベルで進んでいる一例</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>CLAUDE.mdのようなルール型設計は、ループ設計・グラフ設計とどう組み合わせるのが実践的か／「無料でClaude級」のミームは実際どこまで本当で、試す価値があるのか／NOT A HOTELのCGパース公開の内容は自分のプレゼン・ポートフォリオ制作にどう応用できるか——AI活用への関心は7/21・7/22・7/24と保存のあった日すべてで100%を占めており、直近で最も継続的に育っている軸になっている。</div>
+  </section>
+
+  <h2>🏛 建築×CG（1件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/tecture1/status/2080182579836399704?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HN5K_90bYAAkoQ0.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">NOT A HOTELのCGパースのつくりかた、大崎で公開イベント</div><div class="vdesc">建築CGビジュアルの未来をテーマに、BIGの小池良平氏がゲスト登壇</div></div>
+    </a>
+  </div>
+
+  <h2>🤖 AI・Claude運用（6件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/sumika45379/status/2080256617367703710?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HN6OXqKaIAALxRB.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">たった1枚のCLAUDE.mdが19.2万スター</div><div class="vdesc">Karpathyのコーディングルールが元ネタ。AIの予測可能なミス（過剰設計・既存パターン無視）を指示で先回りして防ぐ設計</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/masa0421arkr/status/2079317531618312220?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HNreTOZaUAAhZNN.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claude CodeチームがMarkdownをやめた理由</div><div class="vdesc">生産性が20倍に上がるというHTML仕事術。ドキュメント形式そのものを疑う視点</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/oda_nobunaga10/status/2080315097466237310?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HN7DjZ_asAACyRD.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">AIエージェント論、ループからグラフへ</div><div class="vdesc">数週間前は「ループ」一色だったが今は「グラフ」。土台は同じ——企業のナレッジグラフでマーケ業務を動かす事例</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/silencecaprompt/status/2080264413303681378?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2080024440675471360/img/NsssDNv6--LPojou.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claudeで8分でアプリをゼロから構築する動画</div><div class="vdesc">フランス語圏で拡散。プロンプトからアプリ完成までのスピード感を実演するデモ</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/meijiangai/status/2080244840173060126?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/ext_tw_video_thumb/2080244784141332480/pu/img/OrWmDh8kKJkxe6qm.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claude Codeを無料で使い続ける方法？というGitHubリポジトリが話題</div><div class="vdesc">トラフィックをDeepSeek・Kimiなど無料AIへ自動リダイレクトする仕組み。真偽不明だが「2万人が利用中」と主張</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/s0n_ia/status/2080320294539997319?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2080320258057846784/img/Oy1A-GQCvCOCJmLf.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">「無料でFable 5と同じことをするGitHubリポジトリ」というミーム</div><div class="vdesc">スペイン語圏のジョーク投稿。AnthropicのCEOが見ている、というオチでフロンティアモデルの価格を皮肉る</div></div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
