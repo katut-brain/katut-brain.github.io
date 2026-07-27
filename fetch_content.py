@@ -97,6 +97,39 @@ def _tweet_token(tid):
     return (b36(int(x)) + fs).replace("0", "").replace(".", "")
 
 
+_ARTICLE_PATH_RE = re.compile(r"/i/article/\d+")
+
+
+def _fetch_x_article(tid):
+    """X「Article」(長文記事)の本文を FxEmbed(旧FixTweet)の公開API経由で取得。無料・無認証。
+    tid には Article内部ID(x.com/i/article/<ID>)ではなく、その記事を貼った**告知ツイート自体のstatus ID**
+    を渡すこと(実測で両者は別の数値。Article内部IDをそのまま渡すと404になる)。
+    api.fxtwitter.com はレート制限が緩く(1000req/min/IP)無認証で使えるが、非公式の埋め込み修正サービスの
+    副産物APIであり、X側の仕様変更で予告なく壊れる可能性がある点は運用上留意する。
+    """
+    st, txt = _get("https://api.fxtwitter.com/i/status/%s" % tid, BROWSER_UA)
+    if st != 200 or not txt.strip():
+        return None
+    try:
+        d = json.loads(txt)
+    except Exception:
+        return None
+    tweet = d.get("tweet") or d.get("status")
+    article = (tweet or {}).get("article")
+    if not article:
+        return None
+    lines = []
+    for b in article.get("content", {}).get("blocks", []):
+        t = (b.get("text") or "").strip()
+        if not t:
+            continue
+        lines.append(("## " + t) if str(b.get("type", "")).startswith("header") else t)
+    body = "\n".join(lines)
+    if not body:
+        return None
+    return {"title": article.get("title", ""), "body": body[:20000]}
+
+
 def fetch_x(url):
     m = re.search(r"/status/(\d+)", url)
     if not m:
@@ -115,8 +148,9 @@ def fetch_x(url):
     media = [md.get("media_url_https", "") for md in d.get("mediaDetails", []) if md.get("media_url_https")]
     tweet_text = d.get("text", "")
 
-    # t.co 展開: 本文テキストから最初の t.co リンクを抽出して記事本文を取得
+    # t.co 展開: 本文テキストから最初の t.co リンクを抽出して記事本文(またはX Article本文)を取得
     article_text = ""
+    article_title = ""
     depth = "full"
     missing = []
     tco_matches = re.findall(r"https://t\.co/\S+", tweet_text)
@@ -125,13 +159,20 @@ def fetch_x(url):
         try:
             expanded = _expand_tco(tco_url)
             if expanded:
-                # スキップ対象ドメインでなければ記事本文を取得
-                exp_host = re.sub(r"^https?://", "", expanded).split("/")[0].lower()
-                is_skip = any(exp_host.endswith(skip) for skip in _TCO_SKIP_HOSTS)
-                if not is_skip:
-                    web_result = fetch_web(expanded)
-                    if web_result.get("ok") and web_result.get("text", ""):
-                        article_text = web_result["text"]
+                if _ARTICLE_PATH_RE.search(expanded):
+                    # X Article: 元ツイートのtid(Article内部IDではない)でFxEmbed経由取得
+                    art = _fetch_x_article(tid)
+                    if art:
+                        article_title = art["title"]
+                        article_text = art["body"]
+                else:
+                    # スキップ対象ドメイン(他ツイートへのリンク等)でなければ記事本文を取得
+                    exp_host = re.sub(r"^https?://", "", expanded).split("/")[0].lower()
+                    is_skip = any(exp_host.endswith(skip) for skip in _TCO_SKIP_HOSTS)
+                    if not is_skip:
+                        web_result = fetch_web(expanded)
+                        if web_result.get("ok") and web_result.get("text", ""):
+                            article_text = web_result["text"]
         except Exception:
             pass
 
@@ -141,10 +182,11 @@ def fetch_x(url):
 
     text = tweet_text
     if article_text:
-        text = tweet_text + "\n\n記事本文:\n" + article_text[:1000]
+        label = ("X Article: " + article_title) if article_title else "記事本文"
+        text = tweet_text + "\n\n" + label + ":\n" + article_text
 
     return {"ok": True, "type": "x", "url": url,
-            "title": re.sub(r"\s+", " ", tweet_text or "").strip()[:80],
+            "title": (article_title or re.sub(r"\s+", " ", tweet_text or "").strip())[:80],
             "text": text,
             "author": u.get("name", ""), "handle": u.get("screen_name", ""),
             "date": (d.get("created_at", "") or "")[:10],
