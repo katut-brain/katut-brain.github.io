@@ -5,7 +5,8 @@
 #   x.com / twitter.com → syndication endpoint（無料・無認証）
 #   instagram.com       → og:meta を facebookexternalhit UA で取得（無料・無認証）
 #   それ以外（ニュース等）→ 汎用Webリーダー（og/meta + 本文テキスト抽出）
-# 依存は標準ライブラリのみ（urllib）＋オプション: youtube-transcript-api（pip install で追加）。
+# 依存は標準ライブラリのみ（urllib）＋オプション: youtube-transcript-api（requirements.txt に記載・
+# クラウドRoutineでは cloud_routine_prompt.md の手順内で明示 pip install する）。
 # youtube-transcript-api が未インストールの場合も他の取得は正常動作する（graceful degradation）。
 # 各取得は失敗しても例外で落とさず ok=False を返す（完走優先）。
 #
@@ -27,6 +28,9 @@ except ImportError:
 BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
               "(KHTML, like Gecko) Chrome/125.0 Safari/537.36")
 CRAWLER_UA = "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
+
+# t.co 展開でスキップするドメイン（同種SNSへのリンクは記事本文ではない）
+_TCO_SKIP_HOSTS = ("x.com", "twitter.com", "instagram.com", "youtube.com", "youtu.be")
 
 
 def _get(url, ua, timeout=12, max_bytes=600_000):
@@ -51,6 +55,29 @@ def _meta(htmltext, prop):
     if m:
         return html.unescape(m.group(1)).strip()
     return ""
+
+
+def _expand_tco(url):
+    """t.co URL を展開して最終 URL を返す。失敗は '' を返す。
+    t.co はJSリダイレクトを使うため、HTMLからURLを抽出する。"""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": BROWSER_UA})
+        with urllib.request.urlopen(req, timeout=8) as r:
+            body = r.read(2000).decode("utf-8", "replace")
+            # JS: location.replace("https://...")
+            m = re.search(r'location\.replace\("(https?://[^"]+)"', body)
+            if m:
+                return m.group(1)
+            # noscript: <META http-equiv="refresh" content="0;URL=https://...">
+            m2 = re.search(r'content=["\']0;URL=(https?://[^"\']+)["\']', body, re.I)
+            if m2:
+                return m2.group(1)
+            # HTTPリダイレクトで追えた場合
+            if r.url != url:
+                return r.url
+        return ""
+    except Exception:
+        return ""
 
 
 # ---------- X (Twitter) ----------
@@ -86,13 +113,44 @@ def fetch_x(url):
         return {"ok": False, "type": "x", "reason": "JSON parse 失敗", "url": url}
     u = d.get("user", {})
     media = [md.get("media_url_https", "") for md in d.get("mediaDetails", []) if md.get("media_url_https")]
+    tweet_text = d.get("text", "")
+
+    # t.co 展開: 本文テキストから最初の t.co リンクを抽出して記事本文を取得
+    article_text = ""
+    depth = "full"
+    missing = []
+    tco_matches = re.findall(r"https://t\.co/\S+", tweet_text)
+    if tco_matches:
+        tco_url = tco_matches[0]
+        try:
+            expanded = _expand_tco(tco_url)
+            if expanded:
+                # スキップ対象ドメインでなければ記事本文を取得
+                exp_host = re.sub(r"^https?://", "", expanded).split("/")[0].lower()
+                is_skip = any(exp_host.endswith(skip) for skip in _TCO_SKIP_HOSTS)
+                if not is_skip:
+                    web_result = fetch_web(expanded)
+                    if web_result.get("ok") and web_result.get("text", ""):
+                        article_text = web_result["text"]
+        except Exception:
+            pass
+
+    if tco_matches and not article_text:
+        depth = "partial"
+        missing = ["article_body"]
+
+    text = tweet_text
+    if article_text:
+        text = tweet_text + "\n\n記事本文:\n" + article_text[:1000]
+
     return {"ok": True, "type": "x", "url": url,
-            "title": re.sub(r"\s+", " ", d.get("text", "") or "").strip()[:80],
-            "text": d.get("text", ""),
+            "title": re.sub(r"\s+", " ", tweet_text or "").strip()[:80],
+            "text": text,
             "author": u.get("name", ""), "handle": u.get("screen_name", ""),
             "date": (d.get("created_at", "") or "")[:10],
             "likes": d.get("favorite_count"), "media": media,
-            "cover": media[0] if media else ""}
+            "cover": media[0] if media else "",
+            "depth": depth, "missing": missing}
 
 
 # ---------- Instagram ----------
@@ -130,7 +188,8 @@ def fetch_instagram(url):
             "title": (cap or og_title)[:80], "text": cap,
             "author": name, "handle": handle, "date": date,
             "likes": likes, "comments": comments, "cover": og_img,
-            "note": "og:descriptionは長文截断あり。フル要時はoEmbedへ昇格"}
+            "note": "og:descriptionは長文截断あり。フル要時はoEmbedへ昇格",
+            "depth": "shallow", "missing": ["visual_content", "audio_content"]}
 
 
 # ---------- Threads ----------
@@ -163,7 +222,8 @@ def fetch_threads(url):
     if post_text:
         return {"ok": True, "type": "threads", "url": url,
                 "title": post_text[:80], "text": post_text,
-                "author": author_name, "handle": handle, "cover": ""}
+                "author": author_name, "handle": handle, "cover": "",
+                "depth": "shallow", "missing": ["visual_content", "audio_content"]}
 
     # 2次: og:meta（facebookexternalhit UA）
     st, txt = _get(url, CRAWLER_UA)
@@ -179,7 +239,8 @@ def fetch_threads(url):
                     "title": post_text[:80],
                     "text": post_text,
                     "author": author_from_title or author_name, "handle": handle,
-                    "cover": og_img or "", "note": "og:meta fallback"}
+                    "cover": og_img or "", "note": "og:meta fallback",
+                    "depth": "shallow", "missing": ["visual_content", "audio_content"]}
 
     return {"ok": False, "type": "threads", "reason": "oEmbed & og:meta 失敗", "url": url}
 
@@ -191,14 +252,22 @@ def _yt_video_id(url):
     return m.group(1) if m else ""
 
 
-def _yt_transcript(vid_id):
-    """transcript を取得して先頭1500字の文字列を返す。失敗時は ""。"""
+def _yt_transcript(vid_id, max_chars=6000):
+    """字幕(優先 ja→en、無ければ取得できた最初の言語)を取得し先頭max_chars字を返す。失敗時は ""。
+    注意: youtube-transcript-api 1.x では `YouTubeTranscriptApi.get_transcript()` クラスメソッドは
+    廃止済み。インスタンスの `.fetch()` / `.list()` を使う（旧API呼び出しは黙って例外→空文字化するため要注意）。
+    """
     if not _YT_TRANSCRIPT_AVAILABLE or not vid_id:
         return ""
     try:
-        segs = _YTApi.get_transcript(vid_id, languages=["ja", "en"])
-        full = " ".join(s.get("text", "") for s in segs)
-        return full[:1500]
+        api = _YTApi()
+        try:
+            fetched = api.fetch(vid_id, languages=["ja", "en"])
+        except Exception:
+            # ja/en 字幕が無い動画: 取得できる最初の言語にフォールバック
+            fetched = next(iter(api.list(vid_id))).fetch()
+        full = " ".join(seg.text for seg in fetched).replace("\n", " ")
+        return full[:max_chars]
     except Exception:
         return ""
 
@@ -214,11 +283,14 @@ def fetch_youtube(url):
             title = d.get("title", "")
             transcript = _yt_transcript(vid_id)
             text = (title + "\n\n" + transcript).strip() if transcript else title
+            has_transcript = bool(transcript)
             return {"ok": True, "type": "youtube", "url": url,
                     "title": title[:80], "text": text,
                     "author": d.get("author_name", ""), "handle": "",
                     "cover": d.get("thumbnail_url", ""),
-                    "has_transcript": bool(transcript)}
+                    "has_transcript": has_transcript,
+                    "depth": "full" if has_transcript else "shallow",
+                    "missing": [] if has_transcript else ["transcript"]}
         except Exception:
             pass
     # フォールバック: og:meta
@@ -231,11 +303,14 @@ def fetch_youtube(url):
             transcript = _yt_transcript(vid_id)
             text_base = og_desc or og_title
             text = (og_title + "\n\n" + transcript).strip() if transcript else text_base
+            has_transcript = bool(transcript)
             return {"ok": True, "type": "youtube", "url": url,
                     "title": og_title[:80], "text": text,
                     "author": "", "handle": "", "cover": og_img or "",
-                    "has_transcript": bool(transcript),
-                    "note": "og:meta fallback"}
+                    "has_transcript": has_transcript,
+                    "note": "og:meta fallback",
+                    "depth": "full" if has_transcript else "shallow",
+                    "missing": [] if has_transcript else ["transcript"]}
     return {"ok": False, "type": "youtube", "reason": "oEmbed & og:meta 失敗", "url": url}
 
 
@@ -256,7 +331,8 @@ def fetch_web(url):
     return {"ok": True, "type": "web", "url": url,
             "title": title, "text": desc or body[:1500],
             "cover": _meta(txt, "og:image"),
-            "snippet": body[:1500]}
+            "snippet": body[:1500],
+            "depth": "full", "missing": []}
 
 
 # ---------- ディスパッチャ ----------
