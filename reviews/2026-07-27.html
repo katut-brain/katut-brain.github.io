@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-07-27 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-07-27 の振り返り</h1>
+  <div class="meta">AI・デザイン・無料ツールの8件｜「タダで力を借りる」ハック祭りとグラフエンジニアリングの継続</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の8件を貫く通奏低音は「ゲート（費用・権限・学習コスト）を迂回して力を手にする」という一点だ。PhotoGIMPはPhotoshopのサブスクを、Google AI StudioはGeminiの有料枠を、「合法だけど違法っぽい」15サイト集は広告・ペイウォールを、それぞれ無償で突破する。Appleのデザイン言語をClaude Skillとして再現する動きも、本来Apple社内に閉じたデザイン資産を模倣で手に入れる同種の運動として読める。AIツール・デザイン・実用ハックとドメインは分かれるが、いずれも「持たざる者が持つ者の力を借用する」構図で揺れていた。</p>
+    <p>グラフエンジニアリングで15体のエージェントをループ展開するという投稿は、今週22日に「ループが未だに理解できてない」と記録し、24日にも複数件Claude Code／ループ関連を保存していた関心の延長線上にある。少なくとも3日にわたって同系統の投稿を保存しており、単発の流行追いではなく育っている関心と見てよい。またこの日は「知る・紹介したい」より「これ欲しい」「使ってみよう」という作りたい軸が強く出ており、curator-maker志向のうち"作る"側の欲求が優勢だった一日だ。Claude Opus 5でのサイト制作解説やApple design skillは、建築学生としてのポートフォリオ・ウェブ表現に直結し得る。</p>
+    <ul class="pts">
+      <li><b>無料化ハックが4件</b>：PhotoGIMP・Gemini無料枠・合法サイト15選・Apple design skill。「タダで強くなる」欲求が明確に活性化した</li>
+      <li><b>グラフエンジニアリング×ループ設計</b>：今週3日目の継続関心。単発の流行ではなく、自分のAI理解が段階的に育っている過程と読める</li>
+      <li><b>作りたい軸が優勢</b>：「これ欲しー！」「使って見よっか」など、知る・紹介より実装意欲が強く出た</li>
+      <li><b>デザインの細部を集める視線</b>：Design SpellsとApple design skillが同日に並び、UIの"気持ちよさ"を構造化しようとする関心が見える</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>グラフエンジニアリングでの15エージェント並列は、これまで理解できていなかった「ループ」概念にどう答えを出すか／Apple design skillを自分のポートフォリオサイトに実際に導入したら何が変わるか／無料化ハックを集める行為自体が目的化していないか、実際に使う基準線はどこにあるか</div>
+  </section>
+
+  <h2>やりたい・気になったこと</h2>
+  <section class="notes">
+    <div class="ntag">やりたい</div>
+    <ul class="ilist">
+      <li><a href="https://x.com/angeldot_/status/2081447553930006616?s=12" target="_blank" rel="noopener"><b>グラフエンジニアリング学習しよか</b></a> <span>→ 投稿元スレッドを読み、単一プロンプトからのマルチエージェント・ループ設計パターンを1つ試す</span></li>
+      <li><a href="https://x.com/mattknowsai/status/2081421342860357679?s=12" target="_blank" rel="noopener"><b>PhotoGIMPを使って見よっか</b></a> <span>→ インストールしてPhotoshop代替として実用できるか試す</span></li>
+      <li><a href="https://x.com/guanggithub/status/2081401658647490797?s=12" target="_blank" rel="noopener"><b>apple-design Skillが欲しい</b></a> <span>→ 導入して自分のポートフォリオサイトのUIに適用してみる</span></li>
+      <li><a href="https://x.com/0xjokker/status/2081450415921439134?s=12" target="_blank" rel="noopener"><b>振り返りリストを作って残しておく</b></a> <span>→ 15サイトのリンク集を保存し、cobalt等使えそうなものから試す</span></li>
+    </ul>
+    <div class="ntag">気になった</div>
+    <ul class="qlist">
+      <li><a href="https://x.com/hank_aibtc/status/2081588558499070097?s=12" target="_blank" rel="noopener"><b>Gemini使い放題ってこと？</b></a> <span>投稿にある無料枠（15RPM・1M TPM・1500RPD）は本当らしいが、商用利用規約や継続性は未確認→次ラン</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI・エージェント（3件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/angeldot_/status/2081447553930006616?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2081447465677459456/img/PMvSPlXzzZ50KgoB.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">グラフエンジニアリングで15体の自律エージェントをループ展開</div><div class="vdesc">単一プロンプトから、タスクごとに手書きしていた従来のマルチエージェント設計をグラフ構造で置き換える手法</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/hank_aibtc/status/2081588558499070097?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2081535654086037504/img/pggORF7_kR1QMMhi.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Google AI StudioがGemini 2.5/3.6を無料枠で開放</div><div class="vdesc">クレカ登録・トライアル不要でAPIキー即発行。15RPM・1M TPM・1500RPDの無料枠を提供</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/sugurukun_ai/status/2081552377426088139?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2080946889537835008/img/_guhWTfMN8gyqrjM.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claude Opus 5でリッチな不動産サイトを作る16分解説が海外で話題</div><div class="vdesc">Pinterestで参考探し→Higgsfieldでヒーロー画像生成など、4ツールの組み合わせを解説</div></div>
+    </a>
+  </div>
+
+  <h2>🎨 デザイン・UI（2件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/guanggithub/status/2081401658647490797?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HNp0fP1bsAAVoVb.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Appleのデザイン言語を再現するClaude Skill「apple-design」</div><div class="vdesc">WWDC講演由来の流体UI・触覚フィードバック・タイポグラフィなど17原則をWeb実装用に変換</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/kgsi/status/2081219283200491602?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2080832566257672192/img/pHxmi7iC9khKOMNc.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">「無くても困らないけどあると嬉しい」UI細部集『Design Spells』</div><div class="vdesc">DiscordのHomeボタン連打で出るゴジラなど、300件超のマイクロインタラクション事例集</div></div>
+    </a>
+  </div>
+
+  <h2>🛠 無料ツール・裏技（2件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/mattknowsai/status/2081421342860357679?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HOKxrkoasAA51S9.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">PhotoGIMPでPhotoshop課金を打ち切ったブラジル人YouTuber</div><div class="vdesc">GIMPをPhotoshopと同じUI・ショートカットに変える無料パッチ。操作を覚え直す必要がない</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/0xjokker/status/2081450415921439134?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HOLGKn-XcAAdM3L.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">「違法っぽいけど実は合法」な無料サイト15選</div><div class="vdesc">動画一括保存のcobaltなど、広告・追跡・ペイウォールなしで使えるツール集</div></div>
+    </a>
+  </div>
+
+  <h2>📚 その他（1件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.instagram.com/reel/DazxVZTzsn7/?igsh=MWxjcDZkN2RwMjU2bA==" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-dfw5-1.cdninstagram.com/v/t51.82787-15/752781915_18117252088781092_1664659181870569637_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=111&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=-uBn20cPiW0Q7kNvwGfPPoT&_nc_oc=AdpJliRwdiTIR_mIS6_rmeU3Hd4CRH8_3nz00_6M-XtYXGNpqhk1-m4IeVx5M1f_ct4&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&_nc_gid=ZvJkEgRkpOwSlcHuonRzTg&_nc_ss=7b60f&oh=00_AQDgBNq96vokJ4yQA98lsDuWhgGNJlNfdoTf4h_YEI_LFg&oe=6A6D876A" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">０からのおうちワーク：海外サイトで翻訳の仕事</div><div class="vdesc">英語力なしでもClaudeを使えばOKという発信。フォロー＆保存を促すリード獲得型リール</div></div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
