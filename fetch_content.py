@@ -252,7 +252,7 @@ def _yt_video_id(url):
     return m.group(1) if m else ""
 
 
-def _yt_transcript(vid_id, max_chars=6000):
+def _yt_transcript(vid_id, max_chars=50000):
     """字幕(優先 ja→en、無ければ取得できた最初の言語)を取得し先頭max_chars字を返す。失敗時は ""。
     注意: youtube-transcript-api 1.x では `YouTubeTranscriptApi.get_transcript()` クラスメソッドは
     廃止済み。インスタンスの `.fetch()` / `.list()` を使う（旧API呼び出しは黙って例外→空文字化するため要注意）。
