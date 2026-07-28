@@ -14,7 +14,8 @@
 #   python3 fetch_content.py <url> [<url> ...]   # 指定URLを取得してJSON表示
 #   python3 fetch_content.py                     # 内蔵テストURLで動作確認
 
-import sys, os, re, json, html, string, tempfile, time, threading, urllib.request, urllib.error, urllib.parse
+import sys, os, re, json, html, string, tempfile, time, threading, ipaddress, socket, http.client
+import urllib.request, urllib.error, urllib.parse
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -682,11 +683,181 @@ def fetch_youtube(url):
     return {"ok": False, "type": "youtube", "reason": "oEmbed & og:meta 失敗", "url": url}
 
 
+# ---------- 汎用Web(fetch_web専用のSSRF対策: IPピン留め方式) ----------
+# fetch_web()は任意の外部URL(未知ドメイン)を受け付けるため、fetch_x/fetch_instagram/
+# fetch_threads/fetch_youtube等が共有する_get()(ドメイン許可リスト方式、上の_AllowlistRedirectHandler)
+# は使えない。ドメインを問わず「接続先IPアドレスがプライベート/ループバック/リンクローカル/予約/
+# マルチキャスト/未指定の範囲に該当したら拒否」という別方式で対策する
+# (Vault Brain/knowledge/ssrf-safe-url-host-validation.md の「未対応のスコープ」参照)。
+#
+# 方式(DNSリバインディング対策=IPピン留め):
+#   1. ホスト名を解決し、解決された全IPを ipaddress モジュールの範囲判定で検証する
+#      (個々のIPを拒否リストに直書きしない。10進/8進/16進等のIPv4偽装表記もsocket.inet_atonで
+#      事前に検出し、DNS解決を経由せず正しく拒否できるようにする)。
+#   2. 検証を1度でも通ったIPに接続を「固定」し、検証後に再度ホスト名で名前解決させない
+#      (検証と接続の間に別IPへ差し替えられるDNSリバインディング攻撃を塞ぐ)。
+#   3. HTTPS接続時は、証明書検証(ホスト名照合)を壊さないよう、SSLハンドシェイクの
+#      server_hostname には元のホスト名を明示的に渡す(接続先はIPだが、証明書はホスト名で照合する)。
+#   4. リダイレクトは urllib.request の自動追従を使わず手動で辿り、各ホップ(初回URL含む)で
+#      1〜3を毎回やり直す(初回URLだけ検証してリダイレクト先を素通りさせない)。
+#
+# 既存の_get()・_AllowlistRedirectHandler(上記186行目付近)は一切変更しない。このブロックは
+# fetch_web()専用の新規追加であり、他の取得経路(_get()を共有する関数群)への副作用はない。
+
+_WEB_MAX_REDIRECTS = 5
+
+
+def _is_unsafe_ip(ip_str):
+    """ipaddressモジュールの範囲判定で、プライベート/ループバック/リンクローカル/予約/
+    マルチキャスト/未指定のいずれかに該当するIPかどうかを判定する。特定IPを拒否リストに
+    直書きせず汎用的な範囲判定を使うこと(Vault Brain/mistakesで過去に指摘済みの失敗パターン)。
+    ::ffff:127.0.0.1 のようなIPv4-mapped IPv6も、Pythonのipaddressモジュールが
+    IPv6Address.is_private/is_loopback側で正しくTrueを返すため追加変換なしで判定できる
+    (実機確認済み)。
+    """
+    try:
+        ip = ipaddress.ip_address(ip_str)
+    except ValueError:
+        return True  # パース不能なら安全側に倒して拒否
+    return (ip.is_private or ip.is_loopback or ip.is_link_local or
+            ip.is_reserved or ip.is_multicast or ip.is_unspecified)
+
+
+def _literal_ip_from_host(host):
+    """hostが(標準/非標準表記いずれかの)IPアドレスリテラルなら ipaddress オブジェクトを返す。
+    通常のホスト名(DNS解決が必要)なら None を返す。
+
+    socket.inet_aton() は "2130706433"(127.0.0.1の10進整数表記)や "017700000001"(8進)、
+    "0x7f.0.0.1"(16進混在)、"127.1"(短縮形)のような非標準IPv4表記も受理する一方、
+    "example.com" 等の実ホスト名は例外を投げて弾く(実機確認済み)。ipaddress.ip_address()
+    単体では上記の非標準表記を文字列としては受理しない("2130706433"は文字列だとValueError)ため、
+    inet_atonでの追加チェックが無いとこの偽装表記でSSRF対策(DNSベースの解決→検証)を素通りされる
+    (getaddrinfoが偽装表記を解決できずDNS失敗になるか、OSによっては解決してしまう可能性があり
+    プラットフォーム依存で対策が効かないケースが生まれるため、DNS解決の前でIP偽装を確定的に検出する)。
+    """
+    try:
+        return ipaddress.ip_address(host)
+    except ValueError:
+        pass
+    try:
+        return ipaddress.IPv4Address(socket.inet_aton(host))
+    except (OSError, ValueError):
+        return None
+
+
+def _resolve_pinned_ip(host):
+    """hostを検証し、接続に使ってよい単一のIPアドレス文字列を返す。
+    戻り値: (ip_str, reason)。reasonが非空なら拒否/失敗(ip_strはNone)。
+
+    名前解決で複数IPが返る場合、そのうち1つでもプライベート/予約範囲に該当すれば
+    フェイルクローズで全体を拒否する(一部の解決結果だけが不正でも、そのホスト経由での
+    接続自体を信頼しない=安全側に倒す)。
+    """
+    literal = _literal_ip_from_host(host)
+    if literal is not None:
+        if _is_unsafe_ip(str(literal)):
+            return None, "private/reserved IPへの接続を拒否"
+        return str(literal), ""
+    try:
+        infos = socket.getaddrinfo(host, None)
+    except Exception as e:
+        return None, "DNS解決失敗: %s" % e
+    candidates = []
+    for _family, _socktype, _proto, _canonname, sockaddr in infos:
+        ip_str = sockaddr[0]
+        if ip_str not in candidates:
+            candidates.append(ip_str)
+    if not candidates:
+        return None, "DNS解決結果が空"
+    for ip_str in candidates:
+        if _is_unsafe_ip(ip_str):
+            return None, "private/reserved IPへの接続を拒否"
+    return candidates[0], ""
+
+
+class _PinnedHTTPConnection(http.client.HTTPConnection):
+    """検証済みIPへ直接接続するHTTPConnection(IPピン留め=DNSリバインディング対策)。
+    self.host(Hostヘッダに使われる)は元のホスト名のまま保持し、TCP接続先だけを
+    事前に検証済みのIPアドレスに差し替える(接続時に再度ホスト名で名前解決させない)。
+    """
+    def __init__(self, host, port, pinned_ip, timeout):
+        super().__init__(host, port, timeout=timeout)
+        self._pinned_ip = pinned_ip
+
+    def connect(self):
+        self.sock = socket.create_connection((self._pinned_ip, self.port), self.timeout)
+
+
+class _PinnedHTTPSConnection(http.client.HTTPSConnection):
+    """HTTPS版IPピン留めConnection。TCP接続先は検証済みIPだが、SSLハンドシェイクの
+    server_hostname には元のホスト名を明示的に渡すことで証明書のホスト名照合(cert検証)を
+    壊さない(IPアドレスに対する証明書照合になってしまうと大半のサイトで検証エラーになるため)。
+    """
+    def __init__(self, host, port, pinned_ip, timeout):
+        super().__init__(host, port, timeout=timeout)
+        self._pinned_ip = pinned_ip
+
+    def connect(self):
+        sock = socket.create_connection((self._pinned_ip, self.port), self.timeout)
+        self.sock = self._context.wrap_socket(sock, server_hostname=self.host)
+
+
+def _safe_get_web(url, ua, timeout=12, max_bytes=600_000):
+    """fetch_web()専用の安全GET。(status, text, reason) を返す。
+    プライベート/ループバック/リンクローカル/予約/マルチキャスト/未指定のIPアドレスへの接続を
+    拒否する(SSRF対策・詳細は本ブロック冒頭のコメント参照)。失敗/拒否時は status=None または
+    エラーstatus、text=""。reasonは拒否/失敗理由の説明で、SSRF対策によるブロック時は
+    "private/reserved IPへの接続を拒否" のように専用の文言を返す(タイムアウト等の単純な通信失敗
+    "タイムアウト"/"接続失敗: ..." とは文言上明確に区別できる)。
+    """
+    current_url = url
+    for _ in range(_WEB_MAX_REDIRECTS + 1):
+        parts = urllib.parse.urlsplit(current_url)
+        if parts.scheme not in ("http", "https"):
+            return None, "", "非対応スキーム: %s" % (parts.scheme or "(なし)")
+        host = _host_of(current_url)
+        if not host:
+            return None, "", "ホスト名を抽出できない"
+        ip, reason = _resolve_pinned_ip(host)
+        if reason:
+            return None, "", reason
+        port = parts.port or (443 if parts.scheme == "https" else 80)
+        path = parts.path or "/"
+        if parts.query:
+            path += "?" + parts.query
+        conn = None
+        try:
+            if parts.scheme == "https":
+                conn = _PinnedHTTPSConnection(host, port, ip, timeout)
+            else:
+                conn = _PinnedHTTPConnection(host, port, ip, timeout)
+            conn.request("GET", path, headers={"User-Agent": ua, "Accept-Language": "en-US,en;q=0.9"})
+            resp = conn.getresponse()
+            status = resp.status
+            if status in (301, 302, 303, 307, 308):
+                location = resp.getheader("Location")
+                resp.read(max_bytes)  # ボディを読み切ってから次ホップへ(接続を正しく終端する)
+                if not location:
+                    return status, "", "リダイレクト先Locationヘッダが無い"
+                current_url = urllib.parse.urljoin(current_url, location)
+                continue
+            raw = resp.read(max_bytes)
+            return status, raw.decode("utf-8", "replace"), ""
+        except (socket.timeout, TimeoutError):
+            return None, "", "タイムアウト"
+        except Exception as e:
+            return None, "", "接続失敗: %s" % e
+        finally:
+            if conn is not None:
+                conn.close()
+    return None, "", "リダイレクトが多すぎる"
+
+
 # ---------- 汎用Web ----------
 def fetch_web(url):
-    st, txt = _get(url, BROWSER_UA)
+    st, txt, reason = _safe_get_web(url, BROWSER_UA)
     if not txt:
-        return {"ok": False, "type": "web", "reason": "取得失敗 (status=%s)" % st, "url": url}
+        return {"ok": False, "type": "web", "reason": reason or ("取得失敗 (status=%s)" % st), "url": url}
     title = _meta(txt, "og:title")
     if not title:
         mt = re.search(r"<title[^>]*>(.*?)</title>", txt, re.I | re.S)
