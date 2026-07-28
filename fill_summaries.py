@@ -2,8 +2,10 @@
 # fill_summaries.py — captures.json の summary="" エントリを fetch_content で埋める
 #
 # 使い方:
-#   python3 fill_summaries.py          # 全件実行
-#   python3 fill_summaries.py --test   # 先頭5件のみ（動作確認用）
+#   python3 fill_summaries.py                     # 全件実行（summary="" または depth="partial"）
+#   python3 fill_summaries.py --test              # 先頭5件のみ（動作確認用）
+#   python3 fill_summaries.py --targets rids.txt   # rids.txt に列挙した rid のみ対象
+#                                                  # （1行1rid。グローバルな summary/depth 条件は無視）
 
 import sys, os, json, re
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -38,20 +40,54 @@ def classify_skip(url, result):
     return "Web失敗"
 
 
+def parse_targets_file(path):
+    """--targets で指定されたファイルから rid のリストを読む。
+    1行1rid（改行区切り）のプレーンテキスト。空行・#始まりのコメント行は無視。"""
+    rids = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            rids.append(int(line))
+    return rids
+
+
 def main():
     test_mode = "--test" in sys.argv
+
+    targets_path = None
+    if "--targets" in sys.argv:
+        idx = sys.argv.index("--targets")
+        try:
+            targets_path = sys.argv[idx + 1]
+        except IndexError:
+            print("ERROR: --targets にはファイルパスを指定してください")
+            sys.exit(1)
 
     # captures.json を読む
     with open(CAPTURES_PATH, encoding="utf-8") as f:
         data = json.load(f)
 
     total_all = len(data)
-    # summary="" または depth="partial" のエントリを収集
-    targets = [
-        (i, e) for i, e in enumerate(data)
-        if e.get("summary", "") == ""           # 未取得
-        or e.get("depth") == "partial"          # 部分取得（upgrade 可能）
-    ]
+
+    if targets_path:
+        # --targets 指定時: グローバルな summary/depth 条件は無視し、
+        # 指定された rid のレコードのみを対象にする（機能Bへの影響ゼロ）。
+        wanted_rids = set(parse_targets_file(targets_path))
+        targets = [(i, e) for i, e in enumerate(data) if e.get("rid") in wanted_rids]
+        found_rids = {e.get("rid") for _, e in targets}
+        missing_rids = wanted_rids - found_rids
+        if missing_rids:
+            print(f"WARN: --targets に指定された rid のうち captures.json に見つからないもの: {sorted(missing_rids)}")
+        print(f"[--targets モード] 指定rid: {len(wanted_rids)}件 / captures.json内で一致: {len(targets)}件 / 総件数: {total_all}件")
+    else:
+        # 既定動作（後方互換）: summary="" または depth="partial" のエントリを収集
+        targets = [
+            (i, e) for i, e in enumerate(data)
+            if e.get("summary", "") == ""           # 未取得
+            or e.get("depth") == "partial"          # 部分取得（upgrade 可能）
+        ]
     total_targets = len(targets)
 
     # 内訳を表示
@@ -61,7 +97,7 @@ def main():
     if test_mode:
         targets = targets[:TEST_LIMIT]
         print(f"[TEST モード] 先頭{TEST_LIMIT}件を対象（summary空: {empty_count}件, depth=partial: {partial_count}件 / 総件数: {total_all}件）")
-    else:
+    elif not targets_path:
         print(f"[開始] 対象: {total_targets}件（summary空: {empty_count}件, depth=partial: {partial_count}件）/ 総件数: {total_all}件")
 
     done = 0

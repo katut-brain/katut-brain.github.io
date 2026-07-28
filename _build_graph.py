@@ -36,14 +36,35 @@ def get_raindrop_token():
 # Raindrop 取得は「新規キャプチャの取り込み（import）」のためだけ。
 # 取得失敗（トークン無し・オフライン・クラウドIP制限等）でも captures.json から
 # グラフは描けるよう try で包む。
+# ページネーション対応（perpage=50 の1リクエスト天井による取りこぼしバグの修正。
+# 詳細: Vault Brain/knowledge/raindrop-api-pagination-50limit.md）。
+MAX_PAGES = 50  # 50ページ * 50件/page = 2500件の安全弁（無限ループ防止）
 items = []
 try:
   TOKEN = get_raindrop_token()
   if not TOKEN:
     raise RuntimeError("Raindrop トークンが取得できません（RAINDROP_TOKEN 未設定）")
-  req = urllib.request.Request("https://api.raindrop.io/rest/v1/raindrops/0?perpage=50&sort=-created",
-                               headers={"Authorization": "Bearer " + TOKEN})
-  items = json.load(urllib.request.urlopen(req)).get("items", [])
+  expected_count = None
+  page = 0
+  while page < MAX_PAGES:
+    req = urllib.request.Request(
+      "https://api.raindrop.io/rest/v1/raindrops/0?perpage=50&sort=-created&page=%d" % page,
+      headers={"Authorization": "Bearer " + TOKEN})
+    data = json.load(urllib.request.urlopen(req))
+    if expected_count is None:
+      expected_count = data.get("count")
+    page_items = data.get("items", [])
+    if not page_items:
+      break
+    items.extend(page_items)
+    page += 1
+  if page >= MAX_PAGES:
+    print("WARN: Raindrop 取得が MAX_PAGES=%d に到達（強制終了。取りこぼしの可能性あり）" % MAX_PAGES)
+  if expected_count is not None and expected_count != len(items):
+    print("WARN: Raindrop count 不一致（API count=%s, 取得件数=%d）。部分的な結果で続行します" %
+          (expected_count, len(items)))
+  else:
+    print("Raindrop 取得件数: %d 件（count と一致）" % len(items))
 except Exception as e:
   print("WARN: Raindrop 取得をスキップ（captures.json のみでグラフを構築）:", e)
 
@@ -132,6 +153,7 @@ for it in items:
     "captured": it.get("created","") or "",
     "title": title,
     "note": note,
+    "tags": it.get("tags", []) or [],  # Raindrop側のタグをミラー（機能Bの毎朝振り返りから参照可能にする）
     "summary": "",   # 未要約。後段（Haiku要約・本文取得=fetch_content）で埋める
   })
   existing.add(rid)
