@@ -5,16 +5,16 @@
 #   x.com / twitter.com → syndication endpoint（無料・無認証）
 #   instagram.com       → og:meta を facebookexternalhit UA で取得（無料・無認証）
 #   それ以外（ニュース等）→ 汎用Webリーダー（og/meta + 本文テキスト抽出）
-# 依存は標準ライブラリのみ（urllib）＋オプション: youtube-transcript-api（requirements.txt に記載・
-# クラウドRoutineでは cloud_routine_prompt.md の手順内で明示 pip install する）。
-# youtube-transcript-api が未インストールの場合も他の取得は正常動作する（graceful degradation）。
+# 依存は標準ライブラリのみ（urllib）＋オプション: youtube-transcript-api, google-genai
+# （いずれもrequirements.txtに記載・クラウドRoutineではcloud_routine_prompt.mdの手順内で明示pip installする）。
+# 未インストール/APIキー未設定でも他の取得は正常動作する（graceful degradation）。
 # 各取得は失敗しても例外で落とさず ok=False を返す（完走優先）。
 #
 # 使い方:
 #   python3 fetch_content.py <url> [<url> ...]   # 指定URLを取得してJSON表示
 #   python3 fetch_content.py                     # 内蔵テストURLで動作確認
 
-import sys, re, json, html, string, urllib.request, urllib.error, urllib.parse
+import sys, os, re, json, html, string, tempfile, time, urllib.request, urllib.error, urllib.parse
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -24,6 +24,14 @@ try:
     _YT_TRANSCRIPT_AVAILABLE = True
 except ImportError:
     _YT_TRANSCRIPT_AVAILABLE = False
+
+# google-genai（オプション依存。X動画の音声+映像理解に使う。GEMINI_API_KEY環境変数も必要）
+try:
+    from google import genai as _genai
+    _GEMINI_AVAILABLE = True
+except ImportError:
+    _GEMINI_AVAILABLE = False
+_GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 
 BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
               "(KHTML, like Gecko) Chrome/125.0 Safari/537.36")
@@ -97,7 +105,20 @@ def _tweet_token(tid):
     return (b36(int(x)) + fs).replace("0", "").replace(".", "")
 
 
-_ARTICLE_PATH_RE = re.compile(r"/i/article/\d+")
+# X Articleへのリンクは `/i/article/<id>`(内部ID形式)と `/<username>/article/<id>`(著者名形式)の
+# 両方が実在する(実測: 後者も200を返す)。プレフィックス問わず "/article/<数字>" にマッチさせるが、
+# これはx.com/twitter.comドメイン限定で判定すること(ドメイン無制約だと一般ニュースサイトの
+# よくあるURL構造 "/article/<数字>" まで誤ってX Article扱いしてしまう回帰があったため=要注意)。
+_ARTICLE_PATH_RE = re.compile(r"/article/\d+")
+_X_ARTICLE_HOSTS = ("x.com", "twitter.com")
+
+
+def _is_x_article_url(url):
+    """展開後のURLがX Article(x.com系ドメイン配下の/article/<id>)かどうかを判定する。"""
+    host = re.sub(r"^https?://", "", url).split("/")[0].lower()
+    if not any(host.endswith(h) for h in _X_ARTICLE_HOSTS):
+        return False
+    return bool(_ARTICLE_PATH_RE.search(url))
 
 
 def _fetch_x_article(tid):
@@ -130,6 +151,64 @@ def _fetch_x_article(tid):
     return {"title": article.get("title", ""), "body": body[:20000]}
 
 
+_X_VIDEO_MAX_BYTES = 100_000_000  # 100MB上限。Gemini Files APIは2GBまで対応しているが、
+# 毎朝の無人ジョブの処理時間を抑えるための実務的な上限(実測: 51MBの動画が存在するため
+# 従来の30MB上限は不十分だった)。上限超過・ダウンロード途中切断は理解を諦めて""を返す
+# (不完全な動画をGeminiに渡すと、切れた部分だけを根拠にした要約が生成されうるため=禁止)。
+
+
+def _fetch_x_video_understanding(video_url, max_chars=4000):
+    """X投稿に添付された動画(mp4)をダウンロードし、Gemini API(無料枠)で
+    映像+音声の内容を理解して日本語要約を返す。
+    GEMINI_API_KEY未設定/google-genai未インストール/失敗時は "" を返す(graceful degradation。
+    その場合カード生成はタイトル・キャプションのみで続行する＝完走優先)。
+    """
+    if not _GEMINI_AVAILABLE or not _GEMINI_API_KEY:
+        return ""
+    tmp_path = None
+    try:
+        req = urllib.request.Request(video_url, headers={"User-Agent": BROWSER_UA})
+        with urllib.request.urlopen(req, timeout=60) as r:
+            content_length = r.headers.get("Content-Length")
+            data = r.read(_X_VIDEO_MAX_BYTES + 1)
+        if len(data) > _X_VIDEO_MAX_BYTES:
+            return ""  # 上限超過。不完全データをGeminiに渡さない
+        if content_length is not None:
+            try:
+                if int(content_length) != len(data):
+                    return ""  # 途中で切断された(接続断等)。不完全データをGeminiに渡さない
+            except ValueError:
+                pass
+        fd, tmp_path = tempfile.mkstemp(suffix=".mp4")
+        with os.fdopen(fd, "wb") as f:
+            f.write(data)
+
+        client = _genai.Client(api_key=_GEMINI_API_KEY)
+        uploaded = client.files.upload(file=tmp_path)
+        waited = 0
+        while getattr(uploaded.state, "name", "") == "PROCESSING" and waited < 100:
+            time.sleep(4)
+            waited += 4
+            uploaded = client.files.get(name=uploaded.name)
+        if getattr(uploaded.state, "name", "") != "ACTIVE":
+            # 長尺動画はGemini側の処理が数分かかる場合がある。無人ジョブの時間予算を優先し、
+            # 100秒待って終わらなければ理解を諦める(missing: video_contentで正直に記録)。
+            return ""
+        resp = client.models.generate_content(
+            model="gemini-flash-latest",
+            contents=[uploaded, "この動画に映っている内容と、話されている・聞こえる音声の内容を、日本語で具体的に要約して。"],
+        )
+        return (resp.text or "").strip()[:max_chars]
+    except Exception:
+        return ""
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except Exception:
+                pass
+
+
 def fetch_x(url):
     m = re.search(r"/status/(\d+)", url)
     if not m:
@@ -145,8 +224,37 @@ def fetch_x(url):
     except Exception:
         return {"ok": False, "type": "x", "reason": "JSON parse 失敗", "url": url}
     u = d.get("user", {})
-    media = [md.get("media_url_https", "") for md in d.get("mediaDetails", []) if md.get("media_url_https")]
+    media_details = d.get("mediaDetails", [])
+    media = [md.get("media_url_https", "") for md in media_details if md.get("media_url_https")]
     tweet_text = d.get("text", "")
+
+    # 画像: 高解像度バリアントを明示指定(クエリなしだと画像により縮小版が返ることがある実測済み)。
+    # 既存クエリに format/name が既にあれば置換する(単純追記だと重複パラメータになりCDN側の
+    # 採用がどちらか不定になるため)。
+    photos = []
+    for md in media_details:
+        base = md.get("media_url_https", "")
+        if md.get("type") == "photo" and base:
+            parts = urllib.parse.urlsplit(base)
+            q = dict(urllib.parse.parse_qsl(parts.query))
+            q["format"] = "jpg"
+            q["name"] = "large"
+            photos.append(urllib.parse.urlunsplit(parts._replace(query=urllib.parse.urlencode(q))))
+
+    # 動画: 最初の1本のみ対象(複数動画・複数ツイート跨ぎは今回対象外)。mp4バリアントのうち
+    # 最小bitrateを選ぶ(Whisper/Gemini等の後段処理には解像度は不要・ダウンロード量を最小化するため)
+    video_understanding = ""
+    has_video = False
+    for md in media_details:
+        if md.get("type") != "video":
+            continue
+        has_video = True
+        variants = md.get("video_info", {}).get("variants", [])
+        mp4s = [v for v in variants if v.get("content_type") == "video/mp4" and v.get("url")]
+        if mp4s:
+            best = min(mp4s, key=lambda v: v.get("bitrate", 0))
+            video_understanding = _fetch_x_video_understanding(best["url"])
+        break
 
     # t.co 展開: 本文テキストから最初の t.co リンクを抽出して記事本文(またはX Article本文)を取得
     article_text = ""
@@ -155,18 +263,20 @@ def fetch_x(url):
     missing = []
     tco_matches = re.findall(r"https://t\.co/\S+", tweet_text)
     if tco_matches:
-        tco_url = tco_matches[0]
         try:
-            expanded = _expand_tco(tco_url)
-            if expanded:
-                if _ARTICLE_PATH_RE.search(expanded):
-                    # X Article: 元ツイートのtid(Article内部IDではない)でFxEmbed経由取得
-                    art = _fetch_x_article(tid)
-                    if art:
-                        article_title = art["title"]
-                        article_text = art["body"]
-                else:
-                    # スキップ対象ドメイン(他ツイートへのリンク等)でなければ記事本文を取得
+            # 全リンクを展開し、X Articleへのリンクが(先頭以外にあっても)無いか優先的に探す
+            expanded_list = [_expand_tco(u) for u in tco_matches]
+            article_expanded = next((e for e in expanded_list if e and _is_x_article_url(e)), None)
+            if article_expanded:
+                # X Article: 元ツイートのtid(Article内部IDではない)でFxEmbed経由取得
+                art = _fetch_x_article(tid)
+                if art:
+                    article_title = art["title"]
+                    article_text = art["body"]
+            else:
+                # X Articleでなければ、従来通り先頭リンクの外部記事本文を試みる
+                expanded = expanded_list[0]
+                if expanded:
                     exp_host = re.sub(r"^https?://", "", expanded).split("/")[0].lower()
                     is_skip = any(exp_host.endswith(skip) for skip in _TCO_SKIP_HOSTS)
                     if not is_skip:
@@ -185,12 +295,22 @@ def fetch_x(url):
         label = ("X Article: " + article_title) if article_title else "記事本文"
         text = tweet_text + "\n\n" + label + ":\n" + article_text
 
+    if video_understanding:
+        text = text + "\n\n動画の内容: " + video_understanding
+    elif has_video:
+        # 動画はあるが理解できなかった(APIキー未設定/ダウンロード失敗/Gemini側エラー等)。
+        # タイトル・キャプションのみで完走させる(完走優先)が、欠損は正直に記録する。
+        if depth == "full":
+            depth = "partial"
+        missing = missing + ["video_content"]
+
     return {"ok": True, "type": "x", "url": url,
             "title": (article_title or re.sub(r"\s+", " ", tweet_text or "").strip())[:80],
             "text": text,
             "author": u.get("name", ""), "handle": u.get("screen_name", ""),
             "date": (d.get("created_at", "") or "")[:10],
             "likes": d.get("favorite_count"), "media": media,
+            "photos": photos,
             "cover": media[0] if media else "",
             "depth": depth, "missing": missing}
 
@@ -289,8 +409,9 @@ def fetch_threads(url):
 
 # ---------- YouTube ----------
 def _yt_video_id(url):
-    """YouTube URL から 11文字の video ID を抽出。失敗時は ""。"""
-    m = re.search(r"(?:v=|youtu\.be/|shorts/)([A-Za-z0-9_-]{11})", url)
+    """YouTube URL から 11文字の video ID を抽出。失敗時は ""。
+    watch?v=/youtu.be/shorts/ に加え、live/embed 形式のURLにも対応する。"""
+    m = re.search(r"(?:v=|youtu\.be/|shorts/|live/|embed/)([A-Za-z0-9_-]{11})", url)
     return m.group(1) if m else ""
 
 
