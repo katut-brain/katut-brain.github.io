@@ -48,8 +48,16 @@ CRAWLER_UA = "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uate
 
 
 def _host_of(url):
-    """URLからホスト名だけを取り出す(クエリ・パス・ポート番号は除く、小文字化)。"""
-    return re.sub(r"^https?://", "", url).split("/")[0].split(":")[0].split("@")[-1].lower()
+    """URLからホスト名だけを取り出す(クエリ・パス・ポート番号・userinfoは除く、小文字化)。
+    urllib.parse.urlsplit().hostname を使うこと。素朴な文字列分割(':'→'@'の順で区切る等)だと
+    "https://good.com:80@evil.com/" のようなuserinfo構文で実際の接続先ホスト(evil.com)を
+    誤判定し、SSRF対策のホスト許可リストを回避できてしまう(Codex敵対的レビューで指摘)。
+    """
+    try:
+        host = urllib.parse.urlsplit(url).hostname
+    except ValueError:
+        return ""
+    return (host or "").lower()
 
 
 def _host_matches(host, domain):
@@ -169,27 +177,59 @@ def _fetch_x_article(tid):
     return {"title": article.get("title", ""), "body": body[:20000]}
 
 
-_X_VIDEO_MAX_BYTES = 100_000_000  # 100MB上限。Gemini Files APIは2GBまで対応しているが、
+_VIDEO_MAX_BYTES = 100_000_000  # 100MB上限。Gemini Files APIは2GBまで対応しているが、
 # 毎朝の無人ジョブの処理時間を抑えるための実務的な上限(実測: 51MBの動画が存在するため
 # 従来の30MB上限は不十分だった)。上限超過・ダウンロード途中切断は理解を諦めて""を返す
 # (不完全な動画をGeminiに渡すと、切れた部分だけを根拠にした要約が生成されうるため=禁止)。
 
 
-def _fetch_x_video_understanding(video_url, max_chars=4000):
-    """X投稿に添付された動画(mp4)をダウンロードし、Gemini API(無料枠)で
-    映像+音声の内容を理解して日本語要約を返す。
+class _AllowlistRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """リダイレクト先ホストを許可リストに限定するHTTPRedirectHandler(SSRF対策)。
+    信頼できない第三者(vxinstagram.com等)が返したURLを無条件にリダイレクト追従すると、
+    任意ホストへの意図しないアクセス・データ持ち出しに悪用されうる(Codex敵対的レビューで指摘)。
+    """
+    def __init__(self, allowed_hosts):
+        self._allowed_hosts = allowed_hosts
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        host = _host_of(newurl)
+        if not any(_host_matches(host, h) for h in self._allowed_hosts):
+            raise urllib.error.URLError("redirect to disallowed host: %s" % host)
+        return urllib.request.HTTPRedirectHandler.redirect_request(
+            self, req, fp, code, msg, headers, newurl)
+
+
+def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
+    """動画(mp4)をダウンロードし、Gemini API(無料枠)で映像+音声の内容を理解して
+    日本語要約を返す。X動画・Instagram Reels等、動画の実体URLが手に入るケースで共用する。
     GEMINI_API_KEY未設定/google-genai未インストール/失敗時は "" を返す(graceful degradation。
     その場合カード生成はタイトル・キャプションのみで続行する＝完走優先)。
+
+    allowed_hosts: 指定した場合、開始URL・リダイレクト先ともにこのホスト(サブドメイン含む)
+    以外は拒否する(SSRF対策)。信頼できない第三者サービス経由で得たURL(Instagram Reels等)を
+    渡す場合は必ず指定すること。Xのように取得元が最初から信頼できるドメインの場合は省略可。
     """
     if not _GEMINI_AVAILABLE or not _GEMINI_API_KEY:
         return ""
+    if allowed_hosts is not None and not any(
+        _host_matches(_host_of(video_url), h) for h in allowed_hosts
+    ):
+        return ""  # 開始URL自体が想定外のホスト。安全側に倒して理解を諦める
     tmp_path = None
     try:
         req = urllib.request.Request(video_url, headers={"User-Agent": BROWSER_UA})
-        with urllib.request.urlopen(req, timeout=60) as r:
+        if allowed_hosts is not None:
+            opener = urllib.request.build_opener(_AllowlistRedirectHandler(allowed_hosts))
+            cm = opener.open(req, timeout=60)
+        else:
+            cm = urllib.request.urlopen(req, timeout=60)
+        with cm as r:
+            content_type = r.headers.get("Content-Type", "")
+            if not content_type.startswith("video/"):
+                return ""  # 想定外のContent-Type。動画以外のデータをGeminiに渡さない
             content_length = r.headers.get("Content-Length")
-            data = r.read(_X_VIDEO_MAX_BYTES + 1)
-        if len(data) > _X_VIDEO_MAX_BYTES:
+            data = r.read(_VIDEO_MAX_BYTES + 1)
+        if len(data) > _VIDEO_MAX_BYTES:
             return ""  # 上限超過。不完全データをGeminiに渡さない
         if content_length is not None:
             try:
@@ -336,7 +376,7 @@ def fetch_x(url, follow_links=True, understand_video=True):
         mp4s = [v for v in variants if v.get("content_type") == "video/mp4" and v.get("url")]
         if mp4s:
             best = min(mp4s, key=lambda v: v.get("bitrate", 0))
-            video_understanding = _fetch_x_video_understanding(best["url"])
+            video_understanding = _gemini_video_understanding(best["url"])
         break
 
     # t.co 展開: 本文テキストのリンク先(X Article/YouTube/Instagram/Threads/引用ツイート/一般記事)を取得
@@ -399,6 +439,42 @@ def fetch_x(url, follow_links=True, understand_video=True):
             "depth": depth, "missing": missing}
 
 
+# vxinstagram.com経由で得たURLがリダイレクトしてよい先(SSRF対策の許可リスト)。
+# d.rapidcdn.appは解決役、実体はcdninstagram.com/fbcdn.net(Meta CDN)から配信される。
+_INSTAGRAM_VIDEO_ALLOWED_HOSTS = ("d.rapidcdn.app", "cdninstagram.com", "fbcdn.net")
+
+
+def _fetch_instagram_reel_video_url(url):
+    """Instagram Reelsの動画ファイル実体URLを、vxinstagram.com(Discord/Telegram埋め込み修正用の
+    非公式サードパーティサービス、github.com/Lainmode/InstagramEmbed-vxinstagram)経由で取得する。
+    無料・無認証。戻り値: 動画URL(str) または None(Reelでない/取得失敗)。
+
+    公式のog:meta・GraphQL・モバイル内部APIはいずれも無認証では動画データを返さないことを
+    確認済み(2026-07-28調査)。vxinstagram.comは実際のInstagram CDN(cdninstagram.com)への
+    署名付きURLをJWTトークン経由で解決する。実機で完全なmp4ダウンロード・Gemini側の受理
+    (ACTIVE状態)まで確認済みだが、個人運営の非公式サービスでありXのFxEmbed同様、
+    仕様変更・サービス終了のリスクがある点に留意(運用上のリスクとして受容)。
+    """
+    m = re.search(r"/reel/([A-Za-z0-9_-]+)", url)
+    if not m:
+        return None
+    shortcode = m.group(1)
+    st, txt = _get("https://vxinstagram.com/reel/%s/" % shortcode, BROWSER_UA)
+    if st != 200 or not txt:
+        return None
+    tm = re.search(r"https://d\.rapidcdn\.app/v2\?token=[^\"'\s]+", txt)
+    if not tm:
+        return None
+    video_url = html.unescape(tm.group(0))
+    # 末尾に付与される dl=1&dl=1 パラメータが付いたままだとCDNが
+    # Content-Type: application/octet-stream(添付ダウンロード扱い)を返し、
+    # _gemini_video_understanding() のvideo/*判定(SSRF対策)に弾かれてしまう
+    # (実測で確認。dl除去後は正しくvideo/mp4が返る)。
+    parts = urllib.parse.urlsplit(video_url)
+    q = [(k, v) for k, v in urllib.parse.parse_qsl(parts.query, keep_blank_values=True) if k != "dl"]
+    return urllib.parse.urlunsplit(parts._replace(query=urllib.parse.urlencode(q)))
+
+
 # ---------- Instagram ----------
 def fetch_instagram(url):
     st, txt = _get(url, CRAWLER_UA)
@@ -430,12 +506,42 @@ def fetch_instagram(url):
     if not cap:  # フォールバック: og_desc のコロン以降
         mc2 = re.search(r':\s*"(.*)"', og_desc)
         cap = mc2.group(1) if mc2 else og_desc
+
+    # Reels動画理解(vxinstagram.com経由でmp4 URL取得→Gemini API)。失敗/対象外ならmissingに正直に記録。
+    text = cap
+    is_reel = "/reel/" in url
+    if is_reel:
+        # Reelと分かっているのに動画URL取得やGemini理解が失敗した場合は、通常投稿(画像等)と
+        # 区別できるようdepth: partial + missing: video_content で記録する(単なる shallow だと
+        # 「動画として一度も試みていない」場合と見分けが付かず、後からの再取得対象を絞り込めない。
+        # Codex敵対的レビューで指摘)。
+        depth = "partial"
+        missing = ["video_content"]
+    else:
+        depth = "shallow"
+        missing = ["visual_content", "audio_content"]
+    video_url = _fetch_instagram_reel_video_url(url)
+    if video_url:
+        video_understanding = _gemini_video_understanding(
+            video_url, allowed_hosts=_INSTAGRAM_VIDEO_ALLOWED_HOSTS
+        )
+        if video_understanding:
+            text = (cap + "\n\n動画の内容: " + video_understanding) if cap else video_understanding
+            depth = "full"
+            missing = []
+        # 理解できなかった場合は is_reel 分岐で既に partial/video_content 設定済み
+
     return {"ok": True, "type": "instagram", "url": url,
-            "title": (cap or og_title)[:80], "text": cap,
+            "title": (cap or og_title)[:80], "text": text,
             "author": name, "handle": handle, "date": date,
             "likes": likes, "comments": comments, "cover": og_img,
+            # photos: og:image はIG側の署名付きURLで既に実質フル解像度(実測2160x2880px)。
+            # X実装のようなクエリ改変での高解像度化は署名検証に引っかかり403になるため行わない
+            # (2026-07-28調査)。Xとのフィールド名を揃え、Routine側の「画像はphotosを見てダウンロード
+            # →Readで読む」という指示を使い回せるようにするだけの目的でそのまま入れる。
+            "photos": [og_img] if og_img else [],
             "note": "og:descriptionは長文截断あり。フル要時はoEmbedへ昇格",
-            "depth": "shallow", "missing": ["visual_content", "audio_content"]}
+            "depth": depth, "missing": missing}
 
 
 # ---------- Threads ----------
