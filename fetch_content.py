@@ -14,14 +14,23 @@
 #   python3 fetch_content.py <url> [<url> ...]   # 指定URLを取得してJSON表示
 #   python3 fetch_content.py                     # 内蔵テストURLで動作確認
 
-import sys, os, re, json, html, string, tempfile, time, urllib.request, urllib.error, urllib.parse
+import sys, os, re, json, html, string, tempfile, time, threading, urllib.request, urllib.error, urllib.parse
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-# youtube-transcript-api（オプション依存）
+# youtube-transcript-api（オプション依存。requestsはその推移依存として同時にインストールされる）
 try:
+    import requests as _requests
     from youtube_transcript_api import YouTubeTranscriptApi as _YTApi
     _YT_TRANSCRIPT_AVAILABLE = True
+
+    class _TimeoutSession(_requests.Session):
+        """youtube-transcript-apiの内部HTTP通信に既定タイムアウトを強制するSession。
+        素のrequests.Sessionはタイムアウト未指定だと応答がない限り無期限にハングしうり、
+        無人ルーティーンが1件のリンク取得で丸ごと止まってしまう(Codex敵対的レビューで指摘)。"""
+        def request(self, *args, **kwargs):
+            kwargs.setdefault("timeout", 15)
+            return super().request(*args, **kwargs)
 except ImportError:
     _YT_TRANSCRIPT_AVAILABLE = False
 
@@ -37,8 +46,17 @@ BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
               "(KHTML, like Gecko) Chrome/125.0 Safari/537.36")
 CRAWLER_UA = "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
 
-# t.co 展開でスキップするドメイン（同種SNSへのリンクは記事本文ではない）
-_TCO_SKIP_HOSTS = ("x.com", "twitter.com", "instagram.com", "youtube.com", "youtu.be")
+
+def _host_of(url):
+    """URLからホスト名だけを取り出す(クエリ・パス・ポート番号は除く、小文字化)。"""
+    return re.sub(r"^https?://", "", url).split("/")[0].split(":")[0].split("@")[-1].lower()
+
+
+def _host_matches(host, domain):
+    """hostがdomain自身、またはそのサブドメインかを正しく判定する。
+    単純な str.endswith(domain) だと "netflix.com".endswith("x.com") が True になる等、
+    ドメイン境界を無視した誤判定(Codex敵対的レビューで指摘)が起きるため使わないこと。"""
+    return host == domain or host.endswith("." + domain)
 
 
 def _get(url, ua, timeout=12, max_bytes=600_000):
@@ -115,8 +133,8 @@ _X_ARTICLE_HOSTS = ("x.com", "twitter.com")
 
 def _is_x_article_url(url):
     """展開後のURLがX Article(x.com系ドメイン配下の/article/<id>)かどうかを判定する。"""
-    host = re.sub(r"^https?://", "", url).split("/")[0].lower()
-    if not any(host.endswith(h) for h in _X_ARTICLE_HOSTS):
+    host = _host_of(url)
+    if not any(_host_matches(host, h) for h in _X_ARTICLE_HOSTS):
         return False
     return bool(_ARTICLE_PATH_RE.search(url))
 
@@ -209,7 +227,65 @@ def _fetch_x_video_understanding(video_url, max_chars=4000):
                 pass
 
 
-def fetch_x(url):
+def _fetch_x_embedded_link_inner(expanded):
+    """_fetch_x_embedded_link() の実処理本体(タイムアウトガードの内側で動く)。"""
+    host = _host_of(expanded)
+    try:
+        if _host_matches(host, "youtube.com") or _host_matches(host, "youtu.be"):
+            r = fetch_youtube(expanded)
+            label = "リンク先動画の内容"
+        elif _host_matches(host, "instagram.com"):
+            r = fetch_instagram(expanded)
+            label = "リンク先Instagram投稿"
+        elif _host_matches(host, "threads.com") or _host_matches(host, "threads.net"):
+            r = fetch_threads(expanded)
+            label = "リンク先Threads投稿"
+        elif _host_matches(host, "x.com") or _host_matches(host, "twitter.com"):
+            # 引用ツイート等。無限再帰防止のためfollow_links=Falseで1階層のみ辿る。
+            # understand_video=False: 目的はテキスト本文の補完であり、動画Gemini理解
+            # (最大100秒超)まで行うと外側45秒タイムアウトでテキストごと失われるため省略する。
+            r = fetch_x(expanded, follow_links=False, understand_video=False)
+            label = "引用元投稿の内容"
+        else:
+            r = fetch_web(expanded)
+            label = "記事本文"
+    except Exception:
+        return None
+    if r and r.get("ok") and r.get("text"):
+        return {"label": label, "title": r.get("title", ""), "text": r["text"]}
+    return None
+
+
+def _fetch_x_embedded_link(expanded, timeout=45):
+    """t.co展開後のURL(X Articleではない)を、ホストに応じた専用フェッチャーに振り分ける。
+    YouTube/Instagram/Threads/X(引用ツイート等)はそれぞれの専用取得関数に委譲し、
+    それ以外は従来通り汎用Webリーダー(fetch_web)を使う。
+    戻り値: {"label":str, "title":str, "text":str} または None(取得失敗/中身が空/timeout)。
+
+    デーモンスレッド+timeout付きjoinで一連の処理(oEmbed取得・字幕取得・OGメタ取得等の
+    複数ステップ全て)を1つの壁時計上限で打ち切る(個々の_get()呼び出しのソケットタイムアウト
+    だけでは、応答がちびちび届き続けるサーバー相手に総所要時間を保証できないため。
+    Codex敵対的レビューで指摘)。
+    タイムアウトしたスレッドは終了させず放置する(join(timeout=)はキャンセルではなく
+    待機の打ち切りのため)。daemon=Trueなのでプロセス終了はブロックしないが、リンク先が
+    悪意的に応答を止め続けた場合は該当プロセスの生存中はスレッドが残る。1回のRoutine実行は
+    最大20件程度のURLをバッチ処理して都度プロセスが終了する運用のため、蓄積は当該バッチの
+    件数分に限定される(サーバープロセスとして常駐し続ける使い方はしていない)。
+    """
+    result = {}
+
+    def _run():
+        r = _fetch_x_embedded_link_inner(expanded)
+        if r:
+            result["value"] = r
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+    t.join(timeout=timeout)
+    return result.get("value")
+
+
+def fetch_x(url, follow_links=True, understand_video=True):
     m = re.search(r"/status/(\d+)", url)
     if not m:
         return {"ok": False, "type": "x", "reason": "tweet id をURLから抽出できない", "url": url}
@@ -242,13 +318,20 @@ def fetch_x(url):
             photos.append(urllib.parse.urlunsplit(parts._replace(query=urllib.parse.urlencode(q))))
 
     # 動画: 最初の1本のみ対象(複数動画・複数ツイート跨ぎは今回対象外)。mp4バリアントのうち
-    # 最小bitrateを選ぶ(Whisper/Gemini等の後段処理には解像度は不要・ダウンロード量を最小化するため)
+    # 最小bitrateを選ぶ(Whisper/Gemini等の後段処理には解像度は不要・ダウンロード量を最小化するため)。
+    # understand_video=False(埋め込みリンク経由の引用ツイート取得等)の場合はGemini理解を
+    # スキップする: 動画理解(ダウンロード+Gemini処理で最大100秒超)は、埋め込みリンク全体に
+    # 掛かっている45秒の壁時計タイムアウト(_fetch_x_embedded_link)を軽く超え、本来数秒で
+    # 済むはずの引用元テキスト本文まで巻き添えで失われるバグを実機で確認したため
+    # (output-verifierが発見)。
     video_understanding = ""
     has_video = False
     for md in media_details:
         if md.get("type") != "video":
             continue
         has_video = True
+        if not understand_video:
+            break
         variants = md.get("video_info", {}).get("variants", [])
         mp4s = [v for v in variants if v.get("content_type") == "video/mp4" and v.get("url")]
         if mp4s:
@@ -256,12 +339,13 @@ def fetch_x(url):
             video_understanding = _fetch_x_video_understanding(best["url"])
         break
 
-    # t.co 展開: 本文テキストから最初の t.co リンクを抽出して記事本文(またはX Article本文)を取得
+    # t.co 展開: 本文テキストのリンク先(X Article/YouTube/Instagram/Threads/引用ツイート/一般記事)を取得
     article_text = ""
     article_title = ""
+    article_label = "記事本文"
     depth = "full"
     missing = []
-    tco_matches = re.findall(r"https://t\.co/\S+", tweet_text)
+    tco_matches = re.findall(r"https://t\.co/\S+", tweet_text) if follow_links else []
     if tco_matches:
         try:
             # 全リンクを展開し、X Articleへのリンクが(先頭以外にあっても)無いか優先的に探す
@@ -273,16 +357,17 @@ def fetch_x(url):
                 if art:
                     article_title = art["title"]
                     article_text = art["body"]
+                    article_label = "X Article: " + article_title if article_title else "X Article"
             else:
-                # X Articleでなければ、従来通り先頭リンクの外部記事本文を試みる
+                # X Articleでなければ、先頭リンクをホストに応じた専用フェッチャーで取得。
+                # (リンク先のtitleはtext本文には使うが、投稿自体のtitleはツイート本文のまま
+                # 保つ＝ツイート本文が空でリンクだけの投稿以外はツイート側の声を優先する)
                 expanded = expanded_list[0]
                 if expanded:
-                    exp_host = re.sub(r"^https?://", "", expanded).split("/")[0].lower()
-                    is_skip = any(exp_host.endswith(skip) for skip in _TCO_SKIP_HOSTS)
-                    if not is_skip:
-                        web_result = fetch_web(expanded)
-                        if web_result.get("ok") and web_result.get("text", ""):
-                            article_text = web_result["text"]
+                    linked = _fetch_x_embedded_link(expanded)
+                    if linked:
+                        article_text = linked["text"]
+                        article_label = (linked["label"] + ": " + linked["title"]) if linked["title"] else linked["label"]
         except Exception:
             pass
 
@@ -292,8 +377,7 @@ def fetch_x(url):
 
     text = tweet_text
     if article_text:
-        label = ("X Article: " + article_title) if article_title else "記事本文"
-        text = tweet_text + "\n\n" + label + ":\n" + article_text
+        text = tweet_text + "\n\n" + article_label + ":\n" + article_text
 
     if video_understanding:
         text = text + "\n\n動画の内容: " + video_understanding
@@ -415,24 +499,39 @@ def _yt_video_id(url):
     return m.group(1) if m else ""
 
 
-def _yt_transcript(vid_id, max_chars=50000):
+def _yt_transcript(vid_id, max_chars=50000, timeout=30):
     """字幕(優先 ja→en、無ければ取得できた最初の言語)を取得し先頭max_chars字を返す。失敗時は ""。
     注意: youtube-transcript-api 1.x では `YouTubeTranscriptApi.get_transcript()` クラスメソッドは
     廃止済み。インスタンスの `.fetch()` / `.list()` を使う（旧API呼び出しは黙って例外→空文字化するため要注意）。
+
+    実行はデーモンスレッド+timeout付きjoinで壁時計の総実行時間を打ち切る。requestsの
+    timeoutパラメータはソケット単位(接続/読み取りの無通信時間)であり、応答がちびちび
+    届き続ける・.fetch()失敗後の.list()フォールバックが積み上がる等のケースでは全体の
+    所要時間を保証しない(Codex敵対的レビューで指摘)。無人ルーティーンが1件のリンクで
+    無期限にハングしないよう、ここで確実に上限を掛ける。
     """
     if not _YT_TRANSCRIPT_AVAILABLE or not vid_id:
         return ""
-    try:
-        api = _YTApi()
+    result = {}
+
+    def _do_fetch():
         try:
-            fetched = api.fetch(vid_id, languages=["ja", "en"])
+            api = _YTApi(http_client=_TimeoutSession())
+            try:
+                fetched = api.fetch(vid_id, languages=["ja", "en"])
+            except Exception:
+                # ja/en 字幕が無い動画: 取得できる最初の言語にフォールバック
+                fetched = next(iter(api.list(vid_id))).fetch()
+            result["text"] = " ".join(seg.text for seg in fetched).replace("\n", " ")
         except Exception:
-            # ja/en 字幕が無い動画: 取得できる最初の言語にフォールバック
-            fetched = next(iter(api.list(vid_id))).fetch()
-        full = " ".join(seg.text for seg in fetched).replace("\n", " ")
-        return full[:max_chars]
-    except Exception:
-        return ""
+            pass
+
+    t = threading.Thread(target=_do_fetch, daemon=True)
+    t.start()
+    t.join(timeout=timeout)  # 超過してもここで戻る。取り残されたスレッドはdaemonなので
+    # プロセス終了をブロックしない(ThreadPoolExecutorの非daemonワーカーだと終了時に
+    # ハングしたままの回収待ちでプロセスごと止まりうるため、生のThreadを使っている)。
+    return result.get("text", "")[:max_chars]
 
 
 def fetch_youtube(url):
@@ -500,14 +599,14 @@ def fetch_web(url):
 
 # ---------- ディスパッチャ ----------
 def fetch_content(url):
-    host = re.sub(r"^https?://", "", url).split("/")[0].lower()
-    if host.endswith("x.com") or host.endswith("twitter.com"):
+    host = _host_of(url)
+    if _host_matches(host, "x.com") or _host_matches(host, "twitter.com"):
         return fetch_x(url)
-    if host.endswith("instagram.com"):
+    if _host_matches(host, "instagram.com"):
         return fetch_instagram(url)
-    if host.endswith("threads.com") or host.endswith("threads.net"):
+    if _host_matches(host, "threads.com") or _host_matches(host, "threads.net"):
         return fetch_threads(url)
-    if host.endswith("youtube.com") or host.endswith("youtu.be"):
+    if _host_matches(host, "youtube.com") or _host_matches(host, "youtu.be"):
         return fetch_youtube(url)
     return fetch_web(url)
 
