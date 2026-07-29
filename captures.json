@@ -381,11 +381,9 @@
       "無料AI",
       "PDF処理"
     ],
-    "summary": "🚨| CHINA ACABÓ CON EL NEGOCIO DE OCR\n\nUn modelo de 3 mil millones de parámetros del tamaño de un cacahuete puede leer un PDF completo de 100 páginas de una sola vez.\n\nSin dividir páginas.\nSin pérdida de contexto.\nSin factura en la nube.\n\nConoce Unlimited-OCR 👇\n\n• Lee https://t.co/kqr9ifgSZi\n\n引用元投稿の内容: 🚨| CHINA ACABÓ CON EL NEGOCIO DE OCR Un modelo de 3 mil millones de parámetros d:\n🚨| CHINA ACABÓ CON EL NEGOCIO DE OCR\n\nUn modelo de 3 mil millones de parámetros del tamaño de un cacahuete puede leer un PDF completo de 100 páginas de una sola vez.\n\nSin dividir páginas.\nSin pérdida de contexto.\nSin factura en la nube.\n\nConoce Unlimited-OCR 👇\n\n• Lee https://t.co/kqr9ifgSZi",
-    "depth": "partial",
-    "missing": [
-      "video_content"
-    ]
+    "summary": "🚨| CHINA ACABÓ CON EL NEGOCIO DE OCR\n\nUn modelo de 3 mil millones de parámetros del tamaño de un cacahuete puede leer un PDF completo de 100 páginas de una sola vez.\n\nSin dividir páginas.\nSin pérdida de contexto.\nSin factura en la nube.\n\nConoce Unlimited-OCR 👇\n\n• Lee https://t.co/kqr9ifgSZi\n\n引用元投稿の内容: 🚨| CHINA ACABÓ CON EL NEGOCIO DE OCR Un modelo de 3 mil millones de parámetros d:\n🚨| CHINA ACABÓ CON EL NEGOCIO DE OCR\n\nUn modelo de 3 mil millones de parámetros del tamaño de un cacahuete puede leer un PDF completo de 100 páginas de una sola vez.\n\nSin dividir páginas.\nSin pérdida de contexto.\nSin factura en la nube.\n\nConoce Unlimited-OCR 👇\n\n• Lee https://t.co/kqr9ifgSZi\n\n動画の内容: この動画は、学術論文のPDFファイルを高度なドキュメント解析（レイアウト解析およびテキスト抽出/OCR）ツールで処理している画面を記録したものです。なお、**動画には音声（会話や効果音）は含まれておらず無音**です。\n\n動画の具体的な内容は以下の通りです。\n\n### 画面の構成（3分割画面）\n1. **左側パネル（PDFレイアウト検出画面）：**\n   * 読み込まれた学術論文のPDFが表示されています。\n   * 本文の段落、タイトル、図（Figure）、表（Table）、参考文献リストなどの各要素が、カラフルな枠線（バウンディングボックス）で自動的に識別・色分けされています。\n2. **中央パネル（構造化データ / JSONコード）：**\n   * 左側で検出された各ブロックの位置座標（`bbox`）、要素のタイプ（`title`、`text`、`table`等）、抽出されたテキスト情報が、JSON形式の構造化データとして表示されています。\n3. **右側パネル（Markdown/テキストプレビュー）：**\n   * 解析・抽出されたテキストが、見出しや段落構造を保ったまま整理され、Markdown形式等でリアルタイムにプレビュー表示されています。\n\n### 動画内の主な動き\n* 論文（「Unlimited OCR Works」などの題名）のページをスクロールしながら、2段組みの本文、表、数式、参考文献などが正確に認識・抽出され、コードおよびプレビューテキストへ正しく変換されているかを確認・検証しています。",
+    "depth": "full",
+    "missing": []
   },
   {
     "rid": 1798027696,
@@ -424,11 +422,9 @@
       "AIチュートリアル",
       "CLAUDE.md"
     ],
-    "summary": "El ingeniero que construyo Claude Code acaba de soltar un video de 28 minutos donde te enseña a escribir prompts que realmente funcionan\n\nHe visto cursos de 300 dolares que no llegan ni a la mitad de lo que explica en los primeros 10 minutos\n\nArchivos CLAUDE.md, atajos de https://t.co/4xQbQSOuEI\n\n引用元投稿の内容: El ingeniero que construyo Claude Code acaba de soltar un video de 28 minutos do:\nEl ingeniero que construyo Claude Code acaba de soltar un video de 28 minutos donde te enseña a escribir prompts que realmente funcionan\n\nHe visto cursos de 300 dolares que no llegan ni a la mitad de lo que explica en los primeros 10 minutos\n\nArchivos CLAUDE.md, atajos de https://t.co/4xQbQSOuEI",
-    "depth": "partial",
-    "missing": [
-      "video_content"
-    ]
+    "summary": "El ingeniero que construyo Claude Code acaba de soltar un video de 28 minutos donde te enseña a escribir prompts que realmente funcionan\n\nHe visto cursos de 300 dolares que no llegan ni a la mitad de lo que explica en los primeros 10 minutos\n\nArchivos CLAUDE.md, atajos de https://t.co/4xQbQSOuEI\n\n引用元投稿の内容: El ingeniero que construyo Claude Code acaba de soltar un video de 28 minutos do:\nEl ingeniero que construyo Claude Code acaba de soltar un video de 28 minutos donde te enseña a escribir prompts que realmente funcionan\n\nHe visto cursos de 300 dolares que no llegan ni a la mitad de lo que explica en los primeros 10 minutos\n\nArchivos CLAUDE.md, atajos de https://t.co/4xQbQSOuEI\n\n動画の内容: この動画は、Anthropicのテクニカルスタッフであり「Claude Code」の開発者であるボリス（Boris）氏による、**Claude Codeの実列的・応用的な活用Tips（プロチップ）に関するプレゼンテーションおよび質疑応答**です。\n\n動画に映っているスライド資料の内容と、Boris氏や質問者が話している音声の内容を統合して要約します。\n\n---\n\n### 【概要】\n* **発表者**: Boris（Anthropic Technical Staff / Claude Code 開発者）\n* **テーマ**: Claude Codeの概要、効果的なプロンプト手法、チームでのコンテキスト共有、自動化・スクリプト化、便利機能の紹介\n\n---\n\n### 【主な発表内容とTips】\n\n#### 1. Claude Codeとは？と初期セットアップ\n* **Claude Codeの概念**: IDEの置き換えではなく、ターミナル上で動作する全自動（Agentic）AIアシスタント。VS Code、Xcode、Vim、JetBrainsなどあらゆるエディタや環境（ローカル、SSH、tmux等）で動作する。\n* **インストール**: `npm install -g @anthropic-ai/claude-code`\n* **セットアップの最適化**:\n  * `/terminal-setup`: `Shift + Enter` での改行を有効化\n  * `/theme`: ライト/ダークモード切替\n  * `/install-github-app`: GitHubのIssueやPRで `@claude` をタグ付け可能にする\n  * macOSの「音声入力（Dictation）」を有効化し、長文プロンプトを口頭で入力する手法も推奨。\n\n#### 2. コードベースのQ&A（Tip #1 & #2）\n* **Tip #1: まずはコードベースQ&Aから始める**: 初心者や新入社員のオンボーディングに最適。インデックス作成不要で、データはローカルに保持される（外部送信・学習利用なし）。\n* **Q&Aの例**:\n  * 「この処理・クラスはどこでどう使われているか？」\n  * 「Gitの履歴を遡り、なぜこの関数に引数が15個も追加されたのか？」\n  * 「直近の1週間で自分が何をデプロイ/コミットしたか？」\n* **Tip #2: プロンプトの練習**: AIがすぐに理解できることと、詳細な指示が必要なことの境目（境界線）を把握する。\n\n#### 3. コードの編集とツールの活用（Tip #3 & #4）\n* **Tip #3: Claudeに自社・自チームのツールを使わせる**:\n  * Bashコマンド、ファイル読み書き、Web検索、サブエージェントなどを内蔵。\n  * 自作CLIやMCP（Model Context Protocol） サーバーを登録（`claude mcp add`）して連携可能。\n* **Tip #4: タスクに応じたワークフローの調整**:\n  * **計画優先**: 「コードを書く前にまず原因を突き止め、解決策のプランを提案して承認を得て」と指示する。\n  * **テスト/画像フィードバック駆動**: テストを作成させてからコードを書かせる、またはPuppeteer等でスクリーンショットを撮らせてデザイン通りになるまで自律イテレーション（反復修正）させる。\n  * 「`commit, push, pr`」のような短い呪文で、コミット・ブランチ作成・PR作成まで一括実行可能。\n\n#### 4. コンテキストの与え方と「CLAUDE.md」（Tip #5 & #6）\n* **Tip #5 & #6: コンテキストを与えるほど賢くなる＆チューニングする**:\n  * `CLAUDE.md`: プロジェクトのルートやホームディレクトリに配置する特別な設定ファイル。セッション開始時に自動読み込みされ、ビルドコマンド、コードスタイル、重要ファイル等を伝達できる（簡潔に保つことが推奨される）。\n  * フォルダ構造に応じたネスト配置、`CLAUDE.local.md`（Git非管理用）などもサポート。\n\n#### 5. チームでの共有・ガバナンス（Tip #7）\n* **Tip #7: 設定をGitで管理しチームで共有する**:\n  * `CLAUDE.md`、MCPサーバー設定、パーミッション（自動承認・ブロック設定）、スラッシュコマンド（`/.claude/commands/`）をチームで共有・チェックインすることで、ネットワーク効果（1人が作った改善を全員が享受）が生まれる。\n  * `/memory` コマンドで読み込まれているコンテキストの確認・編集が可能。\n\n#### 6. 便利なキーバインド（ショートカット）\n1. `Shift + Tab`: 変更の自動承認モード切替（テストの反復時などに便利）\n2. `#`: メモリ（CLAUDE.md等）の追加・作成\n3. `!`: Bashモード実行（直接コマンドを実行し、結果をコンテキストに入れる）\n4. `@`: ファイルやフォルダをコンテキストに追加\n5. `Esc`: 処理の安全なキャンセル（セッション破壊なし）\n6. `Esc` 2回押下: 過去の履歴にジャンプしてやり直し（`--resume`で再開）\n7. `Ctrl + R`: Verbose（詳細）出力表示\n\n#### 7. Claude Code SDK・スクリプト化（UNIXユーティリティ的活用）\n* 非対話型モード（`claude -p \"プロンプト\"`）を使い、CI/CDパイプラインやインシデント対応、スクリプトに組み込み可能。\n* UNIXコマンドのようにパイプ処理が可能：\n  * 例: `git status | claude -p \"変更点を要約して\" --output-format json | jq .result`\n\n#### 8. 並列実行（Multi-claude）\n* 複数のターミナルタブ、Git Worktree、SSH + tmux、GitHub Actions等を使い、複数のClaude Codeを並列で走行させて作業効率を最大化する。\n\n---\n\n### 【質疑応答（Q&A）】\n\n1. **Q. Claude Codeの開発で最も難しかった実装部分は？**\n   * **A. Bashコマンド実行の安全性とUXの両立。** Bashは強力だが危険を伴うため、毎回手動承認させると開発者の生産性が落ちる。読み取り専用コマンドの自動識別、静的解析によるコマンド結合の安全性チェック、多層的なパーミッション管理システムの実装が非常に難しかった。\n\n2. **Q. 画像の読み込み（マルチモーダル）機能はあるか？**\n   * **A. 完全にマルチモーダルに対応している。** ターミナルベースだが、画像をドラッグ＆ドロップ、パス指定、またはクリップボードから貼り付けることで認識可能。モック画像を読み込ませてUIをコード化させたり、Puppeteerと組み合わせてデザインの反復修正を行わせたりしている。\n\n3. **Q. Anthropic社内では機械学習（ML）や研究開発にどの程度使われているか？**\n   * **A. 技術スタッフの約80%が毎日使用している。** ソフトウェアエンジニアだけでなく、リサーチャーもJupyter Notebookの編集・実行ツールなどと組み合わせて日常的に活用している。\n\n---\n\n### 【まとめ】\n動画の最後ではQ&Aの終了とともに参加者からの拍手が送られ、フィードバック用QRコードが表示されてセッションが締めくくられます。",
+    "depth": "full",
+    "missing": []
   },
   {
     "rid": 1798026948,
@@ -554,11 +550,9 @@
       "Anthropic",
       "AIチュートリアル"
     ],
-    "summary": "Anthropic 工程师用半小时完整讲述如何建立一个完整的自我提高优化的Loop流程\n\n并且使用实际案例验证loop是多么的好用\n\n没有冗余的提示词\n没有一轮又一轮的对话\n\n收藏起来 https://t.co/8nPVC7vmwU\n\n引用元投稿の内容: Anthropic 工程师用半小时完整讲述如何建立一个完整的自我提高优化的Loop流程 并且使用实际案例验证loop是多么的好用 没有冗余的提示词 没有一轮又一:\nAnthropic 工程师用半小时完整讲述如何建立一个完整的自我提高优化的Loop流程\n\n并且使用实际案例验证loop是多么的好用\n\n没有冗余的提示词\n没有一轮又一轮的对话\n\n收藏起来 https://t.co/8nPVC7vmwU",
-    "depth": "partial",
-    "missing": [
-      "video_content"
-    ]
+    "summary": "Anthropic 工程师用半小时完整讲述如何建立一个完整的自我提高优化的Loop流程\n\n并且使用实际案例验证loop是多么的好用\n\n没有冗余的提示词\n没有一轮又一轮的对话\n\n收藏起来 https://t.co/8nPVC7vmwU\n\n引用元投稿の内容: Anthropic 工程师用半小时完整讲述如何建立一个完整的自我提高优化的Loop流程 并且使用实际案例验证loop是多么的好用 没有冗余的提示词 没有一轮又一:\nAnthropic 工程师用半小时完整讲述如何建立一个完整的自我提高优化的Loop流程\n\n并且使用实际案例验证loop是多么的好用\n\n没有冗余的提示词\n没有一轮又一轮的对话\n\n收藏起来 https://t.co/8nPVC7vmwU\n\n動画の内容: Anthropic（アンソロピック）の技術スタッフであるLamis Mukta氏による、AI DevCon（Tessl主催）での講演**「Learning while you Sleep: Beyond Memory to Dreaming（睡眠中の学習：メモリを超えたドリーミングへの進歩）」**の動画内容と音声の詳細な要約です。\n\n---\n\n### **1. 講演の全体概要**\n\n*   **登壇者:** Lamis Mukta 氏（Anthropic / Applied AI チーム）\n*   **テーマ:** AIエージェントのコンテキストエンジニアリング、長期記憶（メモリ）管理、および「Dreaming（ドリーミング）」と呼ばれる継続的学習フレームワーク。\n*   **核心メッセージ:** 単に「モデルの知能を高める」だけでは限界があり、タスクや組織固有のコンテキストを活用・記憶・整理する「コンテキストエンジニアリング」こそが、AIエージェントの性能を持続的に向上（複利成長）させる鍵である。\n\n---\n\n### **2. 講演の主要コンテンツ**\n\n#### **① エージェントメモリ（記憶）の進化とレッスン**\n過去1年間におけるAIエージェントのメモリ管理手法の変遷と得られた知見が紹介されました。\n\n1.  **単一ファイルによる記憶 (`CLAUDE.md` など):**\n    *   セッション開始時に指示やルールを読み込ませる手法。非常に効果的だが、内容が増えると「コンテキストの肥大化（Bloat）」を引き起こす。\n2.  **ツールとしての記憶 (In-band Memory):**\n    *   エージェント自身にメモリの読み書き（`read`/`write`）ツールを与え、セッション内に自律的に管理させる方法。\n3.  **手続き型記憶・スキル (Skills):**\n    *   **プログレッシブ・ディスクロージャー（段階的開示）**を導入。トップの概要（数行）のみを常時参照させ、必要な時だけ詳細（本文）を読み込むことで、コンテキストの圧迫を防ぐ（「本棚から必要な本だけを取り出して読む」ような仕組み）。\n4.  **ファイルシステム型の記憶:**\n    *   現在の到達点（State of the Art）。Markdown形式のファイル群を検索・操作する（`bash` や `grep` 等を活用）。シンプルで人間にも可読性があり、最も成果が出やすい。\n\n#### **② プロダクション環境（大規模運用）へのスケールと課題**\nエージェントやユーザーが複数存在し、長期間運用される現場での課題と解決策：\n\n*   **主な課題:**\n    *   同時書き込みによる衝突（Concurrent writes）\n    *   誰がいつ何を書いたか分からない問題（Lost attribution）\n    *   古くなった情報や汚染された記憶（Stale & mixed scopes）\n*   **エンタープライズ向け設計原則:**\n    1.  **バージョン管理 (Versioning):** 書き込み履歴（著者、セッション、タイムスタンプ）を記録し、ロールバック可能にする。\n    2.  **排他制御 (Concurrency):** ハッシュ照合を用いたロック機構により、同時編集の衝突を防ぐ。\n    3.  **権限管理 (Permissioning):** 組織共通の知識は「読み取り専用」、エージェント個人の作業領域（スクラッチパッド）は「読み書き可能」に分離する。\n    4.  **ポータビリティ (Portability):** クリーンなAPIでアクセス可能なプレーンファイル構造にする。\n\n---\n\n#### **③ 「Dreaming（ドリーミング）」概念の導入：継続的学習への道**\n\n*   **インバンド（In-band）処理の限界:**\n    *   タスク実行中のエージェントに「記憶の整理」までやらせると、リソースや集中力が分散する（Split focus）。\n    *   単一セッション内しか見えないため、複数セッションや他エージェントに跨る「失敗のパターン」に気づけない。\n*   **Dreaming（ドリーミング）とは:**\n    *   **アウト・オブ・バンド（Out-of-band / バックグラウンドのバッチ処理）**で実行される「メタ学習・記憶整理プロセス」。\n    *   **仕組み (Inside a dreaming pass):**\n        1.  エージェントのログ（対話・ツール使用のトランスクリプト）を集積する。\n        2.  オーケストレーターがサブエージェント群を起動し、ログと既存メモリを分析させる。\n        3.  繰り返し発生しているエラーや不足している知識、矛盾する記憶を特定する。\n        4.  メモリ（知識ベース）を自動的に修正・再構成・強化して更新する。\n    *   **結果:** 翌日エージェントを起動した際、以前の失敗を学習した「より賢い状態」でタスクを開始できる。\n\n---\n\n### **3. 3つの主要なテイクアウェイ（まとめ）**\n\n1.  **「機能するシンプルなこと」をやる:** Markdownファイル、明確に定義されたスキル、エージェント自身による自律的なメモリ管理を組み合わせる。\n2.  **多数・長期間運用を前提に設計する:** バージョン管理、排他制御（ハッシュ）、権限分離、ポータビリティを実装する。\n3.  **アウト・オブ・バンドの「Dreaming」を追加する:** セッション外で記憶の検証・整理・濃縮を行い、真の継続的学習を実現する。\n\n---\n\n### **4. 質疑応答（Q&A）の要約**\n\n*   **Q1: エンタープライズ向けに推奨するメモリ実装ストレージは？**\n    *   **回答:** Anthropicが提供するManaged Agent（Claude Managed Agents API）のインフラには、本講演で説明したバージョン管理やハッシュ化、Dreaming機能がそのまま組み込まれているため、それらの利用を推奨する。\n*   **Q2: ユーザーや権限が複雑な企業環境で、Dreamingがセキュリティや権限を逸脱しないようにするには？**\n    *   **回答:** Dreamingプロセスは無差別に対話ログを混ぜ合わせるのではなく、特定の権限バウンダリ（アクセス範囲）に沿ったログのサブセットのみを対象として設定・実行されるため、権限分離は維持される。\n*   **Q3: バージョン管理や排他制御など、データベースの仕組みを再発明しているように見えるが？**\n    *   **回答:** その通り。従来ソフトウェア工学で培われてきた信頼性の高い原則（決定論的な排他制御など）をエージェントの実行基盤（ハーネス）側に落とし込み、AIが安全かつ確実に自律動作できるように再適用している。",
+    "depth": "full",
+    "missing": []
   },
   {
     "rid": 1769977960,
@@ -718,7 +712,7 @@
       "スキル(Skill)",
       "マルチエージェント"
     ],
-    "summary": "900 likes, 728 comments - kyoheiai on June 21, 2026: \"Claude AIエージェント5体に議論させる最強スキル\n\n優秀なClaudeユーザーは、もうClaudeにただ答えを求めたりしません。\n\n今海外でバズってるのが「Claude Council（クロード評議会）」。Claudeから1つの答えを受け取るんじゃなくて、5体のAIエージェントに議論させる使い方です！\n\n1人は致命的な欠陥を探し、1人はそもそも正しい問題を解いているのかを問い、1人はメリットを探し、1人は前提知識のない普通の人として振る舞い、最後の1人は次に何をすべきかだけを考える。\n\nすごいのは、一度答えて終わりじゃないこと。お互いの回答をレビューし合って盲点を見つけ、最終的に議長が判断を返してくれます。\n\nぜひ試してみてね！\n\n#claude #ai活用\".",
+    "summary": "903 likes, 731 comments - kyoheiai on June 21, 2026: \"Claude AIエージェント5体に議論させる最強スキル\n\n優秀なClaudeユーザーは、もうClaudeにただ答えを求めたりしません。\n\n今海外でバズってるのが「Claude Council（クロード評議会）」。Claudeから1つの答えを受け取るんじゃなくて、5体のAIエージェントに議論させる使い方です！\n\n1人は致命的な欠陥を探し、1人はそもそも正しい問題を解いているのかを問い、1人はメリットを探し、1人は前提知識のない普通の人として振る舞い、最後の1人は次に何をすべきかだけを考える。\n\nすごいのは、一度答えて終わりじゃないこと。お互いの回答をレビューし合って盲点を見つけ、最終的に議長が判断を返してくれます。\n\nぜひ試してみてね！\n\n#claude #ai活用\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -783,7 +777,7 @@
       "セカンドブレイン",
       "AIワークフロー"
     ],
-    "summary": "4,491 likes, 123 comments - bryrobbie on April 18, 2026: \"If you want an AI second brain but hate the friction of manual data entry, you need the Obsidian Web Clipper.\n\nHere is the exact workflow:\n1️⃣ Find useful content while scrolling Chrome.\n2️⃣ Clip it (automatically converts to a Markdown file in your vault).\n3️⃣ Let your AI agent read the file, extract the value, and write the notes for you. 🤖📝\n\nIt’s completely underrated and makes staying organized effortless. Save this post to set it up later! 📌\n.\n.\n.\n#productivitytips #obsidian #aiworkflow #ailearning #aitools\".",
+    "summary": "4,494 likes, 123 comments - bryrobbie on April 18, 2026: \"If you want an AI second brain but hate the friction of manual data entry, you need the Obsidian Web Clipper.\n\nHere is the exact workflow:\n1️⃣ Find useful content while scrolling Chrome.\n2️⃣ Clip it (automatically converts to a Markdown file in your vault).\n3️⃣ Let your AI agent read the file, extract the value, and write the notes for you. 🤖📝\n\nIt’s completely underrated and makes staying organized effortless. Save this post to set it up later! 📌\n.\n.\n.\n#productivitytips #obsidian #aiworkflow #ailearning #aitools\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -805,7 +799,7 @@
       "GIS",
       "ランドスケープ"
     ],
-    "summary": "264 likes, 180 comments - landspace.arch on June 12, 2026: \"Create a Flood Risk Study with AI (No GIS Required) \nComment ‘flood map’, I will DM you the full tutorial. \n\n#floodplain #actofmapping #GIS #urbandesign\".",
+    "summary": "265 likes, 181 comments - landspace.arch on June 12, 2026: \"Create a Flood Risk Study with AI (No GIS Required) \nComment ‘flood map’, I will DM you the full tutorial. \n\n#floodplain #actofmapping #GIS #urbandesign\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -828,7 +822,7 @@
       "セカンドブレイン",
       "PARA"
     ],
-    "summary": "3,557 likes, 79 comments - jakebeau_ on May 11, 2026: \"Build a second brain w/ Obsidian + Claude Code\n\nTwo open source starter kits worth checking out 👇 \n\nballred/obsidian-claude-pkm (1.4k stars)\n- goal-based with AI accountability \n\nheyitsnoah/claudesidian (2.3k stars)\n- One built on the classic PARA method\n\nHave you built a second brain yet? 🧠\".",
+    "summary": "3,560 likes, 79 comments - jakebeau_ on May 11, 2026: \"Build a second brain w/ Obsidian + Claude Code\n\nTwo open source starter kits worth checking out 👇 \n\nballred/obsidian-claude-pkm (1.4k stars)\n- goal-based with AI accountability \n\nheyitsnoah/claudesidian (2.3k stars)\n- One built on the classic PARA method\n\nHave you built a second brain yet? 🧠\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -850,7 +844,7 @@
       "AIワークフロー",
       "自動化"
     ],
-    "summary": "14K likes, 1,015 comments - _no_hype_ai on May 30, 2026: \"A full walkthrough of the workflow I've been working on. \n\nComment if you want deeper dives into how I'm building this or examples of the types of projects I'm running through the workflow \n\n#jarvis #secondbrain #automation\".",
+    "summary": "15K likes, 1,018 comments - _no_hype_ai on May 30, 2026: \"A full walkthrough of the workflow I've been working on. \n\nComment if you want deeper dives into how I'm building this or examples of the types of projects I'm running through the workflow \n\n#jarvis #secondbrain #automation\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -872,7 +866,7 @@
       "レーザーカッター",
       "建築模型"
     ],
-    "summary": "11K likes, 9,538 comments - masslabs_archi on June 20, 2026: \"Finish your laser cutting drawings in just 3 minutes!\nLaserFish is the ultimate Rhino plugin that drastically cuts down your model-making time.\n\n레이저 커팅 드로잉을 단 3분 만에 끝내세요!\nLaserFish는 모델 제작 시간을 획기적으로 줄여주는 Rhino 플러그인입니다.\n\n#archilife #architecturestudent #architecturemodel #rhinocéros\".",
+    "summary": "11K likes, 9,566 comments - masslabs_archi on June 20, 2026: \"Finish your laser cutting drawings in just 3 minutes!\nLaserFish is the ultimate Rhino plugin that drastically cuts down your model-making time.\n\n레이저 커팅 드로잉을 단 3분 만에 끝내세요!\nLaserFish는 모델 제작 시간을 획기적으로 줄여주는 Rhino 플러그인입니다.\n\n#archilife #architecturestudent #architecturemodel #rhinocéros\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -915,7 +909,7 @@
       "オーケストレーション",
       "ビジネス自動化"
     ],
-    "summary": "4,286 likes, 977 comments - kzzy47 on May 6, 2026: \"Everyone keeps asking if this is Obsidian.\n\nIt’s not.\n\nObsidian is great for storing thoughts, notes, graphs, ideas, and memory.\n\nPulse is different.\n\nPulse is an orchestration system I built to coordinate live AI workflows across my companies.\n\nEvery strand on the screen represents an active process, agent group, business workflow, or operational system talking to each other in real time.\n\nSome handle outreach.\nSome recover dead leads.\nSome generate content.\nSome monitor internal operations.\nSome feed data back into the system so it adapts over time instead of resetting every run.\n\nThe biggest mistake people make with AI agents is building the interface before building the execution layer.\n\nPretty dashboards mean nothing if the system cannot actually coordinate tasks consistently behind the scenes.\n\nMost “AI operating systems” online are glorified chat wrappers with particles and dark mode.\n\nThe hard part is memory, orchestration, routing, persistence, recovery logic, and getting multiple systems to work together without collapsing into chaos after 20 minutes.\n\nThat’s what I’ve been focused on.\n\nStill early.\nStill messy.\nStill building.\n\nBut it’s already running real workflows across 47 Industries every day.\".",
+    "summary": "4,294 likes, 982 comments - kzzy47 on May 6, 2026: \"Everyone keeps asking if this is Obsidian.\n\nIt’s not.\n\nObsidian is great for storing thoughts, notes, graphs, ideas, and memory.\n\nPulse is different.\n\nPulse is an orchestration system I built to coordinate live AI workflows across my companies.\n\nEvery strand on the screen represents an active process, agent group, business workflow, or operational system talking to each other in real time.\n\nSome handle outreach.\nSome recover dead leads.\nSome generate content.\nSome monitor internal operations.\nSome feed data back into the system so it adapts over time instead of resetting every run.\n\nThe biggest mistake people make with AI agents is building the interface before building the execution layer.\n\nPretty dashboards mean nothing if the system cannot actually coordinate tasks consistently behind the scenes.\n\nMost “AI operating systems” online are glorified chat wrappers with particles and dark mode.\n\nThe hard part is memory, orchestration, routing, persistence, recovery logic, and getting multiple systems to work together without collapsing into chaos after 20 minutes.\n\nThat’s what I’ve been focused on.\n\nStill early.\nStill messy.\nStill building.\n\nBut it’s already running real workflows across 47 Industries every day.\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -1118,11 +1112,9 @@
       "Webデザイン",
       "デザインコピー"
     ],
-    "summary": "copia el diseño de cualquier página web, este tipo dio la Claude Code la habilidad para hacerlo.\n\ncómo lo hizo???\n\n&gt; creando un MCP que lee el HTML/CSS de cualquier sitio y extrae colores, tipografía y componentes.\n\n🙇🏻‍♂️UIs limpias por fin. Apunta, copia y dale tu estilo. https://t.co/QE8Ko289Pl\n\n引用元投稿の内容: copia el diseño de cualquier página web, este tipo dio la Claude Code la habilid:\ncopia el diseño de cualquier página web, este tipo dio la Claude Code la habilidad para hacerlo.\n\ncómo lo hizo???\n\n&gt; creando un MCP que lee el HTML/CSS de cualquier sitio y extrae colores, tipografía y componentes.\n\n🙇🏻‍♂️UIs limpias por fin. Apunta, copia y dale tu estilo. https://t.co/QE8Ko289Pl",
-    "depth": "partial",
-    "missing": [
-      "video_content"
-    ]
+    "summary": "copia el diseño de cualquier página web, este tipo dio la Claude Code la habilidad para hacerlo.\n\ncómo lo hizo???\n\n&gt; creando un MCP que lee el HTML/CSS de cualquier sitio y extrae colores, tipografía y componentes.\n\n🙇🏻‍♂️UIs limpias por fin. Apunta, copia y dale tu estilo. https://t.co/QE8Ko289Pl\n\n引用元投稿の内容: copia el diseño de cualquier página web, este tipo dio la Claude Code la habilid:\ncopia el diseño de cualquier página web, este tipo dio la Claude Code la habilidad para hacerlo.\n\ncómo lo hizo???\n\n&gt; creando un MCP que lee el HTML/CSS de cualquier sitio y extrae colores, tipografía y componentes.\n\n🙇🏻‍♂️UIs limpias por fin. Apunta, copia y dale tu estilo. https://t.co/QE8Ko289Pl\n\n動画の内容: 動画の内容と音声について、具体的に要約した内容は以下の通りです。\n\n---\n\n### **1. 全体概要**\nこの動画は、AIデザインツール**「AIDesigner MCP」**（Model Context Protocol）の機能を紹介するプロモーション・デモンストレーション動画です。コマンドラインから短い指示を与えるだけで、既存サイトのクローン作成、特定デザインを参考にした新規ランディングページの生成、既存サイトの大幅なデザイン刷新（リデザイン）が自動で行われる様子がテンポよく描かれています。\n\n---\n\n### **2. 映像（視覚的要素）の詳細**\n\n* **ウェブサイトのクローン制作（0:00 - 0:14）**\n  * ターミナルで `CLONE browserbase.com using the aidesigner MCP` などのコマンドを入力。\n  * 実際に生成されたコード（Next.js/React等）とプレビュー画面が表示され、オリジナルサイト（Original）とAIが複製したサイト（Clone）が左右比較で提示されます（`browserbase.com`、`Obsidian`、`Cluely` などのサイト）。\n\n* **デザインを参考にした新規ページ生成（0:15 - 0:32）**\n  * `create a landing page for my SaaS INSPIRED by linear.app`（LinearにインスパイアされたSaaS用LPを作成）というコマンドを入力。Linear風の洗練されたダークモードデザインのLPが自動構築されます。\n  * 同様に `PostHog` を参考にした明るいポップなトーンのランディングページも自動生成されます。\n\n* **既存サイトのモダン化・リデザイン（0:33 - 0:51）**\n  * `ENHANCE my website at yellowpages.com` や `wunderground.com`（お天気サイト）などのコマンドを入力。\n  * 情報が煩雑な既存サイト（Before）が、一瞬で洗練されたモダンなUI/UXデザイン（After）へとリデザインされるビフォーアフターが示されます。\n\n* **ブランドロゴ（0:52 - 0:55）**\n  * 最後に「**AIDesigner**」のプロダクトロゴが表示されて終了します。\n\n---\n\n### **3. 音声（聴覚的要素）の詳細**\n\n* **解説・ナレーション：** なし（人間の声による解説音声はありません）。\n* **BGM：** アップテンポでエネルギッシュなエレクトロニック／ダンス・ポップ調の音楽が終始流れています。\n* **歌詞・音声サンプル：** 音楽内に「Move it, move it, right, left...」「I wanna blow your mind...」といったリズムに合わせた英語のボーカルフレーズが繰り返し挿入されており、AIによる高速な生成スピード感を際立たせる演出となっています。",
+    "depth": "full",
+    "missing": []
   },
   {
     "rid": 1766880791,
@@ -1135,11 +1127,9 @@
     "captured": "2026-06-21T00:29:24.685Z",
     "title": "DYTJREoRwP",
     "note": "llmwikiみたいなもの？",
-    "summary": "Comment \"Obsidian\" to get the setup guide",
-    "depth": "partial",
-    "missing": [
-      "video_content"
-    ],
+    "summary": "Comment \"Obsidian\" to get the setup guide\n\n動画の内容: 動画の映像内容と音声（発話）をあわせた詳細な日本語要約は以下の通りです。\n\n---\n\n### **動画の要約：Claude CodeとObsidianの連携による「無限の記憶」の構築**\n\n#### **1. Obsidian単体での限界（00:00 - 00:15）**\n* **映像:** ノート同士のつながりを可視化するObsidianの巨大な「グラフビュー（ネットワーク図）」が画面に表示され、その後スピーカーの男性が解説します。\n* **内容:** Obsidianは非常に優れたノート整理ツールですが、適切な拡張を行わないと単なる整理ツールにとどまり、真の威力を発揮できません。Claude Codeに特定の「スキル」をインストールして自動化するのが正しい使い方であると説明します。\n\n#### **2. 連携ツール「Obsidian Mind」の紹介（00:16 - 00:26）**\n* **映像:** 画面にGitHubのリポジトリ「`obsidian-mind`（breferrari作）」と、ノートパソコンに表示された連携マニュアルの画面が映し出されます。\n* **内容:** このスキルは**「Obsidian Mind」**と呼ばれ、Claude CodeとObsidianの保管庫（Vault）をリアルタイムでつなぐ架け橋（ブリッジ）として機能します。これにより、ClaudeがリアルタイムでObsidian内のデータを読み出したり、ノートを自動更新したりできるようになります。\n\n#### **3. ガイドの案内（00:27 - 00:34）**\n* **映像:** 男性が視聴者に向けて語りかけています。\n* **内容:** ObsidianとClaude Codeを効率的に連携・接続するためのセットアップガイドを作成したため、コメント欄に**「Obsidian」**とコメントすれば、そのガイドを送付すると伝えています。",
+    "depth": "full",
+    "missing": [],
     "tags": [
       "Obsidian",
       "セカンドブレイン"
@@ -1245,11 +1235,9 @@
     "captured": "2026-06-20T08:48:41.159Z",
     "title": "Netflixのエンジニアが、AIのトークンを最大95%カットするOSSを公開した。",
     "note": "導入してみたい",
-    "summary": "Netflixのエンジニアが、AIのトークンを最大95%カットするOSSを公開した。\n\nしかも精度は落ちない。元に戻せる「可逆圧縮」だから。\n\nClaudeやCursorを使っていると、地味にきついのがトークン消費。\n長いログ、RAGで取得したテキスト、複数ファイルの読み込み。\nAIに渡すたびにトークンが溶けていく。 https://t.co/kHg5dThbYU\n\n引用元投稿の内容: Netflixのエンジニアが、AIのトークンを最大95%カットするOSSを公開した。 しかも精度は落ちない。元に戻せる「可逆圧縮」だから。 ClaudeやCur:\nNetflixのエンジニアが、AIのトークンを最大95%カットするOSSを公開した。\n\nしかも精度は落ちない。元に戻せる「可逆圧縮」だから。\n\nClaudeやCursorを使っていると、地味にきついのがトークン消費。\n長いログ、RAGで取得したテキスト、複数ファイルの読み込み。\nAIに渡すたびにトークンが溶けていく。 https://t.co/kHg5dThbYU",
-    "depth": "partial",
-    "missing": [
-      "video_content"
-    ],
+    "summary": "Netflixのエンジニアが、AIのトークンを最大95%カットするOSSを公開した。\n\nしかも精度は落ちない。元に戻せる「可逆圧縮」だから。\n\nClaudeやCursorを使っていると、地味にきついのがトークン消費。\n長いログ、RAGで取得したテキスト、複数ファイルの読み込み。\nAIに渡すたびにトークンが溶けていく。 https://t.co/kHg5dThbYU\n\n引用元投稿の内容: Netflixのエンジニアが、AIのトークンを最大95%カットするOSSを公開した。 しかも精度は落ちない。元に戻せる「可逆圧縮」だから。 ClaudeやCur:\nNetflixのエンジニアが、AIのトークンを最大95%カットするOSSを公開した。\n\nしかも精度は落ちない。元に戻せる「可逆圧縮」だから。\n\nClaudeやCursorを使っていると、地味にきついのがトークン消費。\n長いログ、RAGで取得したテキスト、複数ファイルの読み込み。\nAIに渡すたびにトークンが溶けていく。 https://t.co/kHg5dThbYU\n\n動画の内容: この動画は、LLM APIのトークン消費やキャッシュ、コストを最適化するプロキシツール**「Headroom」**を、CLIツールの**「Claude Code」**と組み合わせて使用する様子と、そのリアルタイムダッシュボード画面を実演・紹介しているものです。（※動画内に音声解説・音声発話はありません）\n\n動画の具体的な内容は以下の通りです。\n\n---\n\n### 【動画の詳細な流れ】\n\n1. **Claude Codeの起動とプロキシ接続（00:00〜00:05）**\n   * ターミナルで `headroom wrap claude` コマンドを実行し、Headroomプロキシ（ポート8787）を経由させて Claude Code（v2.1.98）を立ち上げます。\n\n2. **プロンプトの入力（00:05〜00:15）**\n   * ユーザーが以下の指示を入力します：\n     > 「Headroomのコードベースを深く分析して問題を特定し、同時に競合他社のリサーチと改善案の調査を行ってください。サブエージェントを使用して構いません。」\n\n3. **サブエージェントによる並列処理の開始（00:15〜00:20、00:30〜00:40）**\n   * Claude Codeが依頼を受け、2つのサブエージェント（「コード問題分析」と「競合・市場調査」）を同時に立ち上げて並列処理を開始します。\n\n4. **Headroom Webダッシュボードの確認（00:21〜00:30、00:35〜00:38）**\n   * ブラウザで Headroom のダッシュボード（`localhost:8787/dashboard`）を開き、リアルタイムのパフォーマンスと節約状況を確認します。\n   * **表示されている主な指標:**\n     * **Compression Savings（削減金額）:** 約$25.50〜$25.60前後\n     * **Tokens Saved（削減トークン数）:** 約5.3Mトークン（約26.9%〜27%削減）\n     * **Overhead（処理遅延・レイテンシ）:** 約230ms〜265ms\n     * **Prefix Cache Impact（キャッシュヒット率）:** ヒット率約88〜89%\n     * **Historical Tab（履歴タブ）:** 過去の累計削減額（$138.11）、日別・週別・月別のトークン削減トレンドグラフ。\n\n5. **リアルタイムモニタリング（00:30〜00:40）**\n   * ターミナルでサブエージェントがアクティブにAPIリクエストを送信・処理するのに伴い、ダッシュボード上のキャッシュ統計や削減数値がリアルタイムで更新されていく様子が示されています。\n\n---\n\n### 【要約のまとめ】\nHeadroomを通すことで、Claude Codeの複雑な並列タスク（サブエージェント処理）実行時にも、プロキシが自動的にキャッシュや圧縮を行い、大幅なトークン削減とコスト節約が実現できていることを、CLI操作とWebダッシュボードの連動で実証している動画です。",
+    "depth": "full",
+    "missing": [],
     "tags": [
       "Claude Code",
       "トークン節約",
@@ -1287,11 +1275,9 @@
     "captured": "2026-06-20T08:44:55.501Z",
     "title": "【実は】「メモアプリを探すより、今夜1時間だけLLM wikiを作れ」が海外で刺さっている😳",
     "note": "私が作ろうとしてるのはLLMwikiってやつだね",
-    "summary": "【実は】「メモアプリを探すより、今夜1時間だけLLM wikiを作れ」が海外で刺さっている😳\nKarpathy発のsecond brain pattern。\nhttps://t.co/l9W8fTUxOr\n\nObsidian + LLM wiki = 知識が勝手にリンクされて育つAI。\n\n1時間で何ができるか👇\n\n・sourceをObsidianに入れる\n・LLMに読ませる\n\n引用元投稿の内容: Andrej Karpathy quietly shipped the best second brain idea in years not an app. :\nAndrej Karpathy quietly shipped the best second brain idea in years\n\nnot an app. a pattern.\n\nlet an llm maintain a wiki of your notes. you dump sources, it reads them, links them, files them. knowledge compounds like interest.\n\nsomeone built it into a free claude code plugin. https://t.co/3mnwl3eXLk",
-    "depth": "partial",
-    "missing": [
-      "video_content"
-    ],
+    "summary": "【実は】「メモアプリを探すより、今夜1時間だけLLM wikiを作れ」が海外で刺さっている😳\nKarpathy発のsecond brain pattern。\nhttps://t.co/l9W8fTUxOr\n\nObsidian + LLM wiki = 知識が勝手にリンクされて育つAI。\n\n1時間で何ができるか👇\n\n・sourceをObsidianに入れる\n・LLMに読ませる\n\n引用元投稿の内容: Andrej Karpathy quietly shipped the best second brain idea in years not an app. :\nAndrej Karpathy quietly shipped the best second brain idea in years\n\nnot an app. a pattern.\n\nlet an llm maintain a wiki of your notes. you dump sources, it reads them, links them, files them. knowledge compounds like interest.\n\nsomeone built it into a free claude code plugin. https://t.co/3mnwl3eXLk\n\n動画の内容: この動画の映像内容と音声内容の要約は以下の通りです。\n\n* **映像の内容**：\n  GitHub上のリポジトリ「`claude-obsidian`」（ObsidianとClaude Codeを組み合わせたAIセカンドブレイン構築ツール）のページが表示されています。ページを下にスクロールしながら、プロジェクトの概要、機能紹介（「What It Does」）、他ツールとの比較表（「Why claude-obsidian?」）、「Quick Start」ガイド、利用可能なコマンド一覧、必要要件（Requirements）などのREADMEドキュメント各セクションを確認しています。\n\n* **音声の内容**：\n  動画内に音声やナレーションは含まれていません（無音です）。",
+    "depth": "full",
+    "missing": [],
     "tags": [
       "Obsidian",
       "セカンドブレイン",
@@ -1399,11 +1385,9 @@
     "captured": "2026-06-19T23:44:32.174Z",
     "title": "デザインってざっくり言うと抽象的な概念を実体化させる行為だと思うんですが、慣れてないと考えたことを「実体化させる」のって難しいんだよな…と、昨夜学生と話していて感じました。",
     "note": "磯崎新\n間\n展覧会パンフレットが見れるサイトなんてあるの",
-    "summary": "デザインってざっくり言うと抽象的な概念を実体化させる行為だと思うんですが、慣れてないと考えたことを「実体化させる」のって難しいんだよな…と、昨夜学生と話していて感じました。\n確かにぼくも昔はすごく苦手でした。 https://t.co/B42qiwZiVs\n\n引用元投稿の内容: デザインってざっくり言うと抽象的な概念を実体化させる行為だと思うんですが、慣れてないと考えたことを「実体化させる」のって難しいんだよな…と、昨夜学生と話していて:\nデザインってざっくり言うと抽象的な概念を実体化させる行為だと思うんですが、慣れてないと考えたことを「実体化させる」のって難しいんだよな…と、昨夜学生と話していて感じました。\n確かにぼくも昔はすごく苦手でした。 https://t.co/B42qiwZiVs",
-    "depth": "partial",
-    "missing": [
-      "video_content"
-    ],
+    "summary": "デザインってざっくり言うと抽象的な概念を実体化させる行為だと思うんですが、慣れてないと考えたことを「実体化させる」のって難しいんだよな…と、昨夜学生と話していて感じました。\n確かにぼくも昔はすごく苦手でした。 https://t.co/B42qiwZiVs\n\n引用元投稿の内容: デザインってざっくり言うと抽象的な概念を実体化させる行為だと思うんですが、慣れてないと考えたことを「実体化させる」のって難しいんだよな…と、昨夜学生と話していて:\nデザインってざっくり言うと抽象的な概念を実体化させる行為だと思うんですが、慣れてないと考えたことを「実体化させる」のって難しいんだよな…と、昨夜学生と話していて感じました。\n確かにぼくも昔はすごく苦手でした。 https://t.co/B42qiwZiVs\n\n動画の内容: この動画には音声が含まれておらず、無音となっております。\n\n**映像の内容：**\n画面上でPDF形式の書籍・展示資料と思われるドキュメントが下にスクロールされ、順に表示されています。資料には「祇」「儀」「彰」「頌」「結構」「現身」「道行」「數奇」「闇」「神離」「橋」「移」「寂」「結」などの大きな漢字の概念（「間」や伝統建築・文化に関するテーマ）とともに、建築の鳥瞰図や平面図、伝統芸術のイラスト（波の絵、神楽の人物など）、人物の顔写真と経歴テキスト、書などが収められています。",
+    "depth": "full",
+    "missing": [],
     "tags": [
       "建築",
       "建築批評",
@@ -1443,11 +1427,9 @@
     "captured": "2026-06-19T10:33:52.137Z",
     "title": "ObsidianのiOS共有ボタン → XポストとYouTubeがそのままAIの記憶になる新機能",
     "note": "これraindropいらなくなるやん",
-    "summary": "【話題】\niPhoneで見たXのポストが、そのままAIの記憶になる😳\n\nObsidianのCEOが公開した新機能\niOSの共有ボタンからObsidianに送るだけで\nXのポストとYouTubeの文字起こしがMarkdownになってVaultに入る👇\nhttps://t.co/RXNeSxfCeL\n\n・Xのポスト → テキストとしてVaultに永続保存\n・YouTube動画 →\n\n引用元投稿の内容: The new iOS share sheet in @obsdmd lets you save X posts, YouTube transcripts, a:\nThe new iOS share sheet in @obsdmd lets you save X posts, YouTube transcripts, and content from other apps. Everything is converted to durable Markdown files.\n\nTry it in Obsidian 1.13 (beta) https://t.co/15yYojglZ1",
-    "depth": "partial",
-    "missing": [
-      "video_content"
-    ],
+    "summary": "【話題】\niPhoneで見たXのポストが、そのままAIの記憶になる😳\n\nObsidianのCEOが公開した新機能\niOSの共有ボタンからObsidianに送るだけで\nXのポストとYouTubeの文字起こしがMarkdownになってVaultに入る👇\nhttps://t.co/RXNeSxfCeL\n\n・Xのポスト → テキストとしてVaultに永続保存\n・YouTube動画 →\n\n引用元投稿の内容: The new iOS share sheet in @obsdmd lets you save X posts, YouTube transcripts, a:\nThe new iOS share sheet in @obsdmd lets you save X posts, YouTube transcripts, and content from other apps. Everything is converted to durable Markdown files.\n\nTry it in Obsidian 1.13 (beta) https://t.co/15yYojglZ1\n\n動画の内容: この動画は、iPhone上で**X（旧Twitter）の投稿**や**YouTube動画の字幕（トランスクリプト）**を、ノートアプリ**「Obsidian（オブシディアン）」**へスムーズにクリップ・保存するワークフローを示した操作デモ動画です。\n\n以下に動画の具体的な内容と手順を要約します。\n\n---\n\n### 動画の具体的内容・要約\n\n1. **X（旧Twitter）投稿のクリップ（00:00〜00:09）**\n   * X上で「kepano」氏による「In good hands」という文章投稿を表示しています。\n   * iOSの共有メニューを開き、Obsidian用のWebクリッパー（共有アクション）を選択します。\n   * 投稿文やメタデータがMarkdown（マークダウン）形式に自動変換されたプレビューを確認し、Obsidianの保管庫（Vault）へ保存します。\n\n2. **YouTube動画とタイムスタンプ付き文字起こしのクリップ（00:10〜00:18）**\n   * YouTubeアプリで「The Best Way To Cook Steak? | Techniquely with Lan Lam」というステーキの調理法に関する動画を表示します。\n   * 共有ボタンからObsidian用のクリッパー機能を呼び出します。\n   * 動画のタイトル、リンク、概要欄だけでなく、**動画のタイムスタンプ付き字幕（トランスクリプトデータ）情報**が自動的に抽出・整形されたMarkdownノートとして保存します。\n\n3. **Obsidianアプリでの確認（00:19〜00:30）**\n   * Obsidianアプリに切り替え、保存されたノートを確認します。\n   * クリップされたYouTubeノートを開くと、動画プレーヤーの埋め込みとともに、各タイムスタンプごとの詳細な発言内容（文字起こしテキスト）が綺麗に構造化されて保存されている様子が映し出されます。\n\n---\n\n### まとめ\nWeb上の記事・SNS投稿だけでなく、**YouTube動画の内容や字幕（トランスクリプト）を自動抽出してObsidian内にノート化し、ナレッジとして活用する一連の利便性の高い操作手順**を紹介した動画です。",
+    "depth": "full",
+    "missing": [],
     "tags": [
       "Obsidian",
       "セカンドブレイン",
@@ -1627,7 +1609,7 @@
     "captured": "2026-06-17T14:36:04.403Z",
     "title": "Bryant (@bwijaya.arch): 3つのレンダリングソフトを重ねる後処理テクニック",
     "note": "この雰囲気のパース好きだな",
-    "summary": "2,868 likes, 21 comments - bwijaya.arch on May 25, 2026: \"Before and after post production pt. 2\n\nPart 1 also out :)\n\nTesting out different rendering techniques, by layering 3 different rendering software’s into one rendering image. \n\n.\n.\n.\n.\n.\n.\n.\n\n#architecture #archi #architecturestudent #render #enscape\".",
+    "summary": "2,870 likes, 21 comments - bwijaya.arch on May 25, 2026: \"Before and after post production pt. 2\n\nPart 1 also out :)\n\nTesting out different rendering techniques, by layering 3 different rendering software’s into one rendering image. \n\n.\n.\n.\n.\n.\n.\n.\n\n#architecture #archi #architecturestudent #render #enscape\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -1736,7 +1718,7 @@
     "captured": "2026-06-16T14:37:10.435Z",
     "title": "Masato 寺尾昌人 — AI時代の情報収集ベストプラクティス",
     "note": "これは共感しました  具体的にAIとの会話による情報収集とは",
-    "summary": "8,233 likes, 32 comments - masatomerci on March 19, 2026: \"情報大洪水のAI時代の情報収集ベストプラクティスについて、直近プチバズしていたMarc Andreessenのツイートに便乗して、僕なりに思っていたことをまとめました！\nずっとシェアしたかった推しポッドキャストもちらっと紹介できて嬉しい！🫣笑\n\n情報に溢れる時代だからこそ、信頼できる情報ソースの価値は上がるし、そのリストをいくつか自分なりに持っていることは本当に大事だと思うどす。\nということで、この動画が何かの参考になれば！\n\nみんなも他におすすめの情報収集方法あったら教えておくれやす〜！！\".",
+    "summary": "8,239 likes, 32 comments - masatomerci on March 19, 2026: \"情報大洪水のAI時代の情報収集ベストプラクティスについて、直近プチバズしていたMarc Andreessenのツイートに便乗して、僕なりに思っていたことをまとめました！\nずっとシェアしたかった推しポッドキャストもちらっと紹介できて嬉しい！🫣笑\n\n情報に溢れる時代だからこそ、信頼できる情報ソースの価値は上がるし、そのリストをいくつか自分なりに持っていることは本当に大事だと思うどす。\nということで、この動画が何かの参考になれば！\n\nみんなも他におすすめの情報収集方法あったら教えておくれやす〜！！\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -1779,7 +1761,7 @@
     "captured": "2026-06-16T14:32:34.873Z",
     "title": "Rork — iPhoneアプリ生成AIツール（weekend_startup紹介）",
     "note": "Windowsでアプリ作れるってこと？",
-    "summary": "2,168 likes, 4 comments - weekend_startup on May 16, 2026: \"iPhoneアプリ生成するなら、Rorkが1番！\n\n#ai #おすすめ #web #アプリ\".",
+    "summary": "2,187 likes, 4 comments - weekend_startup on May 16, 2026: \"iPhoneアプリ生成するなら、Rorkが1番！\n\n#ai #おすすめ #web #アプリ\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -1825,7 +1807,7 @@
     "captured": "2026-06-16T14:19:58.191Z",
     "title": "Ella（ella.designtips） — 10分でプロダクトブランディングコンセプト全完成",
     "note": "なにこれ",
-    "summary": "9,518 likes, 2,932 comments - ella.designtips on May 12, 2026: \"made a full product branding concept in under 10 minutes and now i’m questioning why i used to make the process so hard for myself 😭✨\n\nusually mockups + presentations take me forever, but this honestly made everything feel way more seamless\n\nlowkey obsessed with how polished the final result looks 🤯\n\n#productdesign #branding #graphicdesign #designer #socialmediamarketing\".",
+    "summary": "9,561 likes, 2,948 comments - ella.designtips on May 12, 2026: \"made a full product branding concept in under 10 minutes and now i’m questioning why i used to make the process so hard for myself 😭✨\n\nusually mockups + presentations take me forever, but this honestly made everything feel way more seamless\n\nlowkey obsessed with how polished the final result looks 🤯\n\n#productdesign #branding #graphicdesign #designer #socialmediamarketing\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -1870,7 +1852,7 @@
     "captured": "2026-06-16T14:18:24.253Z",
     "title": "おくやま｜AIで収益化 — 「このAIの使い方してる人は終わってます」",
     "note": "",
-    "summary": "2,206 likes, 1,633 comments - chatgpt_dojo on June 15, 2026: \"このAIの使い方してる人は終わってます。\n#タゴサク構文\".",
+    "summary": "2,214 likes, 1,639 comments - chatgpt_dojo on June 15, 2026: \"このAIの使い方してる人は終わってます。\n#タゴサク構文\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -1891,7 +1873,7 @@
     "captured": "2026-06-16T14:13:01.060Z",
     "title": "チャエン（Masa）｜Digirise CEO — Claude Codeに繋ぐべきAPI・ランキング5選",
     "note": "APIでほかのAIに繋ぐのは面白い",
-    "summary": "355 likes, 0 comments - masahirochaen on June 14, 2026: \"※この動画編集は全てClaude Codeで自動化しております。\n\nClaude Code に繋ぐべき API、ランキング5選。\n\nMCPで足りる部分も多いですが、API直結だと一段できることが広がります。今回は使用頻度をもとにランキングにしました。\n\n第1位 GPT Image 2.0（画像生成）\nサムネも図解も、プロンプトからその場で。一番使っています。\n\n第2位 Gemini 3.1 Flash TTS\n読み上げ（音声生成）も、文字起こしも、これ一つで。\n\n第3位 ElevenLabs（音声クローン）\n自分の声を登録して、好きな文章を読ませられます。\n\n第4位 Typefully API\nXのスレッドを、下書きとして自動保存。\n\n第5位 Notion API\n議事録やタスクを、データベースに自動で追加。\n\nAPIを繋ぐほど、できることが広がっていきます。\n気になったものから試してみてください。\n\n保存しておくと、あとで見返せます。\nAIの実践的な使い方を、毎日発信しています。\n\n#ClaudeCode #API #AI #chatgpt #gemini\".",
+    "summary": "361 likes, 0 comments - masahirochaen on June 14, 2026: \"※この動画編集は全てClaude Codeで自動化しております。\n\nClaude Code に繋ぐべき API、ランキング5選。\n\nMCPで足りる部分も多いですが、API直結だと一段できることが広がります。今回は使用頻度をもとにランキングにしました。\n\n第1位 GPT Image 2.0（画像生成）\nサムネも図解も、プロンプトからその場で。一番使っています。\n\n第2位 Gemini 3.1 Flash TTS\n読み上げ（音声生成）も、文字起こしも、これ一つで。\n\n第3位 ElevenLabs（音声クローン）\n自分の声を登録して、好きな文章を読ませられます。\n\n第4位 Typefully API\nXのスレッドを、下書きとして自動保存。\n\n第5位 Notion API\n議事録やタスクを、データベースに自動で追加。\n\nAPIを繋ぐほど、できることが広がっていきます。\n気になったものから試してみてください。\n\n保存しておくと、あとで見返せます。\nAIの実践的な使い方を、毎日発信しています。\n\n#ClaudeCode #API #AI #chatgpt #gemini\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -2238,7 +2220,7 @@
     "captured": "2026-06-14T06:27:14.747Z",
     "title": "Efe Topçu (@efetopcuarchitecture) • Instagram reel",
     "note": "グラスホッパーからレンダリングまでは自動なのかな",
-    "summary": "1,842 likes, 13 comments - efetopcuarchitecture on June 8, 2026: \"Grasshopper ve Kangaroo ile fizik tabanlı sistemler kullanarak akışkan ve organik formlar üretiyorum. Tanımladığım eğriler ve kuvvet ilişkileri sayesinde form, sürekli değişen parametrelere göre evriliyor ve her iterasyonda farklı mekânsal potansiyeller ortaya çıkarıyor. Slider ve toggle gibi kontrollerle bu süreci yönlendirerek, tek bir sistemden birçok varyasyon elde ediyorum.\n\nBu süreçte amacım sadece form üretmek değil, aynı zamanda ortaya çıkan geometrilerin mimari ve kamusal kullanım karşılıklarını araştırmak. Ürettiğim organik yüzeyleri katmanlara ayırarak amfi, oturma basamakları, oyun alanı ve dolaşım ilişkilerini birlikte ele alıyor, formun peyzajla nasıl bütünleşebileceğini test ediyorum.\n\nBu projede parametrik sistemden elde edilen teraslaşmış betonarme yüzey, doğa içinde konumlanan çok işlevli bir açık alan kurgusuna dönüşüyor. En alt kotta basketbol oynanan bir aktivite alanı yer alırken, çevresindeki organik katmanlar oturma, izleme, dinlenme ve sosyalleşme alanları olarak çalışıyor. Böylece dijitalde geliştirdiğim akışkan formu, peyzajla bütünleşen bir amfi ve rekreasyon senaryosu üzerinden mimari açıdan araştırıyor ve görselleştiriyorum.\n\nParametrik ve hesaplamalı tasarım alanında içerikler paylaşıyorum.\nGrasshopper & Rhinoceros ile mimari tasarım, algoritmik modelleme ve dijital üretim süreçlerine odaklanıyorum.\n✉️ Eğitim, danışmanlık veya iş birliği için iletişime geçebilirsiniz.\n\n#rhino3d #grasshopper3d #parametricdesign #parametricarchitecture #architecturestudent\".",
+    "summary": "1,843 likes, 13 comments - efetopcuarchitecture on June 8, 2026: \"Grasshopper ve Kangaroo ile fizik tabanlı sistemler kullanarak akışkan ve organik formlar üretiyorum. Tanımladığım eğriler ve kuvvet ilişkileri sayesinde form, sürekli değişen parametrelere göre evriliyor ve her iterasyonda farklı mekânsal potansiyeller ortaya çıkarıyor. Slider ve toggle gibi kontrollerle bu süreci yönlendirerek, tek bir sistemden birçok varyasyon elde ediyorum.\n\nBu süreçte amacım sadece form üretmek değil, aynı zamanda ortaya çıkan geometrilerin mimari ve kamusal kullanım karşılıklarını araştırmak. Ürettiğim organik yüzeyleri katmanlara ayırarak amfi, oturma basamakları, oyun alanı ve dolaşım ilişkilerini birlikte ele alıyor, formun peyzajla nasıl bütünleşebileceğini test ediyorum.\n\nBu projede parametrik sistemden elde edilen teraslaşmış betonarme yüzey, doğa içinde konumlanan çok işlevli bir açık alan kurgusuna dönüşüyor. En alt kotta basketbol oynanan bir aktivite alanı yer alırken, çevresindeki organik katmanlar oturma, izleme, dinlenme ve sosyalleşme alanları olarak çalışıyor. Böylece dijitalde geliştirdiğim akışkan formu, peyzajla bütünleşen bir amfi ve rekreasyon senaryosu üzerinden mimari açıdan araştırıyor ve görselleştiriyorum.\n\nParametrik ve hesaplamalı tasarım alanında içerikler paylaşıyorum.\nGrasshopper & Rhinoceros ile mimari tasarım, algoritmik modelleme ve dijital üretim süreçlerine odaklanıyorum.\n✉️ Eğitim, danışmanlık veya iş birliği için iletişime geçebilirsiniz.\n\n#rhino3d #grasshopper3d #parametricdesign #parametricarchitecture #architecturestudent\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -2322,7 +2304,7 @@
     "captured": "2026-06-14T05:01:22.362Z",
     "title": "Moni Ibarra (@monica.ibarra_) • Instagram reel — パリ証券取引所の新作",
     "note": "雲を扱うアーティストっていっぱいいるけどパクリではないのかな",
-    "summary": "75K likes, 233 comments - monica.ibarra_ on June 3, 2026: \"New at the Bourse de Commerce: Cloud #07156 ☁️\n\nA work by Fujiko Nakaya, transforming the Rotonde into a shifting landscape of fog, light, and space.\n\nDon’t miss it!!\".",
+    "summary": "75K likes, 234 comments - monica.ibarra_ on June 3, 2026: \"New at the Bourse de Commerce: Cloud #07156 ☁️\n\nA work by Fujiko Nakaya, transforming the Rotonde into a shifting landscape of fog, light, and space.\n\nDon’t miss it!!\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -2533,11 +2515,9 @@
     "captured": "2026-06-14T04:34:52.274Z",
     "title": "Claude Code開発者による28分間のプロンプト設計動画",
     "note": "これってとんでもない資料なのでは",
-    "summary": "O engenheiro que criou o Claude Code acaba de lançar um vídeo de 28 minutos onde te ensina a escrever prompts que realmente funcionam.\n\nJá vi cursos de 300 dólares que não chegam nem à metade do que ele explica nos primeiros 10 minutos.\n\nArquivos CLAUDE.md, atalhos de memória, https://t.co/YQs1jY54Im\n\n引用元投稿の内容: O engenheiro que criou o Claude Code acaba de lançar um vídeo de 28 minutos onde:\nO engenheiro que criou o Claude Code acaba de lançar um vídeo de 28 minutos onde te ensina a escrever prompts que realmente funcionam.\n\nJá vi cursos de 300 dólares que não chegam nem à metade do que ele explica nos primeiros 10 minutos.\n\nArquivos CLAUDE.md, atalhos de memória, https://t.co/YQs1jY54Im",
-    "depth": "partial",
-    "missing": [
-      "video_content"
-    ],
+    "summary": "O engenheiro que criou o Claude Code acaba de lançar um vídeo de 28 minutos onde te ensina a escrever prompts que realmente funcionam.\n\nJá vi cursos de 300 dólares que não chegam nem à metade do que ele explica nos primeiros 10 minutos.\n\nArquivos CLAUDE.md, atalhos de memória, https://t.co/YQs1jY54Im\n\n引用元投稿の内容: O engenheiro que criou o Claude Code acaba de lançar um vídeo de 28 minutos onde:\nO engenheiro que criou o Claude Code acaba de lançar um vídeo de 28 minutos onde te ensina a escrever prompts que realmente funcionam.\n\nJá vi cursos de 300 dólares que não chegam nem à metade do que ele explica nos primeiros 10 minutos.\n\nArquivos CLAUDE.md, atalhos de memória, https://t.co/YQs1jY54Im\n\n動画の内容: Anthropicのテクニカルスタッフであり「Claude Code」の開発者であるボリス（Boris）氏によるプレゼンテーション動画です。ターミナル上で動作するAI開発アシスタント「Claude Code」の概要や、実践的な活用テクニックについて解説されています。\n\n以下に動画の主要な内容を要約します。\n\n---\n\n### 1. Claude Codeとは？（概要）\n* **ターミナルベースのアシスタント**: エディタ（IDE）のプラグインではなく、ターミナルで動作するアージェンティック（自律的）なAI開発ツール。\n* **広範囲なタスクに対応**: 単なるコードの補完にとどまらず、機能構築、全体的なリファクタリング、バグ修正、ファイル構築などを一括で行う。\n* **環境を選ばない**: VS Code、Xcode、JetBrains、Vim、Emacsなど、開発者がどのIDEを使っていても、ローカルやSSH/tmux環境のターミナルからそのまま利用可能。\n\n---\n\n### 2. 初期設定と最適化のコツ\n* **便利なコマンド**:\n  * `/terminal-setup`: 改行入力を `Shift + Enter` に設定。\n  * `/theme`: ライト/ダーク/色覚サポートテーマの切り替え。\n  * `/install-github-app`: GitHub IssueやPRで `@claude` とメンションして呼び出せるアプリの連携。\n  * `/allowed-tools`: 良く使うツールの自動許可設定。\n* **音声入力の活用**: macOSの音声入力（ディクテーション）を有効にし、他のエンジニアに話しかけるようにプロンプトを口頭で入力すると効率的。\n\n---\n\n### 3. 初心者向け：コードベースのQ&Aから始める\n* **オンボーディングの高速化**: Anthropicの新入社員研修（技術オンボーディング）では、Claude Codeでコードベースへの質問から始めさせることで、従来2〜3週間かかっていたオンボーディングを2〜3日に短縮。\n* **セキュリティ・プライバシー**: インデックス作成やリモートDBへのコード送信は行わず、コードはローカルに保持される。\n* **プロンプト例**:\n  * 「この処理・クラスはどこでどう使われているか？」\n  * 「Gitの履歴を遡って、なぜこの関数には15個も引数があるのか原因を調べて」\n  * 「先週自分が出荷（commit/PR）した内容をまとめて」\n\n---\n\n### 4. コード編集とワークフローの自動化\n* **計画（Plan）を立てさせる**: 複雑な実装を頼む場合、いきなりコードを書かせず「まずプロンプトでアイデア出し・計画を作成させ、人間の承認を得てから実装させる」ことが成功のコツ。\n* **Git操作の自動化**: 「`commit, push, pr`」と指示するだけで、Gitログや過去の書き方を自動理解し、ブランチ作成・コミット・PR作成まで一括実行。\n* **フィードバックループの構築**:\n  * 単体テスト（Unit Test）を書かせて実行結果で自己修正させる。\n  * PuppeteerやiOSシミュレータで画面キャプチャを撮らせ、デザインモックに近づくまで自動で試行錯誤（イテレーション）させる。\n\n---\n\n### 5. コンテキストの与え方（`CLAUDE.md`）\n* **`CLAUDE.md`**: プロジェクトのルール、開発コマンド、スタイルガイドなどを記述しておく専用ファイル。\n  * **プロジェクト直下 (`CLAUDE.md`)**: チーム全体で共有（Git管理）。\n  * **個人用 (`CLAUDE.local.md`)**: 自分専用の設定（Git非管理）。\n  * **サブディレクトリ内**: 必要なときだけ読み込まれる。\n  * **エンタープライズポリシー**: 会社全体の共通ルールを適用。\n* **クイック操作**: ターミナルで `#` に続けて指示を入力すると、AIが自動で `CLAUDE.md` に記憶（Memory）として保存・学習する。\n\n---\n\n### 6. 主なショートカットキー（Keybindings）\n* **`Shift + Tab`**: エディタ編集の自動承認モード（Auto-accept）に切り替え。\n* **`#`**: 記憶（Memory）の追加。\n* **`!`**: Bashモード（ローカルでコマンドを実行し、結果をAIのコンテキストに投入）。\n* **`@`**: ファイルやフォルダをコンテキストに追加。\n* **`Esc`**: AIの動作を安全にストップ（途中で割り込んで指示修正が可能）。\n* **`Ctrl + R`**: 詳細ログ（AIが見ている生のアウトプット/コンテキスト）を表示。\n\n---\n\n### 7. スクリプト化・SDKとしての利用 (`claude -p`)\n* **UNIXコマンド感覚での利用**: `claude -p \"プロンプト\"` で非対話型の実行が可能。\n* **パイプライン連携**: `git status | claude -p \"変更点を要約して\" --output-format json | jq .result` のように他のCLIツールと組み合わせてCI/CDやインシデント対応に組み込める。\n\n---\n\n### 8. 質疑応答（Q&A）のハイライト\n* **開発で最も難しかった部分は？**\n  * Bashコマンドの安全性確保。全コマンドで人間の承認を求めると開発効率が下がるため、静的解析と段階的な権限管理（許可リスト・ブロックリスト）を組み合わせた点。\n* **マルチモーダル（画像認識）に対応しているか？**\n  * 完全対応。ターミナル上に画像をドラッグ＆ドロップしたり、パスを指定・ペーストすることでUIモック画像を読み込ませて実装させることが可能。\n* **なぜエディタ（IDE）プラグインではなくCLIなのか？**\n  * エンジニアによって使うIDEがバラバラ（VS Code, Xcode, Vimなど）なため、最も共通の分母であるターミナルを選んだ。また、AIモデルの進化スピードが非常に早いため、複雑なGUIを作り込むよりもターミナルベースの方が将来性に柔軟に対応できる。\n* **機械学習・研究用途での利用実績は？**\n  * Anthropicの技術スタッフの約80%が日常的に利用しており、Jupyter Notebookの編集・実行ツールなどを用いてリサーチ業務にも活用されている。",
+    "depth": "full",
+    "missing": [],
     "tags": [
       "Claude Code",
       "プロンプト設計",
@@ -2660,7 +2640,7 @@
     "captured": "2026-06-14T02:59:58.898Z",
     "title": "Yamato Sakaguchi (@yamatoskgc_ai) • Instagram reel — AIで作った人物",
     "note": "",
-    "summary": "3,512 likes, 24 comments - yamatoskgc_ai on June 13, 2026: \"・\nAIで作られた人物は気持ち悪い、これもう変わってきてます。\n\n生成AIがつくる人の顔の気持ち悪さは、ずっと言及されてきたが、最近では肌の質感、表情など細部まで作り込めば見分けがつかないレベルまできている。\n\n今後、技術がもっと発展していけば誰も見分けがつかないようになっていくと考えると、AIで作ったか、作ってないかは重要ではないのかもしれない。\n\nThe idea that AI-generated characters are creepy is changing.\n\nThe creepiness of AI-generated faces has been a long-standing concern, but recently, that's no longer the case. With enough attention to detail, including skin texture and facial expressions, AI can create characters that look completely natural.\nAs technology advances further, it's likely that no one will be able to tell the difference, and whether a creative work was made with AI or not may become irrelevant. \n\n-\n\n生成AIを活用したクリエイティブの企画・制作、コスメ・ファッションなどブランドのSNS活用に加え、生成AIの導入・活用のサポートも行っております。 お問い合わせはプロフィールの会社HPよりお願いいたします。\".",
+    "summary": "3,513 likes, 24 comments - yamatoskgc_ai on June 13, 2026: \"・\nAIで作られた人物は気持ち悪い、これもう変わってきてます。\n\n生成AIがつくる人の顔の気持ち悪さは、ずっと言及されてきたが、最近では肌の質感、表情など細部まで作り込めば見分けがつかないレベルまできている。\n\n今後、技術がもっと発展していけば誰も見分けがつかないようになっていくと考えると、AIで作ったか、作ってないかは重要ではないのかもしれない。\n\nThe idea that AI-generated characters are creepy is changing.\n\nThe creepiness of AI-generated faces has been a long-standing concern, but recently, that's no longer the case. With enough attention to detail, including skin texture and facial expressions, AI can create characters that look completely natural.\nAs technology advances further, it's likely that no one will be able to tell the difference, and whether a creative work was made with AI or not may become irrelevant. \n\n-\n\n生成AIを活用したクリエイティブの企画・制作、コスメ・ファッションなどブランドのSNS活用に加え、生成AIの導入・活用のサポートも行っております。 お問い合わせはプロフィールの会社HPよりお願いいたします。\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -2747,7 +2727,7 @@
     "captured": "2026-06-13T17:05:09.832Z",
     "title": "Claude Codeでスライド図解を即生成（koji_aionisan）",
     "note": "",
-    "summary": "79 likes, 41 comments - koji_aionisan on June 4, 2026: \"スライド資料に使える図解が一瞬で生成できるようになります！\n\nAIの最新情報は\n@koji_aionisan をフォロー\n\n#ai #業務効率化 #claude #claudecode\".",
+    "summary": "80 likes, 41 comments - koji_aionisan on June 4, 2026: \"スライド資料に使える図解が一瞬で生成できるようになります！\n\nAIの最新情報は\n@koji_aionisan をフォロー\n\n#ai #業務効率化 #claude #claudecode\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -2768,7 +2748,7 @@
     "captured": "2026-06-13T17:03:54.283Z",
     "title": "ジェネラティブ動くタイポグラフィツール（fiona / fifbuilds）",
     "note": "素敵かも",
-    "summary": "1,194 likes, 961 comments - fifbuilds on June 12, 2026: \"Generative kinetic typography/ASCII has been on my mind lately, so I built a tool for it! Type that actually moves with logic. Start with anything, customize it, and export in different formats or embed it in your code. Comment MOVINGTYPE and I’ll send it to you!\n\n#kinetictypography #graphicdesign #webdesign #designtools #generative\".",
+    "summary": "1,204 likes, 973 comments - fifbuilds on June 12, 2026: \"Generative kinetic typography/ASCII has been on my mind lately, so I built a tool for it! Type that actually moves with logic. Start with anything, customize it, and export in different formats or embed it in your code. Comment MOVINGTYPE and I’ll send it to you!\n\n#kinetictypography #graphicdesign #webdesign #designtools #generative\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -2813,7 +2793,7 @@
     "captured": "2026-06-13T16:59:56.280Z",
     "title": "Claude Codeでインスタインサイト分析（koji_aionisan）",
     "note": "",
-    "summary": "1,162 likes, 1,882 comments - koji_aionisan on June 2, 2026: \"ClaudeCodeでインスタインサイト分析やってみた！\n\nAIの最新情報は\n@koji_aionisan をフォロー！\n\n#ai #業務効率化 #claude #claudecode\".",
+    "summary": "1,169 likes, 1,894 comments - koji_aionisan on June 2, 2026: \"ClaudeCodeでインスタインサイト分析やってみた！\n\nAIの最新情報は\n@koji_aionisan をフォロー！\n\n#ai #業務効率化 #claude #claudecode\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -2969,7 +2949,7 @@
     "captured": "2026-06-13T15:51:43.951Z",
     "title": "花びら型クリップ3Dプリント（af_inventions）",
     "note": "作りたい",
-    "summary": "146K likes, 1,298 comments - af_inventions on March 26, 2026: \"The cutest and most useful kitchen tool you’ve ever seen!\n•\nThe magic lies in the petals: I 3D-printed with AD5X by @flashforge_official these detachable clips, perfect for sealing biscuit bags, snack pouches, or any open bags in your pantry\n•\nIf you want the file or the physical product, click the link in my bio or send me a message!\n•\n🧵Filaments by @esun3dprinting \n•\n#3dprint #3dprinting #3dprinted #flashforge #AD5X\".",
+    "summary": "147K likes, 1,297 comments - af_inventions on March 26, 2026: \"The cutest and most useful kitchen tool you’ve ever seen!\n•\nThe magic lies in the petals: I 3D-printed with AD5X by @flashforge_official these detachable clips, perfect for sealing biscuit bags, snack pouches, or any open bags in your pantry\n•\nIf you want the file or the physical product, click the link in my bio or send me a message!\n•\n🧵Filaments by @esun3dprinting \n•\n#3dprint #3dprinting #3dprinted #flashforge #AD5X\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -2990,7 +2970,7 @@
     "captured": "2026-06-13T15:50:19.372Z",
     "title": "モジュールシェルフで賃貸インテリア（ちよこ）",
     "note": "こういう長いネジ使ったシェルフDIYしたい",
-    "summary": "2,553 likes, 5 comments - chiyoko.no.ouchi on June 12, 2026: \"📍アイテム詳細　@rhombus_lab / module shelf\n公式ホームページから購入しました。\n受注生産のようで、届くまで2〜3週間くらいでした。\n----------------\n\n「どうせまた引っ越すし、とりあえずでいいや…」\n\n間取りやライフスタイルが変わる賃貸民におすすめしたい、\n【形を変えられる家具】、モジュールシェルフ。\n\n全ての家具を一生使う！のは難しいけれど、\nできるだけ長く愛せるものを選んでいけたらと思っています😌\n----------------\n📍築古で和室のある賃貸でも、お気に入りの空間にするアイテムを紹介しています。\nフォローしてチェックしてみてね。\n@chiyoko.no.ouchi\".",
+    "summary": "2,555 likes, 5 comments - chiyoko.no.ouchi on June 12, 2026: \"📍アイテム詳細　@rhombus_lab / module shelf\n公式ホームページから購入しました。\n受注生産のようで、届くまで2〜3週間くらいでした。\n----------------\n\n「どうせまた引っ越すし、とりあえずでいいや…」\n\n間取りやライフスタイルが変わる賃貸民におすすめしたい、\n【形を変えられる家具】、モジュールシェルフ。\n\n全ての家具を一生使う！のは難しいけれど、\nできるだけ長く愛せるものを選んでいけたらと思っています😌\n----------------\n📍築古で和室のある賃貸でも、お気に入りの空間にするアイテムを紹介しています。\nフォローしてチェックしてみてね。\n@chiyoko.no.ouchi\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -3144,7 +3124,7 @@
     "captured": "2026-06-13T15:37:26.965Z",
     "title": "Google Earth+Photoshopで創造的マッピング（thearchpod）",
     "note": "こういうのって英語はいっぱいあるんだけど日本語ないよね、真似できるかも",
-    "summary": "3,158 likes, 5 comments - thearchpod on June 10, 2026: \"Google Earth 🌎 + Photoshop 💙\n\n#googleearth #photoshop #creativemapping #urbandesign #mapping masterplan contextmapping\nvisualstorytelling satelliteimagery\".",
+    "summary": "3,166 likes, 5 comments - thearchpod on June 10, 2026: \"Google Earth 🌎 + Photoshop 💙\n\n#googleearth #photoshop #creativemapping #urbandesign #mapping masterplan contextmapping\nvisualstorytelling satelliteimagery\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -3255,7 +3235,7 @@
     "captured": "2026-06-13T15:32:47.748Z",
     "title": "Claude Fable 5でSolidWorksのCAD操作（MecAgent）",
     "note": "ai モデリング",
-    "summary": "5,979 likes, 75 comments - mecagent_off on June 12, 2026: \"Claude Fable 5 on CAD - Drone Blade\n\nAI applies to Solidworks 2026 with MecAgent Copilot 1.2.3\n\nAs of today (12/06/2026), thanks to a Text-to-Macro-to-CAD system, we are able to create semi-complex assemblies using all of the CAD software’s solid modeling features, while applying consistent materials and appearances. \n\nWe have noticed an improvement in the applications of the Loft functions and in the ability to create slightly more complex surface shapes.\n\nThe video is shown at real-time speed (1×).\n\nThe generated part is parametric, includes a feature tree, and is fully editable but not fully constrained.\n\nMecAgent is an independent tool. It is not affiliated with, endorsed by, or a partner of SOLIDWORKS®. Any reference to SOLIDWORKS® is for informational purposes only.\n\n#cad #ai #claude #mechanicalengineering #engineering\".",
+    "summary": "5,995 likes, 75 comments - mecagent_off on June 12, 2026: \"Claude Fable 5 on CAD - Drone Blade\n\nAI applies to Solidworks 2026 with MecAgent Copilot 1.2.3\n\nAs of today (12/06/2026), thanks to a Text-to-Macro-to-CAD system, we are able to create semi-complex assemblies using all of the CAD software’s solid modeling features, while applying consistent materials and appearances. \n\nWe have noticed an improvement in the applications of the Loft functions and in the ability to create slightly more complex surface shapes.\n\nThe video is shown at real-time speed (1×).\n\nThe generated part is parametric, includes a feature tree, and is fully editable but not fully constrained.\n\nMecAgent is an independent tool. It is not affiliated with, endorsed by, or a partner of SOLIDWORKS®. Any reference to SOLIDWORKS® is for informational purposes only.\n\n#cad #ai #claude #mechanicalengineering #engineering\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -3459,7 +3439,7 @@
     "captured": "2026-06-13T05:17:37.411Z",
     "title": "Dev (@dev.aicreator) • Instagram reel",
     "note": "",
-    "summary": "13K likes, 743 comments - dev.aicreator on June 11, 2026: \"Claude + Higgsfield duo is unreal \n\nComment “claude” for prompt\".",
+    "summary": "13K likes, 760 comments - dev.aicreator on June 11, 2026: \"Claude + Higgsfield duo is unreal \n\nComment “claude” for prompt\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -3481,7 +3461,7 @@
     "captured": "2026-06-13T05:17:11.532Z",
     "title": "@fumiya_ai • Instagram reel",
     "note": "",
-    "summary": "8,097 likes, 14K comments - fumiya_ai on June 2, 2026: \"好きな映画教えて\n@fumiya_ai \n#ai\".",
+    "summary": "8,400 likes, 14K comments - fumiya_ai on June 2, 2026: \"好きな映画教えて\n@fumiya_ai \n#ai\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -3502,11 +3482,9 @@
     "captured": "2026-06-13T04:11:36.239Z",
     "title": "steven (@stee.ugc) • Instagram reel",
     "note": "",
-    "summary": "Higgsfield MCP is printing for me rn 🤣 #higgsfield #higgsfieldpartner",
-    "depth": "partial",
-    "missing": [
-      "video_content"
-    ],
+    "summary": "Higgsfield MCP is printing for me rn 🤣 #higgsfield #higgsfieldpartner\n\n動画の内容: この動画では、AIツールの**Claude**と**Higgsfield AI**を連携させて、自動で商品のPR（UGC）動画を作成し、収益を上げる方法が紹介されています（バックグラウンドではアップテンポなBGMが流れています）。\n\n---\n\n### 動画の主な内容と手順\n\n1. **Higgsfield AIの設定**\n   * `higgsfield.ai` にアクセスし、「MCP」タブからカスタムコネクターのリンクをコピーします。\n   * Claudeの設定画面（Connectors）を開き、コピーしたリンクを貼り付けて連携させます。\n\n2. **商品の選定と指示**\n   * Amazonで販売促進したい商品（動画では電動水鉄砲）を探し、商品URLをコピーします。\n   * Claudeの入力欄に商品URLを貼り付け、「この商品のUGC（ユーザー生成コンテンツ）動画を生成して」とプロンプト（指示文）を入力します。\n\n3. **動画生成と成果**\n   * AIが自動で高品質なプロモーション動画を数分で作成します。\n   * これにより、AIが自動で商品を宣伝・販売し、高い収益（動画内では約10,000ドルの売上画面）を得られる仕組みを解説しています。",
+    "depth": "full",
+    "missing": [],
     "tags": [
       "Higgsfield",
       "MCP",
@@ -3568,7 +3546,7 @@
     "captured": "2026-06-13T04:06:21.995Z",
     "title": "ナベ👨‍💻 | 仕事で使えるChatGPT・AI活用術 (@nabe_ai_chatgpt) • Instagram reel",
     "note": "",
-    "summary": "3,112 likes, 9,250 comments - nabe_ai_chatgpt on April 10, 2026: \"リールの最後の部分で\n実はとっても大事な情報に触れています🤫\n\nぜひ見逃さずに\n受け取っていただきたいポイントです👍\n\n最近のAIって\n本当に驚くほど進化していて\nしかも使い方がめちゃくちゃ簡単なんです。\n\n「AIってなんだか難しそう…」\nと感じている人もまだまだ多いですが\n実際は専門的な知識や高度なスキルがなくても\n誰でもすぐに扱えてしまうんです。\n\nしかも\nただ“簡単”なだけじゃありません。\n\nAIを取り入れることで、\n普段自分でコツコツ時間をかけてやっていたことが、\nあっという間に、\nしかも高クオリティで仕上がってしまうんです🔥\n\n効率もスピードも段違いだから、\n「正直、もうこれを使わない理由はない」\nと言っても過言ではありません🙅‍♂️\n\n一度でも試してみれば、\n「これ、もっと早く知っていれば…」\nと思うはずです。\n\nそれくらい\n使った瞬間に生活や仕事の質が\n変わるようなインパクトがあります。\n\nだからこそ、\n少しでも気になったタイミングがあれば\nその瞬間に触れてみてほしいんです。\n\n“やってみるかどうか”の一歩で、\n未来の成果がまったく変わってきます。\n\nそして、これからも\n“本当に役立つ”AIツールや活用法を厳選して\n皆さんにわかりやすく共有していきます🫡\n\nただ流行りだから紹介するのではなく、\nちゃんと「便利さ」「実用性」「使いやすさ」\nを備えたものをお届けするので\nぜひ今後の発信も楽しみにしていてください💪\".",
+    "summary": "3,111 likes, 9,247 comments - nabe_ai_chatgpt on April 10, 2026: \"リールの最後の部分で\n実はとっても大事な情報に触れています🤫\n\nぜひ見逃さずに\n受け取っていただきたいポイントです👍\n\n最近のAIって\n本当に驚くほど進化していて\nしかも使い方がめちゃくちゃ簡単なんです。\n\n「AIってなんだか難しそう…」\nと感じている人もまだまだ多いですが\n実際は専門的な知識や高度なスキルがなくても\n誰でもすぐに扱えてしまうんです。\n\nしかも\nただ“簡単”なだけじゃありません。\n\nAIを取り入れることで、\n普段自分でコツコツ時間をかけてやっていたことが、\nあっという間に、\nしかも高クオリティで仕上がってしまうんです🔥\n\n効率もスピードも段違いだから、\n「正直、もうこれを使わない理由はない」\nと言っても過言ではありません🙅‍♂️\n\n一度でも試してみれば、\n「これ、もっと早く知っていれば…」\nと思うはずです。\n\nそれくらい\n使った瞬間に生活や仕事の質が\n変わるようなインパクトがあります。\n\nだからこそ、\n少しでも気になったタイミングがあれば\nその瞬間に触れてみてほしいんです。\n\n“やってみるかどうか”の一歩で、\n未来の成果がまったく変わってきます。\n\nそして、これからも\n“本当に役立つ”AIツールや活用法を厳選して\n皆さんにわかりやすく共有していきます🫡\n\nただ流行りだから紹介するのではなく、\nちゃんと「便利さ」「実用性」「使いやすさ」\nを備えたものをお届けするので\nぜひ今後の発信も楽しみにしていてください💪\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -3612,7 +3590,7 @@
     "captured": "2026-06-13T04:05:23.742Z",
     "title": "こうじ｜本当使えるAIだけ教えるお兄さん (@koji_aionisan) • Instagram reel",
     "note": "",
-    "summary": "203 likes, 0 comments - koji_aionisan on June 12, 2026: \"AIを使う時の作業効率爆上がりツールです！\n\nAIの最新情報は\n@koji_aionisan をフォロー！\n\n#ai #業務効率化 #claude\".",
+    "summary": "206 likes, 0 comments - koji_aionisan on June 12, 2026: \"AIを使う時の作業効率爆上がりツールです！\n\nAIの最新情報は\n@koji_aionisan をフォロー！\n\n#ai #業務効率化 #claude\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -3654,7 +3632,7 @@
     "captured": "2026-06-13T04:04:39.880Z",
     "title": "Tyler Payne (@imtylerpayne) • Instagram reel",
     "note": "",
-    "summary": "2,491 likes, 2,052 comments - imtylerpayne on May 12, 2026: \"Copy this prompt into Claude ↓\n\nI made $300k with only 5,000 followers on Instagram (biggest month was $38.5k).\n\nI also helped a coach stuck at $1,000 a month, hit $13,000 a month. \nAnd experts who couldn’t sell at $500 start closing at $3,000+.\n\nSo yes these concepts work.\n\nHere’s the Claude prompt:\n\n“You are an expert in personal branding, AI leverage, and offer creation. You’re going to guide me, step by step, to build a profitable personal brand on Instagram.\n\nHere’s my information:\nWhat I know how to do / my area of expertise: [fill in]\nWhere I am on Instagram right now: [follower count]\nMy monthly revenue goal: [fill in]\n\nBased on this, give me a complete action plan:\n\nSTEP 1: FIND MY PROFITABLE POSITIONING\nAnalyze my expertise and identify 3 specific angles where it meets real market demand. For each: who I’m talking to, the exact problem I solve, and why someone would pay for it. Then help me choose the one with the highest successful potential.\n\nSTEP 2: BUILD MY SIMPLE OFFER\nBased on my positioning, help me build an offer plan: an irresistible title, the transformation I’m promising, the delivery structure, and the price in a ready to sell format.\n\nSTEP 3: BUILD MY CONTENT SYSTEM\nCreate a 30-day content plan to attract the right people and move them toward my offer. Give me: 3 messaging pillars, 10 specific reel and carousel ideas with hooks, and a posting cadence I can actually stick to.\n\nSTEP 4: BUILD MY SALES SYSTEM\nShow me how to turn content into clients. How to use stories to sell. How to use DMs and automation to turn my followers into customers. Give me the copy and paste scripts and templates.”\n\nTo be honest with you, this prompt can be very effective at a beginner level. \n\nBut if you’re ready to move beyond basic prompts… I built a plug and play Offer Concept Creator that will build you an entire offer concept ready to sell: an entire course outline, customer access levels, pricing structures, and more. \n\nComment “OFFER” and I’ll send you this plug and play Offer Concept Creator… so you can build a strong foundation for your profitable personal brand 🫡\".",
+    "summary": "2,497 likes, 2,060 comments - imtylerpayne on May 12, 2026: \"Copy this prompt into Claude ↓\n\nI made $300k with only 5,000 followers on Instagram (biggest month was $38.5k).\n\nI also helped a coach stuck at $1,000 a month, hit $13,000 a month. \nAnd experts who couldn’t sell at $500 start closing at $3,000+.\n\nSo yes these concepts work.\n\nHere’s the Claude prompt:\n\n“You are an expert in personal branding, AI leverage, and offer creation. You’re going to guide me, step by step, to build a profitable personal brand on Instagram.\n\nHere’s my information:\nWhat I know how to do / my area of expertise: [fill in]\nWhere I am on Instagram right now: [follower count]\nMy monthly revenue goal: [fill in]\n\nBased on this, give me a complete action plan:\n\nSTEP 1: FIND MY PROFITABLE POSITIONING\nAnalyze my expertise and identify 3 specific angles where it meets real market demand. For each: who I’m talking to, the exact problem I solve, and why someone would pay for it. Then help me choose the one with the highest successful potential.\n\nSTEP 2: BUILD MY SIMPLE OFFER\nBased on my positioning, help me build an offer plan: an irresistible title, the transformation I’m promising, the delivery structure, and the price in a ready to sell format.\n\nSTEP 3: BUILD MY CONTENT SYSTEM\nCreate a 30-day content plan to attract the right people and move them toward my offer. Give me: 3 messaging pillars, 10 specific reel and carousel ideas with hooks, and a posting cadence I can actually stick to.\n\nSTEP 4: BUILD MY SALES SYSTEM\nShow me how to turn content into clients. How to use stories to sell. How to use DMs and automation to turn my followers into customers. Give me the copy and paste scripts and templates.”\n\nTo be honest with you, this prompt can be very effective at a beginner level. \n\nBut if you’re ready to move beyond basic prompts… I built a plug and play Offer Concept Creator that will build you an entire offer concept ready to sell: an entire course outline, customer access levels, pricing structures, and more. \n\nComment “OFFER” and I’ll send you this plug and play Offer Concept Creator… so you can build a strong foundation for your profitable personal brand 🫡\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -3676,7 +3654,7 @@
     "captured": "2026-06-13T04:04:16.757Z",
     "title": "雨宮 一聖 (@issey_amemiya_pg) • Instagram reel",
     "note": "",
-    "summary": "66 likes, 0 comments - issey_amemiya_pg on June 9, 2026: \".\nClaude CodeでAIの秘書を手に入れた。\nスプレッドシートの限界を感じていた時の出会い。\nダッシュボードを作ったら、見やすい・入力できる・AIが動く。\n建築家の仕事が、また一段アップデートされた。\n\n※次回テーマ希望あればコメント欄へどうぞ\n\n#ClaudeCode #AI活用 #設計ノウハウ #建築学生 #建築家\".",
+    "summary": "67 likes, 0 comments - issey_amemiya_pg on June 9, 2026: \".\nClaude CodeでAIの秘書を手に入れた。\nスプレッドシートの限界を感じていた時の出会い。\nダッシュボードを作ったら、見やすい・入力できる・AIが動く。\n建築家の仕事が、また一段アップデートされた。\n\n※次回テーマ希望あればコメント欄へどうぞ\n\n#ClaudeCode #AI活用 #設計ノウハウ #建築学生 #建築家\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -3784,7 +3762,7 @@
     "captured": "2026-06-13T03:59:35.466Z",
     "title": "トム | マーケ社長のAI活用術 (@weekend_startup) • Instagram reel",
     "note": "サイト紹介いいね",
-    "summary": "498 likes, 1 comments - weekend_startup on May 7, 2026: \"ECサイトやるならこのAIツール使って！\n\n#ai #おすすめ #web #起業\".",
+    "summary": "501 likes, 1 comments - weekend_startup on May 7, 2026: \"ECサイトやるならこのAIツール使って！\n\n#ai #おすすめ #web #起業\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -3805,7 +3783,7 @@
     "captured": "2026-06-13T03:58:31.381Z",
     "title": "こうじ｜本当使えるAIだけ教えるお兄さん (@koji_aionisan) • Instagram reel",
     "note": "",
-    "summary": "2,067 likes, 1,203 comments - koji_aionisan on April 23, 2026: \"Webサイトのクオリティを一段と上げる3Dモデリングの埋め込み方を徹底解説！\n3Dとコメントして動画で解説したスキルを受け取ってください！\n\nAIの最新情報は\n@koji_aionisan をフォロー！\n\n#ai #aiwebsites #業務効率化 #ウェブサイト #claude\".",
+    "summary": "2,070 likes, 1,209 comments - koji_aionisan on April 23, 2026: \"Webサイトのクオリティを一段と上げる3Dモデリングの埋め込み方を徹底解説！\n3Dとコメントして動画で解説したスキルを受け取ってください！\n\nAIの最新情報は\n@koji_aionisan をフォロー！\n\n#ai #aiwebsites #業務効率化 #ウェブサイト #claude\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -3871,7 +3849,7 @@
     "captured": "2026-06-13T03:29:35.359Z",
     "title": "Caimar Salizi (@caimarsalizi) • Instagram reel",
     "note": "3dプリンター\n収納",
-    "summary": "27K likes, 635 comments - caimarsalizi on May 8, 2026: \"Organize\nI used the Gridfinity system to fix my drawer.\n\nIts soo tricky to find something that can organize cables that works and its simple.\nPrinted with @bambulab_official oo\n\nComment “OCD” and i’ll send you my organization guide\n\n#husky #gridfinity #3dprinting\".",
+    "summary": "27K likes, 638 comments - caimarsalizi on May 8, 2026: \"Organize\nI used the Gridfinity system to fix my drawer.\n\nIts soo tricky to find something that can organize cables that works and its simple.\nPrinted with @bambulab_official oo\n\nComment “OCD” and i’ll send you my organization guide\n\n#husky #gridfinity #3dprinting\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -3915,7 +3893,7 @@
     "captured": "2026-06-13T03:26:56.427Z",
     "title": "qupe | diseño 3D (@qupe.estudio) • Instagram reel",
     "note": "3dprinter",
-    "summary": "3,800 likes, 11 comments - qupe.estudio on May 23, 2026: \"Maqueta arquitectónica desmontable realizada en impresión 3D.\nUna forma de representar el proyecto con detalle, escala y lectura espacial.\n\n@estudiosm651 x @qupe.estudio \n\n#maquetasarquitectonicas #impresion3d #arquitetura #diseñoarquitectonico\".",
+    "summary": "3,837 likes, 11 comments - qupe.estudio on May 23, 2026: \"Maqueta arquitectónica desmontable realizada en impresión 3D.\nUna forma de representar el proyecto con detalle, escala y lectura espacial.\n\n@estudiosm651 x @qupe.estudio \n\n#maquetasarquitectonicas #impresion3d #arquitetura #diseñoarquitectonico\".",
     "depth": "partial",
     "missing": [
       "video_content"
@@ -4274,7 +4252,7 @@
     "captured": "2026-06-13T02:12:13.679Z",
     "title": "Flashforge (@flashforge_official) • Instagram reel",
     "note": "いつかやってみたいね",
-    "summary": "3,833 likes, 67 comments - flashforge_official on May 26, 2026: \"Customizing your T-shirt with 3D printing. 😼\n\nPrinted on: Flashforge Creator 5\nDesign by: ArtEleria(makerworld)\n\n#3dprinting #Creator5 #diy #flashforge\".",
+    "summary": "3,856 likes, 68 comments - flashforge_official on May 26, 2026: \"Customizing your T-shirt with 3D printing. 😼\n\nPrinted on: Flashforge Creator 5\nDesign by: ArtEleria(makerworld)\n\n#3dprinting #Creator5 #diy #flashforge\".",
     "depth": "partial",
     "missing": [
       "video_content"
