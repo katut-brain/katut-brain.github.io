@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-07-29 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-07-29 の振り返り</h1>
+  <div class="meta">Claude×自動トレーディング一色の10件｜「判断まで委ねる」自動化が3日目で急加速</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の10件を貫く通奏低音は「分析から意思決定までをClaudeに丸ごと委ねる」という一点だ。深センの学生はスマホの巡回スクショをClaudeに読ませて投球判断を出させ、4体のトレーディングエージェントは972件の取引を勝率83%で自律実行し、あるボットは2ヶ月で9.8万ドルを稼いだと報告される。28日のまとめで見えた「運用ごと任せる自動化」への関心が、今日は運用の一段先にある"判断そのもの"の委任へとはっきり踏み込んだ形だ。残る3件（動画講座の自動生成、YouTube・note運用術）も、コンテンツ制作という継続プロセスをClaudeに任せる点で同じ運動の別ドメインと読める。</p>
+    <p>「AI×トレーディング」というタグは27日1件→28日1件→29日6件と3日連続で現れており、単発のバズではなく急速に育っている関心と見てよい。ただし今日は珍しく全10件のnoteが空欄で、「やりたい」「気になった」という個人的な反応が一切残っていない。27日の"作りたい"軸、28日の"こういうのだよな"という強い同定と比べると、今日は反応抜きでトレンドの広がりだけを記録する、純粋に傍観的な一日だったと言える。curator-maker志向のうち、今回は"作る"より"知る"側にすら踏み込まず、情報の奔流を素通しした形だ。</p>
+    <ul class="pts">
+      <li><b>Claude×自動トレーディングが6/10と支配的</b>：市場分析・エントリー・損切りという意思決定そのものを無人化する事例が集中した</li>
+      <li><b>AI×トレーディング関心は3日連続で継続・急拡大</b>：27日1件→28日1件→29日6件。単発の流行追いではなく段階的に育っている関心</li>
+      <li><b>全noteが空欄の傍観的な一日</b>：反応を書き残さずトレンドの広がりだけを保存した、珍しく受け身のログ</li>
+      <li><b>コンテンツ制作勢3件も同じ軸で重なる</b>：動画講座・YouTube・noteの運用をClaudeに任せる話は、トレーディング勢と「継続プロセスの委任」という点で地続き</li>
+      <li><b>jcode（Claude Code比245倍高速起動）の1件</b>：Claude Code自体への代替探索という、支配的な話題とは別の小さな芽もある</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>今日集めた6件のトレーディングBotはどれも成功報告ばかりだが、生存者バイアスを疑うべきではないか。3日連続で育っているこの関心を、傍観のまま終わらせず自分で1つ検証してみるならどの実装から始めるか</div>
+  </section>
+
+  <h2>🤖 Claude×自動トレーディング（6件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/laobaishare/status/2082269938543427617?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/ext_tw_video_thumb/2082269878116048896/pu/img/t0E8O_NxH4BjCxJ5.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">深センの大学生、スマホ1台で月1.5万ドルを稼ぐ自動トレード</div><div class="vdesc">900元のスマホに中国ニュースアプリを30分おきに自動巡回させ、スクショをClaudeに分析させてPolymarketの投球判断を出す。PhoneDriverでAIに画面操作そのものを代行させるノーコード構成</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/gagarotai200/status/2065006897003180067?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2065006106204897280/img/_t1Nh5zK8_9JbD5p.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claude Fable 5に実資金トレードさせたら1日で+37%</div><div class="vdesc">100万円→137万円。市場データの分析・エントリー条件の設計・損切りラインの判断までClaudeに一任した結果と紹介されている</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/claudecode_love/status/2047601554241511424?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2046250718739513344/img/e1X3DeFCNJdUeDRi.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claude Codeの自律トレーディングAgentを4体並列稼働、972取引・勝率83%</div><div class="vdesc">Polymarketで8600万件規模のトレードを実行したと紹介。Anthropicのエンジニア本人が「こんな使い方は見たことない」と反応したという投稿</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/iwachan_trader/status/2053126064034210133?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2052425737807032326/img/3ie5Mi-sX0FdzESJ.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claude CodeがMCPで金融データに直結、17,000銘柄を即取得</div><div class="vdesc">コマンド1行コピペ→ブラウザ認証だけでP/E・決算・価格データにアクセスできると海外で話題になったセットアップ</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/s0n_ia/status/2076011052634865786?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2076009229337448448/img/81uvS8hZnrQ-cxV-.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claudeでトレーディングボットを作る17分チュートリアル</div><div class="vdesc">構築・改良・バックテスト・実行までを一気通貫で解説するスペイン語動画</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/silvanrec/status/2082103787943293098?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2082103744821428224/img/iMZjvJWtsrg4PfzH.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">PolymarketのUp/Downボットで2ヶ月+9.8万ドル</div><div class="vdesc">Up/Downを並行して買うなど、5要素からなる戦略でクリプト市場のマイクロ構造を狙うClaude製ボットの内部ロジックを解説</div></div>
+    </a>
+  </div>
+
+  <h2>📚 Claude活用・コンテンツ制作（3件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.instagram.com/reel/DbVOQmMT1WK/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-atl3-3.cdninstagram.com/v/t51.82787-15/759433690_18605350144018548_3101508214918463570_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=r5pyuXu1yqAQ7kNvwEpvTO8&_nc_oc=AdpJeP2IbF_NfyjzVw2oDPfDqxB4emnZ81-JyZlTdT-LX5TfCiZmgn7JEzSKJwoPAx8&_nc_zt=23&_nc_ht=scontent-atl3-3.cdninstagram.com&_nc_gid=HRYZDc8dSzwKBUQylzdaKw&_nc_ss=7b60f&oh=00_AQDb1Mc37cTjiT7jtp-B8XI6ghH9Zlxp4HKqFkjSxHI6ZQ&oe=6A702C3A" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Claude Codeが50本の動画講座を自動生成</div><div class="vdesc">台本作りから編集までを一人でこなす講座制作の自動化事例を紹介するリール</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DaFMqd4RIWv/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-atl3-2.cdninstagram.com/v/t51.71878-15/729991763_27565841523053761_9159288158156074773_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=105&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=NW9B_KmkIYQQ7kNvwF476dG&_nc_oc=Adrcuo2f8vbNKk7JKfdXJ5BnbLf7oRj5QWyw78CN4GYSc1Pf_7qGL5CCwGWT1mJj4Eg&_nc_zt=23&_nc_ht=scontent-atl3-2.cdninstagram.com&_nc_gid=WmCxmoLmY2ZFik7-EA-xSA&_nc_ss=7b60f&oh=00_AQCdfj6pFGaQSyGH9kvCD4MjVGUnRMV39bBrQaICVXrrOQ&oe=6A7030CC" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Claude×YouTube活用術</div><div class="vdesc">「AIの教科書」アカウントが紹介する、動画運用にClaudeを組み込む活用リール</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DbQQQI1R_-d/?igsh=MTBhb2hmbjVvdXRkbg==" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-atl3-3.cdninstagram.com/v/t51.82787-15/758744386_17913378561425556_7521721451444207943_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=LLftZWuzrUUQ7kNvwFMA_Ov&_nc_oc=AdoW9cBm8d4j4zJhMCy75ewLc57ew1pOcBdfQBTDFXzB3jV2qFahPlbtSuPw0Uoyzlg&_nc_zt=23&_nc_ht=scontent-atl3-3.cdninstagram.com&_nc_gid=DwZFPBzlODoOE1UigINqAg&_nc_ss=7b60f&oh=00_AQDh4Mttn8WyMdgUMbmDQRtoECEIk-ak4FqkGPd596vR1Q&oe=6A701F2E" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Claude×note活用術</div><div class="vdesc">記事執筆のプロセスにClaudeを組み込む使い方を紹介するリール</div></div>
+    </a>
+  </div>
+
+  <h2>⚡ Claude Codeの代替・高速化（1件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/silvanrec/status/2082067423734399238?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2082067411834937344/img/01s001QfdhM1D4Ak.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">起動が245倍速いClaude Code代替エージェント「jcode」がOSS公開</div><div class="vdesc">初回描画14ms対Claude Codeの3.4秒、メモリ27.8MB対386.6MBと主張。同一リポでのエージェントswarm実行も謳う</div></div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
