@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-07-30 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-07-30 の振り返り</h1>
+  <div class="meta">Claude活用×放置マネタイズの1件｜楽天アフィリエイト自動化</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>保存は1件のみだが、内容は「Claudeに商品比較記事を書かせて放置し、楽天アフィリエイトで月24万円を作る」という運用ロードマップの解説スレッド。プロンプトを使い回すだけで人力の紹介文量産を代替し、24時間以内の購入なら成果報酬になる楽天の仕組みと組み合わせて「一度書けば売れ続ける自動販売機」を作る、という設計思想が語られている。ただし構成自体はX上でよく見る「実績公開→再現性の強調→LINE登録で無料PDF」という定型のグロースハック・フォーマットで、内容の真偽より「型」が先に立っている点は割り引いて読む必要がある。</p>
+    <ul class="pts">
+      <li><b>放置型マネタイズの核</b>：Claudeが「商品リサーチ＋紹介文量産」という人力のボトルネックを肩代わりする、という主張</li>
+      <li><b>楽天の構造的優位</b>：カード情報登録済み・24時間成果条件・在庫切れリスクの低さが「他ASPと違う」と語られている</li>
+      <li><b>グロースハック的な型</b>：具体的な収益推移・失敗談・無料PDF配布というテンプレ構成——内容の検証より先に「型」を見抜く視点が要る</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>ここ数日「Claudeでトレーディングボットを作った」系の投稿が連続して流れてきていたが、今日はそれが「アフィリエイト自動化」に置き換わった——これは"Claudeで放置収益を作る"という一つの大きな物語の別バリエーションなのか、それとも本当に手法として別物なのか？</div>
+  </section>
+
+  <h2>🤖 AI・ツール（1件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/manerun_/status/2082375593786781843?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fmanerun_%2Fstatus%2F2082375593786781843%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">「Claude × 楽天放置アフィ」で月24万円</div><div class="vdesc">商品比較記事をClaudeで量産し放置。プロンプト公開・失敗談・無料PDF配布という定型構成</div></div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
