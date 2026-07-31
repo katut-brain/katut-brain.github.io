@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-07-31 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-07-31 の振り返り</h1>
+  <div class="meta">Claude活用系X投稿の3件｜フェイスレスYouTube・コード削減リポジトリ・4時間講座</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>保存3件はすべてXから、すべて「保存しろ」「忘れる前にブックマークしろ」という命令口調で始まるグロースハック系投稿で、Claude/AI活用というジャンルに完全に絞り込まれている。直近1週間のcapturesを振り返ると、7/27はトレーディングボット系、7/28も別のトレーディングbot、7/29は自律型AIトレーダー4体同時運用、7/30はClaude×楽天アフィリエイト放置、そして今日はフェイスレスYouTube・コード削減リポジトリ・Claude講座——「Claudeで自動化して稼ぐ／時短する」という一つの物語が、直近7日のうち6日にわたって毎日形を変えて流れ込んでいる。Xのアルゴリズムがこのクラスタに完全に最適化されつつある可能性が高い。</p>
+    <p>今日に限って言えば3件ともnoteは空欄で、普段のように「使って見よっか」「これ欲しー！」といった即座の反応は付かず、受け身の「知る」軸だけが動いた一日だった。唯一実用度が高いのはnozelcodeが紹介する「Ponytail」リポジトリで、Opus 5が書きすぎるコード量をエージェントの振る舞い設計で94%削減するというコスト対策の話——他の2件（フェイスレスYouTube・4時間講座）は「保存だけさせて中身は見せない」典型的なフック構成で、実際に開く価値があるかは別途検証が要る。</p>
+    <ul class="pts">
+      <li><b>Claude活用ジャンルへの一極集中</b>：直近7日中6日、h_claude系投稿が保存され続けている——フィードがこのクラスタに絞り込まれている可能性がある</li>
+      <li><b>唯一の実用シグナル</b>：Ponytailリポジトリ（Opus 5のコード量94%削減）はコスト管理の具体策として検証する価値がある</li>
+      <li><b>今日はnoteゼロ</b>：普段付く「やってみよう」的な反応が消え、純粋な受動収集だけが進んだ日だった</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>この「Claudeで稼ぐ・時短する」系投稿を毎日保存し続けているが、実際に手を動かした/実装した割合はどれくらいか——保存が習慣化して実装が追いついていないなら、フィードを絞るか実装ログを別に持つ方がいいのでは／Ponytailリポジトリは実在し、導入して効果が出るものか確認する価値がある</div>
+  </section>
+
+  <h2>🤖 AI・ツール（3件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/nozelcode/status/2082896323053854783?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HOfvAjVXEAEwxN7.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">「Ponytail」リポジトリでClaudeのコード量が94%減る</div><div class="vdesc">Opus 5は書きすぎてコストが嵩む——エージェントを「無精なシニア」に変える設計で抑制するという話</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/shxrkai/status/2082837713456160978?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://jf.x.com/images/media-preview/2082837713456160978" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">4時間の完全Claude講座</div><div class="vdesc">ツール構築・作業自動化・ボット開発までを扱う無料の長尺ガイド動画（内容未確認）</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/andexlabs/status/2083166653630546233?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2023359940988186624/img/EvFaoVJIk9f24_Ma.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">顔出しなしYouTubeで月3万ドルを稼ぐ方法（2026年版）</div><div class="vdesc">フェイスレスYouTubeでの収益化手法を解説する動画付き投稿（内容未確認）</div></div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
