@@ -441,8 +441,12 @@ def fetch_x(url, follow_links=True, understand_video=True):
 
 
 # vxinstagram.com経由で得たURLがリダイレクトしてよい先(SSRF対策の許可リスト)。
-# d.rapidcdn.appは解決役、実体はcdninstagram.com/fbcdn.net(Meta CDN)から配信される。
-_INSTAGRAM_VIDEO_ALLOWED_HOSTS = ("d.rapidcdn.app", "cdninstagram.com", "fbcdn.net")
+# 2026-08-01: vxinstagram.com側の仕様変更を確認。新URL(d.vxinstagram.com/offload/<id>/0.mp4)は
+# 実機確認の結果、直接配信ではなくcdninstagram.comへ302リダイレクトしている(既存の
+# cdninstagram.com許可により安全性への影響はない)。d.vxinstagram.com自体もリダイレクト元
+# ホストとして許可リストに含めておく。旧仕様(d.rapidcdn.app経由)のホストも、
+# 再度その方式に戻った場合に備えて残す。
+_INSTAGRAM_VIDEO_ALLOWED_HOSTS = ("d.vxinstagram.com", "d.rapidcdn.app", "cdninstagram.com", "fbcdn.net")
 
 
 def _fetch_instagram_reel_video_url(url):
@@ -451,26 +455,31 @@ def _fetch_instagram_reel_video_url(url):
     無料・無認証。戻り値: 動画URL(str) または None(Reelでない/取得失敗)。
 
     公式のog:meta・GraphQL・モバイル内部APIはいずれも無認証では動画データを返さないことを
-    確認済み(2026-07-28調査)。vxinstagram.comは実際のInstagram CDN(cdninstagram.com)への
-    署名付きURLをJWTトークン経由で解決する。実機で完全なmp4ダウンロード・Gemini側の受理
-    (ACTIVE状態)まで確認済みだが、個人運営の非公式サービスでありXのFxEmbed同様、
-    仕様変更・サービス終了のリスクがある点に留意(運用上のリスクとして受容)。
+    確認済み(2026-07-28調査)。個人運営の非公式サービスでありXのFxEmbed同様、仕様変更・
+    サービス終了のリスクがある点に留意(運用上のリスクとして受容)。
+
+    2026-08-01: vxinstagram.com側の仕様変更を確認・追従。
+    - ベースドメイン`vxinstagram.com/reel/<id>/`は404化。`d.vxinstagram.com/reel/<id>/`
+      (サブドメイン必須)に変更されていた（実測確認）。
+    - 動画URLの取得元も`d.rapidcdn.app/v2?token=...`のトークン付きリダイレクトから、
+      レスポンスHTMLの`og:video`/`og:video:secure_url`メタタグへの記載に変更（実機確認では
+      `d.vxinstagram.com/offload/<id>/0.mp4`からcdninstagram.comへ302リダイレクトされる）。
+      抽出は既存の`_meta()`ヘルパー（クオート種別・空白の揺れに頑健）を再利用する
+      （output-verifierの指摘により、当初の直書き正規表現から修正・2026-08-01）。
     """
     m = re.search(r"/reel/([A-Za-z0-9_-]+)", url)
     if not m:
         return None
     shortcode = m.group(1)
-    st, txt = _get("https://vxinstagram.com/reel/%s/" % shortcode, BROWSER_UA)
+    st, txt = _get("https://d.vxinstagram.com/reel/%s/" % shortcode, BROWSER_UA)
     if st != 200 or not txt:
         return None
-    tm = re.search(r"https://d\.rapidcdn\.app/v2\?token=[^\"'\s]+", txt)
-    if not tm:
+    video_url = _meta(txt, "og:video:secure_url") or _meta(txt, "og:video")
+    if not video_url:
         return None
-    video_url = html.unescape(tm.group(0))
-    # 末尾に付与される dl=1&dl=1 パラメータが付いたままだとCDNが
-    # Content-Type: application/octet-stream(添付ダウンロード扱い)を返し、
-    # _gemini_video_understanding() のvideo/*判定(SSRF対策)に弾かれてしまう
-    # (実測で確認。dl除去後は正しくvideo/mp4が返る)。
+    # 末尾に dl=1 等の添付ダウンロード指定が付くと、CDNが
+    # Content-Type: application/octet-stream を返し _gemini_video_understanding() の
+    # video/*判定(SSRF対策)に弾かれることがある（旧仕様での実測事例）。念のため除去しておく。
     parts = urllib.parse.urlsplit(video_url)
     q = [(k, v) for k, v in urllib.parse.parse_qsl(parts.query, keep_blank_values=True) if k != "dl"]
     return urllib.parse.urlunsplit(parts._replace(query=urllib.parse.urlencode(q)))
