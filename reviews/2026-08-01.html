@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026-08-01 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-01 の振り返り</h1>
+  <div class="meta">Xの保存3件。「AIに事務作業を外注する」という同じ発想が、知識整理と収益自動化という正反対の使い道に分岐した日</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の3件を貫く通奏低音は「面倒な部分をAIに丸投げする」という発想そのものだった。カーパシー（OpenAI共同創業者）のObsidian活用法は、記事を読む・分類するという事務作業をAIに外注し、翌朝には要約と発信ネタまで用意されている状態を作る話。一方、残る2件はスペイン語圏のバズり投稿で、「Claudeに7つのプロンプトを投げるだけでYouTubeチャンネルを作り90日で収益化」「ニッチを決めてShortsを毎日1本上げるだけで稼げる」と、収益化という別の事務作業をAIに丸投げする話だった。同じ「AIへの外注」パターンが、知的生産の効率化と、中身の薄い収益スキームという両極に使われている。</p>
+    <p>興味深いのは、カーパシーの記事が説明している設計思想が、この振り返り自体を生成しているkatut-brainの仕組みとほぼ同じだという点。保存→AIが読む→翌朝まとめ、という構造をこちらは既に実装済みで、この記事は「作りたい」ではなく「答え合わせをしたい」対象として活性化したと見える。対照的に、YouTube収益化系の2件は「作りたい」ではなく、繰り返し流れてくる同型の煽り投稿として素通りしつつも記録された、という温度差がある。実際、`h_claude`・`h_aiuse`ハブでは7/26以降ほぼ毎日、Claudeやトレーディングボット、YouTube収益化を煽る投稿が保存されており、この「AIで稼ぐ」系の情報は少なくとも1週間、継続的に視界に入り続けている関心（というより警戒対象）だと言える。</p>
+    <ul class="pts">
+      <li><b>知識管理の外注</b>：カーパシー式は「分類という事務作業」を消すことが本質で、対象そのものより「事務作業への嫌悪」という一段深い共通感覚に刺さっている</li>
+      <li><b>収益スキームの外注</b>：2件とも具体的な中身（動画の質、実際に稼げるか）は検証されておらず、テンプレ化された煽り文句のパターン認識として保存されている</li>
+      <li><b>継続する警戒</b>：「Claude/AIで自動収益化」系の投稿は今週ほぼ毎日保存されており、単発の流行ではなく継続的に観測・記録されている対象</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>この振り返りリポジトリ自身がカーパシー式の実装であるなら、記事が指摘する「著者性をAIに譲り渡すリスク」（`/lint`的な人間チェック）は、この毎朝の自動生成にどう組み込むべきか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">カーパシーのセカンドブレイン</div>
+    <ul class="ilist">
+      <li><a href="https://angelo-lima.fr/en/karpathy-second-brain-obsidian-claude-en/" target="_blank" rel="noopener"><b>Karpathy's Second Brain: A Wiki the AI Writes For You</b></a> <span>→ 本質は「分類の事務コストを消すこと」。だが著者性そのものをAIに渡すリスクも伴い、`/lint`のような人間の点検工程が必要になる、という指摘は自動生成される本リポジトリにもそのまま当てはまる</span></li>
+    </ul>
+    <div class="ntag">YouTubeのAIコンテンツ取締り</div>
+    <ul class="ilist">
+      <li><a href="https://scalelab.com/en/why-youtube-is-cracking-down-on-ai-generated-content-in-2026" target="_blank" rel="noopener"><b>YouTube's AI content crackdown in 2026</b></a> <span>→ 2026年1月だけで46.7億再生・年間1000万ドル規模の16チャンネルが「非正規コンテンツ」として削除済み。「人間の判断・独自性を伴わないスケール」は生き残れないというメッセージで、この日保存した2件のような自動収益化の煽りは、まさにこの規制の標的に近い</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI活用・自動化（3件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/lucky_note_lab/status/2082710756160893350?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HOZ03gvbUAAXLVI.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">OpenAI創業者カーパシーの革命的Obsidian活用術【保存版】</div><div class="vdesc">保存だけして読まない記事を、AIが翌朝3行要約と発信ネタ出しまでして返す「セカンドブレイン」の作り方。分類・整理という事務作業をまるごとAIに外注する発想が核。</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/artic_ai/status/2083170392143786206?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2083169960776404992/img/liGQcejp8hordlhG.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">「今夜Netflixの代わりにこの54分の動画を」— 未経験からYouTube Shortsで稼ぐ方法</div><div class="vdesc">ニッチ選定→Shorts撮影→毎日1本投稿→収益化というテンプレ手順を勧める投稿。動画本体の内容は未取得（映像理解なし）で、タイトル・引用文のみの判断。</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/antonio_rodriia/status/2083216142705799221?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fantonio_rodriia%2Fstatus%2F2083216142705799221%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">🚨緊急：ClaudeでゼロからYouTubeチャンネルを作り90日で収益化（無料・7プロンプト）</div><div class="vdesc">Claudeに投げる7つのプロンプトだけでチャンネル運営から収益化まで自動化できると謳う投稿。中身の検証はされておらず、テンプレ化された煽り文句として記録。</div></div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
