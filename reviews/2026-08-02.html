@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026-08-02 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-02 の振り返り</h1>
+  <div class="meta">Xの保存6件・Instagramの保存2件。AIで無限に量産できるものと、量産できない物理的な場が対比した日</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の8件のうち6件はXからの保存で、そのすべてがAI活用・自動化に関するものだった。中心にあるのは「AIツールを組み合わせれば個人でもYouTubeチャンネルを丸ごと量産できる」という発想——bettercalltonnyの投稿は、DeepSeekで脚本、ElevenLabsでナレーション、Meta AIでキャラクター画像、Google FlowやHiggsfieldで映像、Pixabay/MixkitでBGM、CapCutで編集、Canvaでブランディングまで、完全無料のAIツールだけで登録40万人規模の3Dドキュメンタリーチャンネルを再現する手順を実演していた。同じ軸でandexlabsの2時間講座、aiverseplayの収益化投稿が並び、robiartecの「Claude + Fable 5で5万ドルを稼ぐWebサイト」も同型の「AIに量産作業を外注して稼ぐ」という発想の変種と言える。</p>
+    <p>一方、taiga_aiiの投稿とnote「ここに良いskillsが無いかを調べておこう」は、同じClaude Code関連ではあるが量産・収益化ではなく、道具としての使いこなし——Skillという拡張機能を探すという実務的な関心で、マネタイズ勢とは温度差がある。さらに対照的なのが残り2件のInstagram保存で、witpimkanのキネティック光インスタレーション「Octave Maze」（バンコクで8/1〜10/10開催、シーズン2のオープンコール）はAIでは再現できない実機の制御と物理的な会場を伴う作品であり、mie_retrokissaの名古屋の喫煙可能喫茶店10選も、住所・営業時間まで含む「その場所に行かないと成立しない」情報だった。AIで無限に複製できる量産型コンテンツと、複製不可能な場所性・実演性を伴うもの、という軸が今日ははっきり分かれている。h_claude/h_aiuseハブは過去7日間毎日何かしら保存されており、AI量産・自動化への関心（ないし警戒）は少なくとも1週間、継続的に観測されている。</p>
+    <ul class="pts">
+      <li><b>AIによる完全量産ワークフロー</b>：脚本→音声→画像→映像→BGM→編集→ブランディングまで無料AIツールだけで完結する手順が可視化された。労力ゼロ化と引き換えに、コンテンツの独自性が問われる段階に来ている</li>
+      <li><b>「調べておこう」の実務的関心</b>：taiga_aiiのnoteは収益化ではなく、Claude Code Skillsという拡張の使いこなしそのものへの関心——道具を「稼ぐため」でなく「うまく使うため」に見ている</li>
+      <li><b>複製不可能な物理性への回帰</b>：キネティックアートの実機制御も、名古屋の喫茶店リストも、AIが量産できない「その場に行く/作る」経験に根ざしている</li>
+      <li><b>継続する関心</b>：AI活用・自動化（h_claude/h_aiuse）は過去7日間毎日保存が続いており、単発の流行ではなく持続的に観測している対象</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>bettercalltonnyの動画が示す全工程無料AI化と、深掘りで見た「テンプレ量産型コンテンツはYouTubeの収益化対象から外れていく」という潮流は真っ向から矛盾する——このワークフローのどこに「編集者としての判断」を差し込めば、量産と淘汰の板挟みを抜けられるか？</div>
+  </section>
+
+  <h2>やりたい・気になったこと</h2>
+  <section class="notes">
+    <div class="ntag">やりたい</div>
+    <ul class="ilist">
+      <li><a href="https://x.com/taiga_aii/status/2083855348767887487?s=12" target="_blank" rel="noopener"><b>Claude Code向けの良いSkillsを探す</b></a> <span>→ 投稿で紹介されたスキル集サイトを実際に覗いて、使えるSkillがないか確認する</span></li>
+    </ul>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">AIフェイスレスYouTube自動化の行方</div>
+    <ul class="ilist">
+      <li><a href="https://miraflow.ai/blog/faceless-youtube-channel-explosion-ai-million-subscriber-creators-2026" target="_blank" rel="noopener"><b>The Faceless YouTube Channel Explosion: How AI Is Creating a New Generation of Million-Subscriber Creators in 2026</b></a> <span>→ AIが量産コストを激減させた一方、2025年のYouTubeポリシー更新で「低労力で量産されたテンプレート型コンテンツ」は収益化停止の対象になりつつあり、今後はオリジナルリサーチや一貫したブランド構築などAIでは代替できない編集判断が生き残りの条件になる、という逆説を指摘している</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI活用・自動化（6件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/maarcoofdezz/status/2083874888352252097?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2083874221122260992/img/WYyfh8hnKoMRVA18.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">GitHub21.3万スターの「Everything Claude Code」— AIエージェント運用OS</div><div class="vdesc">README全体をスクロール実演する動画。Agents/Skills/Hooks/Rulesの4概念を軸に、Claude Code・Cursor・Codex・Zed・OpenCode横断のセットアップとトークン最適化コマンド群を1リポジトリに集約している。</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/bettercalltonny/status/2083257920003690509?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2083256413686476800/img/7J856NMJd1tmnLk7.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">登録40万人の3Dドキュメンタリーch、完全無料AIツールだけで作る手順</div><div class="vdesc">DeepSeekで脚本、ElevenLabsでナレーション、Meta AIでキャラ画像、Google Flowで映像生成、Pixabay/MixkitでBGM、CapCutで編集、Canvaでブランディングまでゼロ円ワークフローを実演。</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/andexlabs/status/2083611349670592882?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2062760315276996608/img/ZE6lBcwNojhCcRdv.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Eddie EiznerのYouTube自動化2時間フルコース</div><div class="vdesc">顔出しなしで50万再生・約7000ドルを達成した手法を教える講座という触れ込み。動画本体の映像/音声理解は取得失敗で、タイトルと引用文のみでの判断。</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/aiverseplay/status/2083591085327257876?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://jf.x.com/images/media-preview/2083591085327257876" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">「YouTube収益化解放は思ったより早いかもしれない」</div><div class="vdesc">本文取得自体が失敗し、タイトルのみが手がかり。よくある収益化煽り投稿の一つとして記録。</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/robiartec/status/2083614780368060499?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://jf.x.com/images/media-preview/2083614780368060499" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claude + Fable 5のコードで5万ドル獲得のWebサイトを作る方法</div><div class="vdesc">コンテスト受賞歴のあるWebサイトの作り方という触れ込み。映像理解は今回未処理で、タイトルのみでの判断。</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/taiga_aii/status/2083855348767887487?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://jf.x.com/images/media-preview/2083855348767887487" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Skillを何も入れていない「全裸」のClaude Codeユーザー向けおすすめサイト</div><div class="vdesc">Claude Code用スキル集を紹介する投稿。ユーザー自身も「良いskillsがないか調べておこう」とnoteを残しており、収益化ではなく実務での使いこなしへの関心。</div></div>
+    </a>
+  </div>
+
+  <h2>🎨 アート・文化（2件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.instagram.com/reel/DbdBJ8Sz0r_/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-ord5-1.cdninstagram.com/v/t51.82787-15/759850148_18616629667013919_4498030217775580665_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=106&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=ZMeGzC-7rTIQ7kNvwHRouAe&_nc_oc=AdqV87BJ64Gkm4pbte6_Ua8NCVMhYH-4HWFzsRpDYlk639sgQS_3iAQ9uIrdFjJFdYA&_nc_zt=23&_nc_ht=scontent-ord5-1.cdninstagram.com&_nc_gid=9sqJZRgY-8s7BAa19Tp8VQ&_nc_ss=7b60f&oh=00_AQFM1LePVrIErg-mE4_3OBC0xNxBovQTIa8UHS6RygNZpA&oe=6A75B906" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">キネティック光インスタレーション「Octave Maze」シーズン2、バンコクでオープンコール</div><div class="vdesc">天井から吊るした薄型発光パネル群を制御するテスト映像。カチカチという打楽器的な機械音に合わせて光が点滅・展開する。8/1〜10/10、Asvin Cultural and Contemporary Artで毎週土曜開催、音楽×パフォーマンス×キネティック機構の融合を目指す。</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/p/DbITiFYmReJ/?img_index=2" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-ord5-1.cdninstagram.com/v/t51.82787-15/753471495_18000746255977680_6459367723361454833_n.jpg?stp=c216.0.648.648a_dst-jpg_e35_s640x640_tt6&_nc_cat=105&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0FST1VTRUxfSVRFTS5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&_nc_ohc=M3VxqO_Ya8gQ7kNvwFVkb_O&_nc_oc=AdpqtaKJeom-Q7IkKa5ErF3NXSKkF_EAbTLQpIWnWkkGZU6adZE3QZHSFO_vM6UhjGY&_nc_zt=23&_nc_ht=scontent-ord5-1.cdninstagram.com&_nc_gid=azYWku8-Fr72QKGl_zdWgg&_nc_ss=7b60f&oh=00_AQFAhT1Ykgxe5owajz0zfgXOEkOjr9G9tI8wqHYrF_FPlQ&oe=6A75B351" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">喫煙可能な名古屋の喫茶店10選（住所・営業時間つき）</div><div class="vdesc">CAFE GRILL Bonjour、サンジェルマン、グリーンなど、名古屋市内の老舗喫煙可純喫茶10軒を住所・営業時間・定休日・駐車場情報つきでリスト化した投稿。</div></div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
