@@ -109,7 +109,7 @@
     <div class="vcard"><a class="vlink" href="https://x.com/arquitect_viva/status/2079192854040064256?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/media/HNrG4bDXIAERKuP.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">SANAA「Estratos Vivos」がエクアドル国立博物館コンペで新たな勝者に</div><div class="vdesc">地層を重ねた造形で歴史・文化・景観を統合。審査85%+投票15%で81.7点、炎上を経ての再選出</div></div>
-    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/arquitect_viva/status/2079192854040064256?s=12" data-title="SANAA「Estratos Vivos」がエクアドル国立博物館コンペで新たな勝者に">💬 AIと話す</button></div>
+    </a><button class="deepdive" onclick="openChat(this)" data-rid="1796711748" data-url="https://x.com/arquitect_viva/status/2079192854040064256?s=12" data-title="SANAA「Estratos Vivos」がエクアドル国立博物館コンペで新たな勝者に">💬 AIと話す</button></div>
   </div>
 
   <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
@@ -119,9 +119,13 @@
 function openChat(btn) {
   var url = btn.getAttribute('data-url');
   var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid') || '(raindrop_id不明)';
   var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
   var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
-    'URL: ' + url + '\n' + 'タイトル: ' + title;
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n\n' +
+    vault + '\\Explore\\bookmarks\\ で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容スラッグ>.md を同フォルダに新規作成する（frontmatter: date / tags: [type/bookmark] / raindrop_id: ' + rid + ' / source: ' + url + '）。';
   var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
   location.href = link;
 }

@@ -100,7 +100,7 @@
     <div class="vcard"><a class="vlink" href="https://x.com/alextalksai/status/2080967085576863897?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2080967050915188736/img/mwAXpcvkVTLWUO3t.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">「Claude Code完全無料化」の噂、スペイン語圏でも拡散</div><div class="vdesc">DeepSeek・Kimiなど10の無料プロバイダーへ自動リダイレクトすると主張。設定5分、真偽不明。いいね1,100件</div></div>
-    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/alextalksai/status/2080967085576863897?s=12" data-title="「Claude Code完全無料化」の噂、スペイン語圏でも拡散">💬 AIと話す</button></div>
+    </a><button class="deepdive" onclick="openChat(this)" data-rid="1801810668" data-url="https://x.com/alextalksai/status/2080967085576863897?s=12" data-title="「Claude Code完全無料化」の噂、スペイン語圏でも拡散">💬 AIと話す</button></div>
   </div>
 
   <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
@@ -110,9 +110,13 @@
 function openChat(btn) {
   var url = btn.getAttribute('data-url');
   var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid') || '(raindrop_id不明)';
   var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
   var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
-    'URL: ' + url + '\n' + 'タイトル: ' + title;
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n\n' +
+    vault + '\\Explore\\bookmarks\\ で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容スラッグ>.md を同フォルダに新規作成する（frontmatter: date / tags: [type/bookmark] / raindrop_id: ' + rid + ' / source: ' + url + '）。';
   var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
   location.href = link;
 }
