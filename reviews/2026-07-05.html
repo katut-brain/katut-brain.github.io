@@ -100,7 +100,7 @@
     <div class="vcard"><a class="vlink" href="https://www.threads.com/@nft_web3_reo/post/DaZST7rEtny?xmt=AQG0tj_qDAued8GtxzpxipF7jsqqwnF0uQI45S1wpCkAUzejKy_kNOxXoHj7IS1RMXCsPP22&slof=1" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://scontent-sea5-1.cdninstagram.com/v/t51.2885-19/438994557_451037874250335_4414586883994485425_n.jpg?efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4zMDAuYzIifQ&_nc_ht=scontent-sea5-1.cdninstagram.com&_nc_cat=103&_nc_oc=Q6cZ2gHTMHDYgs0uFlv6FMTDOmkV5O9LHIBggqbZIJUqrPFfgNPve93_lbrbFDz1YXPUVFg&_nc_ohc=ESrJ2OZaqOQQ7kNvwG2lMn-&_nc_gid=Tv_bSgjBkceCeWPl1xLLjg&edm=APs17CUBAAAA&ccb=7-5&oh=00_AQBHl0RSg4HvvLh0hE0xpOrpSZ5odwhp7w1trkIjLQWFUg&oe=6A5077D2&_nc_sid=10d13b" onerror="this.remove()"><span class="ph">Threads</span></div>
       <div class="vbody"><div class="vtitle">Claude Fableにツール群を全部渡して「10万円稼いでこい」</div><div class="vdesc">MCP・プラグイン・コネクタ・プロジェクト・スキルを組み合わせ自律実行。成果は出た、ただし本文は「ただ」で途切れる（@nft_web3_reo）</div></div>
-    </a><button class="deepdive" onclick="openChat(this)" data-url="https://www.threads.com/@nft_web3_reo/post/DaZST7rEtny?xmt=AQG0tj_qDAued8GtxzpxipF7jsqqwnF0uQI45S1wpCkAUzejKy_kNOxXoHj7IS1RMXCsPP22&amp;slof=1" data-title="Claude Fableにツール群を全部渡して「10万円稼いでこい」">💬 AIと話す</button></div>
+    </a><button class="deepdive" onclick="openChat(this)" data-rid="1781334255" data-url="https://www.threads.com/@nft_web3_reo/post/DaZST7rEtny?xmt=AQG0tj_qDAued8GtxzpxipF7jsqqwnF0uQI45S1wpCkAUzejKy_kNOxXoHj7IS1RMXCsPP22&amp;slof=1" data-title="Claude Fableにツール群を全部渡して「10万円稼いでこい」">💬 AIと話す</button></div>
   </div>
 
   <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
@@ -110,9 +110,13 @@
 function openChat(btn) {
   var url = btn.getAttribute('data-url');
   var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid') || '(raindrop_id不明)';
   var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
   var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
-    'URL: ' + url + '\n' + 'タイトル: ' + title;
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n\n' +
+    vault + '\\Explore\\bookmarks\\ で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容スラッグ>.md を同フォルダに新規作成する（frontmatter: date / tags: [type/bookmark] / raindrop_id: ' + rid + ' / source: ' + url + '）。';
   var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
   location.href = link;
 }

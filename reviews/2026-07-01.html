@@ -100,7 +100,7 @@
     <div class="vcard"><a class="vlink" href="https://x.com/conao_3/status/2065815666310238330?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fconao_3%2Fstatus%2F2065815666310238330%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">Fableで一番良かった依頼は「記憶の再構成」</div><div class="vdesc">自作の記憶システムを持つ開発者が語る、記憶ファイル運用の一般化可能な知見（@conao_3）</div></div>
-    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/conao_3/status/2065815666310238330?s=12" data-title="Fableで一番良かった依頼は「記憶の再構成」">💬 AIと話す</button></div>
+    </a><button class="deepdive" onclick="openChat(this)" data-rid="1778161616" data-url="https://x.com/conao_3/status/2065815666310238330?s=12" data-title="Fableで一番良かった依頼は「記憶の再構成」">💬 AIと話す</button></div>
   </div>
 
   <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
@@ -110,9 +110,13 @@
 function openChat(btn) {
   var url = btn.getAttribute('data-url');
   var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid') || '(raindrop_id不明)';
   var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
   var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
-    'URL: ' + url + '\n' + 'タイトル: ' + title;
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n\n' +
+    vault + '\\Explore\\bookmarks\\ で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容スラッグ>.md を同フォルダに新規作成する（frontmatter: date / tags: [type/bookmark] / raindrop_id: ' + rid + ' / source: ' + url + '）。';
   var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
   location.href = link;
 }

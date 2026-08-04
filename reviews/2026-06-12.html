@@ -103,28 +103,28 @@
         <div class="vtitle">Under35 建築家展</div>
         <div class="vdesc">35歳以下の若手建築家展（大阪・10月、五十嵐淳審査、藤本壮介インタビュー収録の図録）</div>
       </div>
-    </a><button class="deepdive" onclick="openChat(this)" data-url="https://u35.aaf.ac/" data-title="Under35 建築家展">💬 AIと話す</button></div>
+    </a><button class="deepdive" onclick="openChat(this)" data-rid="1756418244" data-url="https://u35.aaf.ac/" data-title="Under35 建築家展">💬 AIと話す</button></div>
     <div class="vcard"><a class="vlink" href="https://x.com/rintarofuse/status/2065395890186269162" target="_blank" rel="noopener">
       <div class="thumb"><span class="ph">X</span></div>
       <div class="vbody">
         <div class="vtitle">布施琳太郎の磯崎新論</div>
         <div class="vdesc">「もっとも透明な建築へ」——展覧会を観て書いた言説</div>
       </div>
-    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/rintarofuse/status/2065395890186269162" data-title="布施琳太郎の磯崎新論">💬 AIと話す</button></div>
+    </a><button class="deepdive" onclick="openChat(this)" data-rid="1756487204" data-url="https://x.com/rintarofuse/status/2065395890186269162" data-title="布施琳太郎の磯崎新論">💬 AIと話す</button></div>
     <div class="vcard"><a class="vlink" href="https://www.instagram.com/p/DYjibZlIqMx/" target="_blank" rel="noopener">
       <div class="thumb"><span class="ph">Instagram</span></div>
       <div class="vbody">
         <div class="vtitle">nova / divine simulation</div>
         <div class="vdesc">AI×彫刻のデジタルアート。テクノロジーと神聖性の交差を映像で探る</div>
       </div>
-    </a><button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/p/DYjibZlIqMx/" data-title="nova / divine simulation">💬 AIと話す</button></div>
+    </a><button class="deepdive" onclick="openChat(this)" data-rid="1756484712" data-url="https://www.instagram.com/p/DYjibZlIqMx/" data-title="nova / divine simulation">💬 AIと話す</button></div>
     <div class="vcard"><a class="vlink" href="https://www.instagram.com/p/DZBlUTZjzqR/" target="_blank" rel="noopener">
       <div class="thumb"><span class="ph">Instagram</span></div>
       <div class="vbody">
         <div class="vtitle">マルジェラ アーカイブ展</div>
         <div class="vdesc">自身のアーカイブ200点超を史上初オークションへ（収集・継承）</div>
       </div>
-    </a><button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/p/DZBlUTZjzqR/" data-title="マルジェラ アーカイブ展">💬 AIと話す</button></div>
+    </a><button class="deepdive" onclick="openChat(this)" data-rid="1756483154" data-url="https://www.instagram.com/p/DZBlUTZjzqR/" data-title="マルジェラ アーカイブ展">💬 AIと話す</button></div>
   </div>
 
   <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
@@ -134,9 +134,13 @@
 function openChat(btn) {
   var url = btn.getAttribute('data-url');
   var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid') || '(raindrop_id不明)';
   var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
   var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
-    'URL: ' + url + '\n' + 'タイトル: ' + title;
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n\n' +
+    vault + '\\Explore\\bookmarks\\ で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容スラッグ>.md を同フォルダに新規作成する（frontmatter: date / tags: [type/bookmark] / raindrop_id: ' + rid + ' / source: ' + url + '）。';
   var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
   location.href = link;
 }
