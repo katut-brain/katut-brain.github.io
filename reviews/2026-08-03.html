@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026-08-03 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; gap: 14px; text-decoration: none; color: inherit; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  @media (max-width: 460px) {
+    .vcard { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-03 の振り返り</h1>
+  <div class="meta">Xの保存9件・Instagramの保存4件。Claude Codeの「役割分担」設計と、建築パースの「AIへのモデリング委譲」が呼応した日</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>13件のうち5件がClaude Code関連で占められ、しかもこの関心はここ1週間ほぼ毎日姿を見せている——単発の流行ではなく、日々育っている実務的な関心だとわかる。今日際立つのは「ツール紹介」から一歩進んで、AIに何を任せ人間は何を判断するかという役割分担そのものを問う内容が多いこと。Anthropicエンジニアが公開した40分ライブコーディングでは、Planner・Generator・Evaluatorの3エージェントに役割を分割し、「自己評価は罠である」——生成した本人に採点させると必ず甘くなるため、独立した敵対的評価役を置く——という指摘が核心にある。同じ発想は建築パース側にも通底していて、Treform.aiやRhino+Grasshopper→Revitの自動化は、モデリングという手作業をAIに譲り渡すことで、人間の判断を「デザイン」そのものに集中させる方向を示している。</p>
+    <p>もう一つの軸は、知識量そのものより「正確な語彙・正確な指示」が成果を左右するという視点。「name that ui」でUIパーツの正式名称を調べてからプロンプトを書く話と、MCP経由で株式データに1行でアクセスする話は、AIをうまく使うコツが魔法のプロンプトではなく正しい語彙とインターフェースの理解にあることを示唆している。建築×AI（Rhino/BIM自動化・パース動画生成）とAIコーディング（Claude Code）がそれぞれ独立したクラスタとして厚みを持ち、「作りたい」より「知る・使いこなしたい」軸が今日は優勢だった。</p>
+    <ul class="pts">
+      <li><b>役割分担の再定義</b>：Planner/Generator/Evaluatorの3エージェント構造と、自己評価バイアスを避ける「敵対的評価」という設計思想</li>
+      <li><b>建築×AIモデリング委譲</b>：Rhino+GrasshopperのパラメトリックBIM自動化、Treform.aiのテキスト指示モデリング、パース動画の数分生成</li>
+      <li><b>正確な語彙が成果を決める</b>：name that uiでUI名称を調べてから指示、MCPで株式データに1行アクセス</li>
+      <li><b>継続する関心</b>：Claude Code関連の保存はここ1週間ほぼ毎日続いている</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>「自己評価は甘くなる」というAnthropicエンジニアの指摘は、自分の設計案を自分一人でレビューしている今の制作プロセスにもそのまま刺さる——独立した「批評役」を意図的に外部に持つには、どうすればいいか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">Claude Codeの実務ワークフロー</div>
+    <ul class="ilist">
+      <li><a href="https://www.aquallc.jp/claude-code-workflow-guide/" target="_blank" rel="noopener"><b>Claude Code 実践ワークフロー完全ガイド【2026年最新】｜現場で差がつく使いこなし術</b></a> <span>→ Explore→Plan→Code→Commitの4フェーズを徹底し、複数ファイル変更時はプランモード必須、計画はOpus・実装はSonnetと使い分けるのが現場で差がつくポイントだと説く。今日保存した「specを書く」「役割分担」という関心と地続きの実務知見</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 Claude Code・AI開発ワークフロー（5件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/adeldeveloperx/status/2083981559783436759?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2083978747514896384/img/a7Ki8Cw_VsJhkARQ.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">プロンプトの長さより「コンテキスト構築」——Claude Code開発者が明かす活用術</div><div class="vdesc">CLAUDE.mdでの規約共有、計画を確認してから実装させる、テストが通るまで自動反復させるなど、Anthropic社内で使われている実務Tipsを解説</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/claudecode_ut/status/2084232919800000539?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2083905766591721472/img/9uhrAlE_RnIQrutE.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Anthropicエンジニアがアプリを40分でゼロから構築、3エージェント構造を公開</div><div class="vdesc">Planner・Generator・Evaluatorに役割分担、生成役に自己採点させると甘くなるため独立した敵対的評価役を置くのが長時間稼働エージェント設計の核心と説く</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/marcusyul/status/2083919464433606775?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2083919032055455744/img/RnphjlkXQaKix0kx.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claude Code 31分完全コース、Anthropic社内の実際のフローを公開</div><div class="vdesc">エージェントへの場当たり的な指示をやめ、正式なspecを書くことがコード生成の速度と精度を両立させる鍵だと説く</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/chizevsm5/status/2083909785787994238?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2083909771078635520/img/gggI_RC6ASl0euXG.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">Claude Code＋MCPで17,000銘柄超の米国株データに数秒アクセス</div><div class="vdesc">ターミナルに<code>claude mcp add --transport http</code>を1行貼るだけの2ステップ設定で、その場から米国株分析を走らせられると紹介</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DbiUxNJTvVl/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-sea5-1.cdninstagram.com/v/t51.82787-15/763156159_18085395191421004_1919560610662159453_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=ZH1uzgk8zEkQ7kNvwGO1luL&_nc_oc=AdocarLx1SCToAI80pdevsnNxnNQHqQ2kUz-kUlhzOv8NC-P8DQG-IcwRmp5INJ98Mo&_nc_zt=23&_nc_ht=scontent-sea5-1.cdninstagram.com&_nc_gid=9QJnunW1peNpVFvu8oFNug&_nc_ss=7b60f&oh=00_AQE3Go8r2QLGDpBhG8FACAWrX4h-WQgzCPW4NGS5bFszDw&oe=6A771542" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">UIの正式名称辞典「name that ui」でAIへの指示精度を上げる</div><div class="vdesc">ボタンやボトムシートなどUIパーツの正式名称を調べてからプロンプトを書くと、Claude CodeやCursorが意図通りのデザインを一発で実装できると解説</div></div>
+    </a>
+  </div>
+
+  <h2>🏗️ 建築・パース×AI（4件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://www.instagram.com/reel/Dbd6lfRps6j/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-sea1-1.cdninstagram.com/v/t51.82787-15/757460382_18119993944782067_8010624697443085619_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=101&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=xyrqMvl7TuwQ7kNvwHj4QR2&_nc_oc=AdoFURAGK-umW2fTaxL5P5_0T6e2kvluM7_kslx26yuqtRlG4y5NIe7u1YA5t4htVEw&_nc_zt=23&_nc_ht=scontent-sea1-1.cdninstagram.com&_nc_gid=ksXKVI8WwYbCQG1gKZDMgg&_nc_ss=7b60f&oh=00_AQHrHjhhXCvzP3gvuVbIm19NMLFknz9dPDtAasGWGs6ESQ&oe=6A7715EE" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">Rhino+GrasshopperのアルゴリズムをRevitへ自動変換するBIMワークフロー</div><div class="vdesc">Grasshopperで作ったエンベロープをRevitに流し込み、Levels・Floors・Curtain WallsなどBIMカテゴリを自動生成。スライダー操作でジオメトリがリアルタイム更新される、完全パラメトリックな設計プロセス</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/Dbi5nyLnzcU/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-sea5-1.cdninstagram.com/v/t51.82787-15/765069329_18092386613322558_8916749811197740767_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=105&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=FXzb9pF_edMQ7kNvwGv5vJ8&_nc_oc=AdrD_NXwiX-T1VkDxwj_trha5Fx11aZYCHnXBHTm6ItKxJDTiarj4qBfnyfovtxY_Fc&_nc_zt=23&_nc_ht=scontent-sea5-1.cdninstagram.com&_nc_gid=MUZ4iEQpJ5c6Oo_yRoiBdA&_nc_ss=7b60f&oh=00_AQHQLyZslgNjI7kmJYAtJlcupcthTrYtR3-oqXNBVcRy2g&oe=6A77078E" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">言葉で指示するだけでRhino上に3Dモデルを構築するAI「Treform.ai」</div><div class="vdesc">作りたい建築を言葉で説明すると、AIが自動スクリプトでRhino内に詳細モデルを構築。対話形式での修正・微調整にも対応する建築特化のモデリングAI</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/uncle_render/status/2084262516214157329?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2084262443233251328/img/WKTdsYT4KQYEkFMx.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">カフェの店舗パースを数分で動画化する手法</div><div class="vdesc">着彩図面と3D完成イメージを外観・内観それぞれ交互に見せる構成で、プレゼン用パース動画を数分で仕上げると紹介</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/hiro_kawajiri/status/2083895815559589908?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/media/HOt76_QbcAAc_tu.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">目の前に高速高架があるのに正面写真が撮れている謎の建物</div><div class="vdesc">淺沼組名古屋支店の外観写真。撮影アングルの仕掛けが分からないと話題になった一枚</div></div>
+    </a>
+  </div>
+
+  <h2>🎬 AI動画・デザイン生成（3件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/taiga_aii/status/2084224730211758176?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2084224711530311680/img/2_aFDe5QJPlvrsh6.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">無料AI動画編集ツール、RemotionとHyperFramesを徹底比較</div><div class="vdesc">同じ電車ルート案内モーションを両ツールで作成し左右比較。ダーク×フラット対ライト×3D立体で、表現の違いがくっきり際立つ</div></div>
+    </a>
+    <a class="vcard" href="https://x.com/aresotik/status/2083996602755141734?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2083995934812241920/img/MDbrk3pERgOVdE6K.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">GPT 5.6で10万ドル級のプレミアムサイトを21分の手順で構築</div><div class="vdesc">参考収集→AI画像生成→3Dグラフィックのアニメ化→ChatGPT Codexでのコード実装という4段階の制作フローを解説</div></div>
+    </a>
+    <a class="vcard" href="https://www.instagram.com/reel/DbRDSqvhUjF/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://scontent-sea1-1.cdninstagram.com/v/t51.82787-15/756887267_18091577171627121_8537612637216413487_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=100&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=wW6In_3llb8Q7kNvwHgtZc2&_nc_oc=AdpDnxe9MG8iMqTYJ5RLK5v3TrGeDCwYa0p5naHFGdIltt2vMWJPQVdDYTuhjtUCD_I&_nc_zt=23&_nc_ht=scontent-sea1-1.cdninstagram.com&_nc_gid=liBOx1e0S07riUbbl737Bg&_nc_ss=7b60f&oh=00_AQEWaShPfvKMNnfF2k9U-yQa-nMpJtS4eGRsNTrqno693w&oe=6A770351" onerror="this.remove()"><span class="ph">Instagram</span></div>
+      <div class="vbody"><div class="vtitle">UIインタラクションの参考サイト「60fps.design」</div><div class="vdesc">トップクラスのUIモーション事例をギャラリー化、コードスニペットや求人情報、MCPまで揃うデザイナー向けリファレンス集</div></div>
+    </a>
+  </div>
+
+  <h2>💹 その他（1件）</h2>
+  <div class="cards">
+    <a class="vcard" href="https://x.com/karlarboledas/status/2084006946860884300?s=12" target="_blank" rel="noopener">
+      <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2084006923125272576/img/QNIhUIdCaBDgpe91.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+      <div class="vbody"><div class="vtitle">AIトレーディングの勝負を分けるのは「モデルの大きさ」でなく「レイテンシ」</div><div class="vdesc">19歳のルーマニア人がクラウドAPI課金を避け、ローカルAI群を組んでレイテンシを削ることで多くのスタートアップより先に成果を出した事例</div></div>
+    </a>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+</body>
+</html>
