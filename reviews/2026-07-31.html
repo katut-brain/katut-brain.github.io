@@ -69,6 +69,14 @@
   }
   footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
 </style>
+
+<style>
+.vcard{display:flex;align-items:center;gap:8px;}
+.vlink{display:flex;gap:14px;text-decoration:none;color:inherit;flex:1;min-width:0;}
+.deepdive{flex:none;margin-right:10px;background:none;border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--sub);cursor:pointer;white-space:nowrap;font-family:inherit;}
+.deepdive:hover{border-color:var(--accent);color:var(--accent);}
+@media (max-width:460px){.vlink{flex-direction:column;}.deepdive{display:none;}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -90,21 +98,33 @@
 
   <h2>🤖 AI・ツール（3件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://x.com/nozelcode/status/2082896323053854783?s=12" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://x.com/nozelcode/status/2082896323053854783?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/media/HOfvAjVXEAEwxN7.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">「Ponytail」リポジトリでClaudeのコード量が94%減る</div><div class="vdesc">Opus 5は書きすぎてコストが嵩む——エージェントを「無精なシニア」に変える設計で抑制するという話</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/shxrkai/status/2082837713456160978?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/nozelcode/status/2082896323053854783?s=12" data-title="「Ponytail」リポジトリでClaudeのコード量が94%減る">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/shxrkai/status/2082837713456160978?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://jf.x.com/images/media-preview/2082837713456160978" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">4時間の完全Claude講座</div><div class="vdesc">ツール構築・作業自動化・ボット開発までを扱う無料の長尺ガイド動画（内容未確認）</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/andexlabs/status/2083166653630546233?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/shxrkai/status/2082837713456160978?s=12" data-title="4時間の完全Claude講座">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/andexlabs/status/2083166653630546233?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2023359940988186624/img/EvFaoVJIk9f24_Ma.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">顔出しなしYouTubeで月3万ドルを稼ぐ方法（2026年版）</div><div class="vdesc">フェイスレスYouTubeでの収益化手法を解説する動画付き投稿（内容未確認）</div></div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/andexlabs/status/2083166653630546233?s=12" data-title="顔出しなしYouTubeで月3万ドルを稼ぐ方法（2026年版）">💬 AIと話す</button></div>
   </div>
 
   <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
 </div>
+
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title;
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
 </body>
 </html>

@@ -69,6 +69,14 @@
   }
   footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
 </style>
+
+<style>
+.vcard{display:flex;align-items:center;gap:8px;}
+.vlink{display:flex;gap:14px;text-decoration:none;color:inherit;flex:1;min-width:0;}
+.deepdive{flex:none;margin-right:10px;background:none;border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--sub);cursor:pointer;white-space:nowrap;font-family:inherit;}
+.deepdive:hover{border-color:var(--accent);color:var(--accent);}
+@media (max-width:460px){.vlink{flex-direction:column;}.deepdive{display:none;}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -103,7 +111,7 @@
 
   <h2>🏛 建築・空間ビジョン（3件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://x.com/archiphoto/status/2067502582902468805?s=12" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://x.com/archiphoto/status/2067502582902468805?s=12" target="_blank" rel="noopener">
       <div class="thumb">
         <img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Farchiphoto%2Fstatus%2F2067502582902468805%3Fs%3D12" alt="" loading="lazy" onerror="this.style.display='none'">
         <span class="ph">X</span>
@@ -112,8 +120,8 @@
         <div class="vtitle">ヘルツォーグ＆ド・ムーロン：SF湾岸「Power Station」</div>
         <div class="vdesc">20世紀初頭の発電所を約12万㎡の複合施設に改修（湾岸再開発の一部）</div>
       </div>
-    </a>
-    <a class="vcard" href="https://x.com/japanarchitects/status/2067591892448297263?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/archiphoto/status/2067502582902468805?s=12" data-title="ヘルツォーグ＆ド・ムーロン：SF湾岸「Power Station」">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/japanarchitects/status/2067591892448297263?s=12" target="_blank" rel="noopener">
       <div class="thumb">
         <img src="https://pbs.twimg.com/media/HLGMH5vawAA9Z3V.jpg:large" alt="" loading="lazy" onerror="this.style.display='none'">
         <span class="ph">X</span>
@@ -122,8 +130,8 @@
         <div class="vtitle">シンガタ展 ― 横浜の街と住宅の新しいかたち（7/25-28）</div>
         <div class="vdesc">横浜黄金町 高架下スタジオ。10組の建築家が住宅の「新しいかたち」を問う展覧会</div>
       </div>
-    </a>
-    <a class="vcard" href="https://www.archdaily.com/office/aires-mateus" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/japanarchitects/status/2067591892448297263?s=12" data-title="シンガタ展 ― 横浜の街と住宅の新しいかたち（7/25-28）">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://www.archdaily.com/office/aires-mateus" target="_blank" rel="noopener">
       <div class="thumb">
         <img src="https://images.adsttc.com/media/images/6095/b66c/f91c/810b/b000/0009/medium_jpg/JG-ESTRELA-DSC_6442-low.jpg?1620424296" alt="" loading="lazy" onerror="this.style.display='none'">
         <span class="ph">記事</span>
@@ -132,12 +140,12 @@
         <div class="vtitle">Aires Mateus — ポルトガルの建築事務所</div>
         <div class="vdesc">住宅・文化施設を中心に30件以上、Building of the Year 2014・2020受賞</div>
       </div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://www.archdaily.com/office/aires-mateus" data-title="Aires Mateus — ポルトガルの建築事務所">💬 AIと話す</button></div>
   </div>
 
   <h2>🤖 AI・外部脳（1件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://x.com/obsidianotaku/status/2067850630966972641?s=12" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://x.com/obsidianotaku/status/2067850630966972641?s=12" target="_blank" rel="noopener">
       <div class="thumb">
         <img src="https://jf.x.com/images/media-preview/2067850630966972641" alt="" loading="lazy" onerror="this.style.display='none'">
         <span class="ph">X</span>
@@ -146,12 +154,12 @@
         <div class="vtitle">ObsidianのiOS共有 → X/YouTube がそのままAIの記憶に</div>
         <div class="vdesc">Obsidian CEOが公開した新機能——iPhoneの共有ボタンからObsidianに送るだけでAIの記憶になる</div>
       </div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/obsidianotaku/status/2067850630966972641?s=12" data-title="ObsidianのiOS共有 → X/YouTube がそのままAIの記憶に">💬 AIと話す</button></div>
   </div>
 
   <h2>🎨 文化・カルチャー（1件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://x.com/sorasepint/status/2067569307362680878?s=12" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://x.com/sorasepint/status/2067569307362680878?s=12" target="_blank" rel="noopener">
       <div class="thumb">
         <img src="https://jf.x.com/images/media-preview/2067569307362680878" alt="" loading="lazy" onerror="this.style.display='none'">
         <span class="ph">X</span>
@@ -160,12 +168,12 @@
         <div class="vtitle">椎名林檎「評論家・フォロワー多い人がいるのはヘルシーじゃない」</div>
         <div class="vdesc">インフルエンサー文化・批評の希薄化に対する批判。「ヘルシー」という評価軸が印象的</div>
       </div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/sorasepint/status/2067569307362680878?s=12" data-title="椎名林檎「評論家・フォロワー多い人がいるのはヘルシーじゃない」">💬 AIと話す</button></div>
   </div>
 
   <h2>🔧 デザインツール（1件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://www.instagram.com/p/DZj9G-hEiZW/" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://www.instagram.com/p/DZj9G-hEiZW/" target="_blank" rel="noopener">
       <div class="thumb">
         <img src="https://scontent-lhr8-1.cdninstagram.com/v/t51.82787-15/723999719_18596221246055991_8554371788277750557_n.jpg?stp=c432.0.1296.1296a_dst-jpg_e35_s640x640_tt6&_nc_cat=108&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0FST1VTRUxfSVRFTS5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&_nc_ohc=G-ZgxD5oq1wQ7kNvwGJ9PlR&_nc_oc=AdqITsmmj2Dd6zU1UmE5JCQmAE4-SMpBa9nLXs-oE1BT4UsLXbpKonExkNR3xD2Hnws&_nc_zt=23&_nc_ht=scontent-lhr8-1.cdninstagram.com&_nc_gid=0fyml6S4lmAnSDoYN2PlLw&_nc_ss=7b60f&oh=00_Af9SLN39-R7OHlq5I_dZsVNVgj2Mnc-LAJoLBXBYgf4ORg&oe=6A3B82B6" alt="" loading="lazy" onerror="this.style.display='none'">
         <span class="ph">Instagram</span>
@@ -174,12 +182,12 @@
         <div class="vtitle">Kalypso: デザイナー向けサイト集 "Sites for designers"</div>
         <div class="vdesc">カラーピッカーを含む複数のデザインリソースサイトまとめ（中身は次回確認）</div>
       </div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/p/DZj9G-hEiZW/" data-title="Kalypso: デザイナー向けサイト集 &quot;Sites for designers&quot;">💬 AIと話す</button></div>
   </div>
 
   <h2>🎲 その他（2件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://x.com/zehf/status/2067253391705743575?s=12" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://x.com/zehf/status/2067253391705743575?s=12" target="_blank" rel="noopener">
       <div class="thumb">
         <img src="https://jf.x.com/images/media-preview/2067253391705743575" alt="" loading="lazy" onerror="this.style.display='none'">
         <span class="ph">X</span>
@@ -188,8 +196,8 @@
         <div class="vtitle">フランス vs セネガル — "What a beautiful game"</div>
         <div class="vdesc">前日のフランス対セネガル戦への感嘆ポスト</div>
       </div>
-    </a>
-    <a class="vcard" href="https://x.com/shirasu_/status/2067806755695087740?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/zehf/status/2067253391705743575?s=12" data-title="フランス vs セネガル — &quot;What a beautiful game&quot;">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/shirasu_/status/2067806755695087740?s=12" target="_blank" rel="noopener">
       <div class="thumb">
         <img src="https://pbs.twimg.com/media/HLJTPumaIAA26B8.jpg:large" alt="" loading="lazy" onerror="this.style.display='none'">
         <span class="ph">X</span>
@@ -198,10 +206,22 @@
         <div class="vtitle">@shirasu_ 「これと？」</div>
         <div class="vdesc">ユーモアのあるポスト</div>
       </div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/shirasu_/status/2067806755695087740?s=12" data-title="@shirasu_ 「これと？」">💬 AIと話す</button></div>
   </div>
 
   <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
 </div>
+
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title;
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
 </body>
 </html>

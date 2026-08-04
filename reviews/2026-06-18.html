@@ -69,6 +69,14 @@
   }
   footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
 </style>
+
+<style>
+.vcard{display:flex;align-items:center;gap:8px;}
+.vlink{display:flex;gap:14px;text-decoration:none;color:inherit;flex:1;min-width:0;}
+.deepdive{flex:none;margin-right:10px;background:none;border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--sub);cursor:pointer;white-space:nowrap;font-family:inherit;}
+.deepdive:hover{border-color:var(--accent);color:var(--accent);}
+@media (max-width:460px){.vlink{flex-direction:column;}.deepdive{display:none;}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -88,7 +96,7 @@
 
   <h2>🤖 AI × Claude（1件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://share.google/1mPawagv7Wfz7gyyd" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://share.google/1mPawagv7Wfz7gyyd" target="_blank" rel="noopener">
       <div class="thumb">
         <img src="https://pc.watch.impress.co.jp/img/pcw/list/2118/066/01.png" alt="" loading="lazy" onerror="this.style.display='none'">
         <span class="ph">記事</span>
@@ -97,10 +105,22 @@
         <div class="vtitle">Claude Design 大型アップデート — Claude Codeとの双方向連携実現</div>
         <div class="vdesc"><code>/design-sync</code> でローカルのデザインシステムを同期、コンポーネント単位で取り込み可（Impress PC Watch）</div>
       </div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://share.google/1mPawagv7Wfz7gyyd" data-title="Claude Design 大型アップデート — Claude Codeとの双方向連携実現">💬 AIと話す</button></div>
   </div>
 
   <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
 </div>
+
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title;
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
 </body>
 </html>

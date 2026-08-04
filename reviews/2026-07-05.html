@@ -69,6 +69,14 @@
   }
   footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
 </style>
+
+<style>
+.vcard{display:flex;align-items:center;gap:8px;}
+.vlink{display:flex;gap:14px;text-decoration:none;color:inherit;flex:1;min-width:0;}
+.deepdive{flex:none;margin-right:10px;background:none;border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--sub);cursor:pointer;white-space:nowrap;font-family:inherit;}
+.deepdive:hover{border-color:var(--accent);color:var(--accent);}
+@media (max-width:460px){.vlink{flex-direction:column;}.deepdive{display:none;}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -89,13 +97,25 @@
 
   <h2>🤖 AI・ツール（1件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://www.threads.com/@nft_web3_reo/post/DaZST7rEtny?xmt=AQG0tj_qDAued8GtxzpxipF7jsqqwnF0uQI45S1wpCkAUzejKy_kNOxXoHj7IS1RMXCsPP22&slof=1" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://www.threads.com/@nft_web3_reo/post/DaZST7rEtny?xmt=AQG0tj_qDAued8GtxzpxipF7jsqqwnF0uQI45S1wpCkAUzejKy_kNOxXoHj7IS1RMXCsPP22&slof=1" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://scontent-sea5-1.cdninstagram.com/v/t51.2885-19/438994557_451037874250335_4414586883994485425_n.jpg?efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4zMDAuYzIifQ&_nc_ht=scontent-sea5-1.cdninstagram.com&_nc_cat=103&_nc_oc=Q6cZ2gHTMHDYgs0uFlv6FMTDOmkV5O9LHIBggqbZIJUqrPFfgNPve93_lbrbFDz1YXPUVFg&_nc_ohc=ESrJ2OZaqOQQ7kNvwG2lMn-&_nc_gid=Tv_bSgjBkceCeWPl1xLLjg&edm=APs17CUBAAAA&ccb=7-5&oh=00_AQBHl0RSg4HvvLh0hE0xpOrpSZ5odwhp7w1trkIjLQWFUg&oe=6A5077D2&_nc_sid=10d13b" onerror="this.remove()"><span class="ph">Threads</span></div>
       <div class="vbody"><div class="vtitle">Claude Fableにツール群を全部渡して「10万円稼いでこい」</div><div class="vdesc">MCP・プラグイン・コネクタ・プロジェクト・スキルを組み合わせ自律実行。成果は出た、ただし本文は「ただ」で途切れる（@nft_web3_reo）</div></div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://www.threads.com/@nft_web3_reo/post/DaZST7rEtny?xmt=AQG0tj_qDAued8GtxzpxipF7jsqqwnF0uQI45S1wpCkAUzejKy_kNOxXoHj7IS1RMXCsPP22&amp;slof=1" data-title="Claude Fableにツール群を全部渡して「10万円稼いでこい」">💬 AIと話す</button></div>
   </div>
 
   <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
 </div>
+
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title;
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
 </body>
 </html>
