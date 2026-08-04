@@ -1,0 +1,179 @@
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+<title>2026-08-04 の振り返り</title>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-04 の振り返り</h1>
+  <div class="meta">Polymarketボットの成功譚5件、自動化ワークフロー2件、Grasshopperの実務Tips1件——計8件</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日保存した8件のうち5件が、Polymarketを舞台にしたAI自動売買ボットの「成功譚」で占められた。$400が47万9千ドルに、$1,000が98万ドルに、月5万ドルを稼ぐボットが100件以上——語られる数字は違っても物語の型は同じで、「無許可のクビ→独学→短期間の大逆転」というテンプレートが繰り返し使われている。このテーマは今週すでに7/28・7/29・8/3・8/4の4日間にわたって保存されており（計10件超）、7/28には「こういうのだよな」という強い共感のメモも残っている——一過性の流行ではなく継続的な関心と見てよい。一方でGrasshopperの投稿は対照的に地味で実務的——「Sunglasses」という無料プラグイン1つでコンポーネント名を可視化するだけの話だが、内容は具体的で再現可能である。</p>
+    <p>自動化系の2件（Claude Code/ChatGPT Codexでワークフローを一度組めば回り続ける、コンテンツ配信パイプラインを持たない者が負ける）を含めると、この日を貫くのは「一度仕組みを作れば、あとは自分の代わりに動き続けてくれる」という自動化への憧れだ。これはPolymarketボットにも、配信パイプラインにも、Grasshopperプラグインにさえ通底する。ただしPolymarketについて深掘りすると、9,500万件のトランザクション分析で1,000ドル超の利益を出したウォレットはわずか0.51%——200人に1人という現実が浮かび上がる。保存された物語の再現性は、語られているほど高くない。</p>
+    <ul class="pts">
+      <li><b>Polymarketボット祭り</b>：5件が同型の「短期間で大逆転」ナラティブを反復</li>
+      <li><b>自動化の黄金律</b>：一度組めば回り続けるという発想がトレードにも配信にも共通</li>
+      <li><b>Grasshopperの実務Tips</b>：Sunglassesプラグインでコンポーネント名を可視化</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>「一度作れば自走してくれる」という物語が繰り返し保存される一方、実際にPolymarketで1,000ドル超を稼げるウォレットは0.51%（200人に1人）に過ぎない——この物語のテンプレート化と実際の再現性のギャップを、保存する側はどう扱うべきか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">Polymarketボットの収益性</div>
+    <ul class="ilist">
+      <li><a href="https://1023jack.com/market/are-polymarket-trading-bots-actually-profitable-the-math-behind-2026-s-predictio/" target="_blank" rel="noopener"><b>Are Polymarket Trading Bots Actually Profitable? The Math Behind 2026's Prediction-Market Arbitrage Industry</b></a> <span>→ 9,500万件の取引を分析した結果、1,000ドル超の利益を出したウォレットはわずか0.51%（200人に1人）。単純アービトラージは100ミリ秒以下の高速ボットに独占され、リテール向けに持続可能なのはクロスプラットフォーム仲介など少数の戦略に限られる——今日保存した「大逆転」系の投稿群には生存者バイアスが強くかかっていると見るべき。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI×自動売買（5件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/chesny/status/2058968305872802149?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HHpd2bOXMAQBPEf.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Polymarketで100万ドルを稼いだボットの正体、28ツールで解剖</div><div class="vdesc">データ層・検証層・実行層など6層28リポジトリの構成を分解、ウォレット「coinman2」は3,062件の予測で最大11.38万ドルの単発利益を記録</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/chesny/status/2058968305872802149?s=12" data-title="Polymarketで100万ドルを稼いだボットの正体、28ツールで解剖">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/chesny/status/2084414960151785522?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2084414874654769152/img/k8rGw5jc5X0opK7D.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">「無許可モデル」でクビになった男、退職11日後に400ドルを47万9千ドルに</div><div class="vdesc">動画にはPnLが47万→49万ドル超へリアルタイムで伸びるボットのダッシュボードが映るが、ナレーションはなく終始EDM風BGMのみ</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/chesny/status/2084414960151785522?s=12" data-title="「無許可モデル」でクビになった男、退職11日後に400ドルを47万9千ドルに">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/pips_luf/status/2042479904902824165?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HFhYUkVbkAAxVck.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">AIによるファンダメンタル分析トレードを個人で稼働開始</div><div class="vdesc">「割と有望そう」という手応えのみで詳細戦略は非公開、稼働1日目の報告</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/pips_luf/status/2042479904902824165?s=12" data-title="AIによるファンダメンタル分析トレードを個人で稼働開始">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/robrtcode/status/2084270509072543989?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2084270468198977536/img/ozqSOtu50VASncHm.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">1,000ドルを98万ドルに変えた「CLAUDE QUANT」ボットの中身</div><div class="vdesc">全期間PnLが21万→23万ドル超に伸びる映像、取引約49,000回・勝率51.0%・シャープレシオ3.92・レバレッジ100倍超という数字が並ぶ</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/robrtcode/status/2084270509072543989?s=12" data-title="1,000ドルを98万ドルに変えた「CLAUDE QUANT」ボットの中身">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/robrtcode/status/2076530642142089501?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HNFRGzpXcAAkGV7.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">月5万ドル稼ぐPolymarketボット100件超をClaudeで分析</div><div class="vdesc">5分足BTC Up/Downの気配値を常時再計算し、実行可能サイズの確認から期限切れ指値の取り消しまで「データ→シグナル→フェアバリュー→エッジ→建玉→執行→リスク」という7段の意思決定連鎖を抽出</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/robrtcode/status/2076530642142089501?s=12" data-title="月5万ドル稼ぐPolymarketボット100件超をClaudeで分析">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>⚙️ 自動化・AI活用ワークフロー（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/aykutuces/status/2076286472496263647?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HNBzipgXIAAIWd6.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">自動化の黄金律は「一度組めば、あとは回り続ける」の一点</div><div class="vdesc">レポート作成・ファイル整理・データ収集・SNS投稿など反復作業をClaude CodeかChatGPT Codexで一度構築し、以後は無人稼働させる考え方を10枚のスライドで提示</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/aykutuces/status/2076286472496263647?s=12" data-title="自動化の黄金律は「一度組めば、あとは回り続ける」の一点">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/aykutuces/status/2084316749575360577?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HOz7CSeXAAA5vsa.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">コンテンツは作るが配信パイプラインは組まない、が本当の敗因</div><div class="vdesc">収録後にX・LinkedIn・Instagramカルーセル・TikTok・Threads・YouTubeへ手作業で個別投稿する非効率を指摘し、自動配信の欠如こそ最大のボトルネックだと説く</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/aykutuces/status/2084316749575360577?s=12" data-title="コンテンツは作るが配信パイプラインは組まない、が本当の敗因">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🎨 3D・パラメトリックデザイン（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Dbl_maNMcbk/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-sea5-1.cdninstagram.com/v/t51.82787-15/764056505_17957273382198852_6743675637949646514_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=109&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=1eWAcFwJxscQ7kNvwFzpGM5&amp;_nc_oc=AdrvA2A_QTJl7peErDuuMxJGcfcEVvXDHiK-2QCdU-r2oznVlyUbHG4LdJmLsBDsnZ8&amp;_nc_zt=23&amp;_nc_ht=scontent-sea5-1.cdninstagram.com&amp;_nc_gid=KR9QCsB67sJq-A4COIu51A&amp;_nc_ss=7b60f&amp;oh=00_AQGqBBxtpDwrTyekRjLKaJpMs8U-oY3Yju06qE-acBNXwQ&amp;oe=6A780855" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">Grasshopperの部材名を可視化する無料プラグイン「Sunglasses」</div><div class="vdesc">Food4Rhinoから入手可能、キャンバス上の全コンポーネント名と入出力の説明を表示しフォントも変更できるため、構造把握と学習効率が大きく上がる</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Dbl_maNMcbk/" data-title="Grasshopperの部材名を可視化する無料プラグイン「Sunglasses」">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title;
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
