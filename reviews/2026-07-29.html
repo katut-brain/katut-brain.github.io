@@ -69,6 +69,14 @@
   }
   footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
 </style>
+
+<style>
+.vcard{display:flex;align-items:center;gap:8px;}
+.vlink{display:flex;gap:14px;text-decoration:none;color:inherit;flex:1;min-width:0;}
+.deepdive{flex:none;margin-right:10px;background:none;border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--sub);cursor:pointer;white-space:nowrap;font-family:inherit;}
+.deepdive:hover{border-color:var(--accent);color:var(--accent);}
+@media (max-width:460px){.vlink{flex-direction:column;}.deepdive{display:none;}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -92,57 +100,69 @@
 
   <h2>🤖 Claude×自動トレーディング（6件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://x.com/laobaishare/status/2082269938543427617?s=12" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://x.com/laobaishare/status/2082269938543427617?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/ext_tw_video_thumb/2082269878116048896/pu/img/t0E8O_NxH4BjCxJ5.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">深センの大学生、スマホ1台で月1.5万ドルを稼ぐ自動トレード</div><div class="vdesc">900元のスマホに中国ニュースアプリを30分おきに自動巡回させ、スクショをClaudeに分析させてPolymarketの投球判断を出す。PhoneDriverでAIに画面操作そのものを代行させるノーコード構成</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/gagarotai200/status/2065006897003180067?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/laobaishare/status/2082269938543427617?s=12" data-title="深センの大学生、スマホ1台で月1.5万ドルを稼ぐ自動トレード">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/gagarotai200/status/2065006897003180067?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2065006106204897280/img/_t1Nh5zK8_9JbD5p.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">Claude Fable 5に実資金トレードさせたら1日で+37%</div><div class="vdesc">100万円→137万円。市場データの分析・エントリー条件の設計・損切りラインの判断までClaudeに一任した結果と紹介されている</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/claudecode_love/status/2047601554241511424?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/gagarotai200/status/2065006897003180067?s=12" data-title="Claude Fable 5に実資金トレードさせたら1日で+37%">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/claudecode_love/status/2047601554241511424?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2046250718739513344/img/e1X3DeFCNJdUeDRi.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">Claude Codeの自律トレーディングAgentを4体並列稼働、972取引・勝率83%</div><div class="vdesc">Polymarketで8600万件規模のトレードを実行したと紹介。Anthropicのエンジニア本人が「こんな使い方は見たことない」と反応したという投稿</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/iwachan_trader/status/2053126064034210133?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/claudecode_love/status/2047601554241511424?s=12" data-title="Claude Codeの自律トレーディングAgentを4体並列稼働、972取引・勝率83%">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/iwachan_trader/status/2053126064034210133?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2052425737807032326/img/3ie5Mi-sX0FdzESJ.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">Claude CodeがMCPで金融データに直結、17,000銘柄を即取得</div><div class="vdesc">コマンド1行コピペ→ブラウザ認証だけでP/E・決算・価格データにアクセスできると海外で話題になったセットアップ</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/s0n_ia/status/2076011052634865786?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/iwachan_trader/status/2053126064034210133?s=12" data-title="Claude CodeがMCPで金融データに直結、17,000銘柄を即取得">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/s0n_ia/status/2076011052634865786?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2076009229337448448/img/81uvS8hZnrQ-cxV-.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">Claudeでトレーディングボットを作る17分チュートリアル</div><div class="vdesc">構築・改良・バックテスト・実行までを一気通貫で解説するスペイン語動画</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/silvanrec/status/2082103787943293098?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/s0n_ia/status/2076011052634865786?s=12" data-title="Claudeでトレーディングボットを作る17分チュートリアル">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/silvanrec/status/2082103787943293098?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2082103744821428224/img/iMZjvJWtsrg4PfzH.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">PolymarketのUp/Downボットで2ヶ月+9.8万ドル</div><div class="vdesc">Up/Downを並行して買うなど、5要素からなる戦略でクリプト市場のマイクロ構造を狙うClaude製ボットの内部ロジックを解説</div></div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/silvanrec/status/2082103787943293098?s=12" data-title="PolymarketのUp/Downボットで2ヶ月+9.8万ドル">💬 AIと話す</button></div>
   </div>
 
   <h2>📚 Claude活用・コンテンツ制作（3件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://www.instagram.com/reel/DbVOQmMT1WK/" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://www.instagram.com/reel/DbVOQmMT1WK/" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://scontent-atl3-3.cdninstagram.com/v/t51.82787-15/759433690_18605350144018548_3101508214918463570_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=r5pyuXu1yqAQ7kNvwEpvTO8&_nc_oc=AdpJeP2IbF_NfyjzVw2oDPfDqxB4emnZ81-JyZlTdT-LX5TfCiZmgn7JEzSKJwoPAx8&_nc_zt=23&_nc_ht=scontent-atl3-3.cdninstagram.com&_nc_gid=HRYZDc8dSzwKBUQylzdaKw&_nc_ss=7b60f&oh=00_AQDb1Mc37cTjiT7jtp-B8XI6ghH9Zlxp4HKqFkjSxHI6ZQ&oe=6A702C3A" onerror="this.remove()"><span class="ph">Instagram</span></div>
       <div class="vbody"><div class="vtitle">Claude Codeが50本の動画講座を自動生成</div><div class="vdesc">台本作りから編集までを一人でこなす講座制作の自動化事例を紹介するリール</div></div>
-    </a>
-    <a class="vcard" href="https://www.instagram.com/reel/DaFMqd4RIWv/" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DbVOQmMT1WK/" data-title="Claude Codeが50本の動画講座を自動生成">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://www.instagram.com/reel/DaFMqd4RIWv/" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://scontent-atl3-2.cdninstagram.com/v/t51.71878-15/729991763_27565841523053761_9159288158156074773_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=105&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=NW9B_KmkIYQQ7kNvwF476dG&_nc_oc=Adrcuo2f8vbNKk7JKfdXJ5BnbLf7oRj5QWyw78CN4GYSc1Pf_7qGL5CCwGWT1mJj4Eg&_nc_zt=23&_nc_ht=scontent-atl3-2.cdninstagram.com&_nc_gid=WmCxmoLmY2ZFik7-EA-xSA&_nc_ss=7b60f&oh=00_AQCdfj6pFGaQSyGH9kvCD4MjVGUnRMV39bBrQaICVXrrOQ&oe=6A7030CC" onerror="this.remove()"><span class="ph">Instagram</span></div>
       <div class="vbody"><div class="vtitle">Claude×YouTube活用術</div><div class="vdesc">「AIの教科書」アカウントが紹介する、動画運用にClaudeを組み込む活用リール</div></div>
-    </a>
-    <a class="vcard" href="https://www.instagram.com/reel/DbQQQI1R_-d/?igsh=MTBhb2hmbjVvdXRkbg==" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DaFMqd4RIWv/" data-title="Claude×YouTube活用術">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://www.instagram.com/reel/DbQQQI1R_-d/?igsh=MTBhb2hmbjVvdXRkbg==" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://scontent-atl3-3.cdninstagram.com/v/t51.82787-15/758744386_17913378561425556_7521721451444207943_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=LLftZWuzrUUQ7kNvwFMA_Ov&_nc_oc=AdoW9cBm8d4j4zJhMCy75ewLc57ew1pOcBdfQBTDFXzB3jV2qFahPlbtSuPw0Uoyzlg&_nc_zt=23&_nc_ht=scontent-atl3-3.cdninstagram.com&_nc_gid=DwZFPBzlODoOE1UigINqAg&_nc_ss=7b60f&oh=00_AQDh4Mttn8WyMdgUMbmDQRtoECEIk-ak4FqkGPd596vR1Q&oe=6A701F2E" onerror="this.remove()"><span class="ph">Instagram</span></div>
       <div class="vbody"><div class="vtitle">Claude×note活用術</div><div class="vdesc">記事執筆のプロセスにClaudeを組み込む使い方を紹介するリール</div></div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DbQQQI1R_-d/?igsh=MTBhb2hmbjVvdXRkbg==" data-title="Claude×note活用術">💬 AIと話す</button></div>
   </div>
 
   <h2>⚡ Claude Codeの代替・高速化（1件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://x.com/silvanrec/status/2082067423734399238?s=12" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://x.com/silvanrec/status/2082067423734399238?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2082067411834937344/img/01s001QfdhM1D4Ak.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">起動が245倍速いClaude Code代替エージェント「jcode」がOSS公開</div><div class="vdesc">初回描画14ms対Claude Codeの3.4秒、メモリ27.8MB対386.6MBと主張。同一リポでのエージェントswarm実行も謳う</div></div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/silvanrec/status/2082067423734399238?s=12" data-title="起動が245倍速いClaude Code代替エージェント「jcode」がOSS公開">💬 AIと話す</button></div>
   </div>
 
   <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
 </div>
+
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title;
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
 </body>
 </html>

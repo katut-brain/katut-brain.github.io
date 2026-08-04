@@ -69,6 +69,14 @@
   }
   footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
 </style>
+
+<style>
+.vcard{display:flex;align-items:center;gap:8px;}
+.vlink{display:flex;gap:14px;text-decoration:none;color:inherit;flex:1;min-width:0;}
+.deepdive{flex:none;margin-right:10px;background:none;border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--sub);cursor:pointer;white-space:nowrap;font-family:inherit;}
+.deepdive:hover{border-color:var(--accent);color:var(--accent);}
+@media (max-width:460px){.vlink{flex-direction:column;}.deepdive{display:none;}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -104,25 +112,37 @@
 
   <h2>🤖 AI活用（4件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://x.com/s0n_ia/status/2079215814792683614?s=12" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://x.com/s0n_ia/status/2079215814792683614?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2079215785365405696/img/Zj1vpxauiCJNFQHS.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">30億パラメータの軽量モデルが100ページPDFを一括OCR</div><div class="vdesc">ページ分割なし・文脈欠落なし・クラウド課金なしを謳う中国発モデル「Unlimited-OCR」の紹介</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/nicos_ai/status/2079308810791854555?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/s0n_ia/status/2079215814792683614?s=12" data-title="30億パラメータの軽量モデルが100ページPDFを一括OCR">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/nicos_ai/status/2079308810791854555?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/media/HNswV7mX0AAdRV8.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">「もうClaude Codeに直接プロンプトしない」ループ運用の宣言</div><div class="vdesc">Fable 5に指示を出すループを常時走らせ、自分の仕事は「ループを書くこと」になったという投稿。Boris Chernyの手法と紹介</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/0xjokker/status/2079585205438808490?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/nicos_ai/status/2079308810791854555?s=12" data-title="「もうClaude Codeに直接プロンプトしない」ループ運用の宣言">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/0xjokker/status/2079585205438808490?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2079584825380401152/img/d8r4fGnKW9UdNQCk.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">Claude Code開発者本人が公開した28分のプロンプト解説動画</div><div class="vdesc">300ドルの有料コース以上の内容を無料公開、との評判。CLAUDE.mdやショートカットの実践テクニックを解説</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/claudecode84/status/2079761431856394701?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/0xjokker/status/2079585205438808490?s=12" data-title="Claude Code開発者本人が公開した28分のプロンプト解説動画">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/claudecode84/status/2079761431856394701?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/media/HNzL_3TbAAAloSZ.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">Anthropic公式「AIエージェントは4つのループで動く」</div><div class="vdesc">ターンベース・目標ベース（/goal）・時間ベース（/loop, /schedule）・プロアクティブの4分類。特にプロアクティブが強力と紹介</div></div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/claudecode84/status/2079761431856394701?s=12" data-title="Anthropic公式「AIエージェントは4つのループで動く」">💬 AIと話す</button></div>
   </div>
 
   <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
 </div>
+
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title;
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
 </body>
 </html>

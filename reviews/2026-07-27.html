@@ -69,6 +69,14 @@
   }
   footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
 </style>
+
+<style>
+.vcard{display:flex;align-items:center;gap:8px;}
+.vlink{display:flex;gap:14px;text-decoration:none;color:inherit;flex:1;min-width:0;}
+.deepdive{flex:none;margin-right:10px;background:none;border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--sub);cursor:pointer;white-space:nowrap;font-family:inherit;}
+.deepdive:hover{border-color:var(--accent);color:var(--accent);}
+@media (max-width:460px){.vlink{flex-direction:column;}.deepdive{display:none;}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -106,53 +114,65 @@
 
   <h2>🤖 AI・エージェント（3件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://x.com/angeldot_/status/2081447553930006616?s=12" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://x.com/angeldot_/status/2081447553930006616?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2081447465677459456/img/PMvSPlXzzZ50KgoB.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">グラフエンジニアリングで15体の自律エージェントをループ展開</div><div class="vdesc">単一プロンプトから、タスクごとに手書きしていた従来のマルチエージェント設計をグラフ構造で置き換える手法</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/hank_aibtc/status/2081588558499070097?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/angeldot_/status/2081447553930006616?s=12" data-title="グラフエンジニアリングで15体の自律エージェントをループ展開">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/hank_aibtc/status/2081588558499070097?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2081535654086037504/img/pggORF7_kR1QMMhi.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">Google AI StudioがGemini 2.5/3.6を無料枠で開放</div><div class="vdesc">クレカ登録・トライアル不要でAPIキー即発行。15RPM・1M TPM・1500RPDの無料枠を提供</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/sugurukun_ai/status/2081552377426088139?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/hank_aibtc/status/2081588558499070097?s=12" data-title="Google AI StudioがGemini 2.5/3.6を無料枠で開放">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/sugurukun_ai/status/2081552377426088139?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2080946889537835008/img/_guhWTfMN8gyqrjM.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">Claude Opus 5でリッチな不動産サイトを作る16分解説が海外で話題</div><div class="vdesc">Pinterestで参考探し→Higgsfieldでヒーロー画像生成など、4ツールの組み合わせを解説</div></div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/sugurukun_ai/status/2081552377426088139?s=12" data-title="Claude Opus 5でリッチな不動産サイトを作る16分解説が海外で話題">💬 AIと話す</button></div>
   </div>
 
   <h2>🎨 デザイン・UI（2件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://x.com/guanggithub/status/2081401658647490797?s=12" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://x.com/guanggithub/status/2081401658647490797?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/media/HNp0fP1bsAAVoVb.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">Appleのデザイン言語を再現するClaude Skill「apple-design」</div><div class="vdesc">WWDC講演由来の流体UI・触覚フィードバック・タイポグラフィなど17原則をWeb実装用に変換</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/kgsi/status/2081219283200491602?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/guanggithub/status/2081401658647490797?s=12" data-title="Appleのデザイン言語を再現するClaude Skill「apple-design」">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/kgsi/status/2081219283200491602?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2080832566257672192/img/pHxmi7iC9khKOMNc.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">「無くても困らないけどあると嬉しい」UI細部集『Design Spells』</div><div class="vdesc">DiscordのHomeボタン連打で出るゴジラなど、300件超のマイクロインタラクション事例集</div></div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kgsi/status/2081219283200491602?s=12" data-title="「無くても困らないけどあると嬉しい」UI細部集『Design Spells』">💬 AIと話す</button></div>
   </div>
 
   <h2>🛠 無料ツール・裏技（2件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://x.com/mattknowsai/status/2081421342860357679?s=12" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://x.com/mattknowsai/status/2081421342860357679?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/media/HOKxrkoasAA51S9.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">PhotoGIMPでPhotoshop課金を打ち切ったブラジル人YouTuber</div><div class="vdesc">GIMPをPhotoshopと同じUI・ショートカットに変える無料パッチ。操作を覚え直す必要がない</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/0xjokker/status/2081450415921439134?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/mattknowsai/status/2081421342860357679?s=12" data-title="PhotoGIMPでPhotoshop課金を打ち切ったブラジル人YouTuber">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/0xjokker/status/2081450415921439134?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/media/HOLGKn-XcAAdM3L.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">「違法っぽいけど実は合法」な無料サイト15選</div><div class="vdesc">動画一括保存のcobaltなど、広告・追跡・ペイウォールなしで使えるツール集</div></div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/0xjokker/status/2081450415921439134?s=12" data-title="「違法っぽいけど実は合法」な無料サイト15選">💬 AIと話す</button></div>
   </div>
 
   <h2>📚 その他（1件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://www.instagram.com/reel/DazxVZTzsn7/?igsh=MWxjcDZkN2RwMjU2bA==" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://www.instagram.com/reel/DazxVZTzsn7/?igsh=MWxjcDZkN2RwMjU2bA==" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://scontent-dfw5-1.cdninstagram.com/v/t51.82787-15/752781915_18117252088781092_1664659181870569637_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=111&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=-uBn20cPiW0Q7kNvwGfPPoT&_nc_oc=AdpJliRwdiTIR_mIS6_rmeU3Hd4CRH8_3nz00_6M-XtYXGNpqhk1-m4IeVx5M1f_ct4&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&_nc_gid=ZvJkEgRkpOwSlcHuonRzTg&_nc_ss=7b60f&oh=00_AQDgBNq96vokJ4yQA98lsDuWhgGNJlNfdoTf4h_YEI_LFg&oe=6A6D876A" onerror="this.remove()"><span class="ph">Instagram</span></div>
       <div class="vbody"><div class="vtitle">０からのおうちワーク：海外サイトで翻訳の仕事</div><div class="vdesc">英語力なしでもClaudeを使えばOKという発信。フォロー＆保存を促すリード獲得型リール</div></div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DazxVZTzsn7/?igsh=MWxjcDZkN2RwMjU2bA==" data-title="０からのおうちワーク：海外サイトで翻訳の仕事">💬 AIと話す</button></div>
   </div>
 
   <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
 </div>
+
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title;
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
 </body>
 </html>

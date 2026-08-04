@@ -69,6 +69,14 @@
   }
   footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
 </style>
+
+<style>
+.vcard{display:flex;align-items:center;gap:8px;}
+.vlink{display:flex;gap:14px;text-decoration:none;color:inherit;flex:1;min-width:0;}
+.deepdive{flex:none;margin-right:10px;background:none;border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--sub);cursor:pointer;white-space:nowrap;font-family:inherit;}
+.deepdive:hover{border-color:var(--accent);color:var(--accent);}
+@media (max-width:460px){.vlink{flex-direction:column;}.deepdive{display:none;}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -99,73 +107,85 @@
 
   <h2>🤖 Claude Code・AI開発ワークフロー（5件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://x.com/adeldeveloperx/status/2083981559783436759?s=12" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://x.com/adeldeveloperx/status/2083981559783436759?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2083978747514896384/img/a7Ki8Cw_VsJhkARQ.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">プロンプトの長さより「コンテキスト構築」——Claude Code開発者が明かす活用術</div><div class="vdesc">CLAUDE.mdでの規約共有、計画を確認してから実装させる、テストが通るまで自動反復させるなど、Anthropic社内で使われている実務Tipsを解説</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/claudecode_ut/status/2084232919800000539?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/adeldeveloperx/status/2083981559783436759?s=12" data-title="プロンプトの長さより「コンテキスト構築」——Claude Code開発者が明かす活用術">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/claudecode_ut/status/2084232919800000539?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2083905766591721472/img/9uhrAlE_RnIQrutE.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">Anthropicエンジニアがアプリを40分でゼロから構築、3エージェント構造を公開</div><div class="vdesc">Planner・Generator・Evaluatorに役割分担、生成役に自己採点させると甘くなるため独立した敵対的評価役を置くのが長時間稼働エージェント設計の核心と説く</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/marcusyul/status/2083919464433606775?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/claudecode_ut/status/2084232919800000539?s=12" data-title="Anthropicエンジニアがアプリを40分でゼロから構築、3エージェント構造を公開">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/marcusyul/status/2083919464433606775?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2083919032055455744/img/RnphjlkXQaKix0kx.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">Claude Code 31分完全コース、Anthropic社内の実際のフローを公開</div><div class="vdesc">エージェントへの場当たり的な指示をやめ、正式なspecを書くことがコード生成の速度と精度を両立させる鍵だと説く</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/chizevsm5/status/2083909785787994238?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/marcusyul/status/2083919464433606775?s=12" data-title="Claude Code 31分完全コース、Anthropic社内の実際のフローを公開">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/chizevsm5/status/2083909785787994238?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2083909771078635520/img/gggI_RC6ASl0euXG.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">Claude Code＋MCPで17,000銘柄超の米国株データに数秒アクセス</div><div class="vdesc">ターミナルに<code>claude mcp add --transport http</code>を1行貼るだけの2ステップ設定で、その場から米国株分析を走らせられると紹介</div></div>
-    </a>
-    <a class="vcard" href="https://www.instagram.com/reel/DbiUxNJTvVl/" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/chizevsm5/status/2083909785787994238?s=12" data-title="Claude Code＋MCPで17,000銘柄超の米国株データに数秒アクセス">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://www.instagram.com/reel/DbiUxNJTvVl/" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://scontent-sea5-1.cdninstagram.com/v/t51.82787-15/763156159_18085395191421004_1919560610662159453_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=ZH1uzgk8zEkQ7kNvwGO1luL&_nc_oc=AdocarLx1SCToAI80pdevsnNxnNQHqQ2kUz-kUlhzOv8NC-P8DQG-IcwRmp5INJ98Mo&_nc_zt=23&_nc_ht=scontent-sea5-1.cdninstagram.com&_nc_gid=9QJnunW1peNpVFvu8oFNug&_nc_ss=7b60f&oh=00_AQE3Go8r2QLGDpBhG8FACAWrX4h-WQgzCPW4NGS5bFszDw&oe=6A771542" onerror="this.remove()"><span class="ph">Instagram</span></div>
       <div class="vbody"><div class="vtitle">UIの正式名称辞典「name that ui」でAIへの指示精度を上げる</div><div class="vdesc">ボタンやボトムシートなどUIパーツの正式名称を調べてからプロンプトを書くと、Claude CodeやCursorが意図通りのデザインを一発で実装できると解説</div></div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DbiUxNJTvVl/" data-title="UIの正式名称辞典「name that ui」でAIへの指示精度を上げる">💬 AIと話す</button></div>
   </div>
 
   <h2>🏗️ 建築・パース×AI（4件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://www.instagram.com/reel/Dbd6lfRps6j/" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://www.instagram.com/reel/Dbd6lfRps6j/" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://scontent-sea1-1.cdninstagram.com/v/t51.82787-15/757460382_18119993944782067_8010624697443085619_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=101&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=xyrqMvl7TuwQ7kNvwHj4QR2&_nc_oc=AdoFURAGK-umW2fTaxL5P5_0T6e2kvluM7_kslx26yuqtRlG4y5NIe7u1YA5t4htVEw&_nc_zt=23&_nc_ht=scontent-sea1-1.cdninstagram.com&_nc_gid=ksXKVI8WwYbCQG1gKZDMgg&_nc_ss=7b60f&oh=00_AQHrHjhhXCvzP3gvuVbIm19NMLFknz9dPDtAasGWGs6ESQ&oe=6A7715EE" onerror="this.remove()"><span class="ph">Instagram</span></div>
       <div class="vbody"><div class="vtitle">Rhino+GrasshopperのアルゴリズムをRevitへ自動変換するBIMワークフロー</div><div class="vdesc">Grasshopperで作ったエンベロープをRevitに流し込み、Levels・Floors・Curtain WallsなどBIMカテゴリを自動生成。スライダー操作でジオメトリがリアルタイム更新される、完全パラメトリックな設計プロセス</div></div>
-    </a>
-    <a class="vcard" href="https://www.instagram.com/reel/Dbi5nyLnzcU/" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Dbd6lfRps6j/" data-title="Rhino+GrasshopperのアルゴリズムをRevitへ自動変換するBIMワークフロー">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://www.instagram.com/reel/Dbi5nyLnzcU/" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://scontent-sea5-1.cdninstagram.com/v/t51.82787-15/765069329_18092386613322558_8916749811197740767_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=105&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=FXzb9pF_edMQ7kNvwGv5vJ8&_nc_oc=AdrD_NXwiX-T1VkDxwj_trha5Fx11aZYCHnXBHTm6ItKxJDTiarj4qBfnyfovtxY_Fc&_nc_zt=23&_nc_ht=scontent-sea5-1.cdninstagram.com&_nc_gid=MUZ4iEQpJ5c6Oo_yRoiBdA&_nc_ss=7b60f&oh=00_AQHQLyZslgNjI7kmJYAtJlcupcthTrYtR3-oqXNBVcRy2g&oe=6A77078E" onerror="this.remove()"><span class="ph">Instagram</span></div>
       <div class="vbody"><div class="vtitle">言葉で指示するだけでRhino上に3Dモデルを構築するAI「Treform.ai」</div><div class="vdesc">作りたい建築を言葉で説明すると、AIが自動スクリプトでRhino内に詳細モデルを構築。対話形式での修正・微調整にも対応する建築特化のモデリングAI</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/uncle_render/status/2084262516214157329?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Dbi5nyLnzcU/" data-title="言葉で指示するだけでRhino上に3Dモデルを構築するAI「Treform.ai」">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/uncle_render/status/2084262516214157329?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2084262443233251328/img/WKTdsYT4KQYEkFMx.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">カフェの店舗パースを数分で動画化する手法</div><div class="vdesc">着彩図面と3D完成イメージを外観・内観それぞれ交互に見せる構成で、プレゼン用パース動画を数分で仕上げると紹介</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/hiro_kawajiri/status/2083895815559589908?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/uncle_render/status/2084262516214157329?s=12" data-title="カフェの店舗パースを数分で動画化する手法">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/hiro_kawajiri/status/2083895815559589908?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/media/HOt76_QbcAAc_tu.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">目の前に高速高架があるのに正面写真が撮れている謎の建物</div><div class="vdesc">淺沼組名古屋支店の外観写真。撮影アングルの仕掛けが分からないと話題になった一枚</div></div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/hiro_kawajiri/status/2083895815559589908?s=12" data-title="目の前に高速高架があるのに正面写真が撮れている謎の建物">💬 AIと話す</button></div>
   </div>
 
   <h2>🎬 AI動画・デザイン生成（3件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://x.com/taiga_aii/status/2084224730211758176?s=12" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://x.com/taiga_aii/status/2084224730211758176?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2084224711530311680/img/2_aFDe5QJPlvrsh6.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">無料AI動画編集ツール、RemotionとHyperFramesを徹底比較</div><div class="vdesc">同じ電車ルート案内モーションを両ツールで作成し左右比較。ダーク×フラット対ライト×3D立体で、表現の違いがくっきり際立つ</div></div>
-    </a>
-    <a class="vcard" href="https://x.com/aresotik/status/2083996602755141734?s=12" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/taiga_aii/status/2084224730211758176?s=12" data-title="無料AI動画編集ツール、RemotionとHyperFramesを徹底比較">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://x.com/aresotik/status/2083996602755141734?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2083995934812241920/img/MDbrk3pERgOVdE6K.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">GPT 5.6で10万ドル級のプレミアムサイトを21分の手順で構築</div><div class="vdesc">参考収集→AI画像生成→3Dグラフィックのアニメ化→ChatGPT Codexでのコード実装という4段階の制作フローを解説</div></div>
-    </a>
-    <a class="vcard" href="https://www.instagram.com/reel/DbRDSqvhUjF/" target="_blank" rel="noopener">
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/aresotik/status/2083996602755141734?s=12" data-title="GPT 5.6で10万ドル級のプレミアムサイトを21分の手順で構築">💬 AIと話す</button></div>
+    <div class="vcard"><a class="vlink" href="https://www.instagram.com/reel/DbRDSqvhUjF/" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://scontent-sea1-1.cdninstagram.com/v/t51.82787-15/756887267_18091577171627121_8537612637216413487_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=100&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=wW6In_3llb8Q7kNvwHgtZc2&_nc_oc=AdpDnxe9MG8iMqTYJ5RLK5v3TrGeDCwYa0p5naHFGdIltt2vMWJPQVdDYTuhjtUCD_I&_nc_zt=23&_nc_ht=scontent-sea1-1.cdninstagram.com&_nc_gid=liBOx1e0S07riUbbl737Bg&_nc_ss=7b60f&oh=00_AQEWaShPfvKMNnfF2k9U-yQa-nMpJtS4eGRsNTrqno693w&oe=6A770351" onerror="this.remove()"><span class="ph">Instagram</span></div>
       <div class="vbody"><div class="vtitle">UIインタラクションの参考サイト「60fps.design」</div><div class="vdesc">トップクラスのUIモーション事例をギャラリー化、コードスニペットや求人情報、MCPまで揃うデザイナー向けリファレンス集</div></div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DbRDSqvhUjF/" data-title="UIインタラクションの参考サイト「60fps.design」">💬 AIと話す</button></div>
   </div>
 
   <h2>💹 その他（1件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://x.com/karlarboledas/status/2084006946860884300?s=12" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://x.com/karlarboledas/status/2084006946860884300?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2084006923125272576/img/QNIhUIdCaBDgpe91.jpg" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">AIトレーディングの勝負を分けるのは「モデルの大きさ」でなく「レイテンシ」</div><div class="vdesc">19歳のルーマニア人がクラウドAPI課金を避け、ローカルAI群を組んでレイテンシを削ることで多くのスタートアップより先に成果を出した事例</div></div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/karlarboledas/status/2084006946860884300?s=12" data-title="AIトレーディングの勝負を分けるのは「モデルの大きさ」でなく「レイテンシ」">💬 AIと話す</button></div>
   </div>
 
   <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
 </div>
+
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title;
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
 </body>
 </html>

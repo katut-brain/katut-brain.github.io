@@ -69,6 +69,14 @@
   }
   footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
 </style>
+
+<style>
+.vcard{display:flex;align-items:center;gap:8px;}
+.vlink{display:flex;gap:14px;text-decoration:none;color:inherit;flex:1;min-width:0;}
+.deepdive{flex:none;margin-right:10px;background:none;border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--sub);cursor:pointer;white-space:nowrap;font-family:inherit;}
+.deepdive:hover{border-color:var(--accent);color:var(--accent);}
+@media (max-width:460px){.vlink{flex-direction:column;}.deepdive{display:none;}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -89,13 +97,25 @@
 
   <h2>🤖 AI・ツール（1件）</h2>
   <div class="cards">
-    <a class="vcard" href="https://x.com/conao_3/status/2065815666310238330?s=12" target="_blank" rel="noopener">
+    <div class="vcard"><a class="vlink" href="https://x.com/conao_3/status/2065815666310238330?s=12" target="_blank" rel="noopener">
       <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fconao_3%2Fstatus%2F2065815666310238330%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
       <div class="vbody"><div class="vtitle">Fableで一番良かった依頼は「記憶の再構成」</div><div class="vdesc">自作の記憶システムを持つ開発者が語る、記憶ファイル運用の一般化可能な知見（@conao_3）</div></div>
-    </a>
+    </a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/conao_3/status/2065815666310238330?s=12" data-title="Fableで一番良かった依頼は「記憶の再構成」">💬 AIと話す</button></div>
   </div>
 
   <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
 </div>
+
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title;
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
 </body>
 </html>
