@@ -1,0 +1,190 @@
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+<title>2026-08-06 の振り返り</title>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-06 の振り返り</h1>
+  <div class="meta">AIに資金を委ねる実験3件、Obsidian×AI2件、指示書とドローイング2件、サプライチェーン警告1件——計8件</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の8件を貫くのは「AIにどこまで指示を書き込み、どこから先を委ねるか」という一つの軸だ。片方の極には、Obsidian創業者Steph Angoが無料公開した「AIにObsidianの触り方を教える説明書」——5枚のテキストファイルに使い方を丁寧に書き込んだGitHubスター4.4万超のリポジトリと、白黒赤の3色のみ・角丸禁止・書体はNoto Sans CJK JPの3ウェイトのみという厳格なデザイン指示書がある。もう片方の極には、Claudeに5万ドルを渡し指示は「S&P500に勝て」の一行だけという実験、そして中国発の投稿2件——Claudeに200ドルとPC権限を渡し「Polymarketで稼げ」とだけ告げて放置したボット、本科生が10日で組んだ多智能体トレーディングフレームワーク「MiroFish」——が並ぶ。どちらも「戦略も指導もなし」を売りにしている。</p>
+    <p>この振れ幅の中心にあるのが、npm供給網が汚染されClaude Code/CodexのOAuthトークンが盗まれる恐れがあるという警告だ。指示書を書き込むか委ねるかの手前に、そもそも使っているツール自体が汚染されうるという前提が今日は一件混じっている。AI×資金運用というテーマは今週すでに7/28・7/29・8/3・8/4の複数日にわたって保存されており（8/4は8件中5件を占める規模）、8/5に保存0件を挟んでも今日また3件現れた——一過性ではなく継続的に活性化している関心と見てよい。今日はどちらかといえば「知る・紹介する」側の保存が多く、「作りたい」という直接の意図を示すnoteは無かった。</p>
+    <ul class="pts">
+      <li><b>AIに資金を委ねる実験</b>：S&P500超えの5カ月経過報告、10日で組んだ多智能体トレーディングフレームワーク、Polymarketで200ドルを回すボット</li>
+      <li><b>Obsidian×AI</b>：創業者自らの公式AI向け説明書と、ナレッジグラフを検索で絞り込むツール「cabinet」</li>
+      <li><b>指示書とドローイング</b>：AIに渡すデザインルール集と、10分で仕上げる建築断面のラインドローイング</li>
+      <li><b>サプライチェーン警告</b>：npmのkeyv等が汚染されClaude Code/CodexのOAuthトークン窃取の恐れ</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>Obsidianの創業者は5枚のテキストファイルでAIの振る舞いを丁寧に縛り、S&P500の実験者は一行の指示で丸ごと委ねた——金銭という後戻りできない領域でこそ「指示を減らす」賭けが選ばれているのはなぜか、その逆ではないのはなぜか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">AIエージェントに資金を委ねる実験</div>
+    <ul class="ilist">
+      <li><a href="https://explainx.ai/blog/claude-portfolio-autopilot-ai-trading-experiment-august-2026" target="_blank" rel="noopener"><b>Claude Portfolio: Up 19% vs S&P, But Who Trades?</b></a> <span>→ 5ヶ月という運用期間は「スキル」と「単なる強気相場のノイズ」を区別するには短すぎると指摘。運用者は複数のAIポートフォリオを同時に走らせ最高成績のものだけを喧伝しており、ダッシュボードは透明だが第三者監査は無い——「一行の指示で市場に勝った」という物語の裏に検証不能な穴がある。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AIに資金を委ねる実験（3件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/so_ainsight/status/2084799050893971721?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HO6xsGxacAAFxCn.jpg?format=jpg&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claudeに5万ドルを渡し「S&P500に勝て」、5カ月で+19%</div><div class="vdesc">3月3日〜8月3日で+19.04%（同期間のS&P500は+12.24%）、約2,700万ドルが自動でこの売買をコピー中</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/so_ainsight/status/2084799050893971721?s=12" data-title="Claudeに5万ドルを渡し「S&P500に勝て」、5カ月で+19%" data-rid="1811772968">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/yumekawii_s2/status/2085186187556507819?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">本科生が10日で組んだ多智能体トレーディングフレームワーク「MiroFish」、3000万円調達</div><div class="vdesc">価格乖離検出から自動コピートレードまで一括で回すダッシュボードを実演、金融予測・世論分析にも対応と謳う</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/yumekawii_s2/status/2085186187556507819?s=12" data-title="本科生が10日で組んだ多智能体トレーディングフレームワーク「MiroFish」、3000万円調達" data-rid="1812359546">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/karen5333365008/status/2084908074087682416?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HO8UncJXsAAYAdf.png?format=jpg&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claudeに200ドルとPC権限を渡し「Polymarketで稼げ」とだけ指示</div><div class="vdesc">戦略も指導もなし、数千ウォレットのオンチェーンデータを勝率だけで判断しgabagool22を特定——24時間で+$160、勝率55%以上のみ自動フィルタして追随</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/karen5333365008/status/2084908074087682416?s=12" data-title="Claudeに200ドルとPC権限を渡し「Polymarketで稼げ」とだけ指示" data-rid="1811767533">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🧠 Obsidian×AI（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/kamikudaku_wani/status/2084958130774176032?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Obsidian創業者Steph Ango、AIに使い方を教える説明書「obsidian-skills」を無料公開</div><div class="vdesc">GitHubスター4.4万超、defuddleやobsidian-basesなど複数スキルをテキストファイル5枚に収め、READMEでインストール方法も解説</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kamikudaku_wani/status/2084958130774176032?s=12" data-title="Obsidian創業者Steph Ango、AIに使い方を教える説明書「obsidian-skills」を無料公開" data-rid="1812361610">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/hilashmuel/status/2085052496632741987?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Obsidianのナレッジグラフを検索で動的に絞り込むツール「cabinet」</div><div class="vdesc">security/enterprise/workなどのキーワードでノードのクラスタを即座に絞り込み、個々のノードの課題・観察事項をポップアップで確認</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/hilashmuel/status/2085052496632741987?s=12" data-title="Obsidianのナレッジグラフを検索で動的に絞り込むツール「cabinet」" data-rid="1812474563">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🎨 指示書とドローイング（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/takoidet/status/2085268284837175595?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HPBcXwXaIAA8lZa.png?format=jpg&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">3色・角丸禁止・書体固定——AIに渡すデザイン指示書の中身</div><div class="vdesc">白黒赤の3色のみで完結させ装飾・グラデーション・パステル塗りを一律禁止、書体はNoto Sans CJK JPの3ウェイトのみに限定する厳格なルール集</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/takoidet/status/2085268284837175595?s=12" data-title="3色・角丸禁止・書体固定——AIに渡すデザイン指示書の中身" data-rid="1812361528">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Dbq8I2SSXjN/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-dfw5-1.cdninstagram.com/v/t51.82787-15/765916993_18435592660192833_6641338486981456249_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=111&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=O9uK-EJTVA8Q7kNvwEdAHjf&_nc_oc=AdpXFJXFGW74COiZ8d7rmUV7l1o6HcDLP5ry_YqMxkCr4G9m2GxJa5SLqM6zyRVnMRA&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&_nc_gid=aTsKLG5q952E8MckWLwpow&_nc_ss=7b60f&oh=00_AQEMDPCOJKX8681agyqev3lM0IVESDOJkF-HWex9KM60uQ&oe=6A7AA7F4" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">CADワイヤーフレームから10分で仕上げる建築断面のラインドローイング</div><div class="vdesc">地層・壁・床のハッチングから階段・屋根構造・植栽まで手際よく描き込むタイムラプス、ローファイBGMに乗せて完成させる</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Dbq8I2SSXjN/" data-title="CADワイヤーフレームから10分で仕上げる建築断面のラインドローイング" data-rid="1812088413">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>⚠️ サプライチェーン警告（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/msdsmlabs/status/2085098519132872987?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">npmのkeyv等がサプライチェーン攻撃で汚染、Claude Code/CodexのOAuthトークン窃取の恐れ</div><div class="vdesc">週1.27億DLのkeyvを含むcacheable系列がGitHub Actionsの正規署名付きで悪性版に汚染、AWS認証情報も汚染対象になりうると警告</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/msdsmlabs/status/2085098519132872987?s=12" data-title="npmのkeyv等がサプライチェーン攻撃で汚染、Claude Code/CodexのOAuthトークン窃取の恐れ" data-rid="1812546211">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
