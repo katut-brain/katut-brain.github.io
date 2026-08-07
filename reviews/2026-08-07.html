@@ -1,0 +1,167 @@
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+<title>2026-08-07 の振り返り</title>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-07 の振り返り</h1>
+  <div class="meta">Claude Codeのコスト最適化Tips4件と、AIへの権限委譲事例2件——計6件</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の6件を貫くのは「Claude Codeをいかに安く・速く・自律的に使い倒すか」という運用最適化の一点だ。片方の極には、離席してプロンプトキャッシュが切れると料金が20倍に跳ねる仕組み、PDFを生で投げず「MarkItDown」で7割トークンを削る手法、リポジトリ全体をナレッジグラフ化してgrep連打を減らす「Graphify」、200以上のプロバイダーへ自動フォールバックし月16億トークンを無料で使う「OmniRoute」——コストと手間を切り詰める"使いこなす側"のTipsが4件並ぶ。もう片方の極には、Cloudflareが全社員が使うAI業務環境をまるごとOSS公開した事例と、19歳がClaude Codeで組んだトレードbotが元手68ドルを21万ドルにした逸話があり、こちらは意思決定と実行そのものをAIへ委ねる"任せる側"の話だ。</p>
+    <p>ユーザーは建築学生でありcurator-maker志向（知る/紹介/深掘りを好む）。今日はnoteのコメントが一件も付いておらず、「作りたい」という直接の意図より先に、まず運用ノウハウを集める情報収集モードが強く出た日と言える。Claude Code関連の保存は8/1・8/2・8/3・8/4・8/6と、0件だった8/5を挟みながらもほぼ毎日現れており、この関心はすでに1週間以上継続している。</p>
+    <ul class="pts">
+      <li><b>コスト最適化の集中</b>：プロンプトキャッシュ・MarkItDown・Graphify・OmniRouteの4件が同日に並んだ</li>
+      <li><b>権限委譲の実例</b>：Cloudflareの社内AI公開とトレードbotの逸話が、AIへ任せる範囲の振れ幅を示す</li>
+      <li><b>継続する関心</b>：Claude Code関連の保存は過去7日間ほぼ毎日発生している</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>プロンプトキャッシュやMarkItDownのように「無駄を削って安く使い倒す」節約志向と、Cloudflareの事例のように「判断ごと渡して速度で稼ぐ」委任志向は、同じ最適化の延長線上にあるのか、それともどこかで両立できないトレードオフが生じるのか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">プロンプトキャッシュ最適化</div>
+    <ul class="ilist">
+      <li><a href="https://uravation.com/media/claude-code-prompt-cache-1h-cost-optimization-2026/" target="_blank" rel="noopener"><b>【2026年最新】Claude Code 1時間キャッシュ最適化ガイド</b></a> <span>→ v2.1.108で追加された環境変数`ENABLE_PROMPT_CACHING_1H`はTTLを5分から1時間に延ばし、削減率は5分キャッシュの78.5%からやや下がって71%になる。それでも離席・思考の合間にキャッシュが切れるリスクを大きく減らせる点で、reelが伝える「席を外すと20倍」という危機感への実務的な回答になっている。</span></li>
+    </ul>
+  </section>
+
+  <h2>⚙️ Claude Codeコスト最適化（4件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Da8ZthUPK98/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.82787-15/742951643_17923535268409053_8158480042830982891_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=YklPXAwwZf0Q7kNvwEPw-Pd&_nc_oc=AdqgXfPPgiH4Sp2NFfhWCH6sJGP6tQMTU1shEdYdHpAwDHsq7uCtphEdO_pX-MSKBd8&_nc_zt=23&_nc_ht=scontent-fra5-1.cdninstagram.com&_nc_gid=fbikM1fLGQSrpavtSO-8jg&_nc_ss=7b60f&oh=00_AQGd3Y3ts1v3EiE0mbdJ4uFg58SrT3gEKIU1rvr8e_OZYw&oe=6A7B16BC" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">無料ツール「OmniRoute」でClaude Codeを実質無制限に</div><div class="vdesc">200以上のAIプロバイダーと接続し月16億トークンを無料提供、上限到達時はGeminiやGLM-5.0へ自動フォールバック</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Da8ZthUPK98/" data-title="無料ツール「OmniRoute」でClaude Codeを実質無制限に" data-rid="1812866889">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DbQGo--jjBn/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.71878-15/755264522_1536497791284125_386766162341338994_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=102&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=TJeqCFpGf9MQ7kNvwEqWgBI&_nc_oc=Adpa5so089l_vXnfBnqp00YP0fme7nmjTQbXMc5muLHqTqJUh5fLBilVIoCwt1OGhKo&_nc_zt=23&_nc_ht=scontent-fra5-1.cdninstagram.com&_nc_gid=FDS37C8AWiYOLrD0IrTbWw&_nc_ss=7b60f&oh=00_AQGEcef00uvbzZU8ZajBR_t8qjtTanF8RSlvB5dCIyH6oQ&oe=6A7B1182" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">コードベース全体をナレッジグラフ化する「Graphify」</div><div class="vdesc">tree-sitterでローカル完結、AIへ地図を渡す発想でgrep連打によるコンテキスト枯渇を解消する</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DbQGo--jjBn/" data-title="コードベース全体をナレッジグラフ化する「Graphify」" data-rid="1812866842">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DbsUSfbEzEI/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra5-2.cdninstagram.com/v/t51.71878-15/762515632_1705202137434755_7634933241851380518_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=106&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=BbrTYI26h84Q7kNvwGMqjG3&_nc_oc=Adoh21WaUArOxPOKWgZgWExhyjbWkxM88oH8tjIR2GpgufyRPrD4KqGci5aIkLWnRAI&_nc_zt=23&_nc_ht=scontent-fra5-2.cdninstagram.com&_nc_gid=xLO-OEdhZmPVsjDZz20UxA&_nc_ss=7b60f&oh=00_AQG-q3N_VhqtszLDHqRm1ixEuljbVWOdUscPDKUepXQ2ng&oe=6A7B16EC" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">離席するとトークン代が20倍に化けるプロンプトキャッシュの罠</div><div class="vdesc">Pro/MaxのTTLは1時間・APIキー利用は5分、キャッシュ切れ時は/compactで書き直しコストを抑えるのが定石</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DbsUSfbEzEI/" data-title="離席するとトークン代が20倍に化けるプロンプトキャッシュの罠" data-rid="1812864257">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DbsjqlHzCrO/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra5-2.cdninstagram.com/v/t51.82787-15/767363645_17915065491425556_6987083715709836007_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=107&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=feXyrPFGmlkQ7kNvwHivNG6&_nc_oc=AdrXpdnQkd-SnAyNUuHzxM3G6EvNf03TpPHqic3-OcCSnx_wsV6agNWeB_rm_-qyiTI&_nc_zt=23&_nc_ht=scontent-fra5-2.cdninstagram.com&_nc_gid=zdfQVgoZOegQDbzD3F2i8w&_nc_ss=7b60f&oh=00_AQEnCxrL1TB6DP9TefEkorCs64OEimgYRBlr9UnQrYxzRQ&oe=6A7AF62F" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">PDFを生で投げず「MarkItDown」で7割節約</div><div class="vdesc">MicrosoftのMarkItDownでPDF・Word・Excel・YouTube等をMarkdown化し、トークン削減と回答精度向上を両立</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DbsjqlHzCrO/" data-title="PDFを生で投げず「MarkItDown」で7割節約" data-rid="1812857342">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🤖 AIへの権限委譲事例（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/l_go_mrk/status/2085290783880671566?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2085176438446338048/img/_N7nMWNkbbrizRw4.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Cloudflare、全社員が使うAI業務環境をまるごとOSS公開</div><div class="vdesc">社内情報を読んだエージェントに仕事を頼むチャット画面と、社員が自作アプリを共有する「ガジェット」基盤を公開、BigQuery接続で解約リスク顧客を自動分析するデモも披露した</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/l_go_mrk/status/2085290783880671566?s=12" data-title="Cloudflare、全社員が使うAI業務環境をまるごとOSS公開" data-rid="1813061325">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/chizevsm5/status/2085338455756685696?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2085338279080312832/img/x-Im-2uP7pFldRHR.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">19歳がClaude Codeで元手68ドルを21万ドルにしたトレードbot</div><div class="vdesc">50以上の市場を毎秒同期し人間より先に価格の歪みを検出・執行、初日8,400ドルの利益を記録</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/chizevsm5/status/2085338455756685696?s=12" data-title="19歳がClaude Codeで元手68ドルを21万ドルにしたトレードbot" data-rid="1812905249">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
