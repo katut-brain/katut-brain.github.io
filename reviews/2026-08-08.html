@@ -1,0 +1,128 @@
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+<title>2026-08-08 の振り返り</title>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-08 の振り返り</h1>
+  <div class="meta">建築理論家マリオ・カルポの「図面の消失」予言とAIコーディングの現場を重ねた論考——1件</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日保存した唯一の1件は、建築史家マリオ・カルポが予言した「図面の消失」——設計者が図面という記譜(notation)を完成させ、施工者がそれを忠実に実行するというアルベルティ以来の分業体制が崩れ、建築的思考が多数の「エージェント」に分有される未来——が、建築よりも先にソフトウェア開発の現場で現実化しつつあると論じる記事だった。開発者はコードを直接書く代わりに仕様を書き、AIエージェントの出力をレビューし、採否を判断する段階に移行している。カルポはこの先にあるものを新しい職能ではなく、環境への「適応」そのものだと読む。</p>
+    <p>ユーザーは建築学生でありcurator-maker志向。この一週間、AI・コーディング関連の保存はほぼ毎日(8/5を除く6日/7日)続いていたが、それらは主にツールの使い方や運用Tipsという「使いこなす側」の情報収集だった。今日の1件は、その情報収集の蓄積が初めて自分の専門である建築理論と明示的に接続した点で異質——「知る/紹介したい」軸の中でも、単なる収集から自分の分野への理論的接続へと一段深まった日と言える。</p>
+    <ul class="pts">
+      <li><b>カルポの予言</b>：図面という記譜への信頼で成立した近代建築家の原作者性が、記譜の消失とエージェントへの分有で崩れるという歴史観</li>
+      <li><b>先行するソフトウェア</b>：「書く」から「仕様を書きレビューし採否を判断する」への役割転換が、建築より先にコーディングの現場で進行中</li>
+      <li><b>継続する関心</b>：AI/コーディング関連の保存は今週ほぼ毎日発生しており、今日その関心がはじめて建築理論と直接結びついた</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>カルポは記譜の消失の先にあるのは新しい職能ではなく環境への「適応」だと言うが、AIエージェントが仕様への適応を担うようになったとき、人間の側に残る「原作者性」とは具体的に何を指すことになるのか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">AIコーディングと建築理論の接続</div>
+    <ul class="ilist">
+      <li><a href="https://blog.qualiteg.com/coding-agents-2026-part3/" target="_blank" rel="noopener"><b>コーディングエージェントの現状と未来への展望【第3回】"書くAI"から"指揮するAI"へ</b></a> <span>→ 2026年5月時点で開発者の役割は「コーダー」から「オーケストレーター」へ転換し、タスクを複数エージェントに分解する能力とレビュー負荷が仕事の核になったと報告する。ただし「何を作るべきか」を決め出力の正当性を判断するのは依然人間だとも指摘しており、カルポが言う「原作者性」が完全には消えず役割を変えて残るという読みを裏付ける傍証になる。</span></li>
+    </ul>
+  </section>
+
+  <h2>🏛️ 建築理論×AIコーディング（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/kentnkmr/status/2085930841117790496?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">図面の消失──マリオ・カルポの予言と、その答え合わせ</div><div class="vdesc">アルベルティが確立した図面という記譜への信頼が、AIコーディングエージェントの台頭で建築より先にソフトウェア開発の現場で崩れつつあると分析</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kentnkmr/status/2085930841117790496?s=12" data-title="図面の消失──マリオ・カルポの予言と、その答え合わせ" data-rid="1813830220">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
