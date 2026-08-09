@@ -1,0 +1,153 @@
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+<title>2026-08-09 の振り返り</title>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-09 の振り返り</h1>
+  <div class="meta">AIエージェントを「単体の道具」から「拡張・共有できる基盤」へ押し広げる保存が3件、建築ダイアグラム用ツール集が1件——計4件</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の4件のうち3件は、AIエージェントそのものの能力ではなく「エージェントをどう拡張し、どう他人と分け合うか」という一段メタな関心で貫かれている。Claude CodeとAdobeを公式コネクタで直結し写真編集をチャット上だけで完結させる話、CLAUDE.mdのgit共有では拾いきれない「会話で教えた成功手順」までチーム全員のエージェントに配るOSS「TencentDB Agent Memory」、そしてYouTubeやZoom録画を代わりに見て文字起こし・静止画抽出までやる `/watch-video` スキル——いずれも「自分ひとりでエージェントを使いこなす」段階から「エージェントの能力や知識をどう外部化し、他者・他システムと共有するか」という段階への関心の移行を示している。</p>
+    <p>残る1件は毛色が異なり、建築学生@michelleczhouによる建築ダイアグラム制作用の無料サイト8選(architextures.org・thenounproject.com・skalgubbar.seなど、アイコン・添景・テクスチャ・仕上げ用途で使い分ける実務リスト)で、こちらはユーザー自身の建築学生・curator-maker軸に直結する「使いたい」情報。AI関連の保存は先週もほぼ毎日発生していたが、今日のように3件が「エージェント拡張・共有」という同一の切り口で揃ったのは今週では今日が初めて。</p>
+    <ul class="pts">
+      <li><b>能力の外部化</b>：Adobe連携も`/watch-video`も、AIエージェント本体を賢くするのではなく「既存のツール・作業を代行させる接続点」を増やす動き</li>
+      <li><b>知識の共有単位がチームへ</b>：TencentDB Agent Memoryが体現するのは、個人の会話で得た暗黙知をSkill/Chat Memory/Wiki/CodeGraphとして構造化し「教えるのは誰か1人1回だけ」で済ませる発想</li>
+      <li><b>建築実務の軸も並走</b>：ダイアグラム制作ツール8選は、AI軸とは独立して続く「作る側」の実務情報収集</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>TencentDB Agent Memoryが目指す「教えるのは1人1回」は、チーム全員が同じ判断基準に収斂することの裏返しでもある——個々のエージェントが積んできた「教え方の癖」や試行錯誤の多様性は、この共有によって失われる情報なのではないか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">AIエージェントの拡張とチーム共有</div>
+    <ul class="ilist">
+      <li><a href="https://www.agensi.io/learn/how-to-share-claude-code-skills-with-team" target="_blank" rel="noopener"><b>How to Share Claude Code Skills With Your Team (2026)</b></a> <span>→ リポジトリ直下の`.claude/skills/`にスキルを置きgit経由で配布する方法を紹介し、共有価値があるのはコードレビュー基準・テストパターン・アーキ決定など「レビューやSlackで毎回繰り返し説明される暗黙知」だとする。TencentDB Agent Memoryが目指す「教えるのは1人1回」と方向性は同じだが、こちらは静的ファイルのgit配布に留まり、会話からの自動抽出やグラフ化までは踏み込んでいない点が対照的。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AIエージェントの拡張・共有（3件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DbvIfhPH2Y8/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-atl3-1.cdninstagram.com/v/t51.82787-15/764719268_18001792052970373_4936549754807133335_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=106&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=S_JZZia3NpIQ7kNvwED7W-e&_nc_oc=AdrlFYxqj1mkNO06iau9v3_gtAeyUCsVb0Bin_gh-xBMDW90bTToRFubgugeRaOJG7U&_nc_zt=23&_nc_ht=scontent-atl3-1.cdninstagram.com&_nc_gid=OZRiMrcRX_G4IUkMhWUQ8A&_nc_ss=7b60f&oh=00_AQHtuyyYvVRGL7A0It0fwbUdz_sQkdNrWAYtfIxpszPBSg&oe=6A7E8746" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">Claude CodeとAdobeが直結、写真編集をチャットだけで完結</div><div class="vdesc">コネクタで「Adobe for creativity」を追加しGitHub配布のスキルを読み込ませると、写真をアップロードして編集方針の質問に答えるだけで数分で仕上がる。Adobe有料アカウントは不要</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DbvIfhPH2Y8/" data-title="Claude CodeとAdobeが直結、写真編集をチャットだけで完結" data-rid="1815329257">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Dbx2UvbD9CF/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-atl3-2.cdninstagram.com/v/t51.71878-15/765854729_1525273312144637_3823958944771693861_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=101&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=FeoQ31i9fDEQ7kNvwFsCopM&_nc_oc=AdrPeobJDJy0zpK7Xe1L8rkF30DdFWXl6Io_1wPqXS6pf7Pn2okmjUlqKAiQQdIHPP4&_nc_zt=23&_nc_ht=scontent-atl3-2.cdninstagram.com&_nc_gid=ZzjyO65q6TpzQBK1PyDE1g&_nc_ss=7b60f&oh=00_AQHByDlL62qQ9s81Di4rQ2EH0EowJBrjauKkTnUsxRYt0g&oe=6A7E8FE5" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">チーム全員のエージェントへ知識を配るOSS「TencentDB Agent Memory」</div><div class="vdesc">CLAUDE.mdのgit共有では会話中に教えた成功手順まで残らない課題に対し、Skill・Chat Memory・Wiki・CodeGraphの4資産で構造化して共有。教えるのは誰か1人1回で済む設計</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Dbx2UvbD9CF/" data-title="チーム全員のエージェントへ知識を配るOSS「TencentDB Agent Memory」" data-rid="1815086560">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/chizevsm5/status/2086078413618503741?s=20" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2086078390449426432/img/hf0-Vz95NZ9gQOTt.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">動画を代わりに見てくれるスキル「/watch-video」</div><div class="vdesc">YouTube・Loom・Zoom録画・Vimeo・ローカルファイルに対応し、文字起こしと静止画の抜き出しを代行する。動画内容そのものは未取得で、投稿文からの言及にとどまる</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/chizevsm5/status/2086078413618503741?s=20" data-title="動画を代わりに見てくれるスキル「/watch-video」" data-rid="1814923467">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🏛️ 建築・デザイン（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/p/DbqCXphjVwd/?img_index=1" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-atl3-2.cdninstagram.com/v/t51.82787-15/767507295_18083358602479723_3264315529458780208_n.jpg?stp=c216.0.648.648a_dst-jpg_e35_s640x640_tt6&_nc_cat=102&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0FST1VTRUxfSVRFTS5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&_nc_ohc=o3nzrqV4VgQQ7kNvwHZNYy5&_nc_oc=Adot9ddyO9-mvYQNRZ4LU9vtpUtjrTo6LaG6M1efrJVyOx_v4rI0qx-2eu6u2gWO1Ec&_nc_zt=23&_nc_ht=scontent-atl3-2.cdninstagram.com&_nc_gid=7ySaU3_Byh2Wr0WOxrLjJQ&_nc_ss=7b60f&oh=00_AQECpOvAOGAg6OLA89nGRcXk21UicbfVxAkNg2zVELs9cg&oe=6A7EAE66" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">建築ダイアグラムが捗る無料ツールサイト8選</div><div class="vdesc">architextures.org・thenounproject.com・skalgubbar.se・mrcutout.comなど、アイコン・添景・テクスチャ・仕上げ用途で使い分ける実務リスト</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/p/DbqCXphjVwd/?img_index=1" data-title="建築ダイアグラムが捗る無料ツールサイト8選" data-rid="1814257318">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
