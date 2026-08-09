@@ -2,3 +2,15 @@ seed_captures_from_vault.py
 _index_graph_backup.html
 _preview_feed.html
 .claude/
+
+# secrets
+.env
+.env.*
+*.key
+credentials.json
+secrets.json
+
+# ローカルの検証・デバッグ出力(公開リポには不要)
+fx_out.json
+raindrop_latest.json
+raindrop_top2.txt
