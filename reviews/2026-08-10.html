@@ -1,0 +1,135 @@
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+<title>2026-08-10 の振り返り</title>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-10 の振り返り</h1>
+  <div class="meta">UI実装の「見た目」と「検証可能な基準」のギャップを埋めるデザインTips動画が2件</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日保存した2件は、どちらもInstagramのデザイン教育アカウントによる実装Tipsで、「見た目の印象」ではなく「数値で検証できる基準」でUIを作る、という同じ姿勢を共有している。1件目はタップ領域の話——ハンバーガーメニューのアイコン自体が24px程度に見えても、周囲のbutton要素で44〜48px以上のタップ可能域を確保すればよく、見た目のサイズと実際に押せる範囲は別物だとする。基準はApple 44×44pt・Google 48×48dp・WCAG 2.2の24×24px(AA、拡張基準は44×44px)と規格ごとに異なるが、共通するのは「ユーザーが実際に操作できる領域を確保する」という発想。2件目はコントラスト比の話で、ブランドカラーをそのままボタン背景に使うとWCAG基準でFailするため、Airbnbやfreeeのようにブランドカラーはロゴ用に温存し、暗くした派生色や補色をボタン用に別途作る、という大手の共通の型を紹介している。</p>
+    <p>ユーザーコメントは両件とも付いていないが、いずれも「知る/紹介したい」というより自分のポートフォリオサイトへ即応用できる実務Tipsで、建築学生・curator-maker軸というよりWeb実装・デザインの手を動かす軸が今日は活性化した形。この種のUI実装Tips保存は直近7日間には見られなかった単発の関心で、継続性はまだ確認できない。</p>
+    <ul class="pts">
+      <li><b>タップ領域</b>：見た目は小さく、実際に押せる範囲だけ44〜48px確保すればOK。ただし隣接ボタンとの重なりは要確認</li>
+      <li><b>コントラスト比</b>：ロゴ色≠ボタン色。Airbnb(FF5A5F→E00B41)、freee(2864F0→285AC8)とも派生色を作ってPassさせている</li>
+      <li><b>検証方法</b>：FigmaプラグインContrastで1分診断、タップ領域は最後に実機で親指操作を確認</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>WCAG 2.2の必須基準は実は24×24px(AA)止まりで44pxは法的な最低ラインではないのに、なぜ今日保存した動画も含め実務では「44px」がほぼ絶対基準のように語られ続けるのか——ベストプラクティスと必須基準の境界線が曖昧なまま広まっている可能性はないか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">タップターゲット/コントラストのアクセシビリティ基準</div>
+    <ul class="ilist">
+      <li><a href="https://accessible-usable.net/2024/10/entry_241004.html" target="_blank" rel="noopener"><b>WCAG 2.2 の新達成基準「ターゲットのサイズ (最低限)」</b></a> <span>→ WCAG 2.2で必須なのは24×24 CSSピクセル(レベルAA)のみで、旧44×44px要件はレベルAAA。「間隔」例外は下限を定めておらず理論上1×1pxでも適合しうるグレーゾーンがあるため、著者は妥当な理由がない限り24px以上を目指すことを推奨している。今日保存した動画が示す44pxという数字は、必須基準ではなく実務上のベストプラクティス寄りの値だと分かる。</span></li>
+    </ul>
+  </section>
+
+  <h2>💻 デザイン・実装（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DbspnIltCCn/?igsh=MTViMzN5N2ZmNzQ2cA==" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra5-2.cdninstagram.com/v/t51.82787-15/766183455_18070900946715490_5633915857889332732_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=106&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=XxWBAT35M5kQ7kNvwHoWawd&_nc_oc=AdpbPul1C1d8gS25NXuZEJr0kNfrtb3M9rTyphcqE4JV1mKs5vjGrQoqs_hoR7GsHZQ&_nc_zt=23&_nc_ht=scontent-fra5-2.cdninstagram.com&_nc_gid=ChL3xOGFdq26ezcKsICppA&_nc_ss=7b60f&oh=00_AQHUI9cB_Yr-m8VEmcOfZZYtm2r3j-_e5aNqW3ezz7QGyg&oe=6A7F36CC" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">ハンバーガーメニューの見た目とタップ領域は別物</div><div class="vdesc">アイコン自体は24px程度でも周囲のbutton要素で44〜48px確保すればOK。Apple44pt/Google48dp/WCAG24pxと基準を比較し実機での親指確認を推奨</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DbspnIltCCn/?igsh=MTViMzN5N2ZmNzQ2cA==" data-title="ハンバーガーメニューの見た目とタップ領域は別物" data-rid="1815885220">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DZAFq_Hv0bJ/?igsh=bmpjd2xwd2pycmRi" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.71878-15/708015582_971220308956130_7893298030869705781_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=103&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=IJ1VZI7_i3UQ7kNvwFoImGj&_nc_oc=Ado89eK0yWNw5Asbq7EvnLgo0w-dOkc7m8Wle5GAc9TdXjFKQ3E6l_WmrT8IHPwmzuA&_nc_zt=23&_nc_ht=scontent-fra3-1.cdninstagram.com&_nc_gid=etlYSRt_lIuuOkM9axNGOA&_nc_ss=7b60f&oh=00_AQEGduyUrrc4DTvo8flfu6aEXww2VijA4m7IgIo7V2Ct8g&oe=6A7F364B" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">ブランドカラーをそのままボタンに使うとコントラスト比Fail</div><div class="vdesc">AirbnbはFF5A5F(3.0:1)→E00B41(4.9:1)、freeeは2864F0(5.0:1)→285AC8(6.2:1)に派生。WCAG2.2 AA基準(通常4.5:1)をFigmaのContrastで確認</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DZAFq_Hv0bJ/?igsh=bmpjd2xwd2pycmRi" data-title="ブランドカラーをそのままボタンに使うとコントラスト比Fail" data-rid="1815785161">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
