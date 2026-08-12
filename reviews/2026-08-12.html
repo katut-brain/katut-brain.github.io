@@ -1,0 +1,128 @@
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+<title>2026-08-12 の振り返り</title>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-12 の振り返り</h1>
+  <div class="meta">保存は1件、建築パースをAI動画化するローカルワークフローの実演</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の保存は1件のみだが、建築パースを2〜3秒の動画に変換し、選別・編集(カット割り・BGMフェードイン)までAIで完結させたワークフローの報告。投稿者自身が担うのはゴール設定と「どれを採用するか」の判断だけで、スタディのループが大幅に速くなったという。使用モデルはMiniMax H3で、ローカル実行のためクレジット(課金枠)を気にせず何度でも生成し直せる点が鍵として挙げられている。動画自体はオフィスビル外観→ラウンジ→会議室と展開するモンタージュで、ナレーションなしBGMのみの構成。</p>
+    <p>深掘りで見つけたCGinterestの記事によれば、MiniMax H3は同社が初めてウェイトを公開した動画モデルで、テキスト・画像・動画・音声を単一の文脈で扱える汎用マルチモーダル設計が特徴。ローカル実行にはコスト削減(参照素材の秒単価課金を回避)・プライバシー保護・ComfyUIへのワークフロー統合という利点があり、今日の投稿はまさにこの「ローカルで気兼ねなく回せる」利点を建築パースのスタディに転用した実例といえる。ユーザーコメントなし。直近7日間には動画生成AI関連の保存が無く、この関心は今日単発で立ち上がったもの。建築学生・curator-maker軸で言えば、「作る」プロセスの高速化に踏み込んだ日。</p>
+    <ul class="pts">
+      <li><b>役割分担</b>：AIが生成・編集を担い、人間はゴール設定と選定判断のみに集中</li>
+      <li><b>ローカル実行の意味</b>：MiniMax H3をローカルで回すことでクレジット制限なく試行回数を確保、スタディのループを高速化</li>
+      <li><b>モデルの背景</b>：MiniMax H3は同社初のオープンウェイト動画モデルで、複数モダリティを1リクエストで扱える汎用設計(CGinterest記事より)</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>AIが生成・編集の大半を担い人間の仕事が「ゴール設定と選定」に純化されていくとき、建築パースにおける設計者の判断力そのものの価値はどう変わっていくのか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">MiniMax H3のオープンウェイト公開</div>
+    <ul class="ilist">
+      <li><a href="https://cginterest.com/2026/08/03/minimax-h3%E3%81%AE%E3%82%AA%E3%83%BC%E3%83%97%E3%83%B3%E3%82%A6%E3%82%A7%E3%82%A4%E3%83%88%E3%81%8C%E5%85%AC%E9%96%8B-%E2%80%95%E6%9C%80%E5%A4%A712%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%81%AE/" target="_blank" rel="noopener"><b>MiniMax H3のオープンウェイトが公開 ―最大12ファイルの画像・動画・音声を1つの文脈で参照できる汎用モデル</b></a> <span>→ 同社初のオープンウェイト動画モデルで、複数モダリティの素材を同時入力し関係を自然言語で指示するだけでクロスモーダルに処理できる。ローカル実行によりコスト・プライバシー・ワークフロー統合の面で利点があり、今日の投稿の「クレジットを気にせず回せる」という実感の背景がわかる。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI活用（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/xoboy1251/status/2086769538876514362?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2086706963468218368/img/DHZMnJKpwouTw4nG.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">建築パースを2〜3秒の動画化、選定とBGM編集までAIで完結</div><div class="vdesc">MiniMax H3をローカル実行し、クレジットを気にせずスタディのループを高速化。人間の役割はゴール設定と選定判断のみ</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/xoboy1251/status/2086769538876514362?s=12" data-title="建築パースを2〜3秒の動画化、選定とBGM編集までAIで完結" data-rid="1818503536">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
