@@ -1,0 +1,196 @@
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+<title>2026-08-14 の振り返り</title>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-14 の振り返り</h1>
+  <div class="meta">保存9件、AIエージェントへの権限委譲——効率化から実務代行への広がりが軸に</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日保存した9件はすべてcluster=aiで、「AIエージェントに何を任せ、どこまで権限を渡すか」という問いが通奏低音として流れている。OmniRoute・Codex Router・GitHub插件を先に繋ぐ小技の3件は、いずれも「同じ結果をより安く・より速く得る」効率化の文脈で、既存の枠組みの中でコストを削る動き。一方RevitMCP（松原さん）は専門ソフトの操作そのものをAIに委ね、Obsidianスキルは自分のVault操作の権限をAIに開放する——効率化から権限移譲へ、委ねる対象が一段深くなっている。建築学生・curator-maker軸で言えば、今日は「知る/紹介したい」保存が大半だが、RevitMCPとObsidianスキルの2件は自分の作業環境に直結し「使いこなしたい」の芽がある。</p>
+    <p>深掘りで確認したところ、OmniRouteは339のAIプロバイダを1つのエンドポイントに集約し15〜95%のトークン圧縮を行うゲートウェイで、業界記事ではRevitMCPと同種の「AIにモデル要素作成やパラメータ更新を任せるBIM自動化」事例も複数報告されている。obsidian-skillsはMarkdown/Bases/JSON Canvas編集・CLI操作・Web記事抽出の5スキル構成で、Claude Code側は自分のVault直下に.claudeフォルダを置くだけで導入できる——今日保存したツールの多くが、実は自分の環境でもすぐ試せる距離にある。直近7日間もhub=h_claude/h_aiuseの保存が11件と多く、AIコーディングエージェントの実務活用という関心は少なくとも1週間以上続いている。</p>
+    <ul class="pts">
+      <li><b>効率化から権限移譲へ</b>：OmniRoute等のコスト最適化ツールから、RevitMCP・Obsidianスキルのような操作権限そのものの委譲へ関心が広がっている</li>
+      <li><b>建築実務での実証</b>：RevitMCPは色分け図生成の不具合をAI自身がフェーズ設定のズレと特定し修正、一発で完成させた</li>
+      <li><b>継続する関心</b>：h_claude/h_aiuse系の保存は直近7日で11件、AIエージェント活用への関心は1週間以上継続している</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>OmniRouteが「AIの利用回数制限」を技術で回避する一方、RevitMCPは「操作そのもの」をAIに渡している——効率化の対象がコスト削減から作業代行へ移る中、自分の設計プロセスのどの部分ならAIに委ねてよく、どこは手放すべきでないのか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">AIコーディングエージェントの効率化</div>
+    <ul class="ilist">
+      <li><a href="https://github.com/diegosouzapw/OmniRoute" target="_blank" rel="noopener"><b>OmniRoute — 339プロバイダを1エンドポイントに統合する無料AIゲートウェイ</b></a> <span>→ クォータ枯渇時の自動フォールバックと15〜95%のトークン圧縮を組み合わせ、Claude Codeを含む複数エージェントを1つの窓口で無料枠寄せ集めして回す設計。「AIを使い倒す」ボトルネックがモデル性能でなく利用枠管理に移っていることがわかる。</span></li>
+    </ul>
+    <div class="ntag">建築実務×AIエージェント（RevitMCP）</div>
+    <ul class="ilist">
+      <li><a href="https://blog.solidcad.ca/en/from-revit-to-results-how-ai-and-mcp-are-automating-bim-workflows" target="_blank" rel="noopener"><b>From Revit to Results — AIとMCPがBIMワークフローを自動化する現在地</b></a> <span>→ MCP経由でAIがRevitのモデル要素作成・パラメータ更新・命名規則適用まで担う事例が業界記事でも報告されており、今日見た松原さんのRevitMCP検証は個人の実験にとどまらない業界共通の潮流の一端だとわかる。</span></li>
+    </ul>
+    <div class="ntag">Obsidian×Agent Skills</div>
+    <ul class="ilist">
+      <li><a href="https://github.com/kepano/obsidian-skills/blob/main/README.md" target="_blank" rel="noopener"><b>kepano/obsidian-skills README</b></a> <span>→ Markdown/Bases/JSON Canvas編集・CLI操作・Web記事抽出の5スキルで構成され、Claude Code側は自分のVault直下に.claudeフォルダを置くだけで導入できる。自分のVaultでも同じ経路ですぐ試せる距離にあるとわかる。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AIエージェント活用・効率化（7件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/gencoin8/status/2088142574540427381?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2088126858919641088/img/X7DA9Hh2VT1ESIv1.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Codex Routerで複数AIモデルを切り替え</div><div class="vdesc">Claude・Gemini・DeepSeek・Kimi・Grok・Qwen・MiniMaxをCodexから使い分けられる「Codex Router」を紹介</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/gencoin8/status/2088142574540427381?s=12" data-title="Codex Routerで複数AIモデルを切り替え" data-rid="1820151268">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/obsidianotaku/status/2088110349916717251?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HPp1S1GbYAAv2zt.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Obsidianを丸ごと操作するAgent Skillsが公開</div><div class="vdesc">Markdown編集・Bases・JSON Canvas・CLI操作・Web記事抽出の5スキルと、マーケットプレイス/npx/手動コピーの3つの導入経路を構成マップにまとめている</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/obsidianotaku/status/2088110349916717251?s=12" data-title="Obsidianを丸ごと操作するAgent Skillsが公開" data-rid="1820151137">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/norax2026/status/2087896948791509100?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fnorax2026%2Fstatus%2F2087896948791509100%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Reddit発「深度思考」プロンプトを試す</div><div class="vdesc">回答前に質問の中の隠れた前提を洗い出させる高評価プロンプトをCodexで試し、AIとの対話の仕方が変わったと明かす</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/norax2026/status/2087896948791509100?s=12" data-title="Reddit発「深度思考」プロンプトを試す" data-rid="1820143614">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/kaitoetlia/status/2087941224418123914?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2087939260833738752/img/YwjRb-B0ZL4o7Ncr.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">8分でわかるClaudeアプリ制作ガイド動画</div><div class="vdesc">コードを書かず要望を説明するだけでアプリが作れるという触れ込みの仏語解説動画（詳細はコメント欄のスレッドで補足）</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kaitoetlia/status/2087941224418123914?s=12" data-title="8分でわかるClaudeアプリ制作ガイド動画" data-rid="1820136721">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/norax2026/status/2087720606888497517?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fnorax2026%2Fstatus%2F2087720606888497517%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">CodexはまずGitHub插件を繋げてトークン節約</div><div class="vdesc">ゼロから書かせる前にGitHub連携で既存の実装を参照させれば、Vibe Codingでもトークン消費を大きく抑えられると指摘</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/norax2026/status/2087720606888497517?s=12" data-title="CodexはまずGitHub插件を繋げてトークン節約" data-rid="1820135779">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Db-7PcJT-YM/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.82787-15/775048472_18124100815758418_6439185755471242080_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=QOVDhjI5Ne4Q7kNvwGLH83G&_nc_oc=AdpajLLX7b7Rl33UFmy0ubnPsW7fGMz9ham6wUJ2Zm0WvN3p8f38hAYE1dVMnAfU76s&_nc_zt=23&_nc_ht=scontent-ord5-2.cdninstagram.com&_nc_gid=UgIC4hIC3rSntvhwda2VOw&_nc_ss=7b60f&oh=00_AQFPFmME0kWhFX_WAB4XSXz1ILvoPfMODmK7bpMLvF7ylA&oe=6A854012" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">Claudeが金融業界向け新機能を発表</div><div class="vdesc">Claudeが金融業界向けに発表した新機能を紹介するリール（動画内容は取得できず、タイトルのみ）</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Db-7PcJT-YM/" data-title="Claudeが金融業界向け新機能を発表" data-rid="1820086845">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Db8XF9IT4XK/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-1.cdninstagram.com/v/t51.82787-15/771909250_18093538061548543_4687391449918852131_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=108&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=scamEvgMZ7MQ7kNvwG0_I5q&_nc_oc=AdpAzEh4B5-Vrl1XPGnLwNsDvmeY4HwaLkqitN2_2xXdQenqKrhHz8JmMxCmOkNYdjw&_nc_zt=23&_nc_ht=scontent-ord5-1.cdninstagram.com&_nc_gid=qwOQo9gkMk9UaiCbRMdbNA&_nc_ss=7b60f&oh=00_AQHgKjnXIgNvUu0QLoWNdZrmcW4FOSOuU9liK3_ZHXiHAg&oe=6A853BBF" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">OmniRouteでClaude Codeを実質無制限に</div><div class="vdesc">GitHub公開ツール「OmniRoute」で200以上の無料AIとClaude Codeを連携し毎月16億トークンを実質無料化、プロンプト自動圧縮でトークン消費も最大90%削減できると解説</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Db8XF9IT4XK/" data-title="OmniRouteでClaude Codeを実質無制限に" data-rid="1820071962">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🏗 建築・デザイン実務（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/matsumotobim/status/2088101721906311615?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HPptS_BbIAAcwix.png" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">RevitMCPで部屋名別色分け図が一発生成</div><div class="vdesc">色分けが表示されない不具合をAIが自らビューのフェーズ設定のズレと特定して修正し、一発で完成させたと報告</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/matsumotobim/status/2088101721906311615?s=12" data-title="RevitMCPで部屋名別色分け図が一発生成" data-rid="1820143449">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DcAB6Zihobh/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.82787-15/772725495_18410092834152611_5982245399390107334_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=103&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=UkZ6aKnaZywQ7kNvwEVmZ6x&_nc_oc=AdqrAnVePlS7s0jUFMFo1LINQPmud-hZ9rMBZuvuE0fFHSqkBuSzQYILCIAuSdSHXCA&_nc_zt=23&_nc_ht=scontent-ord5-2.cdninstagram.com&_nc_gid=gTrsd9F7W471ofWWrguT2g&_nc_ss=7b60f&oh=00_AQHiASt2irHTqobUrw9SRmfdauEHNjc1S0Ax2GbhBogCbA&oe=6A854A6D" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">RhinoのColor IDでコラージュレンダリングを効率化</div><div class="vdesc">Rhinoのパーツごとに色を割り当てるColor ID機能をPhotoshopでのコラージュレンダリング作業に活用するミニチュートリアル</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DcAB6Zihobh/" data-title="RhinoのColor IDでコラージュレンダリングを効率化" data-rid="1819990066">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
