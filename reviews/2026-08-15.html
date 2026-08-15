@@ -1,0 +1,140 @@
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+<title>2026-08-15 の振り返り</title>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-15 の振り返り</h1>
+  <div class="meta">保存2件、Claudeを「対話で助けてもらう」から「任せて動かす」実行エンジンとして扱う実践例</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の保存は2件だが、どちらもClaudeを「対話で助けてもらう」道具ではなく「任せて動かす」実行エンジンとして扱っている点で通じている。1件目はトレーディング戦略をClaudeでPine Scriptにコード化し、TradingViewでバックテスト、MCP経由で取引所APIに接続して自動売買まで一気通貫でつなぐ17分解説。2件目はClaude Codeを8並列でフル稼働させたまま外出し、進捗はOSSツール「html-share」でスマホから一覧・既読管理するだけという運用の実演で、並列中の1つは書籍のストーリーパターンをサブエージェント委譲なしで21本分全文通読して解析するレポートまで自律的に生成していた。人間が逐一指示するモデルから、動かして後で結果だけ見るモデルへの移行が今日の2件に共通する。</p>
+    <p>直近1週間では8/9「AIエージェントを単体の道具から拡張・共有できる基盤へ」、8/14「AIエージェントへの権限委譲——効率化から実務代行へ」と同種の関心が繰り返し立ち上がっており、今日で週内3日目。単発の流行追いではなく、育っている関心と見てよい。建築学生・curator-maker軸で言えば、今日は明確に「使いこなしたい」側——Claude Codeの運用そのものへの実務的関心。深掘りで見た公式ドキュメントは並列実行の選択肢を「誰が調整するか」で整理しており、8並列で外出する今日の運用は引き継いで後で確認する型に近い。トレーディング記事側では月額$100-800のランニングコストという生々しい数字も出てきて、「任せる」ことの経済的な裏側も見える。</p>
+    <ul class="pts">
+      <li><b>役割変化</b>：人間は戦略の方向性設定と進捗確認のみ、実装・検証・実行はClaudeが担う</li>
+      <li><b>継続する関心</b>：AIエージェントへの権限委譲・自律運用というテーマが今週3日目の活性化</li>
+      <li><b>経済的裏側</b>：自動売買は月額$100-800、初期資本$10-50Kが目安（深掘り記事より）</li>
+      <li><b>運用の型</b>：8並列稼働は「ディスパッチして後で確認する」型の実践例</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>取引の自動実行のように人間の承認を挟まずClaudeが実世界へ直接アクションする範囲を広げていくとき、「任せてよい」境界はどこに引くべきか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">Claudeでトレーディングボットを自動化</div>
+    <ul class="ilist">
+      <li><a href="https://www.quantlabsnet.com/post/ai-trading-bots-build-backtest-automate-with-claude-ai-in-2026" target="_blank" rel="noopener"><b>AI Trading Bots: Build, Backtest & Automate with Claude AI in 2026</b></a> <span>→ ニュース収集→Claude分析→シグナル生成→紙取引で2〜4週間検証→段階的ライブ化という4段階フローと、月額$100-800のランニングコストが示されており、今日見たトレーディングボット投稿の手軽な印象の裏にある現実的なハードルがわかる。</span></li>
+    </ul>
+    <div class="ntag">Claude Codeの並列実行</div>
+    <ul class="ilist">
+      <li><a href="https://code.claude.com/docs/ja/agents" target="_blank" rel="noopener"><b>エージェントを並列実行する - Claude Code Docs</b></a> <span>→ サブエージェント・エージェントビュー・エージェントチーム・動的ワークフローの4方式が「誰が調整するか」「ワーカー同士が通信するか」で使い分けられると整理されており、8並列で外出するという今日の運用は、引き継いで後で確認する「エージェントビュー」型の実践に近いとわかる。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI活用（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/getnest1/status/2088312059381354636?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2088311015028998144/img/tYoV_GYto285yyWf.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claudeでトレーディングボットを構築する17分講座</div><div class="vdesc">12の有名戦略をバックテストするとEMAクロス(9/21)のみがBTC保有超え。Pine Script生成→TradingView検証→MCP経由で取引所APIに接続し自動売買まで一気通貫で解説</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/getnest1/status/2088312059381354636?s=12" data-title="Claudeでトレーディングボットを構築する17分講座" data-rid="1821166400">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/minorun365/status/2088522288241233947?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HPvr8Rba0AA_FCl.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claude Codeを8並列稼働させたまま外出、スマホで進捗確認</div><div class="vdesc">OSS「html-share」で各エージェントの生成結果をスマホから一覧・既読管理。並列中の1つはSpeaker Deck人気作21本のストーリー構成を全文通読で解析するレポートまで自律生成</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/minorun365/status/2088522288241233947?s=12" data-title="Claude Codeを8並列稼働させたまま外出、スマホで進捗確認" data-rid="1821164966">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
