@@ -1,0 +1,138 @@
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+<title>2026-08-17 の振り返り</title>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-17 の振り返り</h1>
+  <div class="meta">保存2件、AIがツールを飲み込む側と、手を動かす基礎技術を教える側</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の保存は2件だが、ベクトルが正反対な点で興味深い。1件目はAdobeが8月6日にChatGPT向けプラグインを公開し、Photoshop・Firefly・Premiere・Acrobatなど70以上のツールをチャット上の1プロンプトから呼び出せるようにしたニュース。フラッグシップアプリを置き換えるのではなく「どこで作業していてもクリエイティブ機能にアクセスできる」二層構造(ゲストは基本機能のみ、Adobeアカウント連携で生成AI・Creative Cloudのフル機能)が狙いで、専門ツールの入口そのものがAIチャットに吸収されつつあることを示す。2件目はその対極で、ペンツール(ベジェ曲線)操作を段階的にマスターするための練習ゲーム「The Bézier Game」の紹介で、ハートや車の輪郭をノード・ハンドル操作でなぞる地道な反復練習が今も現役の学習法として回ってきている。</p>
+    <p>ツールの「入口」がAIに一元化されていく動きと、その内側にある指先の基礎技術を今も手で覚える動きが同じ日に並んだのが今日の面白さ。直近1週間はClaude Code・Codexなど生成AIの運用効率化が主軸だったが、今日は珍しく「AIが呑み込む対象」であるデザインツール自体に焦点が移り、curator-maker軸で言えば「知る/紹介したい」(Adobe動向の把握)と「作りたい」(ペンツール習得)の両方が小さく顔を出した日と言える。</p>
+    <ul class="pts">
+      <li><b>Adobe×ChatGPT</b>:70以上のツールをチャット上の1プロンプトから呼び出し可能に、ゲストと会員で機能を分けた二層構造</li>
+      <li><b>基礎技術は健在</b>:ベジェ曲線操作という地味な基礎スキルが、生成AI全盛の今も独立した練習ゲームとして紹介され続けている</li>
+    </ul>
+    <div class="q"><b>次に考える問い:</b>専門ツールへの入口がAIチャットに集約されていく中で、ペンツール操作のような手で覚える基礎技術を今から習得する意味はどこに残るのか。</div>
+  </section>
+
+  <h2>🔎 深掘り(関連記事)</h2>
+  <section class="notes">
+    <div class="ntag">Adobeの70+ツールをChatGPTに統合</div>
+    <ul class="ilist">
+      <li><a href="https://www.engadget.com/2231088/adobe-new-chatgpt-plugin-brings-70-of-its-tools-to-openai-chatbot/" target="_blank" rel="noopener"><b>Adobe's new ChatGPT plugin brings 70 of its tools to OpenAI's chatbot</b></a> <span>→ Adobeは「フラッグシップアプリの置き換えではなく、どこで作業していても創造性と生産性のツールを使えるようにする」方針。高度な編集をチャット内で直接行える手軽さと、プロ向けの専門的制御が必要な場面では従来ツールを使う二層構造が併存しており、生成AIの業務統合が既存プロツールとの共存戦略として進んでいることがわかる。</span></li>
+    </ul>
+    <div class="ntag">ペンツール習得とThe Bézier Game</div>
+    <ul class="ilist">
+      <li><a href="https://www.core77.com/posts/68500/Mastering-the-Pen-Tool-with-The-Bezier-Game" target="_blank" rel="noopener"><b>Mastering the Pen Tool with The Bezier Game</b></a> <span>→ 著者は「CADを先に学んだためペンツールが苦手だった」と振り返っており、単なるミニゲームではなくチュートリアル形式の反復練習教材であることが紹介の核。デジタルイラストやデザイン制作で曲線操作の正確さを磨く基礎スキルとして、生成AIツールが増えた今も独立した価値を持ち続けている。</span></li>
+    </ul>
+  </section>
+
+  <h2>🛠️ AI・デザインツール(2件)</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.threads.com/share/BAj8T5uAjj/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-lga3-1.xx.fbcdn.net/v/t39.92108-6/775281743_2296876481149695_3302970095509044599_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=554f3c&_nc_ohc=Rm1ZdSLRlmAQ7kNvwFzB3lx&_nc_oc=AdpNl5qm7TkLcrFjg9Ox7w-8KkDjq6KmISROyN0EQBsfBKVTf__Y5MdPdeHH7NRNZHM&_nc_zt=14&_nc_ht=scontent-lga3-1.xx&_nc_gid=-kyOwnvKz1gs94KAF-oR6w&_nc_ss=7b100&oh=00_AQEKhNlpRrgYm0UiosfE4ncZO6iZGV2gzhVfX8zD3CRXUQ&oe=6A891DE7" onerror="this.remove()"><span class="ph">Threads</span></div>
+        <div class="vbody"><div class="vtitle">Adobe、全ツール利用可能なGPT拡張を投入</div><div class="vdesc">Photoshop・Firefly・Premiere・Acrobatなど70以上のツールをChatGPT内から1プロンプトで呼び出せる拡張を8月6日公開</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.threads.com/share/BAj8T5uAjj/" data-title="Adobe、全ツール利用可能なGPT拡張を投入" data-rid="1822940855">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DbvAaAfSflg/?igsh=eHFuZmh3NHlidTJ2" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-lga3-2.cdninstagram.com/v/t15.5256-10/766183590_1629057685458184_6641925396845252112_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=101&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=Js5RtNOcS2MQ7kNvwF-cu5V&_nc_oc=AdrExeqUVJY0VdlDbF8YEOA_IKqNd9dxW8X23Xe8wL0rEenzZHwsy3k3r_njPFNOYy0&_nc_zt=23&_nc_ht=scontent-lga3-2.cdninstagram.com&_nc_gid=LIN5NghqwEWjat_hrgcxFQ&_nc_ss=7b60f&oh=00_AQGlhniZj2iHu6VMm1ppfXhCGxLlRC0lBhQtQcdhOs1lKA&oe=6A892536" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">ペンツール練習サイト「The Bézier Game」</div><div class="vdesc">ハート・円・車・飛行機・人物の横顔などの輪郭をノード&ハンドル操作でなぞり、単純な直線から複雑な形状へ段階的に鍛える練習法を紹介</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DbvAaAfSflg/?igsh=eHFuZmh3NHlidTJ2" data-title="ペンツール練習サイト「The Bézier Game」" data-rid="1822931213">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '(frontmatter: date / tags: [type/bookmark] / raindrop_id / source)。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
