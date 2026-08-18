@@ -1,0 +1,134 @@
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+<title>2026-08-18 の振り返り</title>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-18 の振り返り</h1>
+  <div class="meta">保存2件、個人が身近な困りごとから作ったツールを無料公開した日</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の保存はわずか2件だが、どちらも「自分／特定の相手の具体的な作業コストを個人開発で削る」という同じ発想パターンを共有している。1件目は暗記が苦手で飽き性な東大生が自分のために作った暗記アプリ「Pengram」。早押し・CSV importなど機能は一通り揃い、覚えた問題を繰り返さずまだ覚えていない問題にだけ反復を寄せる設計が肝で、投稿から3日ほどで7000超のいいねを集めている。学習成果はペンギンとイワシのイラストで「今日覚えた128匹」を可視化するシェアカードにもなっており、ゲーミフィケーションで継続を煽る作りになっている。2件目はkurabara氏が建築学生向けに公開したサービスで、地図上でエリアを指定するだけで等高線・建物・道路の2DCADデータと、地形・建物の3Dデータを東京都全域で出力できる。実際の出力画像を見ると、タイル座標ごとにメッシュ分割された建物massingに等高線をオーバーレイした2D CAD風の図面と、地番・パーセルコードを重ねた3D押し出しビューの2種類が確認できた。</p>
+    <p>分野は暗記アプリと敷地データ生成でまったく違うが、どちらも「大変な下準備をAIやスクリプトに肩代わりさせ、無料で公開して他人の役に立てる」というcurator-maker軸の「作りたい」が強く出た日と言える。特に2件目は保存者自身が建築学生という立場に直結する内容。建築×ツールという軸で見ると、8/11のCG WORLD建築特集、8/14のRevitMCP（建築×AI連携）に続き今週3日目の登場で、単発の流行ではなく今週じわじわ育っている関心と読める。</p>
+    <ul class="pts">
+      <li><b>Pengram</b>：早押し・CSV import対応、まだ覚えていない問題にだけ反復を寄せる設計、公開3日で7000超のいいね</li>
+      <li><b>敷地データ自動生成</b>：地図でエリア指定→等高線・建物・道路の2DCAD＋地形・建物の3Dデータ、東京都全域対応・無料</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>敷地の等高線・3Dデータをワンクリックで自動出力できるようになると、これまで測量図を手で読み込み模型化する過程で身についていた「敷地への解像度」は、どこで補われるのか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">敷地3Dデータ自動生成という発想は海外に先例あり</div>
+    <ul class="ilist">
+      <li><a href="https://archiandweb.com/737/" target="_blank" rel="noopener"><b>【スケッチアップ】CADMAPPERで3D敷地データを作成する方法</b></a> <span>→ 地図上でエリアを選ぶと地形・建物の3Dデータを出力するという発想自体は、Rhino/SketchUp/AutoCAD/ArchiCAD対応の海外サービス「CADMAPPER」（無料版は1k㎡まで）に先例がある。kurabara氏のツールは日本の測量・地理データに最適化し東京都全域を無料でカバーする点で、国内の建築学生向けに後発の差別化を図っていると読める。</span></li>
+    </ul>
+  </section>
+
+  <h2>🛠️ 個人開発ツール（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/oicsakana/status/2088621925845332132?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HPxGkXXaUAAr-2S.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">暗記が苦手な東大生が自作した暗記アプリ「Pengram」</div><div class="vdesc">早押し・CSV importなど機能は一通り搭載、覚えた問題は繰り返さずまだ覚えていない問題に反復を寄せる設計で公開3日で7000超のいいね</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/oicsakana/status/2088621925845332132?s=12" data-title="暗記が苦手な東大生が自作した暗記アプリ「Pengram」" data-rid="1824419221">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/kurabara/status/2089524569627574502?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HP97LVLagAArP4A.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">建築学生向け、地図から敷地の2DCAD・3Dデータを自動出力するサービス</div><div class="vdesc">地図上でエリア指定するだけで等高線・建物・道路の2DCADと地形・建物の3Dデータを出力、東京都全域に対応</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kurabara/status/2089524569627574502?s=12" data-title="建築学生向け、地図から敷地の2DCAD・3Dデータを自動出力するサービス" data-rid="1824418603">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
