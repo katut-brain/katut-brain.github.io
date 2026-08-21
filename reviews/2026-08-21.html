@@ -1,0 +1,126 @@
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+<title>2026-08-21 の振り返り</title>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-21 の振り返り</h1>
+  <div class="meta">保存1件、「200万円企画」day2としてAIドロップシッピングの作業風景を投稿したリール</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の保存はInstagramリール1件のみ。動画本体の音声・映像理解は取得できなかったが、カバー画像には「200万円企画」「day2」という文字が重ねられており、AIを使ったドロップシッピングで200万円を稼ぐ挑戦を連日投稿するシリーズものだと分かる。キャプションは「パソコンの画面汚すぎ」で、作業中のPC画面の乱雑さを自虐的に見せる、いわゆる「作業配信系」の見せ方。ハッシュタグは #ai #aiコマース #aiドロップシッピング #dropshipping と、AIを商品リサーチ・出品・価格最適化などの実務に組み込む文脈で使われている。</p>
+    <p>この保存単体からは強い意図（noteは空欄）は読み取れず、過去7日間にもドロップシッピング関連の保存は無いため、継続的な関心というより単発の目撃と見るのが妥当。ただしAI×スモールビジネスの実務自動化という軸は、保存者の「知る/紹介したい」に近い好奇心の射程に入りうるトピックではある。</p>
+    <ul class="pts">
+      <li><b>200万円企画 day2</b>：AIドロップシッピングで稼ぐ過程を連日記録するシリーズ投稿、キャプションは作業画面の乱雑さを見せる自虐ネタ</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>「AIドロップシッピングで◯万円稼ぐ」系の連載投稿は、実務ノウハウの開示と再現性の低い成功譚の演出のどちらに重心があるのか、今日の1件だけでは判断がつかない。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">AIドロップシッピングで実際に自動化されている業務</div>
+    <ul class="ilist">
+      <li><a href="https://www.doba.com/blog/marketing-and-sales-growth/automation-tools/7-best-ai-dropshipping-tools-in-2026-what-their-ai-actually-does-and-which-one-fits-your-store-39535" target="_blank" rel="noopener"><b>7 Best AI Dropshipping Tools in 2026: What Their AI Actually Does</b></a> <span>→ 2026年時点でAIが実際に肩代わりしているのは「勘」ではなくデータ処理：機械学習によるトレンド商品発見、競合価格のリアルタイム監視に基づく価格自動調整、配送実績データからの仕入先マッチング、在庫不足リスクの自動フラグなど。今日の投稿のような「作業画面」の背後には、こうした複数ツールを併用する定型オペレーションがある可能性が高い。</span></li>
+    </ul>
+  </section>
+
+  <h2>🛒 AIビジネス・自動化（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DcItCEcyokh/?igsi=MXJsNXVveWNva3I4aA==" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.71878-15/775028095_4550885035197539_8098288576334924043_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=108&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=qAMWl2O043YQ7kNvwF_tA6c&_nc_oc=Adqo_I21oxyywHGGrgaFGuS_zhEN66-FUjeZ6ToHEzFv0_KJllrfcs8f8h-hrl-p3QE&_nc_zt=23&_nc_ht=scontent-fra3-1.cdninstagram.com&_nc_gid=_f-GC2YEFQ4Z5jhxBXeiYQ&_nc_ss=7b60f&oh=00_AQGWnPRKwxgvRyj-QiwJCpgxM_-R4rMOVZ3nRNALjSSXKA&oe=6A8E33E7" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">「200万円企画」day2、AIドロップシッピングの作業画面を投稿</div><div class="vdesc">キャプションは「パソコンの画面汚すぎ」、#aiコマース #aiドロップシッピングのタグでAI活用の小規模EC運営を連日記録するシリーズ</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DcItCEcyokh/?igsi=MXJsNXVveWNva3I4aA==" data-title="「200万円企画」day2、AIドロップシッピングの作業画面を投稿" data-rid="1828197378">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
