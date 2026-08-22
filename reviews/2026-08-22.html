@@ -1,0 +1,323 @@
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+<title>2026-08-22 の振り返り</title>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-22 の振り返り</h1>
+  <div class="meta">保存27件、ローソク足パターン表や指標コンボなどFXトレード技術Tipsの集中投稿と、Claude/AIで組む自動売買ボットの成功報告が中心</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日は27件と、直近7日間（0〜2件/日）から見て突出した量の保存があった。内訳は、ローソク足パターン表や指標コンボなど裁量トレードの「型」を集めたFXトレード技術Tips系が15件と圧倒的多数を占め、次いでClaude/AIを使ってPolymarket上で自動売買ボットを構築・運用する成功報告が6件、Claude Code関連のスキル・ツール紹介が5件と続く。裁量トレードとAI自動売買という一見対照的な2つのアプローチが同じ日に並んで保存されているのが今日の特徴で、いずれも「勝っている他者の判断基準を、誰でも再現できる手順やチェックリストに変換する」という同じ欲求に支えられている点で地続きに見える。ローソク足40種の色分け表、7つの指標コンボの売買シグナル条件、200EMA下でのV字回復3ステップ、Claude Codeの4つの貼り付け用プロンプトはいずれも、属人的な「勘」を型に落とし込む試みという意味で同じ構造を持つ。</p>
+    <p>ユーザーの興味軸である建築・アート・デザイン・写真・AI活用からは大きく外れ、今日は珍しくFXトレードという実務寄りの領域が主役になった一日。noteは27件とも空欄で、明示的な意図や好奇心の言語化は無い。先週8/15にも「Claudeでトレーディングボットを作った人」という趣旨の投稿が1件保存されており（今日のabusaud_cyber氏の投稿と同系統）、継続と呼べるほどの頻度ではないものの、AI×トレーディングボットという組み合わせへの関心が単発でなく再訪している兆しはある。</p>
+    <ul class="pts">
+      <li><b>FXトレード技術Tips 15件</b>：ローソク足パターン表・7指標コンボ・200EMA下V字回復など、裁量トレードの判断根拠を型に変換する投稿が集中</li>
+      <li><b>AI自動売買ボット 6件</b>：Claudeに市場データを読ませてPolymarketのボットを構築・運用し、$847〜$177,981まで幅のある成果が報告される</li>
+      <li><b>Claude Code関連 5件</b>：出力を視覚化する無料スキル3つや、Anthropic社内で使われるELI5スキルなど実務Tips</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>ローソク足パターン表や指標コンボのような「型」の蓄積と、Claudeに市場データを丸ごと読ませる確率推定は、どちらも「判断の外部化」に見えるが、後者が前者を代替しうるとしたら、人間がパターンを暗記して身につける意味はどこに残るのか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">Claude×Polymarket自動売買ボットの実態</div>
+    <ul class="ilist">
+      <li><a href="https://ai-trading-ranked.com/posts/claude-ai-trading-bots-polymarket-2026" target="_blank" rel="noopener"><b>Claude AI Trading Bots for Polymarket 2026: The Complete How-To Guide</b></a> <span>→ パイプラインは市場スキャン→ニュース収集→Claude確率推定→売買判定→執行の5段階、Haiku/Sonnet/Opusをコスト重視で使い分ける設計。年間リターン8〜12%・勝率55〜65%程度が実績値として報告されており、Xで飛び交う「+$17万」的な派手な成功報告の裏には、ポジション上限2%・日次損失上限5%といった地味なリスク管理が支えている実態が見える。</span></li>
+    </ul>
+  </section>
+
+  <h2>📉 FXトレード技術Tips（15件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/miyabi_fx_1997/status/2090987920362799196?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HQSubiua0AAHVTR.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">ローソク足40種、上げ下げ強度別の色分け表</div><div class="vdesc">「急上昇期待」から「急下落期待」まで9段階に色分けし、上げ三法・つばめ返し・かぶせ線など約40種のパターン名を並べた一枚</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/miyabi_fx_1997/status/2090987920362799196?s=12" data-title="ローソク足40種、上げ下げ強度別の色分け表" data-rid="1828858344">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/borsaningenleri/status/2090745404300071195?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HQPR3KtWsAAkFcF.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">テクニカル分析、最強の7指標コンボ</div><div class="vdesc">EMA20/50+RSI+出来高から一目均衡表+RSI+MACD+出来高まで、7通りの指標の組み合わせと売買シグナル条件を図解（トルコ語投稿）</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/borsaningenleri/status/2090745404300071195?s=12" data-title="テクニカル分析、最強の7指標コンボ" data-rid="1828842347">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/miyamotokavob/status/2090699471051215344?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HQOn4IEbUAAh1iw.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">日経平均、教科書通りのチャートパターン出現</div><div class="vdesc">投稿主が「教科書で見たことある」と評した形状のチャートスクリーンショット2枚</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/miyamotokavob/status/2090699471051215344?s=12" data-title="日経平均、教科書通りのチャートパターン出現" data-rid="1828842287">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/kurokb_/status/2090638259458371712?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HQNwasFaEAA18rY.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">ゴールデンクロス単体で買うのは早すぎる</div><div class="vdesc">ゴールデンクロスは買いの根拠として薄く、あくまで「パーフェクトオーダー」完成に向けた準備段階に過ぎないと指摘</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kurokb_/status/2090638259458371712?s=12" data-title="ゴールデンクロス単体で買うのは早すぎる" data-rid="1828840654">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/jo0sthsypvrt2hn/status/2090637514369376393?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HQNYvmbaMAAGgdC.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">200EMA下でのV字回復、3ステップの見極め方</div><div class="vdesc">①緩やかな上昇→②急落で一旦否定→③力強い右肩上がりの反転、という200EMA下で頻出するV字パターンを実例チャートで解説</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/jo0sthsypvrt2hn/status/2090637514369376393?s=12" data-title="200EMA下でのV字回復、3ステップの見極め方" data-rid="1828840540">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/chinpan2512/status/2090752271307186489?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HQPYGtwbcAEtSXC.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">ゴールドで月10万円、毎日の分析手順を無料公開</div><div class="vdesc">「月10万＝1日5,000円×20日」という前提から始まる、著者が実際に使う分析ステップの長文スレッド</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/chinpan2512/status/2090752271307186489?s=12" data-title="ゴールドで月10万円、毎日の分析手順を無料公開" data-rid="1828840426">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/bassistfx_kou/status/2090635305498116420?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2090635141052018688/img/qcmo9f3GcA6DVV6k.jpg" onerror="this.remove()"><span class="ph">X 動画</span></div>
+        <div class="vbody"><div class="vtitle">上昇トレンド中の「ダマシ」を逆手に取るエントリー</div><div class="vdesc">直近高値付近の陰線・上ヒゲに釣られた逆張り勢の損切りを巻き込む形で高値を更新する瞬間を狙う、順張りエントリー手法を動画で解説</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/bassistfx_kou/status/2090635305498116420?s=12" data-title="上昇トレンド中の「ダマシ」を逆手に取るエントリー" data-rid="1828839134">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/mzgaangy/status/2090723403456197087?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HQO9e2gaoAABMxf.png" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">専業トレーダーのドル円エントリー手順</div><div class="vdesc">1分足・5分足しか見ない人は焼かれると指摘し、上位足まで含めた全体把握の重要性を説く</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/mzgaangy/status/2090723403456197087?s=12" data-title="専業トレーダーのドル円エントリー手順" data-rid="1828839076">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/shibainu_fx/status/1832388382447825230?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">プライスアクション究極マニュアル、有料note宣伝</div><div class="vdesc">「損小利大のポジション取り」を極めるための有料note（29,800〜39,800円）の宣伝ツイート、購入者レビューを多数引用して信頼性を演出</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/shibainu_fx/status/1832388382447825230?s=12" data-title="プライスアクション究極マニュアル、有料note宣伝" data-rid="1828838161">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/ohtanigold/status/2090778871457292693?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HQPwTSJboAEM86U.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">米財務省の長期国債買い戻し発表でゴールド急騰シナリオ</div><div class="vdesc">長期金利急低下→ドル売り→ゴールド急騰という値動きの連鎖を、直近ニュースを根拠に速報形式で解説</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ohtanigold/status/2090778871457292693?s=12" data-title="米財務省の長期国債買い戻し発表でゴールド急騰シナリオ" data-rid="1828837908">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/million_trader8/status/2090470207978615022?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HQLXknxaQAAOxyC.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">細かい値動きでなく80MAの方向でトレード</div><div class="vdesc">1時間足に表示した80MA（移動平均線）が示す相場の方向性に沿ってエントリーし、細かい値動きへのチキン利食いを避ける考え方</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/million_trader8/status/2090470207978615022?s=12" data-title="細かい値動きでなく80MAの方向でトレード" data-rid="1828812136">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/eltraders/status/2075963543141433813?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">TradingView用インジケーター16種を無料配布</div><div class="vdesc">プログラミング不要、お気に入り登録するだけで追加できるエンジニア製インジケーター一式</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/eltraders/status/2075963543141433813?s=12" data-title="TradingView用インジケーター16種を無料配布" data-rid="1828809329">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/getphantomflow/status/2089245550533312898?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">RSI・MACD・EMAで勝てない人へ、Phantom Flow宣伝</div><div class="vdesc">従来指標は「本物の値動きを追うようには設計されていない」とし、スマートマネーの動きを可視化する自社ツールへ誘導する広告</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/getphantomflow/status/2089245550533312898?s=12" data-title="RSI・MACD・EMAで勝てない人へ、Phantom Flow宣伝" data-rid="1828807882">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/million_trader8/status/2090680934182027461?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HQOXOhGaAAAuJWJ.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">サポレジは抜けるのを期待して逆張りしない</div><div class="vdesc">サポート直上・レジスタンス直下には大量の指値注文が溜まっているという相場構造を根拠に、ブレイク期待の逆張りを戒める</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/million_trader8/status/2090680934182027461?s=12" data-title="サポレジは抜けるのを期待して逆張りしない" data-rid="1828807300">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/cora64189920179/status/2090778358644924901?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2090778358644924901" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">「7年経ってもこれが1番信用できる」</div><div class="vdesc">本文・画像とも取得できず詳細不明、タイトルのみの保存</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/cora64189920179/status/2090778358644924901?s=12" data-title="「7年経ってもこれが1番信用できる」" data-rid="1828805547">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🤖 AI自動売買ボット（6件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/retrovalix/status/2087291446357348440?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Polymarketで最も稼ぐ5ボット、100万件超の約定を分析</div><div class="vdesc">Claudeで100万件超の約定履歴を解析し、両建て在庫の組み方・ロットサイズ・時間軸ごとの使い分けなど5種のアルゴリズムの内部構造の違いを比較</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/retrovalix/status/2087291446357348440?s=12" data-title="Polymarketで最も稼ぐ5ボット、100万件超の約定を分析" data-rid="1828840719">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/retrovalix/status/2090923320648609886?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2090922868540399618/img/TjTusBvdURd5MeDl.jpg" onerror="this.remove()"><span class="ph">X 動画</span></div>
+        <div class="vbody"><div class="vtitle">HFTボットで+$177,981、平均取引額はわずか$28</div><div class="vdesc">1時間に約150回・分速2.5回のペースでBTC/ETH/SOLのUp/Downマーケットを取引し続けた成果報告（動画は演出的なダッシュボードUIのみでロジックの説明はなし）</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/retrovalix/status/2090923320648609886?s=12" data-title="HFTボットで+$177,981、平均取引額はわずか$28" data-rid="1828840691">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/dan1ro0/status/2085766554407317704?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HPIhQvMXgAEwCN8.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Polymarketの月10万ドル超ボット50体以上を分析</div><div class="vdesc">「BTC Up/Down 5m」マーケットで使われるアルゴリズムの内部構造を解説するシリーズ投稿</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/dan1ro0/status/2085766554407317704?s=12" data-title="Polymarketの月10万ドル超ボット50体以上を分析" data-rid="1828807176">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/dan1ro0/status/2090880153287008664?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2090880153287008664" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claudeで作ったクオンツボットで+$125,724</div><div class="vdesc">AIコーディングツールでボットを構築しPolymarketで運用した成功例の報告、詳細本文は未取得</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/dan1ro0/status/2090880153287008664?s=12" data-title="Claudeで作ったクオンツボットで+$125,724" data-rid="1828807146">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/abusaud_cyber/status/2090797093531050109?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2090797093531050109" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claudeが記事を読みボットを自律構築、一晩で$847</div><div class="vdesc">Claudeが取引ボットに関する記事を自ら読み、GitHubから7つのリポジトリを選んで連携させパイプライン全体を構築・公開したところ、一晩で847ドルを得たという体験談（アラビア語投稿）</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/abusaud_cyber/status/2090797093531050109?s=12" data-title="Claudeが記事を読みボットを自律構築、一晩で$847" data-rid="1828805170">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/ogatomo21/status/2090456352758112307?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HQLK83ZaYAAOBcZ.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">「大成功っぽくて草」</div><div class="vdesc">本文・画像とも取得できず詳細不明。前後の保存の並びからAI自動売買ボット系の成功報告への反応と推測されるが未確認</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ogatomo21/status/2090456352758112307?s=12" data-title="「大成功っぽくて草」" data-rid="1828804834">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🛠 Claude Code・AIツール（5件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/claudecode84/status/2090718614290845994?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HQO5VXFbwAAIChx.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claude Codeの出力を視覚化する無料スキル3つ</div><div class="vdesc">/show-me（成果物を実ページとしてレンダリング）ほか3スキルをCLAUDE.mdに一度設定するだけで、カレンダー可視化・3案並列比較・投稿前チェック・データ根拠のタイトル順位付けという4つの貼り付け用プロンプトが使えるようになる</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/claudecode84/status/2090718614290845994?s=12" data-title="Claude Codeの出力を視覚化する無料スキル3つ" data-rid="1828840771">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/trq212/status/2090884854590382515?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2090849386284863488/img/X_zOyelugAM9MP5i.jpg" onerror="this.remove()"><span class="ph">X 動画</span></div>
+        <div class="vbody"><div class="vtitle">Anthropic社内でよく使われる「ELI5」スキル</div><div class="vdesc">/eli5 &lt;説明してほしいこと&gt;と打つだけで、画像多め・文字少なめのHTMLアーティファクトとして「何も知らない人向け」の解説を生成するスキル（動画本体は取得できず）</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/trq212/status/2090884854590382515?s=12" data-title="Anthropic社内でよく使われる「ELI5」スキル" data-rid="1828811982">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/dlkfzwilliam2/status/2090697370732548488?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HQOmLEcaMAAythK.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">AppleのPrivate Cloud Compute、AI機能を無料で使える</div><div class="vdesc">Apple Foundation Modelsをクラウド経由で無料利用できるPCC申請が「秒で通った」とし、アプリへのAI機能実装コストがゼロになると歓喜する投稿（中国語）</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/dlkfzwilliam2/status/2090697370732548488?s=12" data-title="AppleのPrivate Cloud Compute、AI機能を無料で使える" data-rid="1828807255">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/claudecode_love/status/2045806325263966557?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HGPeW6ubsAAmNP-.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claudeを最強化するMCPサーバー30選</div><div class="vdesc">全リンク付きでMCPサーバーをまとめた保存版スレッド、詳細本文は未取得</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/claudecode_love/status/2045806325263966557?s=12" data-title="Claudeを最強化するMCPサーバー30選" data-rid="1828806374">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/fuji_ai_/status/2090336720864817634?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2090336720864817634" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">「Claude Codeが、無料で使えるようになった。」</div><div class="vdesc">本文未取得のため詳細不明だが、Claude Codeの無料提供に関する報告と見られる</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/fuji_ai_/status/2090336720864817634?s=12" data-title="「Claude Codeが、無料で使えるようになった。」" data-rid="1828798202">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🎨 その他（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/keiichiroshibuy/status/2090365841552417061?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">「公共のプールがお好きな理由は？」最近読んだインタビューが面白い</div><div class="vdesc">音楽家・渋谷慶一郎氏が、公共プールを愛好する理由を尋ねられたインタビューを「最近読んだ中で一番面白く示唆的」と紹介、詳細本文は未取得</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/keiichiroshibuy/status/2090365841552417061?s=12" data-title="「公共のプールがお好きな理由は？」最近読んだインタビューが面白い" data-rid="1828837744">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
