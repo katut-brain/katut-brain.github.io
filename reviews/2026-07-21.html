@@ -121,12 +121,13 @@ function openChat(btn) {
   var title = btn.getAttribute('data-title');
   var rid = btn.getAttribute('data-rid') || '(raindrop_id不明)';
   var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
   var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
     'URL: ' + url + '\n' + 'タイトル: ' + title + '\n\n' +
     vault + '\\Explore\\bookmarks\\ で raindrop_id: ' + rid + ' を grep で探す。' +
     'あればそのノートに今回の深掘り内容を追記する。' +
     'なければ rd-' + rid + '-<内容スラッグ>.md を同フォルダに新規作成する（frontmatter: date / tags: [type/bookmark] / raindrop_id: ' + rid + ' / source: ' + url + '）。';
-  var link = 'claude://code/new?folder=' + encodeURIComponent(vault) + '&q=' + encodeURIComponent(prompt);
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
   location.href = link;
 }
 </script>
