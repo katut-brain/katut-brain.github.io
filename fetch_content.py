@@ -330,6 +330,16 @@ def _fetch_x_embedded_link(expanded, timeout=45):
 def fetch_x(url, follow_links=True, understand_video=True):
     m = re.search(r"/status/(\d+)", url)
     if not m:
+        # x.com/i/article/<id> のように Article を直接ブックマークした場合。
+        # ここは /status/ が無いので従来は「tweet id を抽出できない」で終わっていた。
+        # Article内部IDから告知ツイートを引く公開手段は未確認なので本文までは
+        # 届かないが、何が起きたのかを欠損として正しく残す。
+        # （なお投稿経由の Article は tid で本文まで取れている。実測 7,114〜14,463字）
+        if _is_x_article_url(url):
+            return {"ok": False, "type": "x", "url": url,
+                    "reason": "X Article の直リンク。告知ツイートの status ID が無いため本文を取得できない"
+                              "（Article内部IDから辿る公開APIは未確認）",
+                    "depth": "shallow", "missing": ["article_body"]}
         return {"ok": False, "type": "x", "reason": "tweet id をURLから抽出できない", "url": url}
     tid = m.group(1)
     api = "https://cdn.syndication.twimg.com/tweet-result?id=%s&token=%s&lang=en" % (tid, _tweet_token(tid))
@@ -421,6 +431,17 @@ def fetch_x(url, follow_links=True, understand_video=True):
     if article_text:
         text = tweet_text + "\n\n" + article_label + ":\n" + article_text
 
+    # 画像付き投稿は、画像URLを集めるだけで中身を一切読んでいない（OCR/Visionを通す
+    # 実装がここには無い）。それでも depth="full" を名乗るのは実態と違う。
+    # 図解・スクリーンショットが主役の投稿では、本文だけでは情報の大半が落ちる。
+    # 画像を読むのは Routine 側（手順4: 画像をダウンロードして Read で見る）の仕事なので、
+    # ここでは「まだ読まれていない画像がある」ことを欠損として正直に残す。
+    if photos:
+        if depth == "full":
+            depth = "partial"
+        if "image_content" not in missing:
+            missing = missing + ["image_content"]
+
     if video_understanding:
         text = text + "\n\n動画の内容: " + video_understanding
     elif has_video:
@@ -445,52 +466,11 @@ def fetch_x(url, follow_links=True, understand_video=True):
             "depth": depth, "missing": missing}
 
 
-# vxinstagram.com経由で得たURLがリダイレクトしてよい先(SSRF対策の許可リスト)。
-# 2026-08-01: vxinstagram.com側の仕様変更を確認。新URL(d.vxinstagram.com/offload/<id>/0.mp4)は
-# 実機確認の結果、直接配信ではなくcdninstagram.comへ302リダイレクトしている(既存の
-# cdninstagram.com許可により安全性への影響はない)。d.vxinstagram.com自体もリダイレクト元
-# ホストとして許可リストに含めておく。旧仕様(d.rapidcdn.app経由)のホストも、
-# 再度その方式に戻った場合に備えて残す。
-_INSTAGRAM_VIDEO_ALLOWED_HOSTS = ("d.vxinstagram.com", "d.rapidcdn.app", "cdninstagram.com", "fbcdn.net")
-
-
-def _fetch_instagram_reel_video_url(url):
-    """Instagram Reelsの動画ファイル実体URLを、vxinstagram.com(Discord/Telegram埋め込み修正用の
-    非公式サードパーティサービス、github.com/Lainmode/InstagramEmbed-vxinstagram)経由で取得する。
-    無料・無認証。戻り値: 動画URL(str) または None(Reelでない/取得失敗)。
-
-    公式のog:meta・GraphQL・モバイル内部APIはいずれも無認証では動画データを返さないことを
-    確認済み(2026-07-28調査)。個人運営の非公式サービスでありXのFxEmbed同様、仕様変更・
-    サービス終了のリスクがある点に留意(運用上のリスクとして受容)。
-
-    2026-08-01: vxinstagram.com側の仕様変更を確認・追従。
-    - ベースドメイン`vxinstagram.com/reel/<id>/`は404化。`d.vxinstagram.com/reel/<id>/`
-      (サブドメイン必須)に変更されていた（実測確認）。
-    - 動画URLの取得元も`d.rapidcdn.app/v2?token=...`のトークン付きリダイレクトから、
-      レスポンスHTMLの`og:video`/`og:video:secure_url`メタタグへの記載に変更（実機確認では
-      `d.vxinstagram.com/offload/<id>/0.mp4`からcdninstagram.comへ302リダイレクトされる）。
-      抽出は既存の`_meta()`ヘルパー（クオート種別・空白の揺れに頑健）を再利用する
-      （output-verifierの指摘により、当初の直書き正規表現から修正・2026-08-01）。
-    """
-    m = re.search(r"/reel/([A-Za-z0-9_-]+)", url)
-    if not m:
-        return None
-    shortcode = m.group(1)
-    st, txt = _get("https://d.vxinstagram.com/reel/%s/" % shortcode, BROWSER_UA)
-    if st != 200 or not txt:
-        return None
-    video_url = _meta(txt, "og:video:secure_url") or _meta(txt, "og:video")
-    if not video_url:
-        return None
-    # 末尾に dl=1 等の添付ダウンロード指定が付くと、CDNが
-    # Content-Type: application/octet-stream を返し _gemini_video_understanding() の
-    # video/*判定(SSRF対策)に弾かれることがある（旧仕様での実測事例）。念のため除去しておく。
-    parts = urllib.parse.urlsplit(video_url)
-    q = [(k, v) for k, v in urllib.parse.parse_qsl(parts.query, keep_blank_values=True) if k != "dl"]
-    return urllib.parse.urlunsplit(parts._replace(query=urllib.parse.urlencode(q)))
-
-
-# ---------- Instagram ----------
+# --- 撤去済み（2026-08-23）: Instagram Reel の動画実体URL取得 -------------------
+# vxinstagram.com 経由の取得関数はここにあったが、依存先の /reel/ が全面404になり
+# 代替候補も実測で全滅したため撤去した。復活させる前に、その中継が本当に生きているか
+# 実際のshortcodeで og:video が返ることを確認すること（過去に「動くはず」で3回書き換えている）。
+# 経緯: Vault Brain/decisions/2026-08-23-instagram-reel-video-give-up.md
 def fetch_instagram(url):
     st, txt = _get(url, CRAWLER_UA)
     if not txt:
@@ -535,17 +515,21 @@ def fetch_instagram(url):
     else:
         depth = "shallow"
         missing = ["visual_content", "audio_content"]
+    # Reels の動画理解は 2026-08-23 に断念した。キャプション＋og:image で運用する。
+    #
+    # 依存していた非公式中継 vxinstagram.com の `/reel/` が全面404になり（実測 13/13）、
+    # 代替候補も同日の実測で全滅した:
+    #   d.ddinstagram.com / g.ddinstagram.com … DNS が解決しない（ドメインごと消滅）
+    #   www.instagram7.com                     … 200 は返すが og:video も .mp4 も 0件
+    # yt-dlp は cookie（＝ログイン権限そのもの）を無人ジョブに置くことになるため採らない。
+    # 公式の oEmbed / Graph API は表示用または自アカウント向けで、この用途に適合しない。
+    #
+    # 非公式中継を別の非公式中継に乗り換えても、壊れ続ける依存が入れ替わるだけ。
+    # Instagram の規約はログインの有無を問わず無許可の自動収集を禁じてもいる。
+    # よって caption-only は「諦め」ではなく、この用途で最も低保守・低リスクな設計判断。
+    # 動画の中身が要るブックマークは手で深掘りする（Routine には戻さない）。
+    # 経緯: Vault Brain/decisions/2026-08-23-instagram-reel-video-give-up.md
     video_understanding = ""
-    video_url = _fetch_instagram_reel_video_url(url)
-    if video_url:
-        video_understanding = _gemini_video_understanding(
-            video_url, allowed_hosts=_INSTAGRAM_VIDEO_ALLOWED_HOSTS
-        )
-        if video_understanding:
-            text = (cap + "\n\n動画の内容: " + video_understanding) if cap else video_understanding
-            depth = "full"
-            missing = []
-        # 理解できなかった場合は is_reel 分岐で既に partial/video_content 設定済み
 
     return {"ok": True, "type": "instagram", "url": url,
             # キャプションが空だと text が理解結果そのものになり「動画の内容:」が

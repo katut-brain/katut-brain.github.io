@@ -25,12 +25,35 @@ KNOWN_STRATEGIES = {
     "audio_content":      "なし",
     "transcript":         "youtube-transcript-api（実装済み・字幕なし動画は取得不可）",
     "video_content":      "Gemini動画理解（実装済み・Instagram Reelは中継サービス障害で現在ほぼ全滅）",
+    "image_content":      "Routine側でダウンロードしてReadで読む（再取得では回復しない）",
 }
 
 # 再取得で回復し得る欠損。ここに載っている欠損を持つレコードは、
 # 要約が埋まっていても再取得の対象にする（一過性の失敗を焼き付けないため）。
-# visual_content / audio_content は戦略が無いので入れない（毎晩の無駄打ちになる）。
+# visual_content / audio_content / image_content は、この経路で再取得しても
+# 回復しないので入れない（毎晩の無駄打ちになる）。
 RETRYABLE_MISSING = {"article_body", "article_body_tail", "transcript", "video_content"}
+
+# 回路遮断器。同じレコードを何度取り直しても回復しないなら諦める。
+# 無人ジョブなので、放っておくと恒久失敗を毎晩叩き続けて時間と外部APIを浪費する。
+# 試行回数はレコードの `fetch_attempts` に貯める。
+MAX_FETCH_ATTEMPTS = 5
+
+
+def is_retry_target(e):
+    """このレコードをもう一度取りに行く価値があるか。"""
+    if e.get("fetch_attempts", 0) >= MAX_FETCH_ATTEMPTS:
+        return False                      # 回路遮断
+    if e.get("summary", "") == "":
+        return True                       # そもそも未取得
+    depth = e.get("depth")
+    if depth is None:
+        return True                       # 深度未記録（旧レコード）
+    if depth in ("partial", "shallow"):
+        # 回復手段のある欠損を持つものだけ。image_content のように
+        # この経路では直らない欠損しか無いものは、何度やっても同じ。
+        return any(m in RETRYABLE_MISSING for m in (e.get("missing") or []))
+    return False
 TEST_LIMIT = 5
 
 def classify_skip(url, result):
@@ -96,14 +119,11 @@ def main():
         # YouTube）が永久に再取得対象にならない**（2026-08-23の監査で判明）。
         # 一過性の失敗で shallow になった件も、要約さえ埋まっていれば二度と拾われない。
         # depth フィールドを持たない古いレコードも同様に漏れていた。
-        targets = [
-            (i, e) for i, e in enumerate(data)
-            if e.get("summary", "") == ""            # 未取得
-            or e.get("depth") == "partial"           # 部分取得（upgrade 可能）
-            or e.get("depth") is None                # 深度未記録（旧レコード）
-            or (e.get("depth") == "shallow"          # 薄いが、回復戦略のある欠損を持つ
-                and any(m in RETRYABLE_MISSING for m in (e.get("missing") or [])))
-        ]
+        # 旧条件は summary=="" または depth=="partial" の2つだけで、
+        #   ・shallow かつ要約が埋まっているものが永久に対象外
+        #   ・回復手段の無い欠損しか持たない partial を毎晩叩き続ける
+        # の両方を抱えていた。判定は is_retry_target() に一本化する。
+        targets = [(i, e) for i, e in enumerate(data) if is_retry_target(e)]
     total_targets = len(targets)
 
     # 内訳を表示
@@ -124,6 +144,8 @@ def main():
     for seq, (idx, entry) in enumerate(targets, 1):
         url = entry.get("source", "")
         was_partial = entry.get("depth") == "partial"
+        # 試行回数は成否に関わらず数える（回復しないものを毎晩叩き続けないため）
+        data[idx]["fetch_attempts"] = data[idx].get("fetch_attempts", 0) + 1
         try:
             result = fetch_content(url)
             text = result.get("text", "") if result.get("ok") else ""
