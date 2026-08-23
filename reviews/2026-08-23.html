@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-08-23 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-23 の振り返り</h1>
+  <div class="meta">5件保存 ｜ AI活用の実務Tips 2件・UI/UXデザイン2件・建築1件</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存を貫くのは「見た目を磨く技術」と「中身を効率化する技術」の同居だった。Rondesignlabの2つのアプリ投稿は、ローン管理や水分補給という地味なタスクを、グラデーションのカードや円形プログレスで"開きたくなるもの"に変える見た目側の工夫。一方でClaude×n8nの自動化講座やGPTのメモリ監査プロンプトは、見た目ではなく仕組みそのものを効率化する中身側の工夫だ。同じ「AI時代のプロダクトづくり」でも、評価軸がまったく別方向を向いている。</p>
+    <p>建築（o.heje「house of fans」）は単発だが、鳥瞰と足元という2つの視点をカメラ2台のように共存させる発想は、UIの層構造（グラスモーフィズム的な奥行き表現）と遠い親戚のようにも読める。</p>
+    <ul class="pts">
+      <li><b>UI/UXの2件</b>：Hydroflaskの水分補給アプリとCreditProsのローン管理アプリ、どちらも「地味な記録行為を視覚的儀式に変える」という同じ設計思想で作られている</li>
+      <li><b>AI自動化の2件</b>：講座は「スクショをClaudeに渡すだけでn8nワークフローのJSONが出る」という具体的な省力化、プロンプトは「長期メモリの棚卸しで古い前提を洗い流す」という具体的な保守手順——どちらも抽象論でなく手順が伴う</li>
+      <li><b>建築1件</b>：「house of fans」は遠景/近景・アイレベル/フットレベルという2視点の共存を、カメラ2台のメタファーで語る</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>UIの"魅せる"工夫（グラデーション・グロー）と、AIの"効率化"の工夫（自動化・メモリ監査）は今日同時に保存されたが、評価される瞬間が違う——前者は開いた瞬間、後者は使い続けた後。自分が何かを作るとき、この2つの効果はどの順で設計すべきか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">AI活用・自動化</div>
+    <ul class="ilist">
+      <li><a href="https://uravation.com/media/n8n-ai-enterprise-workflow-guide/" target="_blank" rel="noopener"><b>【2026年最新】n8n×AI活用ガイド｜Claude/GPT/Gemini連携</b></a> <span>→ 「メール自動分類で初期対応が45分/日→5分/日に短縮」「提案書初稿が3時間→20分」など、抽象論ではなく実測の数字で自動化効果を語っている。今日保存したClaude×n8n講座と同じ実務効率化の潮流</span></li>
+    </ul>
+    <div class="ntag">UI/UXデザイントレンド</div>
+    <ul class="ilist">
+      <li><a href="https://pixso.net/jp/designskills/2026-ux-ui-trend-guide/" target="_blank" rel="noopener"><b>2026年UX/UIトレンド完全ガイド！デザイナーが知るべき7つの潮流</b></a> <span>→ 半透明のカードに光の屈折を加える「リキッドグラス」や、金属・粘土のような質感を狙う「クレイモーフィズム」が2026年の主流とされる。今日保存したRondesignlabのグロー系グラデーションUIもこの流れの延長線上にある</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI・自動化（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/huoshan007/status/2091066089320898622?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2090751421209792512/img/BaF43hmb0b8cnKKH.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claude×n8nの自動化講座を無料公開、1時間で5つの実践レシピ</div><div class="vdesc">スクショをClaudeに渡すだけでn8nワークフローのJSONを生成する手法や、DockerとOllamaで月額課金ゼロのセルフホストn8nを組む手順まで、AIニュース自動投稿ボットからWhatsApp接客ボットまで5パターンを1時間で解説</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/huoshan007/status/2091066089320898622?s=12" data-title="Claude×n8nの自動化講座を無料公開、1時間で5つの実践レシピ" data-rid="1830667554">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/cztftv7f0e32590/status/2090873751202353163?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">GPTの「ボケ」をメモリ監査プロンプトで解消、1か月前の切れ味思考が復活</div><div class="vdesc">「あなたの長期メモリを監査してください」から始め、古い「現在値」が回答精度を下げていないか棚卸しさせる指示文を共有</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/cztftv7f0e32590/status/2090873751202353163?s=12" data-title="GPTの「ボケ」をメモリ監査プロンプトで解消、1か月前の切れ味思考が復活" data-rid="1830051790">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🎨 UI/UXデザイン（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/p/DcJUHa8iGu4/?img_index=3&amp;igsi=MWZzaHY4M2F3bTJxcQ==" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-lga3-1.cdninstagram.com/v/t51.82787-15/775904905_18040970798810944_4568541863608434117_n.jpg?stp=c614.0.1843.1843a_dst-jpg_e35_s640x640_tt6&_nc_cat=111&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0FST1VTRUxfSVRFTS5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&_nc_ohc=TNOyxs-Py9UQ7kNvwGs7DoK&_nc_oc=Adq5NsJmeQr9Ucn3d9gdBViDKVdOaeNRslAB9V0PrrWuijJJf3gGKYYVMBxnHF3yZx8&_nc_zt=23&_nc_ht=scontent-lga3-1.cdninstagram.com&_nc_gid=5_bq5zzkl82mQXRNmc4vsQ&_nc_ss=7b60f&oh=00_AQHuuvSJdUi11eRmud46a1gqh58SMN0t5fGpDMGCP4qD_g&oe=6A911C4A" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">Hydroflaskスマートボトルアプリ、水分量と分子水素量を1画面で可視化するUI</div><div class="vdesc">摂取量・分子水素レベル・連続記録日数をグロー系グラデーションカードと円形インジケーターでまとめ、記録行為を「見て楽しいルーティン」に変える設計</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/p/DcJUHa8iGu4/?img_index=3&amp;igsi=MWZzaHY4M2F3bTJxcQ==" data-title="Hydroflaskスマートボトルアプリ、水分量と分子水素量を1画面で可視化するUI" data-rid="1831234022">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Db_AzXms5_r/?igsi=cmt2dG9idXYwOHUy" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-lga3-1.cdninstagram.com/v/t51.82787-15/774468257_18617772427056352_4636059904999012089_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=TGcLW43EBSkQ7kNvwE3ZkzA&_nc_oc=AdqSNxTyOIeMW7TLGN2iOfUfCvHwkzix6cCKgS8mlJugDK0u-E1b0BUQd-Dubh85xFE&_nc_zt=23&_nc_ht=scontent-lga3-1.cdninstagram.com&_nc_gid=y5HQcz0JQzJuQNB2XA5yIw&_nc_ss=7b60f&oh=00_AQE2cgyYNS7M3h4XgimIl6yUSZhQjEGi-kld6Ktx3h_JZQ&oe=6A91280B" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">ローン管理アプリCreditPros、支払い履歴と与信利用率を1画面で追える設計</div><div class="vdesc">白背景の即答カードで支払い状況・与信利用率を示しつつ、グラデーションのクレジットカード表示でローンごとの識別性を確保。動画の内容は未取得（Instagram Reelの動画理解は構造的に撤去済みのため、キャプションと画像から判断）</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Db_AzXms5_r/?igsi=cmt2dG9idXYwOHUy" data-title="ローン管理アプリCreditPros、支払い履歴と与信利用率を1画面で追える設計" data-rid="1831233892">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🏛 建築（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/p/DcT2DppGNEZ/?img_index=3&amp;igsi=eHE0Y2RqZWx0bXJ5" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-lga3-1.cdninstagram.com/v/t51.82787-15/780648652_18579992689065688_5075095021680339841_n.jpg?stp=c64.0.192.192a_dst-jpg_e35_s640x640_tt6&_nc_cat=103&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0FST1VTRUxfSVRFTS5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&_nc_ohc=Rk0s7HRFESwQ7kNvwEGpxSj&_nc_oc=AdoXR_eN4CpnbAMh7XvA5_X0QdJk5mS-lzGOh2bla0fQYcw2n-VMp92ivC2Euo8eKPI&_nc_zt=23&_nc_ht=scontent-lga3-1.cdninstagram.com&_nc_gid=8SzWl_W1aiVyaxUu7kOEqw&_nc_ss=7b60f&oh=00_AQH-aQX_IU-MCDfpMDdSu3RNIoiV4XcIQ0W0dAJdszQ0Kg&oe=6A9101AB" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">「house of fans」、鳥瞰と足元、2つの視点が共存する住宅</div><div class="vdesc">遠景/近景・アイレベル/フットレベルという2つの視点を、まるでカメラが2台あるように空間の中で共存させる設計思想。東京の住宅、fumi_yunosakoとの協働、office p名義</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/p/DcT2DppGNEZ/?img_index=3&amp;igsi=eHE0Y2RqZWx0bXJ5" data-title="「house of fans」、鳥瞰と足元、2つの視点が共存する住宅" data-rid="1831233596">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
