@@ -1,7 +1,13 @@
 # katut-brain 毎朝の振り返り 自動生成（クラウド Routine プロンプト）
 
-> claude.ai/code/routines（または Desktop「Routines」→ New routine →**Remote**）の
-> **Instructions** 欄にこの本文を丸ごと貼る。自己完結。会話文脈に依存しない。
+> **このファイルが手順の正本。** Routine の Instructions 欄には短いブートストラップだけを置き、
+> 実行時にこのファイルを読ませる方式に変更した（2026-08-23）。
+> 手順を直したいときは**このファイルを編集して push するだけ**でよい。Instructions は触らない。
+> 置き場所: `katut-brain/katut-brain.github.io` リポジトリ直下 `cloud_routine_prompt.md`。
+> 以前はこの本文を Instructions 欄へ丸ごと貼っていたが、45KBを毎回貼り直す運用は
+> 転記ミスの温床で、実際に本文が `PLACEHOLDER` に化けた事故が2回起きている。
+> なお `projects/tools/scripts/cloud_routine_prompt.md`（リポ外・ローカル）は
+> 同期されないため正本ではない。参照しないこと。
 
 ---
 
