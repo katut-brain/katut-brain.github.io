@@ -19,11 +19,18 @@ CAPTURES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "captur
 # 既知の戦略がある／ない／実装済みを問わず、ここで一元管理する。
 # 将来 visual_content の戦略が実装されたら値を更新するだけでレポートに反映される。
 KNOWN_STRATEGIES = {
-    "article_body":    "t.co展開（実装済み・X内コンテンツはスキップ対象）",
-    "visual_content":  "未実装（Meta oEmbed トークン必要 or Claude vision）",
-    "audio_content":   "なし",
-    "transcript":      "youtube-transcript-api（実装済み・字幕なし動画は取得不可）",
+    "article_body":       "t.co展開（実装済み・X内コンテンツはスキップ対象）",
+    "article_body_tail":  "本文が上限で切れている。WEB_BODY_CAP を上げれば伸びる（実装済み）",
+    "visual_content":     "未実装（Meta oEmbed トークン必要 or Claude vision）",
+    "audio_content":      "なし",
+    "transcript":         "youtube-transcript-api（実装済み・字幕なし動画は取得不可）",
+    "video_content":      "Gemini動画理解（実装済み・Instagram Reelは中継サービス障害で現在ほぼ全滅）",
 }
+
+# 再取得で回復し得る欠損。ここに載っている欠損を持つレコードは、
+# 要約が埋まっていても再取得の対象にする（一過性の失敗を焼き付けないため）。
+# visual_content / audio_content は戦略が無いので入れない（毎晩の無駄打ちになる）。
+RETRYABLE_MISSING = {"article_body", "article_body_tail", "transcript", "video_content"}
 TEST_LIMIT = 5
 
 def classify_skip(url, result):
@@ -82,11 +89,20 @@ def main():
             print(f"WARN: --targets に指定された rid のうち captures.json に見つからないもの: {sorted(missing_rids)}")
         print(f"[--targets モード] 指定rid: {len(wanted_rids)}件 / captures.json内で一致: {len(targets)}件 / 総件数: {total_all}件")
     else:
-        # 既定動作（後方互換）: summary="" または depth="partial" のエントリを収集
+        # 既定動作: 「まだ良くなる余地があるもの」を収集する。
+        #
+        # 旧条件は summary=="" または depth=="partial" の2つだけだった。この網では
+        # **shallow かつ要約が埋まっているもの（Instagram通常投稿・Threads・字幕なし
+        # YouTube）が永久に再取得対象にならない**（2026-08-23の監査で判明）。
+        # 一過性の失敗で shallow になった件も、要約さえ埋まっていれば二度と拾われない。
+        # depth フィールドを持たない古いレコードも同様に漏れていた。
         targets = [
             (i, e) for i, e in enumerate(data)
-            if e.get("summary", "") == ""           # 未取得
-            or e.get("depth") == "partial"          # 部分取得（upgrade 可能）
+            if e.get("summary", "") == ""            # 未取得
+            or e.get("depth") == "partial"           # 部分取得（upgrade 可能）
+            or e.get("depth") is None                # 深度未記録（旧レコード）
+            or (e.get("depth") == "shallow"          # 薄いが、回復戦略のある欠損を持つ
+                and any(m in RETRYABLE_MISSING for m in (e.get("missing") or [])))
         ]
     total_targets = len(targets)
 
@@ -112,11 +128,21 @@ def main():
             result = fetch_content(url)
             text = result.get("text", "") if result.get("ok") else ""
             if text:
-                data[idx]["summary"] = text
-                # depth と missing を書き戻す
-                if result.get("ok"):
-                    data[idx]["depth"] = result.get("depth", "full")
+                # 再取得の結果で無条件に上書きすると、一時的なメタ説明・
+                # 取得制限下の短い文面で、より良かった既存要約を失う。
+                # 深度が上がったか、内容が増えたときだけ差し替える。
+                RANK = {None: 0, "": 0, "shallow": 1, "partial": 2, "full": 3}
+                old_text = data[idx].get("summary", "") or ""
+                new_depth = result.get("depth", "full")
+                improved = (RANK.get(new_depth, 0) > RANK.get(data[idx].get("depth"), 0)
+                            or len(text) >= len(old_text))
+                if improved:
+                    data[idx]["summary"] = text
+                    data[idx]["depth"] = new_depth
                     data[idx]["missing"] = result.get("missing", [])
+                else:
+                    print(f"[保持] 既存要約のほうが長いので据え置き "
+                          f"(既存{len(old_text)}字 > 新{len(text)}字): {url[:50]}")
                 done += 1
                 new_depth = result.get("depth", "full")
                 if was_partial and new_depth == "full":

@@ -15,6 +15,7 @@
 #   python3 fetch_content.py                     # 内蔵テストURLで動作確認
 
 import sys, os, re, json, html, string, tempfile, time, threading, ipaddress, socket, http.client
+import datetime, hashlib, io
 import urllib.request, urllib.error, urllib.parse
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -430,6 +431,10 @@ def fetch_x(url, follow_links=True, understand_video=True):
         missing = missing + ["video_content"]
 
     return {"ok": True, "type": "x", "url": url,
+            # 動画理解の成否は本文の部分文字列で判定しない（本文側に同じ語が
+            # 現れれば誤検出するし、キャプションが空だと接頭辞が付かない）。
+            "video_understood": bool(video_understanding),
+            "has_video": bool(has_video),
             "title": (article_title or re.sub(r"\s+", " ", tweet_text or "").strip())[:80],
             "text": text,
             "author": u.get("name", ""), "handle": u.get("screen_name", ""),
@@ -530,6 +535,7 @@ def fetch_instagram(url):
     else:
         depth = "shallow"
         missing = ["visual_content", "audio_content"]
+    video_understanding = ""
     video_url = _fetch_instagram_reel_video_url(url)
     if video_url:
         video_understanding = _gemini_video_understanding(
@@ -542,6 +548,10 @@ def fetch_instagram(url):
         # 理解できなかった場合は is_reel 分岐で既に partial/video_content 設定済み
 
     return {"ok": True, "type": "instagram", "url": url,
+            # キャプションが空だと text が理解結果そのものになり「動画の内容:」が
+            # 付かない。部分文字列判定ではこれを取りこぼすので明示フラグを返す。
+            "video_understood": bool(video_understanding),
+            "has_video": bool(is_reel),
             "title": (cap or og_title)[:80], "text": text,
             "author": name, "handle": handle, "date": date,
             "likes": likes, "comments": comments, "cover": og_img,
@@ -863,6 +873,12 @@ def _safe_get_web(url, ua, timeout=12, max_bytes=600_000):
 
 
 # ---------- 汎用Web ----------
+# 本文の取り込み上限。旧値は 1500 字で、記事の大半を捨てていた。
+WEB_BODY_CAP = 8000
+# これ未満なら「本文が取れた」とは呼ばない（ナビ・フッタの残骸で埋まっている疑い）
+WEB_BODY_MIN_FULL = 600
+
+
 def fetch_web(url):
     st, txt, reason = _safe_get_web(url, BROWSER_UA)
     if not txt:
@@ -872,29 +888,137 @@ def fetch_web(url):
         mt = re.search(r"<title[^>]*>(.*?)</title>", txt, re.I | re.S)
         title = html.unescape(mt.group(1)).strip() if mt else ""
     desc = _meta(txt, "og:description") or _meta(txt, "description")
-    # 本文テキスト抽出（script/style除去→タグ除去→空白圧縮→先頭1500字）
-    body = re.sub(r"(?is)<(script|style|noscript|head|nav|footer|header)[^>]*>.*?</\1>", " ", txt)
+    # 本文テキスト抽出（script/style除去→タグ除去→空白圧縮）
+    body = re.sub(r"(?is)<(script|style|noscript|head|nav|footer|header|aside|form|iframe|svg)[^>]*>.*?</\1>", " ", txt)
     body = re.sub(r"(?s)<[^>]+>", " ", body)
     body = html.unescape(re.sub(r"\s+", " ", body)).strip()
+
+    # og:description を本文より優先していたのを撤回する。og:description は
+    # たいてい 100〜300字の要約で、本文があるならそちらが情報量で勝る。
+    # 実測（2026-08-23）: 過去の web 記事14件のうち8件が og:description だけ
+    # （88〜320字）で本文を一度も見ておらず、それでも depth="full" だった。
+    use_body = len(body) > len(desc or "")
+    text = body[:WEB_BODY_CAP] if use_body else (desc or "")
+
+    # depth は「何を試したか」ではなく「実際に何字取れたか」から導出する。
+    if not use_body:
+        # 本文抽出に失敗し、メタ情報だけで終わった
+        depth, missing = "shallow", ["article_body"]
+    elif len(body) > WEB_BODY_CAP:
+        # 本文はあるが上限で切っている＝後半は取れていない
+        depth, missing = "partial", ["article_body_tail"]
+    elif len(body) < WEB_BODY_MIN_FULL:
+        # 本文らしきものは取れたが短すぎる（JS描画・ペイウォール等の疑い）
+        depth, missing = "partial", ["article_body"]
+    else:
+        depth, missing = "full", []
+
     return {"ok": True, "type": "web", "url": url,
-            "title": title, "text": desc or body[:1500],
+            "title": title, "text": text,
             "cover": _meta(txt, "og:image"),
             "snippet": body[:1500],
-            "depth": "full", "missing": []}
+            "http_status": st,
+            "body_chars": len(body), "desc_chars": len(desc or ""),
+            "body_truncated": len(body) > WEB_BODY_CAP,
+            "depth": depth, "missing": missing}
 
 
 # ---------- ディスパッチャ ----------
+# 取得ロジックを変えたら上げる。過去の取得結果が「どの版で取られたか」を
+# 後から判別できるようにするための版番号。
+FETCHER_VERSION = "2026-08-23.1"
+
+
+def _facts(url, started, result):
+    """取得の「生の事実」を組み立てる。
+
+    depth/missing は導出ラベルであり、実装の都合で嘘をつくことがある
+    （実測: web 記事14/14が full を自称して本文0件だった）。導出値を信じる
+    かわりに、後からいくらでも再計算できる不変の事実を残す。
+    正本: Vault Brain/knowledge/review-fetch-depth-untrustworthy.md
+    """
+    text = result.get("text", "") or ""
+    images = len(result.get("photos", []) or [])
+    if not images and result.get("cover"):
+        images = 1   # web/記事系は photos を返さず cover だけを持つ
+    return {
+        "fetched_at": datetime.datetime.now(datetime.timezone.utc)
+                              .isoformat(timespec="seconds").replace("+00:00", "Z"),
+        "elapsed_ms": int((time.time() - started) * 1000),
+        "fetcher_version": FETCHER_VERSION,
+        "url": url,
+        "route": result.get("type", ""),
+        "ok": bool(result.get("ok")),
+        "http_status": result.get("http_status"),
+        "depth": result.get("depth"),
+        "missing": result.get("missing", []),
+        "text_chars": len(text),
+        # 監査キーなので切り詰めない（12桁では長期の衝突耐性が足りない）
+        "text_sha1": hashlib.sha1(text.encode("utf-8")).hexdigest() if text else "",
+        # 「本文が増えたのか、説明文を取っただけか」「上限で切れたか」を
+        # 日次記録だけで判定できるようにする
+        "body_chars": result.get("body_chars"),
+        "desc_chars": result.get("desc_chars"),
+        "body_truncated": result.get("body_truncated"),
+        "image_count": images,
+        "has_video": bool(result.get("has_video")),
+        "video_understood": bool(result.get("video_understood")),
+        "reason": result.get("reason", ""),
+    }
+
+
+# 取得の生の事実を落とす先。日付ごとに1ファイル（小さいので push しても
+# 文脈を膨らませない）。FACTS_DIR を空文字にすると書き出しを止められる。
+FACTS_DIR = os.environ.get("FETCH_FACTS_DIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "fetch_facts"))
+JST = datetime.timezone(datetime.timedelta(hours=9))
+
+
+def record_facts(facts, day=None):
+    """facts を fetch_facts/<YYYY-MM-DD>.json へ URL キーで追記する。
+
+    手順書に「エージェントが書き出すこと」と書くだけでは実行されない
+    （実際、depth/missing の書き戻しは手順書に無いまま2ヶ月動いていた）。
+    取得した側が自分で落とす。
+    """
+    if not FACTS_DIR or not facts:
+        return None
+    day = day or os.environ.get("FACTS_DATE") or datetime.datetime.now(JST).date().isoformat()
+    path = os.path.join(FACTS_DIR, "%s.json" % day)
+    try:
+        os.makedirs(FACTS_DIR, exist_ok=True)
+        try:
+            store = json.load(io.open(path, encoding="utf-8")) if os.path.exists(path) else {}
+            if not isinstance(store, dict):
+                store = {}
+        except Exception:
+            store = {}
+        store[facts["url"]] = facts
+        io.open(path, "w", encoding="utf-8").write(
+            json.dumps(store, ensure_ascii=False, indent=1) + "\n")
+        return path
+    except Exception as e:
+        # 記録に失敗しても取得そのものは止めない（完走優先）
+        print("WARN: fetch_facts の記録に失敗:", e, file=sys.stderr)
+        return None
+
+
 def fetch_content(url):
+    started = time.time()
     host = _host_of(url)
     if _host_matches(host, "x.com") or _host_matches(host, "twitter.com"):
-        return fetch_x(url)
-    if _host_matches(host, "instagram.com"):
-        return fetch_instagram(url)
-    if _host_matches(host, "threads.com") or _host_matches(host, "threads.net"):
-        return fetch_threads(url)
-    if _host_matches(host, "youtube.com") or _host_matches(host, "youtu.be"):
-        return fetch_youtube(url)
-    return fetch_web(url)
+        result = fetch_x(url)
+    elif _host_matches(host, "instagram.com"):
+        result = fetch_instagram(url)
+    elif _host_matches(host, "threads.com") or _host_matches(host, "threads.net"):
+        result = fetch_threads(url)
+    elif _host_matches(host, "youtube.com") or _host_matches(host, "youtu.be"):
+        result = fetch_youtube(url)
+    else:
+        result = fetch_web(url)
+    if isinstance(result, dict):
+        result["facts"] = _facts(url, started, result)
+        record_facts(result["facts"])
+    return result
 
 
 if __name__ == "__main__":
