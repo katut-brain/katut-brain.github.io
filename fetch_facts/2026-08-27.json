@@ -1,0 +1,22 @@
+{
+ "https://www.instagram.com/reel/DcdJkRQtZLB/": {
+  "fetched_at": "2026-08-27T19:07:49Z",
+  "elapsed_ms": 498,
+  "fetcher_version": "2026-08-23.1",
+  "url": "https://www.instagram.com/reel/DcdJkRQtZLB/",
+  "route": "instagram",
+  "ok": false,
+  "http_status": null,
+  "depth": null,
+  "missing": [],
+  "text_chars": 0,
+  "text_sha1": "",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 0,
+  "has_video": false,
+  "video_understood": false,
+  "reason": "og:meta無し（JS殻/ログイン壁の可能性）"
+ }
+}
