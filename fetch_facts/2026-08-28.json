@@ -1,0 +1,66 @@
+{
+ "https://www.instagram.com/reel/DakEyCcTAXo/?igsi=MXFzYnhzNXNwMW04ag==": {
+  "fetched_at": "2026-08-28T19:07:11Z",
+  "elapsed_ms": 1160,
+  "fetcher_version": "2026-08-23.1",
+  "url": "https://www.instagram.com/reel/DakEyCcTAXo/?igsi=MXFzYnhzNXNwMW04ag==",
+  "route": "instagram",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "video_content"
+  ],
+  "text_chars": 221,
+  "text_sha1": "eb39e6ce7d3b06d8cc7b0ee55d2d5fa96f3b7c4f",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": true,
+  "video_understood": false,
+  "reason": ""
+ },
+ "https://www.instagram.com/reel/DZ7bSpCRlgR/": {
+  "fetched_at": "2026-08-28T19:07:21Z",
+  "elapsed_ms": 628,
+  "fetcher_version": "2026-08-23.1",
+  "url": "https://www.instagram.com/reel/DZ7bSpCRlgR/",
+  "route": "instagram",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "video_content"
+  ],
+  "text_chars": 542,
+  "text_sha1": "9cdc12bb837ae0ab0df3db0f573af8173c5c9f2d",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": true,
+  "video_understood": false,
+  "reason": ""
+ },
+ "https://www.instagram.com/reel/DcifSFtCHCp/": {
+  "fetched_at": "2026-08-28T19:07:39Z",
+  "elapsed_ms": 600,
+  "fetcher_version": "2026-08-23.1",
+  "url": "https://www.instagram.com/reel/DcifSFtCHCp/",
+  "route": "instagram",
+  "ok": false,
+  "http_status": null,
+  "depth": null,
+  "missing": [],
+  "text_chars": 0,
+  "text_sha1": "",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 0,
+  "has_video": false,
+  "video_understood": false,
+  "reason": "og:meta無し(JS殻/ログイン壁の可能性)"
+ }
+}

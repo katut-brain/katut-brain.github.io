@@ -1,0 +1,143 @@
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+<title>2026-08-28 の振り返り</title>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-28 の振り返り</h1>
+  <div class="meta">保存3件、いずれもInstagramリール。IKEAの節約ハックとヴィンテージ収集が同日に並ぶ</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の保存は3件ともInstagramリールで、うち2件はどちらもIKEAの製品を軸にした投稿という共通点がある。1件は199円の巾着袋を「撥水加工されていて丈夫だから」とキッズの持ち物用ナップサックに転用する節約系ライフハック。もう1件はTord Björklundデザインで2002年発売、既に廃番となったCDホルダー「GRUBBE」を4台集めたというヴィンテージ収集の投稿(#vintageikea タグ付き)。同じIKEAという大量生産ブランドを軸にしながら、「安く使い倒す」実用志向と「もう売っていないから集める」収集志向という対照的な向き合い方が同日に並んだ形になる。3件目は本文取得を2回試みたがいずれも失敗し(1回目429エラー、2回目og:meta無し)、内容不明のまま。</p>
+    <p>大量生産品が時間を経てデザイン史的価値・収集価値を帯びていく現象は、建築やプロダクトデザインにおける「量産品と一点物性」というテーマとも接続する。noteは3件とも空欄で、意図や好奇心を示すコメントは無く、今日は「知る/紹介したい」軸(観察してストックする)が優勢だったと見られる。過去7日間にもIKEA・インテリア系の保存は無く、単発の目撃と見るのが妥当。</p>
+    <ul class="pts">
+      <li><b>節約系ライフハック</b>：IKEAの199円巾着を、撥水加工・丈夫さを生かしてキッズの持ち物用ナップサックに転用するアイデア投稿</li>
+      <li><b>ヴィンテージ収集</b>：Tord Björklund設計、2002年発売・既に廃番のCDホルダー「GRUBBE」(各トレイCD51枚収納・壁掛け可)を4台集めた投稿</li>
+      <li><b>取得失敗1件</b>：本文取得を2回試行(429→og:meta無し)したが取れず、キャプション内容は不明のまま</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>同じIKEAという量産ブランドの中で、「日用品としての当たり前さ」(199円巾着)と「もう手に入らないから欲しくなる希少性」(廃番GRUBBE)はなぜこうも簡単に反転するのか——ある製品が「日用品」から「コレクターズアイテム」へ切り替わる境界線はどこにあるのか。</div>
+  </section>
+
+  <h2>🔎 深掘り(関連記事)</h2>
+  <section class="notes">
+    <div class="ntag">ヴィンテージIKEAの収集市場</div>
+    <ul class="ilist">
+      <li><a href="https://www.livingetc.com/advice/vintage-ikea" target="_blank" rel="noopener"><b>10 Vintage IKEA Pieces That Are Now Value Cult Favorites</b></a> <span>→ 1972年の「Impala」ソファ(当時130ドル→オークションで2,000ドル超)、1959年の「CAVELLI」チェア(5脚のみ生産、2022年に16,000ドル超で落札)など、IKEAのヴィンテージ品が原価の何十倍もの値をつける実例を紹介。価値を押し上げる要因はデザイナーの知名度(Verner Pantonら)・生産数の少なさ・中世紀デザインの普遍性で、今日保存したGRUBBE CDホルダーの「廃番だから集める」という動きも同じ構図の一例と読める。</span></li>
+    </ul>
+  </section>
+
+  <h2>🏠 インテリア・暮らし(3件)</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DakEyCcTAXo/?igsi=MXFzYnhzNXNwMW04ag==" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.82787-15/748311653_18073727243703072_1073255570047844227_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=103&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=Ci8h8SrPyrkQ7kNvwF7ilEd&_nc_oc=Adq1kuVv5xhyU0uIAz9iqMJtacMk4DRMP7B4fz279eOdHQYurd9YX9a7D-SNalvDlF0&_nc_zt=23&_nc_ht=scontent-fra3-1.cdninstagram.com&_nc_gid=P42sRuKn2NSt0IMVGWDi3g&_nc_ss=7b60f&oh=00_AQFzA-2kGyJe0BTZvWkXjbASzUdGaJBzDc8KKwn3bqbFVw&oe=6A9751DB" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">IKEAの199円巾着をキッズ用ナップサックに転用</div><div class="vdesc">撥水加工・丈夫さを生かし、複数の巾着袋をナップサック代わりに使うアイデアを紹介(動画内容は未取得、キャプションのみ)</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DakEyCcTAXo/?igsi=MXFzYnhzNXNwMW04ag==" data-title="IKEAの199円巾着をキッズ用ナップサックに転用" data-rid="1836799602">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DZ7bSpCRlgR/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.82787-15/728912222_18443036872188639_6002767510422727795_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=gCWK5YMrpN0Q7kNvwGo62Y9&_nc_oc=AdpfvwQHuq_Vq6cYDNWPqM84VVTOiKCnYxjSmP3yLv3RG_Bp_ig5YlonoMoDEioti04&_nc_zt=23&_nc_ht=scontent-fra5-1.cdninstagram.com&_nc_gid=511kq7kzE7z5NVWGJ1ebtQ&_nc_ss=7b60f&oh=00_AQEywCz0AURrWLPOILi8p3XzLDxZxpuJb_AmZeUhBfPh0A&oe=6A974896" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">廃番IKEA「GRUBBE」CDホルダーを4台コレクション</div><div class="vdesc">Tord Björklund設計、2002年発売。各トレイにCD51枚収納可能・壁掛けにも対応するヴィンテージIKEA品を4台集めたと紹介(動画内容は未取得、キャプションのみ)</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DZ7bSpCRlgR/" data-title="廃番IKEA「GRUBBE」CDホルダーを4台コレクション" data-rid="1836670714">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DcifSFtCHCp/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fwww.instagram.com%2Freel%2FDcifSFtCHCp%2F" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">Instagramリール(内容未取得)</div><div class="vdesc">本文取得を2回試行したが失敗(429エラー→og:meta無し)。今回は取得できなかった、内容不明</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DcifSFtCHCp/" data-title="Instagramリール(内容未取得)" data-rid="1836643330">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '(frontmatter: date / tags: [type/bookmark] / raindrop_id / source)。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
