@@ -1,0 +1,82 @@
+# このワークフローは index.html の再生成だけを行う。
+# 夜間の振り返り生成そのもの（Raindrop取り込み・本文取得・reviews生成）は
+# クラウド Routine 側の仕事であり、ここでは一切やらない＝二重実行にはならない。
+# 経緯: 2026-08-31、index.html が約122KB に育ち、Routine のエージェントが
+# push_files の引数として手で運びきれずチャンク分割 → truncate する事故が
+# 3晩連続で発生し、公開ページから 06-12〜08-14 の約2.5ヶ月分が消えた。
+name: build-feed
+
+on:
+  push:
+    branches: [main]
+    # index.html 自体は監視しない。このワークフローが commit するのは index.html
+    # だけなので、ここに index.html を入れると自分の push で自分が再発火する。
+    # （実際には GITHUB_TOKEN による push は workflow を起動しない仕様だが、
+    #   仕様に頼らず paths 側でも二重に塞いでおく）
+    paths:
+      - 'reviews/**'
+      - '_build_feed.py'
+  # 手で復旧したいときのために手動実行も残す
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-feed
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # _build_feed.py は標準ライブラリのみ・環境変数もネットワークも不要
+      - name: Rebuild index.html
+        run: python _build_feed.py
+
+      # 壊れたものを公開しないための門番。ここで落ちれば index.html は
+      # コミットされず、直前の正常な index.html が公開されたまま残る。
+      - name: Verify index.html
+        run: |
+          python - <<'PY'
+          import io, re, sys
+
+          s = io.open("index.html", encoding="utf-8").read()
+          errors = []
+
+          if not s.startswith("<!doctype html>"):
+              errors.append("先頭が <!doctype html> でない")
+          if not s.rstrip().endswith("</html>"):
+              errors.append("末尾が </html> でない（truncate の疑い）")
+          if "PLACEHOLDER" in s:
+              errors.append("PLACEHOLDER を含む")
+          if len(s) < 20000:
+              errors.append("短すぎる（%d 文字）。truncate の疑い" % len(s))
+
+          days = sorted(set(re.findall(r"20\d\d-\d\d-\d\d", s)))
+          if len(days) < 2:
+              errors.append("日付ブロックが %d 件しか無い" % len(days))
+
+          if errors:
+              print("NG: " + " / ".join(errors))
+              sys.exit(1)
+          print("OK: %d 文字・日付 %d 件（%s 〜 %s）" % (len(s), len(days), days[0], days[-1]))
+          PY
+
+      - name: Commit and push
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "index.html に変更なし。commit をスキップする。"
+            exit 0
+          fi
+          git config user.name  "katut-brain"
+          git config user.email "katut-brain@users.noreply.github.com"
+          git add index.html
+          git commit -m "build: rebuild index.html from reviews/ ($(ls reviews/*.html | wc -l) days)"
+          git push
