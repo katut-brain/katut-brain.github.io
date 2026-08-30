@@ -1,29 +1,38 @@
-# このワークフローは index.html の再生成だけを行う。
+# トップ index.html を生成し、サイト全体を GitHub Pages へ deploy する。
+#
 # 夜間の振り返り生成そのもの（Raindrop取り込み・本文取得・reviews生成）は
 # クラウド Routine 側の仕事であり、ここでは一切やらない＝二重実行にはならない。
-# 経緯: 2026-08-31、index.html が約122KB に育ち、Routine のエージェントが
-# push_files の引数として手で運びきれずチャンク分割 → truncate する事故が
-# 3晩連続で発生し、公開ページから 06-12〜08-14 の約2.5ヶ月分が消えた。
+# ここがやるのは「reviews/*.html を材料に index.html を組み立てて公開する」だけ。
+#
+# 経緯: 2026-08-31。index.html が約122KB に育ち、Routine のエージェントが
+# push_files（＝ファイルの中身を文字列で渡すAPI）の引数として手で運びきれず、
+# チャンク分割 → truncate する事故が3晩連続で発生。公開ページから
+# 06-12〜08-14 の約2.5ヶ月分の日付ブロックが消えた。
+#
+# なぜ「commit して終わり」ではなく Pages deploy なのか:
+# このリポの Pages は当初 legacy（ブランチから公開）だったが、
+# GITHUB_TOKEN による commit は Pages の再ビルドを起動しない仕様のため、
+# index.html を commit するだけではトップページが1日遅れる。
+# そこで Pages の公開元を「GitHub Actions」に切り替え、生成と公開を
+# 同じ run に紐づけた。index.html はリポに commit しない（.gitignore 済み）＝
+# このワークフローは push を一切行わないので、push 競合も自己発火も起きない。
+
 name: build-feed
 
 on:
   push:
     branches: [main]
-    # index.html 自体は監視しない。このワークフローが commit するのは index.html
-    # だけなので、ここに index.html を入れると自分の push で自分が再発火する。
-    # （実際には GITHUB_TOKEN による push は workflow を起動しない仕様だが、
-    #   仕様に頼らず paths 側でも二重に塞いでおく）
-    paths:
-      - 'reviews/**'
-      - '_build_feed.py'
-  # 手で復旧したいときのために手動実行も残す
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
+# 公開は「最新の main の状態」だけがあればよいので、走行中の run は
+# 途中で止めず、待機中の古い run は新しいものに置き換わってよい。
 concurrency:
-  group: build-feed
+  group: pages
   cancel-in-progress: false
 
 jobs:
@@ -40,12 +49,12 @@ jobs:
       - name: Rebuild index.html
         run: python _build_feed.py
 
-      # 壊れたものを公開しないための門番。ここで落ちれば index.html は
-      # コミットされず、直前の正常な index.html が公開されたまま残る。
+      # 壊れたものを公開しないための門番。ここで落ちれば deploy されず、
+      # 直前に公開された正常なサイトがそのまま残る。
       - name: Verify index.html
         run: |
           python - <<'PY'
-          import io, re, sys
+          import glob, io, os, re, sys
 
           s = io.open("index.html", encoding="utf-8").read()
           errors = []
@@ -59,24 +68,41 @@ jobs:
           if len(s) < 20000:
               errors.append("短すぎる（%d 文字）。truncate の疑い" % len(s))
 
-          days = sorted(set(re.findall(r"20\d\d-\d\d-\d\d", s)))
-          if len(days) < 2:
-              errors.append("日付ブロックが %d 件しか無い" % len(days))
+          # 「壊れてはいないが中身が減った」出力を弾く最重要の不変条件。
+          # index.html が張るリンクの数と、材料の reviews/*.html の本数は
+          # 必ず一致するはず。ズレたら日付ブロックが落ちている。
+          linked = set(re.findall(r'reviews/(\d{4}-\d\d-\d\d)\.html', s))
+          on_disk = {os.path.basename(p)[:-5] for p in glob.glob("reviews/*.html")}
+          missing = sorted(on_disk - linked)
+          if missing:
+              errors.append(
+                  "reviews にあるのに index に載っていない日が %d 件: %s"
+                  % (len(missing), ", ".join(missing[:10]))
+              )
+          if not on_disk:
+              errors.append("reviews/*.html が1本も無い")
 
           if errors:
               print("NG: " + " / ".join(errors))
               sys.exit(1)
-          print("OK: %d 文字・日付 %d 件（%s 〜 %s）" % (len(s), len(days), days[0], days[-1]))
+          print(
+              "OK: %d 文字・reviews %d 本すべてが index に載っている（%s 〜 %s）"
+              % (len(s), len(on_disk), min(on_disk), max(on_disk))
+          )
           PY
 
-      - name: Commit and push
-        run: |
-          if git diff --quiet -- index.html; then
-            echo "index.html に変更なし。commit をスキップする。"
-            exit 0
-          fi
-          git config user.name  "katut-brain"
-          git config user.email "katut-brain@users.noreply.github.com"
-          git add index.html
-          git commit -m "build: rebuild index.html from reviews/ ($(ls reviews/*.html | wc -l) days)"
-          git push
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
