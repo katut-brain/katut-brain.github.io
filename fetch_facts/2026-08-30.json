@@ -1,0 +1,91 @@
+{
+ "https://www.instagram.com/reel/Dbc6qDWzsa2/": {
+  "fetched_at": "2026-08-30T19:06:07Z",
+  "elapsed_ms": 1329,
+  "fetcher_version": "2026-08-23.1",
+  "url": "https://www.instagram.com/reel/Dbc6qDWzsa2/",
+  "route": "instagram",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "video_content"
+  ],
+  "text_chars": 130,
+  "text_sha1": "170aae7958a2ff3a8d0d0299a04d13a0c0c44161",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": true,
+  "video_understood": false,
+  "reason": ""
+ },
+ "https://www.instagram.com/reel/Dcotr0nR_EO/": {
+  "fetched_at": "2026-08-30T19:06:11Z",
+  "elapsed_ms": 840,
+  "fetcher_version": "2026-08-23.1",
+  "url": "https://www.instagram.com/reel/Dcotr0nR_EO/",
+  "route": "instagram",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "video_content"
+  ],
+  "text_chars": 205,
+  "text_sha1": "ba2e37e170da92b4af01731e8fd3d3cff7175c5b",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": true,
+  "video_understood": false,
+  "reason": ""
+ },
+ "https://www.threads.com/share/_hpMfB71g/": {
+  "fetched_at": "2026-08-30T19:06:19Z",
+  "elapsed_ms": 4094,
+  "fetcher_version": "2026-08-23.1",
+  "url": "https://www.threads.com/share/_hpMfB71g/",
+  "route": "threads",
+  "ok": true,
+  "http_status": null,
+  "depth": "shallow",
+  "missing": [
+   "visual_content",
+   "audio_content"
+  ],
+  "text_chars": 37,
+  "text_sha1": "37cc4015a70a1c5ab0e1e7abeb65f7988e46ed6f",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": false,
+  "video_understood": false,
+  "reason": ""
+ },
+ "https://youtu.be/PKfZ1gnVJ44": {
+  "fetched_at": "2026-08-30T19:06:21Z",
+  "elapsed_ms": 1518,
+  "fetcher_version": "2026-08-23.1",
+  "url": "https://youtu.be/PKfZ1gnVJ44",
+  "route": "youtube",
+  "ok": true,
+  "http_status": null,
+  "depth": "shallow",
+  "missing": [
+   "transcript"
+  ],
+  "text_chars": 58,
+  "text_sha1": "783c8c1fb235d67e92d5b60f400efdb6f32b4c07",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": false,
+  "video_understood": false,
+  "reason": ""
+ }
+}

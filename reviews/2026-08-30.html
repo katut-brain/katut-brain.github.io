@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-08-30 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-30 の振り返り</h1>
+  <div class="meta">レイアウトの原則とLUTの色作り、交差点のPOVとヴィンテージIKEA（4件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存は、レイアウトの原則を解説する動画、iPhone単体とLUTで色を作る撮影術の投稿、交差点を渡る一瞬を切り取ったPOV動画と、「画面の中の一瞬をどう構成し、どう色付けるか」という制作者目線の技術的関心で貫かれている。レイアウトの構成原則とLUTによるカラーグレーディングは、「情報や感情を視覚的にどう整えて伝えるか」という同じ問いに対する、静止画側と映像側それぞれの技術的な解として並べて読める。</p>
+    <p>唯一毛色が異なるヴィンテージIKEAの投稿も、廃盤プロダクトを並べて見せるという点では「デザインされたモノへの審美的なまなざし」を共有する。この日はnoteが1件も無く、「作りたい」より「知る・参照したい」軸が優勢だった一日と見える。</p>
+    <ul class="pts">
+      <li><b>レイアウト原則</b>：バランス・階層・余白などデザインの基本原則を網羅する動画ガイド（字幕は取得できず、タイトルのみで参照）</li>
+      <li><b>LUT撮影</b>：iPhone本体をカメラにLUTで色を作る撮影スタイルの投稿</li>
+      <li><b>交差点のPOV</b>：横断歩道を渡る一瞬を切り取ったバズり投稿</li>
+      <li><b>ヴィンテージIKEA</b>：FRAGG・VINK・GRUBBE・JUTISなど廃盤プロダクトを並べたノスタルジー投稿</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>レイアウトの「原則」とLUTの「色」は、どちらも見る人の視線をどう動かすかという同じ設計問題のはずなのに、なぜ別々のスキルとして学ばれがちなのか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">レイアウト・構成の原則</div>
+    <ul class="ilist">
+      <li><a href="https://www.superside.com/blog/principles-of-design-guide" target="_blank" rel="noopener"><b>13 Principles of Design for 2026, a Visual Guide From Superside</b></a> <span>→ 強調・バランス・コントラストなど13の基本原則を、大規模キャンペーン制作でもブランドの一貫性を崩さないためのフレームワークとして位置づけている。一貫したブランド表現が売上を最大23%押し上げるというデータも示され、原則を守ることの実務的な投資対効果が明確化されている。</span></li>
+    </ul>
+    <div class="ntag">iPhone LUT撮影</div>
+    <ul class="ilist">
+      <li><a href="https://pixflow.net/blog/how-to-make-iphone-videos-look-cinematic/" target="_blank" rel="noopener"><b>Best iPhone Camera Settings for Cinematic Video, 2026 Guide</b></a> <span>→ 専門のLUTプリセットを編集段階で適用することで、手動でのカラー調整時間を短縮しつつプロレベルの映画的な色調を短時間で得るワークフローを紹介している。</span></li>
+    </ul>
+  </section>
+
+  <h2>🎨 デザイン・撮影の技術（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://youtu.be/PKfZ1gnVJ44" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://i.ytimg.com/vi/PKfZ1gnVJ44/hqdefault.jpg" onerror="this.remove()"><span class="ph">YouTube</span></div>
+        <div class="vbody"><div class="vtitle">2026年版・レイアウトと構成の完全ガイド</div><div class="vdesc">バランス・階層・余白などデザインの基本原則を通しで解説する動画。字幕は取得できず、タイトルからの推測にとどまる。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://youtu.be/PKfZ1gnVJ44" data-title="2026年版・レイアウトと構成の完全ガイド" data-rid="1838215332">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.threads.com/share/_hpMfB71g/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-1.xx.fbcdn.net/v/t39.92108-6/782252927_1544331763622162_3426262279998210139_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=554f3c&_nc_ohc=3KQjtcJLy6MQ7kNvwHQaYTq&_nc_oc=Adri_3CXmXskED8FW6tQZ05eWOA551VEToYCzRR16d0XXR2wuKBQdw4VVzYHu3Vkja8&_nc_zt=14&_nc_ht=scontent-ord5-1.xx&_nc_gid=wEAD2xQ4VgdmTKryKziUPw&_nc_ss=7b100&oh=00_AQIJKNl51zA1nSN4h2aLDeiTTfXJp3YJ6thIy7MizDIHJw&oe=6A9A3A94" onerror="this.remove()"><span class="ph">Threads</span></div>
+        <div class="vbody"><div class="vtitle">iPhone本体をカメラにLUTで色を作る</div><div class="vdesc">Hayataさんが、iPhone単体とLUTだけで映像の色を作る撮影スタイルを共有。本文はキャプション以上の情報が取得できず、詳細は原文リンク先で確認が必要。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.threads.com/share/_hpMfB71g/" data-title="iPhone本体をカメラにLUTで色を作る" data-rid="1838711329">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>📱 SNSで見つけた一コマ（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Dbc6qDWzsa2/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.82787-15/760172437_18385261990204675_9141858217405379603_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=100&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=XKh8qLxBpZgQ7kNvwFTyj7L&_nc_oc=Adqip98yWOJtLXXlMJgvjMuA9-7RuvaWKYQdz68Nim7Sf2_U9du-ZTdKSZ8xBp2yv_c&_nc_zt=23&_nc_ht=scontent-ord5-2.cdninstagram.com&_nc_gid=PvDEbSVesB3CJfUZ5Usj7g&_nc_ss=7b60f&oh=00_AQISrDK97i1BoGgzwZZYPM1ftBxShWOcRgwZPD7bzjqMRw&oe=6A9A6469" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">交差点を渡る一瞬を切り取ったPOV動画</div><div class="vdesc">「バズったやつ」とのキャプションで、横断歩道を渡るPOV映像が話題に。動画の中身は未取得（Instagram Reelは動画取得を構造的に断念済みのため）で、キャプションと画像から推測。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Dbc6qDWzsa2/" data-title="交差点を渡る一瞬を切り取ったPOV動画" data-rid="1838292051">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Dcotr0nR_EO/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.82787-15/785777707_18455916082188639_2416005257202221649_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=104&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=CSxXp6GK82oQ7kNvwGETrIS&_nc_oc=AdreopEnFtRACymqht9ONRzUYuAcOUI5pvzNkDYSF85nYsAv5qBPNca0YZtXdGqnj_I&_nc_zt=23&_nc_ht=scontent-ord5-2.cdninstagram.com&_nc_gid=DApN8m3nXHJRXBbIM_9H6A&_nc_ss=7b60f&oh=00_AQIylqcr8ldUpcByoWqMcgPim8q9dThSquJjSo1YLmcLGw&oe=6A9A3E54" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">ヴィンテージIKEAプロダクト5点のノスタルジー</div><div class="vdesc">FRAGG・VINK・GRUBBE×2・JUTISと廃盤プロダクトを並べた投稿。動画の中身は未取得（同上の構造的制約）で、キャプションと画像から推測。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Dcotr0nR_EO/" data-title="ヴィンテージIKEAプロダクト5点のノスタルジー" data-rid="1838071169">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</html>
