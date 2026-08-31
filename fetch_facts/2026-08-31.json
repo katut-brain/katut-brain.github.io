@@ -1,0 +1,44 @@
+{
+ "https://x.com/yanliudreamer/status/2093968800316293400?s=12": {
+  "fetched_at": "2026-08-31T19:07:15Z",
+  "elapsed_ms": 1250,
+  "fetcher_version": "2026-08-23.1",
+  "url": "https://x.com/yanliudreamer/status/2093968800316293400?s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "image_content"
+  ],
+  "text_chars": 472,
+  "text_sha1": "89f991d547014004d1757acd0886567220489c0b",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 4,
+  "has_video": false,
+  "video_understood": false,
+  "reason": ""
+ },
+ "https://x.com/makeai_ceo/status/2093264660082597994?s=12": {
+  "fetched_at": "2026-08-31T19:07:21Z",
+  "elapsed_ms": 1032,
+  "fetcher_version": "2026-08-23.1",
+  "url": "https://x.com/makeai_ceo/status/2093264660082597994?s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "full",
+  "missing": [],
+  "text_chars": 17052,
+  "text_sha1": "98e314ef85039eb272b1653582d593a899fd5b7b",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 0,
+  "has_video": false,
+  "video_understood": false,
+  "reason": ""
+ }
+}

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-08-31 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-08-31 の振り返り</h1>
+  <div class="meta">AI活用まわりの保存2件 ― デザインの「Skill化」とエージェントの「ハーネス化」</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日保存した2件は、分野は違えど同じ構造を持っている。属人的な判断や場当たり的な指示を、繰り返し呼び出せる「仕組み」へ格上げする営みだ。1件目は、あるデザイナーが自作した「Design Skills」のうち「Mono-color Skill」の紹介。単に画像を単色化するのではなく、編集デザインの語彙・レトロな印刷の質感・抑制された配色ルールをひとまとめにして、何度でも呼び出せるSkillとして封装している。2件目は、Claude・Cursor・SuperGrok・Codexを横断する「神ハーネス理論」。AIの実力を「モデルの能力×ハーネスの質×検品の質」という式で捉え、ゴール・情報の地図・タスク分解・役割・道具・検品・記録・安全柵という8つの部品でAIが働く環境そのものを設計する方法論を説く。</p>
+    <p>デザイン実務とエージェント運用設計という別々の文脈が、「暗黙知をパッケージ化して資産化する」という一点で接続している。ユーザーの興味軸で言えば、今日は自分で何かを「作りたい」よりも、仕組みそのものを「知る・理解したい」側が活性化した日と言える。</p>
+    <ul class="pts">
+      <li><b>Mono-color Skill</b>：単色化ではなく「編集デザイン言語＋レトロ印刷の質感＋視覚ルール」を1つのSkillに封装。参照画像12点は構図の再現用ではなく色域・網点表現の定義に留めるという注記が、Skill設計における「何を固定し何を毎回作り直すか」の線引きを示している</li>
+      <li><b>神ハーネス理論の核</b>：AIの実力＝モデルの能力×ハーネスの質×検品の質という式。ゴール・地図・分解・役割・道具・検品・記録・安全柵の8部品でハーネスを組む</li>
+      <li><b>段階的な権限設計</b>：レベル0（相談のみ）→1（読み取り）→2（下書き・ローカル変更）→3（承認付き実行）→4（限定的な自動実行）という、AIへ渡す権限を一気に広げない安全設計の考え方</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>デザインの型もAIの働かせ方も、結局「自分が繰り返している判断」を最初にSkillとして封装できるかどうかで差が出るなら、自分の作業の中で最初に封装すべき判断はどれか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">Claude Skills設計</div>
+    <ul class="ilist">
+      <li><a href="https://qiita.com/dai_chi/items/a061382e0616fa76fb32" target="_blank" rel="noopener"><b>Claude Code Agent Skills実践ガイド — 0からスキルを設計・構築・運用するまで</b></a> <span>→ CLAUDE.md（常時ロード）とSkills（必要な時だけ読み込む）を使い分ける発想、descriptionが「いつ使うか」をClaudeに伝えるセマンティックマッチングの核だという点は、今日の2件どちらの「Skill化」「ハーネス化」にも通じる設計原則</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI活用（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/yanliudreamer/status/2093968800316293400?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HQ9FGqTbcAAAMyZ.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">自作Design Skillsの1つ「Mono-color Skill」を公開</div><div class="vdesc">「単色化」ではなく編集デザイン言語＋レトロ印刷の質感＋抑制された配色ルールを1つのSkillに封装。参照画像12点は構図模倣用でなく色域・網点表現の定義用と明記</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/yanliudreamer/status/2093968800316293400?s=12" data-title="自作Design Skillsの1つ「Mono-color Skill」を公開" data-rid="1839529910">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/makeai_ceo/status/2093264660082597994?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HQzE9tXaoAAlnYC.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">初心者向け「神ハーネス理論」― AIの実力はモデルではなく環境で決まる</div><div class="vdesc">AIの実力を「モデル能力×ハーネスの質×検品の質」の式で捉え、ゴール・地図・分解・役割・道具・検品・記録・安全柵の8部品でエージェントの働く環境を設計</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/makeai_ceo/status/2093264660082597994?s=12" data-title="初心者向け「神ハーネス理論」― AIの実力はモデルではなく環境で決まる" data-rid="1839188188">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
