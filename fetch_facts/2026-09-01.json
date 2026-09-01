@@ -1,0 +1,111 @@
+{
+ "https://x.com/codex_lab_/status/2094091484320657619?s=12": {
+  "fetched_at": "2026-09-01T19:07:23Z",
+  "elapsed_ms": 8301,
+  "fetcher_version": "2026-08-23.1",
+  "url": "https://x.com/codex_lab_/status/2094091484320657619?s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "video_content"
+  ],
+  "text_chars": 573,
+  "text_sha1": "0590c54dc6e158fa79ae8a4301795fe2812a2f4b",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": true,
+  "video_understood": false,
+  "reason": ""
+ },
+ "https://x.com/sven_wag/status/2094240619392643464?s=12": {
+  "fetched_at": "2026-09-01T19:07:45Z",
+  "elapsed_ms": 16088,
+  "fetcher_version": "2026-08-23.1",
+  "url": "https://x.com/sven_wag/status/2094240619392643464?s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "video_content"
+  ],
+  "text_chars": 480,
+  "text_sha1": "261fbc2ad8c42f4c37dbf251a5125c5c78b6a5c0",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": true,
+  "video_understood": false,
+  "reason": ""
+ },
+ "https://x.com/noukin_aigori/status/2094379745777684618?s=12": {
+  "fetched_at": "2026-09-01T19:07:52Z",
+  "elapsed_ms": 1839,
+  "fetcher_version": "2026-08-23.1",
+  "url": "https://x.com/noukin_aigori/status/2094379745777684618?s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "full",
+  "missing": [],
+  "text_chars": 7792,
+  "text_sha1": "5052168566dc531da0976450132f38b69c948b5f",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 0,
+  "has_video": false,
+  "video_understood": false,
+  "reason": ""
+ },
+ "https://x.com/gkxspace/status/2094374022729310372?s=12": {
+  "fetched_at": "2026-09-01T19:07:59Z",
+  "elapsed_ms": 1433,
+  "fetcher_version": "2026-08-23.1",
+  "url": "https://x.com/gkxspace/status/2094374022729310372?s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "image_content"
+  ],
+  "text_chars": 8266,
+  "text_sha1": "4bc99e0e0f4bb100033f360254f2416cf2bb7a18",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 2,
+  "has_video": false,
+  "video_understood": false,
+  "reason": ""
+ },
+ "https://www.instagram.com/p/DbiEV6mgAbM/?img_index=1": {
+  "fetched_at": "2026-09-01T19:08:09Z",
+  "elapsed_ms": 1013,
+  "fetcher_version": "2026-08-23.1",
+  "url": "https://www.instagram.com/p/DbiEV6mgAbM/?img_index=1",
+  "route": "instagram",
+  "ok": true,
+  "http_status": null,
+  "depth": "shallow",
+  "missing": [
+   "visual_content",
+   "audio_content"
+  ],
+  "text_chars": 568,
+  "text_sha1": "84be54a472db1b808eab9e262eaefcdb6bd0d923",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": true,
+  "video_understood": false,
+  "reason": ""
+ }
+}

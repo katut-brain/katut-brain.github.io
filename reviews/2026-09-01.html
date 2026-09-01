@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-09-01 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-01 の振り返り</h1>
+  <div class="meta">Claude Codeを「skill」として配布する動き4件＋アルゴリズムと都市の均質化を読む1件（計5件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存を貫くのは、「専門的な手順をClaude Codeの“skill”という単位に固めて、他人に渡す」という動きだ。UIデザインの色・タイポ・余白ルールをDESIGN.mdとしてまるごと配布する試み、2chまとめ風ショート動画の素材集め〜VOICEVOX配役〜クレジット表記までを一気通貫でskill化してLINE経由で配る個人、warm paper・halftoneで統一する単色エディトリアル印刷をGitHubで公開するmono-color-skill——分野は違っても、いずれも「属人的な職人技をコード化して再配布可能にする」という同じ動きの表れになっている。配布経路が公式マーケットプレイスではなくGitHub直リンクやLINE登録といった非公式チャネルに依存している点も共通しており、この日の深掘りで見た「公開Skillsの36.8%に何らかのセキュリティ問題」というSnykの調査結果と地続きの話として読める。</p>
+    <p>もう一段掘ると、この日いちばん再生数を稼いだのはこの「skill化」の本編ではなく、Claude Codeチュートリアル動画の背景に偶然映り込んだPolymarketウォレットの方だった。手順を型化してアルゴリズム的に再現可能にしようとする動きと、その型そのものではなく型からこぼれ落ちた偶然（一時停止して気づかれた一コマ）が最もバズるという事実は、ちょうどInstagramで保存した「Slop」——レコメンドアルゴリズムと不動産経済が結託して都市の偶然性を均質化していく——という論点と裏表の関係にある。効率化・再現性を追い求めるほど、皮肉にも価値を持つのは予測できなかった余白の方だ、という緊張がこの日の保存全体を通奏低音として流れている。</p>
+    <ul class="pts">
+      <li><b>skillという単位の一般化</b>：デザイン・動画編集・印刷という別々の専門技能が、同じ「Claude Codeにインストールする手順書」というフォーマットに収束しつつある</li>
+      <li><b>配布経路の非公式化とリスク</b>：GitHub直リンク・LINE登録という属人的チャネルが主流で、Snykの調査(公開Skillsの36.8%に何らかの問題、重大13.4%、マルウェア76件検出)が示す供給網リスクと表裏一体</li>
+      <li><b>偶然性の逆説</b>：型化・最適化が進むほど、型から外れた偶然の一コマ（ウォレットのスクショ）の方が注目を集めるという逆説が、都市の均質化を論じる「Slop」の主張と響き合う</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>Claude Code skillの配布が公式マーケットプレイスでなくLINE登録やGitHub直リンクに寄っていくのは便利さのためか、それとも公式の審査コストを避けるためか——後者だとすれば、便利さと引き換えに供給網リスクを個人が肩代わりしている構造になる。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">Claude Code skillsエコシステム</div>
+    <ul class="ilist">
+      <li><a href="https://genai-ai.co.jp/ai-kanri/blog/cc-skills-guide/" target="_blank" rel="noopener"><b>【2026年8月最新】Claude CodeのSkills（スキル）とは？作り方・おすすめ10選・セキュリティリスクを初心者向けに解説</b></a> <span>→ Public Skillsの充実がエンジニア以外にも普及を後押しする一方、Snyk調査では公開Skills全体の36.8%に何らかのセキュリティ問題（重大13.4%、マルウェア検出76件）があり、自然言語ベースゆえ悪意ある指示が見落とされやすいという構造的リスクが指摘されている。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI活用・Claude Code（4件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/codex_lab_/status/2094091484320657619?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2093766713707786240/img/w0b2mS4A6gPNVVL7.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">世界の名作2,000点超のUIをDESIGN.mdとして配布</div><div class="vdesc">Linear・Notion・ElevenLabsなどのカラー・タイポ・余白ルールを完全トークン化し、Claude CodeやCodexが直接読めるDESIGN.mdファイルとして一括配布</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/codex_lab_/status/2094091484320657619?s=12" data-title="世界の名作2,000点超のUIをDESIGN.mdとして配布" data-rid="1840523573">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/sven_wag/status/2094240619392643464?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2094240015509327872/img/VT9UGU0w-9HL7iFe.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claude Codeチュートリアル動画の背景に映ったウォレットがバズる</div><div class="vdesc">0:47で一時停止した視聴者が発見した第二画面のPolymarketウォレットは15分足BTC取引28,620回無敗・利益868,862ドル。動画は3時間で削除されたが切り抜きは40万再生、70.7万人がそのウォレットを監視中</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/sven_wag/status/2094240619392643464?s=12" data-title="Claude Codeチュートリアル動画の背景に映ったウォレットがバズる" data-rid="1840094902">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/noukin_aigori/status/2094379745777684618?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">2chまとめ風ショート動画づくりを丸ごとClaude Code skill化</div><div class="vdesc">素材集め・台本・VOICEVOX配役・口パク・クレジット表記までの全工程をskillとして常駐させ、ネタを言うだけで完成する仕組みをLINE登録（合言葉「スカッと」）で配布</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/noukin_aigori/status/2094379745777684618?s=12" data-title="2chまとめ風ショート動画づくりを丸ごとClaude Code skill化" data-rid="1840088941">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/gkxspace/status/2094374022729310372?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HRC1U2FWEAA4sBJ.png" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">単色エディトリアル印刷デザインをmono-color-skillとして公開</div><div class="vdesc">warm paper・halftone・限定インクで統一するポスター/ZINE/パッケージ用のClaude Code skillをGitHubで公開、コピー・偽ブランド・元ポスターの模写を明示的に禁じるルール付き</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/gkxspace/status/2094374022729310372?s=12" data-title="単色エディトリアル印刷デザインをmono-color-skillとして公開" data-rid="1840088832">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🎨 アート・文化（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/p/DbiEV6mgAbM/?img_index=1" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra5-2.cdninstagram.com/v/t51.71878-15/763308384_944254495363117_4138270218791968778_n.jpg?stp=c216.0.648.648a_dst-jpg_e35_s640x640_tt6&_nc_cat=107&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQUQuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=edmuBuRCA1IQ7kNvwE_GXJ-&_nc_oc=AdrBYceqKwOzBwcyWvR-lh_LZFDrBzUPCQQrk1rUpniI_aWGK2-UZ1TErenrS-GV5-Y&_nc_zt=23&_nc_ht=scontent-fra5-2.cdninstagram.com&_nc_gid=olvcQgCqbAAQYXIlQa7kbw&_nc_ss=7b60f&oh=00_AQLn7w8h4lK-rC-AGF2YUOYIH9453IdepOSflPzZkEZNlQ&oe=6A9B7939" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">「Slop」が読み解く、アルゴリズムに均質化される都市</div><div class="vdesc">レコメンドアルゴリズムと不動産経済の結託でニューヨークの通りがどこも同じ店に埋め尽くされ、十代の姿すら消えたと指摘。効率よりも余白、最適化よりも偶然を取り戻す手がかりを探る</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/p/DbiEV6mgAbM/?img_index=1" data-title="「Slop」が読み解く、アルゴリズムに均質化される都市" data-rid="1839688623">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
