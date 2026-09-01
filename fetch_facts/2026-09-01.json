@@ -104,7 +104,7 @@
   "desc_chars": null,
   "body_truncated": null,
   "image_count": 1,
-  "has_video": true,
+  "has_video": false,
   "video_understood": false,
   "reason": ""
  }
