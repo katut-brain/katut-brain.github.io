@@ -910,7 +910,148 @@ def fetch_web(url):
 # ---------- ディスパッチャ ----------
 # 取得ロジックを変えたら上げる。過去の取得結果が「どの版で取られたか」を
 # 後から判別できるようにするための版番号。
-FETCHER_VERSION = "2026-08-23.1"
+FETCHER_VERSION = "2026-09-02.1"
+
+
+# ---------- rid解決（captures.json との逆引き） ----------
+# 台帳は作らない（Gemini/Codexの敵対的レビューでNO-GO）。captures.json（Raindropの
+# エクスポート）を毎回遅延ロードして source URL → rid の逆引き辞書を組み立てるだけ。
+# モジュールレベルで1回だけ構築してキャッシュする(1ランで複数URLを処理するため)。
+CAPTURES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "captures.json")
+_RID_INDEX_CACHE = None  # {"exact": {...}, "normalized": {...}} または None(未構築) または False(構築失敗=no_captures)
+
+
+# rid逆引き用のURL正規化。**「未解決になる」より「別物に誤対応する」ほうが危険**という
+# 非対称性を設計の軸にする（2026-09-02 Codexの敵対的レビュー2周分で確定）。
+# 未知のパラメータを残すと unresolved になるだけで済むが、意味を持つパラメータを剥がすと
+# 別のブックマークの試行履歴に混ざり、「どの件の失敗か」を観測装置が嘘つく。
+#
+# 踏んだ罠2つ（どちらも実際にこのコードに入っていた）:
+#   ① クエリを丸ごと捨てる → youtube.com/watch?v=A と ?v=B が同じキーに潰れる
+#   ② URL全体を小文字化する → YouTubeの動画IDは大小文字を区別するので ?v=AAA と ?v=aaa が衝突
+# よって小文字化は scheme/host だけに限り、path と query の値は原文のまま残す。
+
+# 全ホストで剥がしてよいもの（広告・計測専用と確認できるものだけ）
+_TRACKING_ANY_HOST = {
+    "fbclid", "gclid", "dclid", "msclkid", "yclid", "mc_cid", "mc_eid", "_aem",
+}
+_TRACKING_ANY_HOST_PREFIXES = ("utm_",)
+
+# ホストを限定して剥がすもの。そのサービスの共有導線が付ける付随物だと分かっているものだけ。
+# 一般のWebサイトでは s= が検索語、t= が表示対象、ref= が版を指しうるので、
+# ここに書いたホスト以外では絶対に剥がさない。
+_TRACKING_BY_HOST = {
+    "x.com":          {"s", "t", "cxt", "ref_src", "ref_url"},
+    "twitter.com":    {"s", "t", "cxt", "ref_src", "ref_url"},
+    "instagram.com":  {"igshid", "igsh", "img_index"},
+    "youtube.com":    {"si", "pp", "feature"},
+    "youtu.be":       {"si", "pp", "feature"},
+    "threads.com":    {"igshid", "igsh"},
+    "threads.net":    {"igshid", "igsh"},
+}
+
+
+def _normalize_url_for_rid(url):
+    """rid逆引き用のURL正規化。**捨ててよいと確信できるものだけ**を捨てる。
+
+    残すもの（捨てると別コンテンツを同一視しうるため）:
+      scheme / ポート / userinfo / path の大小文字 / 追跡以外の全クエリ（順序も原文のまま）
+    捨てるもの:
+      host の大小文字、先頭 www.、末尾スラッシュ、追跡専用と確認できるクエリだけ
+
+    ⚠️ クエリを parse_qsl→urlencode で往復させないこと。`?flag` と `?flag=`、`+` と `%20`、
+    重複キーの順序が潰れ、原文保持の前提が壊れる（2026-09-02 Codex 3周目の指摘）。
+    だから文字列のまま該当セグメントだけを落とす。
+    """
+    raw = url.strip()
+    try:
+        parts = urllib.parse.urlsplit(raw)
+    except ValueError:
+        return raw
+    host = (parts.hostname or "").lower()
+    if host.startswith("www."):
+        host = host[4:]
+    netloc = host
+    if parts.port:
+        netloc += ":%d" % parts.port
+    if parts.username:
+        netloc = "%s@%s" % (parts.username, netloc)
+    path = parts.path or ""
+    if path.endswith("/"):
+        path = path[:-1]
+    drop = set(_TRACKING_ANY_HOST) | _TRACKING_BY_HOST.get(host, set())
+    kept_segments = []
+    for seg in (parts.query or "").split("&"):
+        if not seg:
+            continue
+        name = seg.split("=", 1)[0].lower()
+        if name in drop or name.startswith(_TRACKING_ANY_HOST_PREFIXES):
+            continue
+        kept_segments.append(seg)          # 原文のまま・順序も保つ
+    q = "&".join(kept_segments)
+    scheme = (parts.scheme or "").lower()
+    return "%s://%s%s%s" % (scheme, netloc, path, ("?" + q) if q else "")
+
+
+def _build_rid_index():
+    """captures.json から exact/normalized の逆引き辞書を構築する。
+    失敗(ファイル無し・壊れている・読めない)時は False を返す(=no_captures)。
+    取得そのものを止めてはいけないため、ここで例外を外に出さない。"""
+    try:
+        with io.open(CAPTURES_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+        if not isinstance(data, list):
+            return False
+        # exact 側も衝突を検出する。同じ source URL を別の rid が持っていると、
+        # 単純代入では JSON の並び順しだいで一方に黙って誤対応する
+        # （2026-09-02 Codexの敵対的レビューで発見）。衝突は None にして ambiguous を返す。
+        exact = {}        # source -> rid、または複数rid衝突時は None
+        normalized = {}   # normキー -> rid、または複数rid衝突時は None
+        for item in data:
+            if not isinstance(item, dict):
+                continue
+            rid = item.get("rid")
+            source = item.get("source")
+            if not isinstance(rid, int) or not isinstance(source, str) or not source:
+                continue
+            if source in exact and exact[source] != rid:
+                exact[source] = None
+            else:
+                exact.setdefault(source, rid)
+            nk = _normalize_url_for_rid(source)
+            if nk in normalized and normalized[nk] != rid:
+                normalized[nk] = None
+            else:
+                normalized.setdefault(nk, rid)
+        return {"exact": exact, "normalized": normalized}
+    except Exception:
+        return False
+
+
+def _resolve_rid(url):
+    """URLからraindrop_idを解決する。戻り値: (raindrop_id, rid_source)。"""
+    global _RID_INDEX_CACHE
+    if _RID_INDEX_CACHE is None:
+        _RID_INDEX_CACHE = _build_rid_index()
+    idx = _RID_INDEX_CACHE
+    if idx is False:
+        return None, "no_captures"
+    try:
+        exact = idx["exact"]
+        normalized = idx["normalized"]
+        if url in exact:
+            if exact[url] is None:
+                return None, "ambiguous"
+            return exact[url], "exact"
+        nk = _normalize_url_for_rid(url)
+        if nk in normalized:
+            rid = normalized[nk]
+            if rid is None:
+                return None, "ambiguous"
+            return rid, "normalized"
+        return None, "unresolved"
+    except Exception:
+        return None, "no_captures"
 
 
 def _facts(url, started, result):
@@ -925,6 +1066,18 @@ def _facts(url, started, result):
     images = len(result.get("photos", []) or [])
     if not images and result.get("cover"):
         images = 1   # web/記事系は photos を返さず cover だけを持つ
+
+    # 取得完全失敗(ok:false)は現状 depth:null / missing:[] のままで、欠損として一切
+    # 表現されていなかった。fetcherが明示的にdepth/missingを返している場合(例: X Article
+    # 直リンクの depth:"shallow" / missing:["article_body"])はその値を尊重して上書きしない。
+    depth = result.get("depth")
+    missing = result.get("missing", [])
+    if not result.get("ok") and not depth:
+        depth = "none"
+        missing = ["fetch_failed"]
+
+    raindrop_id, rid_source = _resolve_rid(url)
+
     return {
         "fetched_at": datetime.datetime.now(datetime.timezone.utc)
                               .isoformat(timespec="seconds").replace("+00:00", "Z"),
@@ -934,8 +1087,10 @@ def _facts(url, started, result):
         "route": result.get("type", ""),
         "ok": bool(result.get("ok")),
         "http_status": result.get("http_status"),
-        "depth": result.get("depth"),
-        "missing": result.get("missing", []),
+        "depth": depth,
+        "missing": missing,
+        "raindrop_id": raindrop_id,
+        "rid_source": rid_source,
         "text_chars": len(text),
         # 監査キーなので切り詰めない（12桁では長期の衝突耐性が足りない）
         "text_sha1": hashlib.sha1(text.encode("utf-8")).hexdigest() if text else "",
@@ -948,6 +1103,11 @@ def _facts(url, started, result):
         "has_video": bool(result.get("has_video")),
         "video_understood": bool(result.get("video_understood")),
         "reason": result.get("reason", ""),
+        # 同じ日に同じURLを何度取り直したか。日別ファイルはURLキーのdictなので
+        # 同日2回目は1回目のレコードを上書きしてしまい、回数の痕跡だけが消える
+        # （2026-09-02 Codexの敵対的レビューで発見）。ファイル形式を変えずに
+        # 回数だけは失わないよう、record_facts() が既存値を見て加算する。
+        "attempt_seq": 1,
     }
 
 
@@ -971,14 +1131,51 @@ def record_facts(facts, day=None):
     try:
         os.makedirs(FACTS_DIR, exist_ok=True)
         try:
-            store = json.load(io.open(path, encoding="utf-8")) if os.path.exists(path) else {}
-            if not isinstance(store, dict):
+            # ⚠️ with で必ず閉じる。io.open(...) を json.load に直接渡すとハンドルが
+            # 開いたまま残り、Windows では直後の os.replace が WinError 32 で失敗する
+            # （2026-09-02 に破損ファイル退避の実テストで踏んだ）。
+            if os.path.exists(path):
+                with io.open(path, encoding="utf-8") as f:
+                    store = json.load(f)
+            else:
                 store = {}
-        except Exception:
+            if not isinstance(store, dict):
+                raise ValueError("トップレベルがdictでない")
+        except Exception as e:
+            # 空dictで書き戻すとその日の全URLと試行回数が黙って消える。完走は優先するが、
+            # 「黙って」は許さない: 壊れた実物を退避してから作り直す（2026-09-02追加）。
             store = {}
+            if os.path.exists(path):
+                broken = path + ".broken"
+                try:
+                    os.replace(path, broken)
+                    print("WARN: %s が読めないため %s へ退避して作り直す (%s)"
+                          % (path, broken, e), file=sys.stderr)
+                except Exception as e2:
+                    print("WARN: %s が読めず退避にも失敗。この日の既存記録を失う (%s / %s)"
+                          % (path, e, e2), file=sys.stderr)
+        # 同日2回目以降は前のレコードを上書きするので、回数だけは引き継ぐ。
+        prev = store.get(facts["url"])
+        if isinstance(prev, dict):
+            try:
+                facts["attempt_seq"] = int(prev.get("attempt_seq", 1)) + 1
+            except (TypeError, ValueError):
+                facts["attempt_seq"] = 2
         store[facts["url"]] = facts
-        io.open(path, "w", encoding="utf-8").write(
-            json.dumps(store, ensure_ascii=False, indent=1) + "\n")
+        # 原子的置換。書き込み途中で落ちても既存ファイルを壊さない
+        # （壊れると次回ランがそれを読めず、その日の記録ごと失う）。
+        # tmp名はプロセスごとに分ける。共通名だと2プロセスが同時に走ったとき
+        # 互いのtmpをtruncate/replaceして片方の記録が消える（2026-09-02 Codex指摘）。
+        # なお read-modify-write 自体の排他は入れていない。この無人ランは
+        # 手順書上シングルライター（Bashコマンドを1本ずつ順に実行する）であり、
+        # 無人ジョブにロックを持ち込むとスタックしたロックで毎晩の公開が止まるほうが
+        # 損害が大きいと判断した。手動の重複起動は避けること。
+        tmp = "%s.%d.tmp" % (path, os.getpid())
+        with io.open(tmp, "w", encoding="utf-8") as f:
+            f.write(json.dumps(store, ensure_ascii=False, indent=1) + "\n")
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
         return path
     except Exception as e:
         # 記録に失敗しても取得そのものは止めない（完走優先）
