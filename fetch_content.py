@@ -511,8 +511,14 @@ def fetch_instagram(url):
     if not og_title and not og_desc:
         return {"ok": False, "type": "instagram", "reason": "og:meta無し（JS殻/ログイン壁の可能性）", "url": url}
     # og_title 例: 'Kalypso on Instagram: "Sites for designers"'
+    # ⚠️ re.S 必須（2026-09-02 Task O の実測で発見）。IGのキャプションは改行を含むのが普通で、
+    # DOTALLが無いと `.` が改行を跨げず**複数行キャプションでは必ずマッチに失敗する**。
+    # その結果 og_desc への丸ごとフォールバックに落ち、本文の頭に
+    # 「27K likes, 253 comments - handle on June 23, 2026: 」という定型文が、末尾に `".` が
+    # 付いたまま保存されていた（実測4/4件が該当。542字のうち65字が定型文）。
+    # likes/comments/handle/date はこの下で別途抽出しているので、完全な重複でもある。
     cap = ""
-    mc = re.search(r':\s*"(.*)"\s*$', og_title)
+    mc = re.search(r':\s*"(.*)"\s*$', og_title, re.S)
     if mc: cap = mc.group(1)
     # 表示名 = og_title の "… on/- /• Instagram" より前（区切りはロケールで揺れる）
     name = re.split(r"\s+(?:on|[-•|·])\s*Instagram", og_title)[0].strip() if og_title else ""
@@ -527,8 +533,8 @@ def fetch_instagram(url):
     date = ""
     md = re.search(r"\son\s+([A-Z][a-z]+\s+\d+,\s+\d{4})", og_desc)
     if md: date = md.group(1)
-    if not cap:  # フォールバック: og_desc のコロン以降
-        mc2 = re.search(r':\s*"(.*)"', og_desc)
+    if not cap:  # フォールバック: og_desc のコロン以降（こちらも re.S 必須。理由は上と同じ）
+        mc2 = re.search(r':\s*"(.*)"', og_desc, re.S)
         cap = mc2.group(1) if mc2 else og_desc
 
     # Reels動画理解(vxinstagram.com経由でmp4 URL取得→Gemini API)。失敗/対象外ならmissingに正直に記録。
