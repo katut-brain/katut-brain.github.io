@@ -109,10 +109,54 @@ def _rid_source_of(rec):
 
 # ---------- reason_kind 導出 ----------
 # コードで機械的に確定できるものだけ permanent と言い切り、できないものは正直に unknown と出す。
+
+# 動画理解を諦めた理由コード → 恒久/一過性。
+# fetch_content.py は「どの経路で諦めたか」という事実だけを記録し、この分類は持たない
+# （導出ラベルを一次データに焼き付けない）。分類を変えたいときはここだけを直す。
+# ⚠️ この表は「再取得する価値があるか」の判定であって、道徳的な恒久性ではない。
+# gemini_unavailable(APIキー未設定)は設定を直せば解決するが、直すまでは何度取り直しても
+# 同じなので permanent 側に置く。分類は毎回「最新レコード」から導出し直すので固定化しない。
+_VIDEO_REASON_KIND = {
+    "instagram_reel_abandoned": "permanent",   # 2026-08-23 の構造的断念（設計値）
+    "host_not_allowed":         "permanent",   # SSRF対策で意図的に拒否
+    "too_large":                "permanent",   # 上限超過。同じ動画なら次回も超える
+    "no_mp4_variant":           "permanent",   # mp4実体が無い（HLSのみ等）
+    "gemini_unavailable":       "permanent",   # APIキー未設定/ライブラリ未導入
+    "understanding_disabled":   "permanent",   # 呼び出し側が意図的に理解を切っている
+    # ⚠️ bad_content_type を permanent にしてはいけない（2026-09-02 Codex指摘）。
+    # 「動画でないものが返ってきた」のは**そのときのレスポンス**であって動画そのものではない。
+    # CDN・署名URL・WAF が一時的に HTMLエラーページや application/octet-stream を返すことが
+    # あり、恒久扱いにすると後続ランで取れるはずのものを切り捨てる。
+    "bad_content_type":         "transient",
+    "gemini_timeout":           "transient",   # 100秒待ちで諦めた
+    "truncated_download":       "transient",   # 接続断
+    "gemini_quota":             "transient",   # 無料枠切れ。翌日戻る
+    "gemini_empty_response":    "transient",   # 例外は無いが中身が空
+}
+
+
+def _video_reason_kind(rec):
+    """video_reason コードから恒久/一過性を引く。未知コード・未記録は None（＝判定不能）。"""
+    code = rec.get("video_reason") or ""
+    if not code:
+        return None
+    if code in _VIDEO_REASON_KIND:
+        return _VIDEO_REASON_KIND[code]
+    if code.startswith("exception:"):
+        return "transient"     # ネットワーク断・API仕様変更等。次回取れる可能性がある
+    return None                # 知らないコード。推測しない
+
+
 def _reason_kind(rec):
     route = rec.get("route", "")
     url = rec.get("url", "") or ""
     missing = rec.get("missing") or []
+
+    # 理由コードが記録されていれば、URL形からの推測より優先する（こちらが一次の事実）
+    if "video_content" in missing:
+        kind = _video_reason_kind(rec)
+        if kind:
+            return kind
 
     if route == "instagram" and "/reel/" in url and "video_content" in missing:
         # 2026-08-23の構造的断念による設計値。Brain/decisions/2026-08-23-instagram-reel-video-give-up.md
@@ -138,9 +182,12 @@ def _reason_kind(rec):
 
 def _is_unknown_video_content(rec):
     """reason_kindがunknownの中でも「X動画のvideo_content」に該当するか。
-    _gemini_video_understanding()の7つの早期returnが全部同じ空文字に潰れており、
-    恒久側(APIキー未設定・許可外ホスト・サイズ超過)と一過性側(タイムアウト・例外・切断)が
-    区別できない。この区別不能であること自体が観測結果なので、サマリで明示する。"""
+
+    2026-09-02 に `video_reason` を導入するまで、`_gemini_video_understanding()` の
+    早期returnが全部同じ空文字に潰れており、恒久側(許可外ホスト・サイズ超過)と
+    一過性側(タイムアウト・例外・切断)が区別できなかった。理由コードを持つレコードは
+    _video_reason_kind() で分類されるので、ここに残るのは**理由コードを持たない旧レコード**
+    と**未知のコード**だけ。その件数自体が「まだ測れていない量」の指標になる。"""
     return rec.get("route") == "x" and "video_content" in (rec.get("missing") or [])
 
 
@@ -214,6 +261,11 @@ def _print_group(g):
     print("  ok: %s" % latest.get("ok"))
     print("  depth: %s" % latest.get("depth"))
     print("  missing: %s" % latest.get("missing"))
+    if latest.get("video_reason"):
+        code = latest["video_reason"]
+        kind = _VIDEO_REASON_KIND.get(code) or (
+            "transient" if code.startswith("exception:") else "不明")
+        print("  video_reason: %s [%s]" % (code, kind))
     print("  reason: %s" % latest.get("reason"))
     print("history (fetched_at, depth, ok):")
     for h in g["history"]:
@@ -280,6 +332,7 @@ def cmd_summary():
     state_counts = {}
     reason_kind_counts = {}
     rid_source_counts = {}
+    video_reason_counts = {}
     unresolved_count = 0
     unknown_video_content_count = 0
 
@@ -290,6 +343,9 @@ def cmd_summary():
             unresolved_count += 1
         if g["reason_kind"] == "unknown" and _is_unknown_video_content(g["latest"]):
             unknown_video_content_count += 1
+        code = g["latest"].get("video_reason") or ""
+        if code:
+            video_reason_counts[code] = video_reason_counts.get(code, 0) + 1
 
     # rid_source は「観測レコード単位」で集計する(グループ単位ではなく、日別ログの
     # レコードそれぞれがどう解決されたかを見たいため)。
@@ -317,8 +373,17 @@ def cmd_summary():
     for k, v in reason_kind_counts.items():
         if k not in ("none", "permanent", "unknown"):
             print("  %s: %d" % (k, v))
-    print("  うち reason_kind==unknown で『X動画video_content(恒久/一過性が区別不能)』: %d"
+    print("  うち reason_kind==unknown で『X動画video_content(理由コード未記録の旧レコード)』: %d"
           % unknown_video_content_count)
+    print()
+    print("-- video_reason 別件数(動画理解を諦めた理由・グループの最新レコード基準) --")
+    if video_reason_counts:
+        for code, n in sorted(video_reason_counts.items(), key=lambda x: (-x[1], x[0])):
+            kind = _VIDEO_REASON_KIND.get(code) or (
+                "transient" if code.startswith("exception:") else "不明")
+            print("  %-26s %3d  [%s]" % (code, n, kind))
+    else:
+        print("  (記録なし。2026-09-02 以前のレコードには video_reason が無い)")
     print()
     print("-- rid_source 別件数(レコード単位) --")
     for k in ("exact", "normalized", "ambiguous", "unresolved", "no_captures", "(missing)"):

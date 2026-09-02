@@ -207,16 +207,24 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
     GEMINI_API_KEY未設定/google-genai未インストール/失敗時は "" を返す(graceful degradation。
     その場合カード生成はタイトル・キャプションのみで続行する＝完走優先)。
 
+    戻り値: (要約テキスト, 理由コード)。成功時の理由コードは ""。
+    ⚠️ 2026-09-02以前は全ての失敗が同じ "" に潰れており、恒久的に取れないもの(許可外ホスト・
+    サイズ超過)と一過性の失敗(タイムアウト・切断・例外)が区別できなかった。その結果 Task G-2 の
+    滞留判定が「恒久失敗を毎晩叩き続ける」か「一過性を諦める」の二択になっていた。
+    **どの経路で諦めたかは事実なので残す。** 恒久/一過性の分類はここでは決めず、
+    照会側(ledger.py)が理由コードから導出する(導出ラベルを一次データに焼き付けない)。
+
     allowed_hosts: 指定した場合、開始URL・リダイレクト先ともにこのホスト(サブドメイン含む)
     以外は拒否する(SSRF対策)。信頼できない第三者サービス経由で得たURL(Instagram Reels等)を
     渡す場合は必ず指定すること。Xのように取得元が最初から信頼できるドメインの場合は省略可。
     """
     if not _GEMINI_AVAILABLE or not _GEMINI_API_KEY:
-        return ""
+        return "", "gemini_unavailable"
     if allowed_hosts is not None and not any(
         _host_matches(_host_of(video_url), h) for h in allowed_hosts
     ):
-        return ""  # 開始URL自体が想定外のホスト。安全側に倒して理解を諦める
+        # 開始URL自体が想定外のホスト。安全側に倒して理解を諦める
+        return "", "host_not_allowed"
     tmp_path = None
     try:
         req = urllib.request.Request(video_url, headers={"User-Agent": BROWSER_UA})
@@ -228,15 +236,18 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
         with cm as r:
             content_type = r.headers.get("Content-Type", "")
             if not content_type.startswith("video/"):
-                return ""  # 想定外のContent-Type。動画以外のデータをGeminiに渡さない
+                # 想定外のContent-Type。動画以外のデータをGeminiに渡さない
+                return "", "bad_content_type"
             content_length = r.headers.get("Content-Length")
             data = r.read(_VIDEO_MAX_BYTES + 1)
         if len(data) > _VIDEO_MAX_BYTES:
-            return ""  # 上限超過。不完全データをGeminiに渡さない
+            # 上限超過。不完全データをGeminiに渡さない
+            return "", "too_large"
         if content_length is not None:
             try:
                 if int(content_length) != len(data):
-                    return ""  # 途中で切断された(接続断等)。不完全データをGeminiに渡さない
+                    # 途中で切断された(接続断等)。不完全データをGeminiに渡さない
+                    return "", "truncated_download"
             except ValueError:
                 pass
         fd, tmp_path = tempfile.mkstemp(suffix=".mp4")
@@ -253,14 +264,22 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
         if getattr(uploaded.state, "name", "") != "ACTIVE":
             # 長尺動画はGemini側の処理が数分かかる場合がある。無人ジョブの時間予算を優先し、
             # 100秒待って終わらなければ理解を諦める(missing: video_contentで正直に記録)。
-            return ""
+            return "", "gemini_timeout"
         resp = client.models.generate_content(
             model="gemini-flash-latest",
             contents=[uploaded, "この動画に映っている内容と、話されている・聞こえる音声の内容を、日本語で具体的に要約して。"],
         )
-        return (resp.text or "").strip()[:max_chars]
-    except Exception:
-        return ""
+        out = (resp.text or "").strip()[:max_chars]
+        # 例外は出ていないが中身が空。Gemini が答えを返さなかったケースを
+        # 「成功」と記録すると、後から見て理由が消える。
+        return (out, "") if out else ("", "gemini_empty_response")
+    except Exception as e:
+        # 無料枠切れ(429)・ネットワーク断・API仕様変更が全部ここに来る。
+        # 枠切れは翌日には戻るので一過性側だが、区別できるよう例外の型名だけ残す。
+        name = type(e).__name__
+        if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e) or "quota" in str(e).lower():
+            return "", "gemini_quota"
+        return "", "exception:" + name[:40]
     finally:
         if tmp_path and os.path.exists(tmp_path):
             try:
@@ -377,18 +396,25 @@ def fetch_x(url, follow_links=True, understand_video=True):
     # 済むはずの引用元テキスト本文まで巻き添えで失われるバグを実機で確認したため
     # (output-verifierが発見)。
     video_understanding = ""
+    video_reason = ""          # 動画が無い/理解に成功した場合は空のまま
     has_video = False
     for md in media_details:
         if md.get("type") != "video":
             continue
         has_video = True
         if not understand_video:
+            # 呼び出し側が意図的に理解を切っている（埋め込みリンク経由の引用ツイート等）。
+            # 失敗ではないので、そうと分かるコードを残す。
+            video_reason = "understanding_disabled"
             break
         variants = md.get("video_info", {}).get("variants", [])
         mp4s = [v for v in variants if v.get("content_type") == "video/mp4" and v.get("url")]
         if mp4s:
             best = min(mp4s, key=lambda v: v.get("bitrate", 0))
-            video_understanding = _gemini_video_understanding(best["url"])
+            video_understanding, video_reason = _gemini_video_understanding(best["url"])
+        else:
+            # 動画はあるが mp4 バリアントが1つも無い（HLSのみ等）。ダウンロードする実体が無い。
+            video_reason = "no_mp4_variant"
         break
 
     # t.co 展開: 本文テキストのリンク先(X Article/YouTube/Instagram/Threads/引用ツイート/一般記事)を取得
@@ -455,6 +481,9 @@ def fetch_x(url, follow_links=True, understand_video=True):
             # 動画理解の成否は本文の部分文字列で判定しない（本文側に同じ語が
             # 現れれば誤検出するし、キャプションが空だと接頭辞が付かない）。
             "video_understood": bool(video_understanding),
+            # どの経路で動画理解を諦めたか（成功時・動画なし時は空）。
+            # 恒久/一過性の分類はここでは決めず、照会側が導出する。
+            "video_reason": video_reason,
             "has_video": bool(has_video),
             "title": (article_title or re.sub(r"\s+", " ", tweet_text or "").strip())[:80],
             "text": text,
@@ -530,11 +559,15 @@ def fetch_instagram(url):
     # 動画の中身が要るブックマークは手で深掘りする（Routine には戻さない）。
     # 経緯: Vault Brain/decisions/2026-08-23-instagram-reel-video-give-up.md
     video_understanding = ""
+    # 上の構造的断念を、URL形から推測させずデータとして残す。これがあると照会側は
+    # 「/reel/ を含むか」で恒久性を当てにいく必要がなくなる。
+    video_reason = "instagram_reel_abandoned" if is_reel else ""
 
     return {"ok": True, "type": "instagram", "url": url,
             # キャプションが空だと text が理解結果そのものになり「動画の内容:」が
             # 付かない。部分文字列判定ではこれを取りこぼすので明示フラグを返す。
             "video_understood": bool(video_understanding),
+            "video_reason": video_reason,
             "has_video": bool(is_reel),
             "title": (cap or og_title)[:80], "text": text,
             "author": name, "handle": handle, "date": date,
@@ -910,7 +943,7 @@ def fetch_web(url):
 # ---------- ディスパッチャ ----------
 # 取得ロジックを変えたら上げる。過去の取得結果が「どの版で取られたか」を
 # 後から判別できるようにするための版番号。
-FETCHER_VERSION = "2026-09-02.1"
+FETCHER_VERSION = "2026-09-02.2"
 
 
 # ---------- rid解決（captures.json との逆引き） ----------
@@ -1102,6 +1135,9 @@ def _facts(url, started, result):
         "image_count": images,
         "has_video": bool(result.get("has_video")),
         "video_understood": bool(result.get("video_understood")),
+        # どの経路で動画理解を諦めたかの生の理由コード。恒久/一過性のラベルは
+        # ここに焼き付けず、照会側(ledger.py)がこのコードから導出する。
+        "video_reason": result.get("video_reason", ""),
         "reason": result.get("reason", ""),
         # 同じ日に同じURLを何度取り直したか。日別ファイルはURLキーのdictなので
         # 同日2回目は1回目のレコードを上書きしてしまい、回数の痕跡だけが消える
