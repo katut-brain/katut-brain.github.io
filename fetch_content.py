@@ -84,6 +84,17 @@ def _get(url, ua, timeout=12, max_bytes=600_000):
         return None, ""
 
 
+def _http_fail_reason(prefix, st):
+    """HTTPステータスから fail_reason コードを組み立てる（2026-09-03 Task 追加）。
+    stがNone/0(通信自体が失敗し、ステータスが得られなかった)場合は "<prefix>_empty" を返す。
+    それ以外は "<prefix>_http_<st>" を返す（404/410はledger.py側の _FAIL_REASON_KIND が
+    前方一致でpermanentと分類する。ここでは恒久/一過性の判断はしない＝一次データに焼き付けない）。
+    """
+    if not st:
+        return "%s_empty" % prefix
+    return "%s_http_%s" % (prefix, st)
+
+
 def _meta(htmltext, prop):
     """<meta property|name="prop" content="..."> を拾って unescape。"""
     m = re.search(r'<meta\s+(?:property|name)=["\']%s["\']\s+content=["\'](.*?)["\']' % re.escape(prop),
@@ -358,18 +369,22 @@ def fetch_x(url, follow_links=True, understand_video=True):
             return {"ok": False, "type": "x", "url": url,
                     "reason": "X Article の直リンク。告知ツイートの status ID が無いため本文を取得できない"
                               "（Article内部IDから辿る公開APIは未確認）",
+                    "fail_reason": "x_article_direct_link",
                     "depth": "shallow", "missing": ["article_body"]}
-        return {"ok": False, "type": "x", "reason": "tweet id をURLから抽出できない", "url": url}
+        return {"ok": False, "type": "x", "reason": "tweet id をURLから抽出できない", "url": url,
+                "fail_reason": "x_tweet_id_unparsable"}
     tid = m.group(1)
     api = "https://cdn.syndication.twimg.com/tweet-result?id=%s&token=%s&lang=en" % (tid, _tweet_token(tid))
     st, txt = _get(api, BROWSER_UA)
     if st != 200 or not txt.strip():
         return {"ok": False, "type": "x", "reason": "syndication 空/失敗 (status=%s)" % st,
-                "url": url, "fallback": "twitterapi.io"}
+                "url": url, "fallback": "twitterapi.io",
+                "fail_reason": _http_fail_reason("x_syndication", st)}
     try:
         d = json.loads(txt)
     except Exception:
-        return {"ok": False, "type": "x", "reason": "JSON parse 失敗", "url": url}
+        return {"ok": False, "type": "x", "reason": "JSON parse 失敗", "url": url,
+                "fail_reason": "x_syndication_bad_json"}
     u = d.get("user", {})
     media_details = d.get("mediaDetails", [])
     media = [md.get("media_url_https", "") for md in media_details if md.get("media_url_https")]
@@ -504,12 +519,14 @@ def fetch_instagram(url):
     st, txt = _get(url, CRAWLER_UA)
     if not txt:
         return {"ok": False, "type": "instagram", "reason": "取得失敗 (status=%s)" % st,
-                "url": url, "fallback": "oEmbed(Metaアプリ) or Apify"}
+                "url": url, "fallback": "oEmbed(Metaアプリ) or Apify",
+                "fail_reason": _http_fail_reason("instagram", st)}
     og_title = _meta(txt, "og:title")
     og_desc = _meta(txt, "og:description")
     og_img = _meta(txt, "og:image")
     if not og_title and not og_desc:
-        return {"ok": False, "type": "instagram", "reason": "og:meta無し（JS殻/ログイン壁の可能性）", "url": url}
+        return {"ok": False, "type": "instagram", "reason": "og:meta無し（JS殻/ログイン壁の可能性）", "url": url,
+                "fail_reason": "instagram_no_og_meta"}
     # og_title 例: 'Kalypso on Instagram: "Sites for designers"'
     # ⚠️ re.S 必須（2026-09-02 Task O の実測で発見）。IGのキャプションは改行を含むのが普通で、
     # DOTALLが無いと `.` が改行を跨げず**複数行キャプションでは必ずマッチに失敗する**。
@@ -637,7 +654,8 @@ def fetch_threads(url):
                     "cover": og_img or "", "note": "og:meta fallback",
                     "depth": "shallow", "missing": ["visual_content", "audio_content"]}
 
-    return {"ok": False, "type": "threads", "reason": "oEmbed & og:meta 失敗", "url": url}
+    return {"ok": False, "type": "threads", "reason": "oEmbed & og:meta 失敗", "url": url,
+            "fail_reason": "threads_no_og_meta"}
 
 
 # ---------- YouTube ----------
@@ -722,7 +740,8 @@ def fetch_youtube(url):
                     "note": "og:meta fallback",
                     "depth": "full" if has_transcript else "shallow",
                     "missing": [] if has_transcript else ["transcript"]}
-    return {"ok": False, "type": "youtube", "reason": "oEmbed & og:meta 失敗", "url": url}
+    return {"ok": False, "type": "youtube", "reason": "oEmbed & og:meta 失敗", "url": url,
+            "fail_reason": "youtube_no_og_meta"}
 
 
 # ---------- 汎用Web(fetch_web専用のSSRF対策: IPピン留め方式) ----------
@@ -789,7 +808,10 @@ def _literal_ip_from_host(host):
 
 def _resolve_pinned_ip(host):
     """hostを検証し、接続に使ってよい単一のIPアドレス文字列を返す。
-    戻り値: (ip_str, reason)。reasonが非空なら拒否/失敗(ip_strはNone)。
+    戻り値: (ip_str, reason, fail_reason_code)。reasonが非空なら拒否/失敗(ip_strはNone)。
+    fail_reason_code は reason が非空のときだけ非空（呼び出し元のfetch_web()がok:falseの
+    dictに詰める"fail_reason"の値。恒久/一過性の分類はここでは決めず、照会側(ledger.py)が
+    このコードから導出する＝一次データに焼き付けない）。
 
     名前解決で複数IPが返る場合、そのうち1つでもプライベート/予約範囲に該当すれば
     フェイルクローズで全体を拒否する(一部の解決結果だけが不正でも、そのホスト経由での
@@ -798,23 +820,23 @@ def _resolve_pinned_ip(host):
     literal = _literal_ip_from_host(host)
     if literal is not None:
         if _is_unsafe_ip(str(literal)):
-            return None, "private/reserved IPへの接続を拒否"
-        return str(literal), ""
+            return None, "private/reserved IPへの接続を拒否", "ssrf_rejected"
+        return str(literal), "", ""
     try:
         infos = socket.getaddrinfo(host, None)
     except Exception as e:
-        return None, "DNS解決失敗: %s" % e
+        return None, "DNS解決失敗: %s" % e, "dns_failed"
     candidates = []
     for _family, _socktype, _proto, _canonname, sockaddr in infos:
         ip_str = sockaddr[0]
         if ip_str not in candidates:
             candidates.append(ip_str)
     if not candidates:
-        return None, "DNS解決結果が空"
+        return None, "DNS解決結果が空", "dns_failed"
     for ip_str in candidates:
         if _is_unsafe_ip(ip_str):
-            return None, "private/reserved IPへの接続を拒否"
-    return candidates[0], ""
+            return None, "private/reserved IPへの接続を拒否", "ssrf_rejected"
+    return candidates[0], "", ""
 
 
 class _PinnedHTTPConnection(http.client.HTTPConnection):
@@ -845,24 +867,27 @@ class _PinnedHTTPSConnection(http.client.HTTPSConnection):
 
 
 def _safe_get_web(url, ua, timeout=12, max_bytes=600_000):
-    """fetch_web()専用の安全GET。(status, text, reason) を返す。
+    """fetch_web()専用の安全GET。(status, text, reason, fail_reason) を返す。
     プライベート/ループバック/リンクローカル/予約/マルチキャスト/未指定のIPアドレスへの接続を
     拒否する(SSRF対策・詳細は本ブロック冒頭のコメント参照)。失敗/拒否時は status=None または
-    エラーstatus、text=""。reasonは拒否/失敗理由の説明で、SSRF対策によるブロック時は
+    エラーstatus、text=""。reasonは拒否/失敗理由の人間向け説明で、SSRF対策によるブロック時は
     "private/reserved IPへの接続を拒否" のように専用の文言を返す(タイムアウト等の単純な通信失敗
     "タイムアウト"/"接続失敗: ..." とは文言上明確に区別できる)。
+    fail_reason は機械可読の理由コード（呼び出し元のfetch_web()がok:falseのdictにそのまま
+    詰める）。reasonが空(=成功、またはHTTPステータスはあるが本文が空だった等の未分類ケース)
+    のときはfail_reasonも空文字のまま返す。
     """
     current_url = url
     for _ in range(_WEB_MAX_REDIRECTS + 1):
         parts = urllib.parse.urlsplit(current_url)
         if parts.scheme not in ("http", "https"):
-            return None, "", "非対応スキーム: %s" % (parts.scheme or "(なし)")
+            return None, "", "非対応スキーム: %s" % (parts.scheme or "(なし)"), "unsupported_scheme"
         host = _host_of(current_url)
         if not host:
-            return None, "", "ホスト名を抽出できない"
-        ip, reason = _resolve_pinned_ip(host)
+            return None, "", "ホスト名を抽出できない", "bad_host"
+        ip, reason, fail_code = _resolve_pinned_ip(host)
         if reason:
-            return None, "", reason
+            return None, "", reason, fail_code
         port = parts.port or (443 if parts.scheme == "https" else 80)
         path = parts.path or "/"
         if parts.query:
@@ -880,19 +905,21 @@ def _safe_get_web(url, ua, timeout=12, max_bytes=600_000):
                 location = resp.getheader("Location")
                 resp.read(max_bytes)  # ボディを読み切ってから次ホップへ(接続を正しく終端する)
                 if not location:
-                    return status, "", "リダイレクト先Locationヘッダが無い"
+                    # statusはある(3xx)がLocationが無く追えない。txtは空のまま
+                    # fetch_web()側のweb_http_<st>フォールバックに委ねる(専用コードは持たない)。
+                    return status, "", "リダイレクト先Locationヘッダが無い", ""
                 current_url = urllib.parse.urljoin(current_url, location)
                 continue
             raw = resp.read(max_bytes)
-            return status, raw.decode("utf-8", "replace"), ""
+            return status, raw.decode("utf-8", "replace"), "", ""
         except (socket.timeout, TimeoutError):
-            return None, "", "タイムアウト"
+            return None, "", "タイムアウト", "timeout"
         except Exception as e:
-            return None, "", "接続失敗: %s" % e
+            return None, "", "接続失敗: %s" % e, "connect_failed"
         finally:
             if conn is not None:
                 conn.close()
-    return None, "", "リダイレクトが多すぎる"
+    return None, "", "リダイレクトが多すぎる", "too_many_redirects"
 
 
 # ---------- 汎用Web ----------
@@ -903,9 +930,10 @@ WEB_BODY_MIN_FULL = 600
 
 
 def fetch_web(url):
-    st, txt, reason = _safe_get_web(url, BROWSER_UA)
+    st, txt, reason, fail_code = _safe_get_web(url, BROWSER_UA)
     if not txt:
-        return {"ok": False, "type": "web", "reason": reason or ("取得失敗 (status=%s)" % st), "url": url}
+        return {"ok": False, "type": "web", "reason": reason or ("取得失敗 (status=%s)" % st), "url": url,
+                "fail_reason": fail_code or _http_fail_reason("web", st)}
     title = _meta(txt, "og:title")
     if not title:
         mt = re.search(r"<title[^>]*>(.*?)</title>", txt, re.I | re.S)
@@ -949,7 +977,7 @@ def fetch_web(url):
 # ---------- ディスパッチャ ----------
 # 取得ロジックを変えたら上げる。過去の取得結果が「どの版で取られたか」を
 # 後から判別できるようにするための版番号。
-FETCHER_VERSION = "2026-09-02.2"
+FETCHER_VERSION = "2026-09-03.1"
 
 
 # ---------- rid解決（captures.json との逆引き） ----------
@@ -1145,6 +1173,9 @@ def _facts(url, started, result):
         # ここに焼き付けず、照会側(ledger.py)がこのコードから導出する。
         "video_reason": result.get("video_reason", ""),
         "reason": result.get("reason", ""),
+        # 取得失敗(ok:false)の機械可読な理由コード。恒久/一過性の分類はここに焼き付けず、
+        # 照会側(ledger.py)がこのコードから導出する(video_reasonと同じ流儀)。
+        "fail_reason": result.get("fail_reason", ""),
         # 同じ日に同じURLを何度取り直したか。日別ファイルはURLキーのdictなので
         # 同日2回目は1回目のレコードを上書きしてしまい、回数の痕跡だけが消える
         # （2026-09-02 Codexの敵対的レビューで発見）。ファイル形式を変えずに

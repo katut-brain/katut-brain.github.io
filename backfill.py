@@ -45,11 +45,9 @@
 # （2026-09-03 CEO決定・4周目レビュー対応）。この場合の STATUS は attempted では
 # なく rid_mismatch のまま（改善判定はしない）。
 #
-# 既知の限界（2026-09-03 Codexレビュー指摘）: ledger._reason_kind() は video_reason 等の
-# 「理由コード」しか恒久/一過性に分類できず、`reason` の自由文字列は分類しない。そのため
-# X Article 直リンクや一般Webの安全拒否（SSRF対策など）で構造的に取得できないものも
-# reason_kind==unknown のまま max_attempts 回まで再試行されてから exhausted に落ちる。
-# fetcher 側に理由コードを追加するのは G-2 のスコープ外（別タスク）。
+# `fail_reason` 導入（2026-09-03）後は、表（ledger.py の _FAIL_REASON_KIND）にあるコードは
+# permanent として候補から除外される。自由文 `reason` しか無い旧レコードと og:meta 無し系は
+# 依然 unknown のまま max_attempts 回まで再試行されてから exhausted に落ちる。
 #
 # 使い方:
 #   python3 backfill.py --target YYYY-MM-DD [--limit N] [--max-attempts N] [--dry-run] [--timeout SEC]

@@ -13,7 +13,7 @@
 #   python3 ledger.py --summary    # 全体集計
 #   python3 ledger.py --url <url>  # URLで引く(ridが未解決の件を調べる用)
 
-import sys, os, glob, json, io, datetime
+import sys, os, glob, json, io, datetime, re
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -170,6 +170,49 @@ def _video_reason_kind(rec):
     return None                # 知らないコード。推測しない
 
 
+# 取得失敗(ok:false)の理由コード(fail_reason) → 恒久/一過性/unknown。
+# fetch_content.py は「どの経路で・なぜ失敗したか」という事実だけを記録し、この分類は
+# 持たない（導出ラベルを一次データに焼き付けない。_VIDEO_REASON_KIND と同型）。
+# ⚠️ permanent は「構造的に再取得しても無駄と確信できるもの」に限定する
+# (2026-09-03 CEO確定事項)。og:meta無し系(IG/Threads/YouTube)・JSON parse失敗・DNS失敗・
+# タイムアウト・接続失敗はコードは付けるが transient/unknown 止まり＝広げない。
+_FAIL_REASON_KIND = {
+    "x_article_direct_link":  "permanent",  # 告知ツイートのstatus IDが無い(構造的)
+    "x_tweet_id_unparsable":  "permanent",  # URLからtweet idを抽出できない(構造的)
+    "x_syndication_empty":    "transient",  # syndication APIが空/status不明で応答
+    "x_syndication_bad_json": "transient",  # syndication APIのJSON parse失敗
+    "instagram_empty":        "transient",  # 通信自体が失敗しstatusが得られなかった
+    "instagram_no_og_meta":   "unknown",    # JS殻/ログイン壁の可能性。構造的と確信できない
+    "threads_no_og_meta":     "unknown",    # 同上
+    "youtube_no_og_meta":     "unknown",    # 同上
+    "unsupported_scheme":     "permanent",  # http/https以外(構造的)
+    "bad_host":                "permanent",  # ホスト名を抽出できない(構造的)
+    "ssrf_rejected":           "permanent",  # private/reserved IPへの接続拒否(構造的)
+    "dns_failed":               "transient", # DNS解決失敗。一過性の可能性がある
+    "timeout":                  "transient",
+    "connect_failed":           "transient",
+    "too_many_redirects":       "transient",
+    "web_empty":                "transient", # 通信自体が失敗しstatusが得られなかった
+}
+
+
+def _fail_reason_kind(rec):
+    """fail_reason コードから恒久/一過性/unknownを引く。コード無し→None。
+    "<prefix>_http_<st>" は前方一致で判定し、<st>が404/410ならpermanent、
+    それ以外の数値ならtransient。未知コード→None（推測しない。_video_reason_kind と同じ流儀）。
+    """
+    code = rec.get("fail_reason") or ""
+    if not code:
+        return None
+    if code in _FAIL_REASON_KIND:
+        return _FAIL_REASON_KIND[code]
+    m = re.match(r"^.+_http_(\d+)$", code)
+    if m:
+        st = int(m.group(1))
+        return "permanent" if st in (404, 410) else "transient"
+    return None                # 知らないコード。推測しない
+
+
 def _reason_kind(rec):
     route = rec.get("route", "")
     url = rec.get("url", "") or ""
@@ -178,6 +221,14 @@ def _reason_kind(rec):
     # 理由コードが記録されていれば、URL形からの推測より優先する（こちらが一次の事実）
     if "video_content" in missing:
         kind = _video_reason_kind(rec)
+        if kind:
+            return kind
+
+    # fail_reason(取得失敗の理由コード)から分類が引ければそれを使う。
+    # ok:true のレコードにfail_reasonが入ることは無い前提だが、念のため ok:false 限定にする
+    # (2026-09-03 追加)。
+    if not rec.get("ok"):
+        kind = _fail_reason_kind(rec)
         if kind:
             return kind
 
@@ -470,6 +521,7 @@ def cmd_summary():
     reason_kind_counts = {}
     rid_source_counts = {}
     video_reason_counts = {}
+    fail_reason_counts = {}
     unresolved_count = 0
     unknown_video_content_count = 0
     exhausted_count = 0
@@ -488,6 +540,9 @@ def cmd_summary():
         code = g["latest"].get("video_reason") or ""
         if code:
             video_reason_counts[code] = video_reason_counts.get(code, 0) + 1
+        fcode = g["latest"].get("fail_reason") or ""
+        if fcode:
+            fail_reason_counts[fcode] = fail_reason_counts.get(fcode, 0) + 1
         # backfill_candidates() と同じ導出（2026-09-03 Codex 3周目レビュー指摘）:
         # open・rid持ち・非permanent・非exhausted のグループのうち、そのURLが後日
         # 別rid(または無rid)のレコードに「奪われて」いるものを別枠で数える。
@@ -541,6 +596,14 @@ def cmd_summary():
             print("  %-26s %3d  [%s]" % (code, n, kind))
     else:
         print("  (記録なし。2026-09-02 以前のレコードには video_reason が無い)")
+    print()
+    print("-- fail_reason 別件数(取得失敗の理由コード・グループの最新レコード基準) --")
+    if fail_reason_counts:
+        for code, n in sorted(fail_reason_counts.items(), key=lambda x: (-x[1], x[0])):
+            kind = _fail_reason_kind({"fail_reason": code}) or "unknown"
+            print("  %-26s %3d  [%s]" % (code, n, kind))
+    else:
+        print("  (記録なし。2026-09-03 以前のレコードには fail_reason が無い)")
     print()
     print("-- rid_source 別件数(レコード単位) --")
     for k in ("exact", "normalized", "ambiguous", "unresolved", "no_captures", "backfill", "(missing)"):
