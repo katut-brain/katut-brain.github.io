@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-09-03 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-03 の振り返り</h1>
+  <div class="meta">Claude Fable 5.1のハーネス設計・活用事例と、AI臭さを消す執筆スキル(3件)</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の3件は媒体もテーマもバラバラに見えるが、貫くのは「AIの出力をどう検証・制御し、責任の所在を人間側に残すか」という運用設計への問いである。Fable 5.1向けのXMLタグ式ハーネス(活性化・出典照合・完了条件を明示するテンプレ)、海外20事例が示す「完了条件を観測可能にする」共通項、そしてAI臭い文章を機械的に判定するAgent Skill——いずれも、AIに何を任せ、どこで人間が検証するかという同じ設計思想の異なる現れ方をしている。</p>
+    <p>「知る・紹介したい」軸が強く活性化した日で、自分の手で実装するというより、他者の運用ノウハウ・事例・スキルを収集するフェーズにある。特に「ハーネス」というキーワードは8/31の保存(「神ハーネス理論」)にも現れており、Claudeの長時間タスク運用への関心が断続的に続いている。</p>
+    <ul class="pts">
+      <li><b>ハーネス設計</b>：Adaptive Thinkingが常時稼働するFable 5.1向けに、&lt;activation&gt;&lt;scope&gt;&lt;source_rules&gt;等のXMLタグで活性化・出典照合・完了条件を明示する共通プロンプトのテンプレ化が進んでいる</li>
+      <li><b>活用事例20選</b>：MongoDBの3日間無人プロトタイピング、Rampの38時間無人実験、Browserbaseの82%タスク完了など、成功事例の共通項は「完了条件の観測可能化」と「外部証拠による検証」であり、長時間動かせることと放置してよいことは別だと繰り返し強調されている</li>
+      <li><b>AI臭さ検出</b>：sudachipyによる形態素解析でAI的文体を機械判定するAgent Skill「natural-japanese」が公開され、単なる禁止語リストではなく検出(機械)と判断(人間)を分離する設計を取っている</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>「長時間動かせる」ことと「放置してよい」ことは別だとFable 5.1の20事例が繰り返し示しているが、このルーティン自体(毎晩無人でRaindropを取り込み・要約し・公開する処理)に、完了条件の観測可能化や人間承認ゲートをどこまで設計として組み込めているか？</div>
+  </section>
+
+  <h2>🔎 深掘り(関連記事)</h2>
+  <section class="notes">
+    <div class="ntag">Fable 5.1のハーネス運用</div>
+    <ul class="ilist">
+      <li><a href="https://zenn.dev/idnet/articles/d041991dde0608" target="_blank" rel="noopener"><b>Claude Fable 5.1 を使ってみる：長時間エージェント開発で注目したい進化点</b></a> <span>→ 権限分離・監査ログのマスキング・人間承認ゲート・実行上限(時間/トークン/再試行回数)という4点が実務導入の必須要件とされており、rid=1842298384のXMLタグ式ハーネスが自己申告的な制約に留まるのに対し、外部からの制御機構も併せて必要だと分かる</span></li>
+    </ul>
+    <div class="ntag">AI臭さの検出手法</div>
+    <ul class="ilist">
+      <li><a href="https://qiita.com/Rapls/items/b98b09ec57c7e4b7be05" target="_blank" rel="noopener"><b>AIが書いた日本語から「AI臭さ」を消すスキルと、採点スクリプトを公開します</b></a> <span>→ 禁止語除去だけでは不十分で、「書き手が主体を引き受けていない」ことこそが本質という4層構造の分析。文長の変動係数(CV)や語尾トップ2比率といった機械採点指標を持つ点は、当日保存の「natural-japanese」スキルと同じ問題意識に立つ</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI活用(3件)</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/makeai_ceo/status/2095351672180703680?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HRQvO8absAEtidu.jpg:large" onerror="this.remove()"><span class="ph">X · @MakeAI_CEO</span></div>
+        <div class="vbody"><div class="vtitle">Fable5.1の精度をぶち上げる、ハーネス設計とテンプレプロンプト</div><div class="vdesc">Adaptive Thinkingが常時有効になったFable 5.1向けに、&lt;activation&gt;&lt;scope&gt;&lt;source_rules&gt;&lt;execution&gt;&lt;verification&gt;等のXMLタグで役割・出典照合・完了条件を固定する「共通ハーネス」テンプレを提示し、末尾に依頼を書き込む&lt;request&gt;形式も併記</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/makeai_ceo/status/2095351672180703680?s=12" data-title="Fable5.1の精度をぶち上げる、ハーネス設計とテンプレプロンプト" data-rid="1842298384">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/shodaiiiiii/status/2095052935797563621?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HRMfJQoawAAeIUY.jpg" onerror="this.remove()"><span class="ph">X · @shodaiiiiii</span></div>
+        <div class="vbody"><div class="vtitle">AIっぽくない文章を書きたいならこのスキル入れとこうぜ</div><div class="vdesc">sudachipyの形態素解析でAI臭さを機械的に検出するAgent Skill「natural-japanese」(MIT、v1.3.0)。forbidden-patterns.mdで禁止語・紋切り型フレーズを検出し、lint.pyが文リズムの単調さや英語統語の直訳調まで判定する設計</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/shodaiiiiii/status/2095052935797563621?s=12" data-title="AIっぽくない文章を書きたいならこのスキル入れとこうぜ" data-rid="1842298230">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/ai_ai_ailover/status/2095122625551098331?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HRNe6AfbEAAhndM.jpg:large" onerror="this.remove()"><span class="ph">X · @ai_ai_ailover</span></div>
+        <div class="vbody"><div class="vtitle">Claude Fable 5.1、海外のガチ化け物が見つけた活用事例20選</div><div class="vdesc">宇宙船運用ゲームを仕上げたEthan Mollick、複数サービスを調査し約3日で試作品を完成させたMongoDB、38時間無人実行で実験の誤りを発見したRampなど、ゲーム系5件・実務系15件を整理。共通項は「完了条件の観測可能化」と外部証拠による検証</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ai_ai_ailover/status/2095122625551098331?s=12" data-title="Claude Fable 5.1、海外のガチ化け物が見つけた活用事例20選" data-rid="1842276762">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '(frontmatter: date / tags: [type/bookmark] / raindrop_id / source)。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
