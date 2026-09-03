@@ -28,8 +28,52 @@
 2. `python3 _build_graph.py` を実行。Raindrop の新規を `captures.json` に取り込み、既存レコードも冪等に更新する（失敗してもログして続行）。
    - **出力の `IMPORT_STATUS:` 行を必ず読む**。`INCOMPLETE` だった場合は Raindrop を全件取得できておらず、**その日の振り返りが欠損しうる**。この場合は手順5の `reviews/<TARGET>.html` の `</footer>` 直前に `<p class="notegen-warn">⚠️ 取り込み不完全: Raindrop取得エラー N件。欠けている保存がある可能性あり</p>` を1行足して、欠損の可能性を残す（黙って完走しない）。import は冪等なので翌ランで自動的に回復する。
    - この行を見落として「正常に完走した」と扱わないこと。無人運用ではログを誰も読まないため、**成果物側に痕跡を残すことが唯一の検知手段**になる。
+2.5. **バックフィル（過去に取得できなかった rid 持ちレコードの再取得）**：
+   `FETCH_FACTS_DIR="$PWD/fetch_facts" FACTS_DATE=$TARGET timeout 600 python3 backfill.py --target $TARGET --limit 1 --timeout 480` を実行する。
+   - ⚠️ **`FETCH_FACTS_DIR="$PWD/fetch_facts"` を必ず前置する**。書き先をリポ直下の `fetch_facts/`（＝手順8(b)で
+     `git status` を見る対象と同じディレクトリ）に固定するため。前置しないと `backfill.py`/`fetch_content.py` の
+     既定値に依存することになり、実行環境しだいで書き先がリポ追跡対象からずれるリスクがある。
+   - 初夜はこの `--limit 1`（外側 `timeout 600`）で様子を見る。問題が無ければ `--limit 5`（外側 `timeout 2500`）へ上げる:
+     `FETCH_FACTS_DIR="$PWD/fetch_facts" FACTS_DATE=$TARGET timeout 2500 python3 backfill.py --target $TARGET --limit 5 --timeout 480`。
+     1件あたり最大 `--timeout` 秒・上限 `--limit` 件なので、最大所要は `limit × timeout` 秒（外側の `timeout` はこれに
+     60秒の余裕を足した値を下回らないこと。既定 `--timeout 480` なら `--limit 1` → 540超＝600、`--limit 5` → 2400超＝2500）。
+   - バックフィル結果の内訳は `BACKFILL_STATUS:` 行で確認する（candidates/attempted/improved/failed/stub_written等）。
+     push の分岐は手順8(b)の `git status` だけで判定する（`BACKFILL_STATUS:` の内訳では判定しない）。
+   - このコマンドは失敗しても（非ゼロ終了・timeoutによる強制終了含め）手順を止めない。`backfill.py` は内部で
+     例外を握りつぶし exit 0 で終わる設計だが、シェルの `timeout` コマンド自体がプロセスを強制終了した場合は
+     非ゼロで返ることがある。いずれの場合も次の手順3へそのまま進む。
+   - このステップは `fetch_facts/<TARGET>.json` に直接追記する（手順4.2と同じ書き先・同じ形式）。
+     手順4.2で同じURLを通常取得した場合、後勝ちでその日のレコードが上書きされる（内容は最新化され、
+     `attempt_seq` が加算される。データが失われるわけではない）。
+   - レコードを残せなかった候補（timeout・no_record・例外）には、backfill 自身が失敗レコード
+     （`route: "backfill"`, `ok: false`）を書く。これが無いと同じURLが毎晩 `--limit` の枠を消費し続けるため。
+   - スタブ書き込み・`backfill_rid` タグ付けも `fetch_facts/<TARGET>.json` へのファイル差分になるので、
+     `attempted=0` の夜でも手順8(b)の push 判定（`git status --porcelain` で差分あり）に該当し push される。
+   - 対象が0件（`candidates=0`）でも正常終了として扱う。
+   - ⚠️ このコマンド形（`timeout` コマンド・`$TARGET` の `date -d` 計算）は Routine の Linux 実行環境専用。
+     Windows ローカルで動作確認したいときは `python3 backfill.py --dry-run`（対象抽出のみ確認、実取得はしない）
+     を直接叩く。
+   - ⚠️ **既知の限界**: 対象抽出は `ledger.py` の `reason_kind` 判定に依存するが、これは
+     `video_reason` 等の理由コードしか恒久/一過性に分類できず、`reason` の自由文字列
+     （X Article 直リンクや一般Webの安全拒否＝SSRF対策など「構造的に取れない」もの）は
+     分類しない。そのため本来再取得しても無駄なものも `unknown` 扱いのまま `--max-attempts`
+     回まで再試行されてから exhausted に落ちる。fetcher 側に理由コードを足すのは別タスク。
+   - **運用ゲート（初夜の翌朝、人間が確認する）**: `python3 ledger.py --summary` で
+     `exhausted` 件数と `state` 内訳を見る。バックフィル対象になった rid のうち1件は
+     `python3 ledger.py <rid>` で history（fetched_at, depth, ok）を個別に確認し、
+     想定通り再試行・記録されているかを見る。
 3. `captures.json` を読み、`date == TARGET` のレコードを抽出。
    - **0件なら reviews は作らず手順6へ**（空ノートを作らない）。
+     （バックフィル(手順2.5)がその日 `fetch_facts/<TARGET>.json` に何か書いていた場合でも、
+     reviews を作る条件（当日新規保存1件以上）とは無関係。手順8のpush判定は reviews の有無ではなく
+     fetch_facts の有無で行うことに注意 — 詳細は手順8参照）
+   - ⚠️ **0件のときの手順経路を明示する**: 手順6を実行したら、**手順7・7.5 は飛ばして手順8へ進む**
+     （手順7は「reviews/<TARGET>.html」の自己検証、手順7.5は「reviews で保存されたブックマーク」の
+     ノート生成であり、どちらも reviews が存在しない0件の日には実行対象が無い。手順7・7.5の冒頭には
+     それぞれ「手順5で reviews を作った場合」「手順5で reviews を作った場合のみ実行。0件の日は
+     スキップして手順8へ」という条件が明記されている＝無人エージェントがこの条件を読み飛ばして
+     存在しない reviews を検証・参照しようとして止まることを防ぐための重複明示）。手順8では
+     0件の日は (b) か (c) のどちらかになる（詳細は手順8参照）。
 4. **URL分類**：手順3で抽出した各レコードの `source` URL を、取得前に次の2グループへ分類する。
    - **グループA（動画理解が発動しうる投稿）**：`x.com` / `twitter.com` のURL全般（画像投稿か動画投稿か事前に判別できないため、X上のURLは一律こちらに含める）、および `instagram.com/reel/` を含むURL。この一律化により、動画を含まない通常のX投稿までバッチ処理の恩恵（一度に複数件をまとめて高速取得できる利点）を失う非効率が生じるが、事前判別コストとのトレードオフとしてこれを許容する。
    - **グループB（それ以外）**：通常のInstagram投稿（`instagram.com/p/` 等）・Threads・YouTube・一般Webの記事URL。
@@ -260,15 +304,34 @@
    - **検証結果の記録**：検証に落ちたノートが1件以上あった場合、`reviews/<TARGET>.html` の `</footer>` 直前に、`_build_feed.py` の抽出対象（`.meta`/`.summary p`/`.notes` 内`li`）と衝突しない独自クラスで1行追記する：`<p class="notegen-warn">⚠️ ノート生成: 検証失敗 N件（rid: 1234, 5678 ...）</p>`。全件合格した場合はこの追記をしない。この追記は手順8で push する `reviews/<TARGET>.html` の内容に含める。
 8. **公開（GitHubへ反映）**：対象は `katut-brain/katut-brain.github.io` リポ（Vaultリポではない）。
    - ⚠️ **生の `git push` は使わない**。クラウドのルーティンでは git proxy が **403** を返す（権限でなく経路の制約）。**GitHubの組み込み push ツール（`push_files`）で `main` に直接コミットする**。
-   - 押すファイルは **`reviews/<TARGET>.html` と、手順4.2で作った `fetch_facts/<TARGET>.json` の2つだけ**（手順5で作った場合）。これらを **1回の `push_files` 呼び出し**で `main` にコミット（メッセージ `update: <TARGET>`）。
    - 🚫 **`index.html` は push しない**（2026-08-31 変更・手順6を参照）。GitHub Actions が自動で再生成するので、あなたが触ると壊す側にしかならない。`index.html` を push 対象に入れたくなったら、それは手順6を読み飛ばしている。
    - **`captures.json` / `data.js` は push しない**：captures.json のRaindrop取り込みは冪等（`_build_graph.py` が既存レコードも毎回更新するので翌ランで再現される。2026-08-23に冪等化済み）、data.js は退役ファイル。大きいファイルを読むと文脈が膨らみ自動圧縮で迷子になるため、**触らない・読み込まない**。
-   - ただし `fetch_facts/<TARGET>.json` は1日ぶんだけの小さなファイルなので push する。**これを落とすと取得深度の履歴が残らず、改善したかどうかを永久に測れなくなる**（手順4.2の⚠️を参照）。
+   - **この手順は次の3分岐のどれか1つだけを行う**（reviews の有無と fetch_facts の有無で分岐する。手順2.5のバックフィルが reviews 無しの日にも `fetch_facts/<TARGET>.json` を作りうるため、分岐を誤ると「存在しない reviews を扱おうとして失敗する」または「push すべき fetch_facts を見落とす」のどちらかが起きる）：
+
+   **(a) reviews あり（手順5で `reviews/<TARGET>.html` を作った場合）**：
+   - 押すファイルは **`reviews/<TARGET>.html` と `fetch_facts/<TARGET>.json` の2つ**（手順4.2で作られている。無ければ `reviews/<TARGET>.html` のみ）。**1回の `push_files` 呼び出し**で `main` にコミット（メッセージ `update: <TARGET>`）。
    - ⚠️ **push_files に渡す前に、送る中身が本物か必ず確認する**（過去に中身が丸ごと `PLACEHOLDER` という仮文字列に置き換わって公開サイトが一時的に壊れた事故が2回発生している）。`push_files` の引数に入れる `reviews/<TARGET>.html` の内容は、**手順5で実際に生成・確認したファイルの中身をそのまま使う**（要約・省略・仮置きの文字列で代用しない）。呼び出し直前に、渡す文字列が `<!doctype html>` で始まり `</html>` で終わっているか、`PLACEHOLDER` という語を含んでいないかを目視確認してから送信する。
    - **push後、リポジトリ上の内容を読み返して検証する**（自己申告で「push成功」と判断しない）。**`reviews/<TARGET>.html` のみ**を GitHub から取得し、上と同じ確認（`<!doctype html>`で始まる・`PLACEHOLDER`を含まない・分量が妥当）を行う。異常が見つかったら、正しい内容で即座に再度 `push_files` を実行して直す。
-   - `index.html` の出来ばえは確認しなくてよい（Actions 側の検証ゲートが担当する）。**`index.html` を GitHub から読みに行かないこと** — 122KB を読むと文脈が膨らんで自動圧縮で迷子になる。
-   - `push_files` が一時失敗しても、生 `git push` には**戻らない**（403ループ防止）。1〜2回だけ `push_files` を試し、ダメなら諦めて翌ランに回す。
-   - reviews を作らなかった日（0件）は push しない。
+
+   **(b) reviews 無し・今回のランで `fetch_facts/<TARGET>.json` に差分が生じた場合（手順2.5のバックフィルだけが書いた日）**：
+   - ⚠️ **(b) に入る判定条件は `git status --porcelain -- fetch_facts/<TARGET>.json` の出力が空でないこと、これ1つだけ**にする。
+     `BACKFILL_STATUS:` の内訳（`attempted`/`stub_written`/`rid_mismatch`等）は「今夜バックフィルが何をしたかを読むための情報」であり、(b)へ分岐するかどうかの判定条件には使わない。
+     ⚠️ **`attempted` だけを条件にしてはいけない**（2026-09-04 output-verifier指摘で撤回）: stub書き込みだけの夜（`attempted=0 stub_written=1`）や
+     `backfill_rid` タグ付けだけの夜（`rid_mismatch=1`）は `attempted=0` のままだが、どちらも `fetch_facts/<TARGET>.json` に実ファイル差分を生じさせている。
+     `attempted>=1` を条件にすると、これらの夜は push されず、翌晩は新規cloneでスタブ・タグが消えてしまい、attempt_countが実運用で積み上がらない
+     （＝exhaustedに到達しない＝stub/backfill_rid導入の目的が機能しない）。
+     `git status --porcelain` による実差分判定なら、`attempted`/`stub_written`/`rid_mismatch` のどれで生じた差分でも正しく拾える。
+     新規cloneに同日の既存 `fetch_facts/<TARGET>.json` が既に含まれている再実行でも、今回のランで差分が無ければこの条件で自動的に弾かれる（誤push防止）。
+   - `fetch_facts/<TARGET>.json` **単独**で push する（`reviews/<TARGET>.html` は存在しないので push 対象に含めない。存在しないファイルを push しようとしない）。コミットメッセージは `update: <TARGET> (backfill only)`。
+   - `push_files` に渡す `content` は、**ファイルの中身をそのまま文字列として渡す**（JSON をさらに文字列化・エスケープしない）。
+   - push前に、送る中身が本物のJSONであることを確認する：`python3 -c "import json; json.load(open('fetch_facts/<TARGET>.json', encoding='utf-8'))"` のようなコマンドでパースできることを確認してから渡す（`PLACEHOLDER` 等の仮文字列で代用しない）。
+   - push後、`fetch_facts/<TARGET>.json` を GitHub から読み返し、同じくJSONとしてパースできることを確認する。異常があれば正しい内容で再度 `push_files` を実行する。
+
+   **(c) reviews 無し・fetch_facts も無し（または `git status --porcelain -- fetch_facts/<TARGET>.json` が空＝今回のランで変更が無い）**：
+   - 何も push せず正常終了する。
+
+   - 共通: `index.html` の出来ばえは確認しなくてよい（Actions 側の検証ゲートが担当する）。**`index.html` を GitHub から読みに行かないこと** — 122KB を読むと文脈が膨らんで自動圧縮で迷子になる。
+   - 共通: `push_files` が一時失敗しても、生 `git push` には**戻らない**（403ループ防止）。1〜2回だけ `push_files` を試し、ダメなら諦めて翌ランに回す。
 8.5. **公開（Vaultリポへ・ブックマークノート）**（手順7.5でノートを新規作成した場合のみ実行）：対象は `katut-brain/obsidian-vault` リポ（手順8の `katut-brain.github.io` とは別リポ）。
    - 押すファイルは、手順7.5でスキーマ検証に**合格**し新規作成した `Explore/bookmarks/rd-*.md` のみ（検証落ちのファイル・既存ファイルは含めない）。
    - 対象リポジトリ `katut-brain/obsidian-vault` の `main` ブランチへ、GitHubの組み込み push ツール（`push_files`）で直接コミットする（手順8と同じ理由で生の `git push` は使わない）。コミットメッセージは `bookmark notes: YYYY-MM-DD (N件)` 形式（`YYYY-MM-DD` はTARGET、`N` は今回push するノート件数）。
@@ -280,11 +343,19 @@
 - 完全無人。承認・確認を求めない。
 - 各手順は失敗しても全体を止めず、できたところまでで push（**完走優先**）。
 - **本文取得（手順4）の失敗は1回だけ再試行する**。旧ルールは「リトライしない（取りこぼしは翌晩で拾う）」だったが、**翌晩に拾われないことが実測で判明したため撤回した**（手順7.5の重複チェックで既存ノートがある限りスキップされ続けるので、一度「取得できず」と書かれた件は永久に再取得されない）。エンリッチ（手順4.5）や push の再試行回数は従来通り増やさない。
+  （2026-09-03 追記: この課題への対処として手順2.5にバックフィル処理を追加した。手順4のリトライで
+  拾えなかった rid 持ちレコードも、翌晩以降 backfill.py が対象に含めて再試行する。ただし対象は
+  raindrop_id を持つレコードに限る＝この手順書のリトライ強化以前からある rid 無しの旧レコードは
+  backfill.py の対象外のまま。）
+  （ロールバック注記: `backfill.py` 導入コミットを revert してもコード（機能）が止まるだけで、
+  それ以前に push 済みの `fetch_facts/*.json` の履歴は消えない。revert 後に再度バックフィルを
+  有効化したときの `attempt_count` はこの間の試行回数を引き継いだまま再開する。）
 - 手順7.5・8.5（ブックマークノート生成・Vaultリポへのpush）は、手順1〜8（review本体の生成・`katut-brain.github.io`への公開）とは独立した処理。ノート生成側でエラー・失敗が起きても、review本体の生成・公開（手順1〜8）を止めない。逆に手順1〜8のどこかで問題があっても、既に作成済みのノートのpush（手順8.5）は可能な範囲で試みてよい。
 - URL・cover は `captures.json` / `fetch_content` の実値を逐語使用。**捏造しない**。エンリッチ（手順4.5）で出す記事URLも同様に、`WebSearch` が返した実URL／`WebFetch` で開けた実URLだけを使い、変形・補完・推測しない。
 - 英語は日本語へ。要約は「ぼんやり」させず、何が言えるか・何が信号かを具体に。
 
-## 成功条件
-- `date==TARGET` が1件以上 → `reviews/<TARGET>.html` を生成し、`fetch_facts/<TARGET>.json` とあわせて `main` に push。**`index.html` は push しない**（GitHub Actions が自動再生成する・手順6）。
-- 0件 → reviews は作らず、何もせず正常終了する（`index.html` は触らない）。
+## 成功条件（手順8の3分岐に対応）
+- (a) `date==TARGET` が1件以上 → `reviews/<TARGET>.html` を生成し、`fetch_facts/<TARGET>.json` とあわせて `main` に push。**`index.html` は push しない**（GitHub Actions が自動再生成する・手順6）。
+- (b) `date==TARGET` が0件（新規保存が無い日）だが、手順2.5のバックフィルが**今回のランで** `fetch_facts/<TARGET>.json` に実際に変更を生じさせた（`git status --porcelain -- fetch_facts/<TARGET>.json` で差分あり。改善(attempted)・スタブ書き込み(stub_written)・backfill_ridタグ付け(rid_mismatch)のいずれでも差分は生じる） → reviews は作らず、`fetch_facts/<TARGET>.json` だけを push する（コミットメッセージ `update: <TARGET> (backfill only)`）。
+- (c) `date==TARGET` が0件かつ、今回のランでのバックフィルによる `fetch_facts/<TARGET>.json` への変更も無い（ファイル自体が存在しない、または `git status --porcelain` が空で既存ファイルに差分が生じていない） → 何も push せず正常終了する。
 - `date==TARGET` が1件以上あった日は、重複チェックでスキップされなかった各レコードについて、スキーマ検証に合格したノートが Vaultリポ `Explore/bookmarks/` に作成され `main` へ push される（1件も新規作成対象が無ければ手順8.5のpushは行わない＝これも正常終了）。

@@ -13,9 +13,13 @@
 #   python3 ledger.py --summary    # 全体集計
 #   python3 ledger.py --url <url>  # URLで引く(ridが未解決の件を調べる用)
 
-import sys, os, glob, json, io
+import sys, os, glob, json, io, datetime
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+# backfill.py と共有する既定値。ここを唯一の正本にし、backfill.py はこれを import する
+# （2026-09-03 Task G-2）。
+DEFAULT_MAX_ATTEMPTS = 3
 
 # 読み先は fetch_content.py の書き先と必ず同じ解決規則にする（環境変数名も同一）。
 # ここを揃えないと、FETCH_FACTS_DIR を指して取得した分を照会側が見に行かず、
@@ -73,11 +77,18 @@ INCLUDE_LEGACY = False
 
 
 def _effective_rid(rec):
-    """レコードの raindrop_id を返す。無ければ（--include-legacy 時のみ）captures.json で
-    救済を試みる。戻り値: (rid or None, source文字列)。救済時は 'legacy_<元のsource>'。"""
+    """レコードの raindrop_id を返す。無ければ、まず backfill_rid（backfill.py が
+    検証済みで付与した事実。2026-09-03 CEO決定・4周目レビュー対応）を見る。それも
+    無ければ（--include-legacy 時のみ）captures.json で救済を試みる。
+    戻り値: (rid or None, source文字列)。救済時は 'legacy_<元のsource>'。
+    ⚠️ backfill_rid を使っても rid_source は変えない（子が記録した rid 解決の
+    事実＝'unresolved' 等をそのまま保つ。rid 解決できた、という嘘をつかない）。"""
     rid = rec.get("raindrop_id")
     if isinstance(rid, int):
         return rid, _rid_source_of(rec)
+    backfill_rid = rec.get("backfill_rid")
+    if isinstance(backfill_rid, int):
+        return backfill_rid, _rid_source_of(rec)
     if not INCLUDE_LEGACY or _fc_resolve_rid is None:
         return None, _rid_source_of(rec)
     try:
@@ -87,6 +98,18 @@ def _effective_rid(rec):
     if isinstance(resolved, int):
         return resolved, "legacy_" + src
     return None, _rid_source_of(rec)
+
+
+def _has_solid_rid(rec):
+    """raindrop_id（記録時点の事実）または backfill_rid（backfillが検証済みで
+    付与した事実）のどちらかが int であること。captures.json による後追い救済
+    (--include-legacy) はここに含めない（再現性が無い投機的な結び付けのため。
+    2026-09-03 4周目レビュー対応）。"""
+    if isinstance(rec.get("raindrop_id"), int):
+        return True
+    if isinstance(rec.get("backfill_rid"), int):
+        return True
+    return False
 
 
 def _group_key(rec):
@@ -200,7 +223,10 @@ def _attempt_seq_of(rec):
     return n if n >= 1 else 1
 
 
-def _build_groups(records):
+def _build_groups(records, max_attempts=DEFAULT_MAX_ATTEMPTS):
+    """既存呼び出し元(cmd_rid/cmd_url/cmd_summary)は max_attempts を渡さず、既定値3で
+    動く。既存の state 値(resolved/open/permanent)の意味は変えない。exhausted は
+    その場で計算する派生フラグとして dict に足すだけ（一次データには焼き付けない）。"""
     groups = {}
     for rec in records:
         key = _group_key(rec)
@@ -219,23 +245,132 @@ def _build_groups(records):
             state = "permanent"
         else:
             state = "open"
+        # 日別ログはURLキーのdictなので、同日2回目は1回目のレコードを上書きする。
+        # 残るのは最後の1レコードだけなので len() では回数を取りこぼす。
+        # fetch_content 側が引き継いでいる attempt_seq を足して実試行回数にする
+        # （attempt_seq を持たない旧レコードは1回とみなす）。
+        attempt_count = sum(_attempt_seq_of(r) for r in recs_sorted)
+        exhausted = state == "open" and attempt_count >= max_attempts
         summary[key] = {
             "key": key,
-            # 日別ログはURLキーのdictなので、同日2回目は1回目のレコードを上書きする。
-            # 残るのは最後の1レコードだけなので len() では回数を取りこぼす。
-            # fetch_content 側が引き継いでいる attempt_seq を足して実試行回数にする
-            # （attempt_seq を持たない旧レコードは1回とみなす）。
-            "attempt_count": sum(_attempt_seq_of(r) for r in recs_sorted),
+            "attempt_count": attempt_count,
             "records_kept": len(recs_sorted),
             "first_attempt_at": min(fetched_ats) if fetched_ats else None,
             "last_attempt_at": max(fetched_ats) if fetched_ats else None,
             "latest": latest,
             "reason_kind": reason_kind,
             "state": state,
+            "exhausted": exhausted,
             "history": [(r.get("fetched_at"), r.get("depth"), r.get("ok")) for r in recs_sorted],
             "records": recs_sorted,
         }
     return summary
+
+
+def _url_index(records):
+    """url -> そのURLに関わる全レコード(全rid・全dayを横断)のリスト。
+    2026-09-03 Codex 3周目レビュー対応: URL→rid対応が後日変わった/消えたことを
+    検出するために、グループ(rid単位)をまたいで同一URLのレコードを引けるようにする。"""
+    idx = {}
+    for rec in records:
+        idx.setdefault(rec.get("url"), []).append(rec)
+    return idx
+
+
+def _parse_fetched_at(ts):
+    """ISO8601('...Z'含む)をdatetimeにパースする。欠損/不正はNone
+    （2026-09-03 4周目レビュー対応: '比較不能なら終端しない'を安全側の既定にする）。
+    tz無し(naive)の文字列はUTCとみなしてaware化する。fetch_content.py の
+    fetched_at は基本的に必ずUTC('...Z'終端)で書かれるが、テストデータ等で
+    tzなし文字列が混じると naive/aware の比較で TypeError が起きるため、ここで
+    一貫してaware(UTC)に統一する（2026-09-03 5周目レビュー指摘）。"""
+    if not ts or not isinstance(ts, str):
+        return None
+    try:
+        s = ts[:-1] + "+00:00" if ts.endswith("Z") else ts
+        dt = datetime.datetime.fromisoformat(s)
+    except Exception:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=datetime.timezone.utc)
+    return dt
+
+
+def _rid_changed_after(url_index, url, cand_rid, cand_fetched_at, cand_day):
+    """候補(URL, cand_rid)の最新レコードより実時刻で新しい同URLレコードが存在し、
+    その raindrop_id が **int かつ** 候補 rid と異なるなら True。
+    True の場合、そのURLは記録時点でもう別rid に「奪われた」と判断し、候補から
+    終端させる（2026-09-03 Codex 3周目レビュー指摘: これをしないと rid_mismatch は
+    failed に数えるだけで候補グループ自体は毎晩残り続け、--limit の枠を同じ候補が
+    消費し続けてしまう）。
+
+    2026-09-03 Codex 4周目レビュー対応で以下の2点を修正:
+    (1) rid 無し(unresolved)の後続レコードでは終端しない（int かつ不一致のときだけ
+        True）。通常取得で一時的に unresolved になっただけの正当な候補を永久除外
+        していたバグを修正。unresolved な後続の扱いは backfill_rid タグ付け
+        （backfill.py 側）に委ねる。
+    (2) 新旧判定は実時刻(fetched_at を datetime にパース)だけで行う。どちらかが
+        欠損・不正なら「比較不能＝終端しない」（保守側）。_day はバックフィルが
+        FACTS_DATE を過去日にできる（実時刻と一致しない）ため信頼しない。
+        両方の fetched_at が欠損しているときだけ _day で代替判定する。"""
+    cand_dt = _parse_fetched_at(cand_fetched_at)
+    for rec in url_index.get(url, []):
+        rec_rid = rec.get("raindrop_id")
+        if not isinstance(rec_rid, int):
+            continue
+        if rec_rid == cand_rid:
+            continue
+        rec_dt = _parse_fetched_at(rec.get("fetched_at"))
+        if cand_dt is not None and rec_dt is not None:
+            is_newer = rec_dt > cand_dt
+        elif cand_dt is None and rec_dt is None:
+            rec_day = rec.get("_day") or ""
+            c_day = cand_day or ""
+            is_newer = rec_day > c_day
+        else:
+            # 比較不能＝終端しない(保守側)
+            is_newer = False
+        if is_newer:
+            return True
+    return False
+
+
+def backfill_candidates(target_day, max_attempts=DEFAULT_MAX_ATTEMPTS):
+    """rid持ち・open・非permanent・max_attempts未満・当日(target_day)未試行のグループを、
+    last_attempt_at 昇順(Noneは最古扱いで先頭)で返す。新しい読み込みロジックは書かず、
+    _load_all_records()/_build_groups() をそのまま使う（Task G-2）。
+    戻り値: グループdictのリスト（_build_groups() が返す1グループぶんのdict。
+    'exhausted_count' キーは含まない＝呼び出し側で別途数える）。"""
+    records = _load_all_records()
+    groups = _build_groups(records, max_attempts=max_attempts)
+    url_index = _url_index(records)
+    out = []
+    for key, g in groups.items():
+        if key[0] != "rid":
+            continue
+        # legacy救済(--include-legacy / INCLUDE_LEGACY)でrid付きグループキーになった
+        # ケースを、グローバル状態(ledger.INCLUDE_LEGACY)の値に関係なく除外する。
+        # 「記録時に raindrop_id を持っていた」、または「backfillが検証済みで
+        # backfill_ridを付与した」ことを最新レコード自身で明示検査する
+        # （2026-09-03 Codexレビュー指摘。_group_key の判定だけに乗ると、同一プロセス内
+        # で INCLUDE_LEGACY が True にされていた場合に旧レコードを誤って対象化しうる）。
+        if not _has_solid_rid(g["latest"]):
+            continue
+        if g["state"] != "open":
+            continue
+        if g["reason_kind"] == "permanent":
+            continue
+        if any(r.get("_day") == target_day for r in g["records"]):
+            continue
+        if g["exhausted"]:
+            continue
+        latest = g["latest"]
+        if _rid_changed_after(url_index, latest.get("url"), key[1],
+                               latest.get("fetched_at"), latest.get("_day")):
+            continue
+        out.append(g)
+    out.sort(key=lambda g: (g["last_attempt_at"] is not None, g["last_attempt_at"] or ""))
+    return out
 
 
 def _fmt_key(key):
@@ -250,6 +385,8 @@ def _print_group(g):
     latest = g["latest"]
     print("キー: %s" % _fmt_key(key))
     print("state: %s" % g["state"])
+    if g.get("exhausted"):
+        print("exhausted: True (open だが試行回数上限に達しバックフィル対象から除外)")
     print("reason_kind: %s" % g["reason_kind"])
     print("attempt_count: %s (日別ログに残っているレコード数: %s)"
           % (g["attempt_count"], g["records_kept"]))
@@ -335,10 +472,15 @@ def cmd_summary():
     video_reason_counts = {}
     unresolved_count = 0
     unknown_video_content_count = 0
+    exhausted_count = 0
+    rid_changed_count = 0
+    url_index = _url_index(records)
 
     for key, g in groups.items():
         state_counts[g["state"]] = state_counts.get(g["state"], 0) + 1
         reason_kind_counts[g["reason_kind"]] = reason_kind_counts.get(g["reason_kind"], 0) + 1
+        if g.get("exhausted"):
+            exhausted_count += 1
         if key[0] == "unresolved":
             unresolved_count += 1
         if g["reason_kind"] == "unknown" and _is_unknown_video_content(g["latest"]):
@@ -346,6 +488,17 @@ def cmd_summary():
         code = g["latest"].get("video_reason") or ""
         if code:
             video_reason_counts[code] = video_reason_counts.get(code, 0) + 1
+        # backfill_candidates() と同じ導出（2026-09-03 Codex 3周目レビュー指摘）:
+        # open・rid持ち・非permanent・非exhausted のグループのうち、そのURLが後日
+        # 別rid(または無rid)のレコードに「奪われて」いるものを別枠で数える。
+        # backfill.py 側の candidates 抽出とは独立の集計(target_dayに依存しない)。
+        if (key[0] == "rid" and _has_solid_rid(g["latest"])
+                and g["state"] == "open" and g["reason_kind"] != "permanent"
+                and not g["exhausted"]):
+            latest = g["latest"]
+            if _rid_changed_after(url_index, latest.get("url"), key[1],
+                                   latest.get("fetched_at"), latest.get("_day")):
+                rid_changed_count += 1
 
     # rid_source は「観測レコード単位」で集計する(グループ単位ではなく、日別ログの
     # レコードそれぞれがどう解決されたかを見たいため)。
@@ -366,6 +519,10 @@ def cmd_summary():
     for k, v in state_counts.items():
         if k not in ("resolved", "open", "permanent"):
             print("  %s: %d" % (k, v))
+    print("    うち open で exhausted（試行回数上限=%d 到達済み・backfillの対象外）: %d"
+          % (DEFAULT_MAX_ATTEMPTS, exhausted_count))
+    print("    うち open で rid_changed（URLが後日別rid/無ridのレコードに奪われ済み・"
+          "backfillの対象外）: %d" % rid_changed_count)
     print()
     print("-- reason_kind 別件数(グループの最新レコード基準) --")
     for k in ("none", "permanent", "unknown"):
@@ -386,10 +543,10 @@ def cmd_summary():
         print("  (記録なし。2026-09-02 以前のレコードには video_reason が無い)")
     print()
     print("-- rid_source 別件数(レコード単位) --")
-    for k in ("exact", "normalized", "ambiguous", "unresolved", "no_captures", "(missing)"):
+    for k in ("exact", "normalized", "ambiguous", "unresolved", "no_captures", "backfill", "(missing)"):
         print("  %s: %d" % (k, rid_source_counts.get(k, 0)))
     for k, v in rid_source_counts.items():
-        if k not in ("exact", "normalized", "ambiguous", "unresolved", "no_captures", "(missing)"):
+        if k not in ("exact", "normalized", "ambiguous", "unresolved", "no_captures", "backfill", "(missing)"):
             print("  %s: %d" % (k, v))
     if any(k.startswith("legacy_") for k in rid_source_counts):
         print()
