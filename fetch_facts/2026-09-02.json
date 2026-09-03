@@ -1,0 +1,28 @@
+{
+ "https://x.com/tetumemo/status/2094387009838334414?s=12": {
+  "fetched_at": "2026-09-03T09:29:14Z",
+  "elapsed_ms": 901,
+  "fetcher_version": "2026-09-02.2",
+  "url": "https://x.com/tetumemo/status/2094387009838334414?s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "image_content"
+  ],
+  "raindrop_id": 1841065593,
+  "rid_source": "exact",
+  "text_chars": 452,
+  "text_sha1": "a4e7a32f39359814df107acf8250e6a3ab90b434",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": false,
+  "video_understood": false,
+  "video_reason": "",
+  "reason": "",
+  "attempt_seq": 1
+ }
+}
