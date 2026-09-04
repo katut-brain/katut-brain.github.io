@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-09-04 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-04 の振り返り</h1>
+  <div class="meta">Instagram Reel 3件。情報収集・設計・製作それぞれをAIに預ける動きを追った日</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の3件は、いずれもInstagram経由でありながら、「制作の工程のどこをAIに渡すか」という同じ問いで繋がっている。Ultimate Web ScraperはClaudeのカスタムMCPコネクタとしてクラウドブラウザとプロキシローテーションを備え、情報収集の入口をAIに渡す。STF Agentは写真1枚をRhino上の3Dモデルへ自動変換するエージェントで、設計の中間工程を肩代わりする。Buildery Labの3Dプリントツール紹介は、出来上がったモデルを実体化する出口側の効率化を扱う。入口・中間・出口の3段階すべてにAIが割り込み始めているのが、今日の保存を貫く通奏低音になっている。</p>
+    <p>特にSTF Agentのキャプチャは、「Interpreting → Modeling → Refining → Finalizing」という進捗表示を伴ってRhinoモデルを生成する過程そのものを見せている点で、curator-maker志向のユーザーにとって最も刺さる保存だろう。「AIが凄い」という宣伝文句止まりでなく、意思決定の途中経過が可視化されている実装として読める。今日は「知る/紹介したい」よりも「作りたい」軸——具体的な制作ツール・ワークフローへの関心——が明確に活性化していた。</p>
+    <ul class="pts">
+      <li><b>STF Agent</b>：キッチン什器の写真を投げると進捗バー付きでRhinoモデルを自動生成。Rhino3D向けプラグインとして近くアルファ版公開予定</li>
+      <li><b>Ultimate Web Scraper</b>：Chrome拡張＋Claudeのカスタムコネクタ登録だけで、クラウドブラウザとプロキシローテーション付きスクレイピングを会話から直接実行可能に</li>
+      <li><b>Buildery Lab</b>：Bambu Labでのデスク什器印刷を実演しながら3Dプリントの効率化ツールを紹介するシリーズ第2弾</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>STF Agentは「写真→即モデル」の生成過程を見せてくれるが、そのモデルが実寸法・構造整合性を満たすかどうかの検証工程はまだ画面に映っていない。過程が可視化されていることと、結果が設計として使える精度を持つことは別問題ではないか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">AI×パラメトリックモデリング</div>
+    <ul class="ilist">
+      <li><a href="https://www.myarchitectai.com/blog/grasshopper-ai" target="_blank" rel="noopener"><b>Grasshopper向けAIプラグイン7選まとめ</b></a> <span>→ Raven・Runchat・Planaria AIなど、自然言語や画像からGrasshopper定義やコンポーネントを生成するツールが既に7種以上並立している。STF AgentのようなRhino直結型エージェントは、この「モデリング作業をAIに預ける」潮流の一角であり、単発の目新しいツールではなく既に競合が育っている領域だと分かる</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI×制作ツール（3件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Dc1w4MjBmIW/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.71878-15/792021577_1414692584093023_8954588496381505555_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=105&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=uuDVeHJG-o4Q7kNvwHODT4I&_nc_oc=AdpKtSSzRBOgWkqH-_FYZweBHYZpBCM3te5g6-jO0sxtKDA8Hil3jGTcnR18opedB7s&_nc_zt=23&_nc_ht=scontent-ord5-2.cdninstagram.com&_nc_gid=spVaFwQyU1iqnrSIQGAB8g&_nc_ss=7b60f&oh=00_AQKaMWzm0F7v122XQvH63qYq1R76qJXoU6L8Cq_H5Eha5g&oe=6AA0FA90" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">ClaudeにMCPで繋ぐWebスクレイパー「Ultimate Web Scraper」</div><div class="vdesc">Chrome拡張を入れて「Connect Claude」→カスタムコネクタとしてMCP登録するだけで、クラウドブラウザとプロキシローテーション付きのスクレイピングを会話から直接実行できる。結果はCSV/JSON/Excel/Sheets/Webhookへ書き出せる。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Dc1w4MjBmIW/" data-title="ClaudeにMCPで繋ぐWebスクレイパー「Ultimate Web Scraper」" data-rid="1843464347">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Dcy4SIYiD7U/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.82787-15/792695089_18001614191998485_7428713033172185680_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=100&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=VPK2sR7qTt4Q7kNvwEnJ2Ef&_nc_oc=AdqEdjTdCATKKTukn7LS1fchZdQ4Q2yo09RL59QTQQzV0Aeggha8PBQ8_4zdYQBcN2I&_nc_zt=23&_nc_ht=scontent-ord5-2.cdninstagram.com&_nc_gid=4LXuzhzY7r7H6wgeSCsr6Q&_nc_ss=7b60f&oh=00_AQLeJ7og6dwGnuaMbj2Yzbg6Fgz6keuxeAmXXNOiEF9Rhw&oe=6AA0CE59" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">写真1枚をRhinoモデルに変換するAIエージェント「STF Agent」</div><div class="vdesc">キッチン什器の写真を投げると、Interpreting→Modeling→Refiningと進捗を見せながらRhino上に3Dモデルを自動生成する。Rhino3D向けプラグインとして近くアルファ版公開予定。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Dcy4SIYiD7U/" data-title="写真1枚をRhinoモデルに変換するAIエージェント「STF Agent」" data-rid="1842608050">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DcyDkhsuSOZ/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.82787-15/790571701_18084294989475431_3819121746501811466_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=103&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=ok5DjIUc9tYQ7kNvwEb1Rx5&_nc_oc=AdrWPAzKLyweFeazUy_4FrfOsIT2BPHMW0Ujy5hNphgmyEBHeW0TaPum4ye6MD40Dwc&_nc_zt=23&_nc_ht=scontent-ord5-2.cdninstagram.com&_nc_gid=IiIGALuUSoek7SlVWOy7vg&_nc_ss=7b60f&oh=00_AQIQvhm7cG6SxNVlEXp0JvJwftSSvToKY-2ZIQ8lMFfnLg&oe=6AA0D678" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">3Dプリントツール紹介動画『知っておくべき道具』Part 2</div><div class="vdesc">Bambu Labでデスク什器を印刷する実演を交えながら、3Dプリントの作業を効率化するツール類を紹介するシリーズ第2弾。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DcyDkhsuSOZ/" data-title="3Dプリントツール紹介動画『知っておくべき道具』Part 2" data-rid="1842606621">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>

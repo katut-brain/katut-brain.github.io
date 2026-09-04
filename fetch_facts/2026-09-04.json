@@ -1,0 +1,80 @@
+{
+ "https://www.instagram.com/reel/Dc1w4MjBmIW/": {
+  "fetched_at": "2026-09-04T19:06:22Z",
+  "elapsed_ms": 1179,
+  "fetcher_version": "2026-09-02.2",
+  "url": "https://www.instagram.com/reel/Dc1w4MjBmIW/",
+  "route": "instagram",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "video_content"
+  ],
+  "raindrop_id": 1843464347,
+  "rid_source": "exact",
+  "text_chars": 736,
+  "text_sha1": "586f526fbcb20f3cf2ee0aef9275df619bcdd06d",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": true,
+  "video_understood": false,
+  "video_reason": "instagram_reel_abandoned",
+  "reason": "",
+  "attempt_seq": 1
+ },
+ "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
+  "fetched_at": "2026-09-04T19:06:29Z",
+  "elapsed_ms": 967,
+  "fetcher_version": "2026-09-02.2",
+  "url": "https://www.instagram.com/reel/Dcy4SIYiD7U/",
+  "route": "instagram",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "video_content"
+  ],
+  "raindrop_id": 1842608050,
+  "rid_source": "exact",
+  "text_chars": 161,
+  "text_sha1": "fd3c9a20492dc016fad9a5a53238ceeb080b1896",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": true,
+  "video_understood": false,
+  "video_reason": "instagram_reel_abandoned",
+  "reason": "",
+  "attempt_seq": 1
+ },
+ "https://www.instagram.com/reel/DcyDkhsuSOZ/": {
+  "fetched_at": "2026-09-04T19:06:33Z",
+  "elapsed_ms": 644,
+  "fetcher_version": "2026-09-02.2",
+  "url": "https://www.instagram.com/reel/DcyDkhsuSOZ/",
+  "route": "instagram",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "video_content"
+  ],
+  "raindrop_id": 1842606621,
+  "rid_source": "exact",
+  "text_chars": 105,
+  "text_sha1": "caedd9f12018b7d2cff8187603e00ede5e48e888",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": true,
+  "video_understood": false,
+  "video_reason": "instagram_reel_abandoned",
+  "reason": "",
+  "attempt_seq": 1
+ }
+}
