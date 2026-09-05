@@ -51,8 +51,10 @@
 #
 # 使い方:
 #   python3 backfill.py --target YYYY-MM-DD [--limit N] [--max-attempts N] [--dry-run] [--timeout SEC]
+#   （--max-total SEC で総時間予算。既定 limit×timeout＋30秒・0で無効化。外側シェルの
+#     `timeout` が親だけを殺して子を孤児化させる前に、自分で止まるための内部予算）
 
-import sys, os, argparse, datetime, json, io, subprocess, traceback
+import sys, os, argparse, datetime, json, io, subprocess, traceback, time
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -60,6 +62,52 @@ JST = datetime.timezone(datetime.timedelta(hours=9))
 
 DEFAULT_LIMIT = 5
 DEFAULT_TIMEOUT = 480
+
+# 内部デッドラインと外側シェル `timeout` の差（秒）。子の終了後にかかる後処理
+# （当日JSONの読み直し・stub書き込み・fsync・改善判定）と、subprocess.run が
+# timeout 後に子を kill して回収するまでの時間をここで賄う。
+# ⚠️ これは「次の子を起動してよいか」の判定には足さない。足すと既定予算
+# （limit×timeout＋30）に対して開始条件が limit×timeout＋60 相当になり、候補抽出に
+# 掛かったわずかな時間だけで1件目すら起動されず、バックフィルが丸ごと無効化される
+# （2026-09-05 に回帰テストで実際に踏んだ）。
+CLEANUP_RESERVE_SEC = 30
+
+# --max-total（総時間予算・秒）の既定は limit × timeout ＋ CLEANUP_RESERVE_SEC。
+# これは「最後の子がここまでに終わっていてほしい時刻」であって、外側 `timeout`
+# （手順書の規約で「limit × timeout ＋60秒以上」）より必ず手前に来る。
+# 既定 --timeout 480 なら limit=1 → 予算510 / 外側600、limit=5 → 予算2430 / 外側2500。
+# 子を起動する条件は「残り ≥ timeout」だけ。
+#
+# ⚠️ これは**ベストエフォートであって厳密な保証ではない**（2026-09-05 Codex 4周目
+# レビュー指摘を採用し、断定的な表現を撤回した）。理由:
+#   ①「残り ≥ timeout」を判定してから subprocess.run が実際に子を起動するまでに
+#     必ず微小な経過時間があり、残りがちょうど timeout のときは内部デッドラインを
+#     その分だけ越える
+#   ② subprocess.run の timeout は、超過後に子を kill して回収し終えるまでの時間を
+#     厳密には縛らない
+# 実運用では CLEANUP_RESERVE_SEC（30秒）＋外側との差分がこのズレを吸収する想定。
+# 厳密に保証したいなら親子を同一プロセスグループ／Job Object で起動し、外側の
+# timeout もグループ単位で終了させる必要がある（今回は採らない・既知の限界）。
+#
+# 副作用として、候補抽出（ledger の全走査）が CLEANUP_RESERVE_SEC を超えて長引くと
+# 1件目すら起動されず budget_stopped=<limit> になる。黙って0件になるのではなく
+# BACKFILL_STATUS に残るので、無人運用でも成果物側から検知できる。
+#
+# ⚠️ 子の timeout を残り時間で「頭打ちにする」設計は採らない（2026-09-05 Codex
+# 3周目レビュー指摘で撤回）。残り31秒で 480秒かかる候補を起動すると、予算都合の
+# 人工的な timeout で殺されて stub が書かれ、attempt_seq が加算される。これを
+# 数晩繰り返すと、恒久失敗ではない回収可能なURLが「予算不足だけ」を理由に
+# exhausted に落ちて永久に諦められる＝無人運用では回収不能なデータ欠落になる。
+# 入る時間が無いなら **起動しない**（試行回数を消費しないので翌晩そのまま候補に残る）。
+#
+# なぜ内部予算が要るか（2026-09-05 Codex 2周目レビュー指摘）:
+# 外側のシェル `timeout` は backfill.py（親）だけを殺し、実行中の
+# fetch_content.py（子）はプロセスグループごと殺されないので孤児として生き残る。
+# 孤児の子は排他ロックの無い fetch_facts/<日付>.json に書き続けるため、手順を進めた
+# 先の手順4の通常取得と同じファイルを同時に read-modify-write し、片方の更新が
+# 黙って消える。親が外側 timeout より先に自分で終われば、この経路自体が発生しない。
+def _default_max_total(limit, timeout):
+    return int(limit) * int(timeout) + CLEANUP_RESERVE_SEC
 
 # depth の順序。none < shallow < partial < full。未知/None はキーに無い＝比較不能。
 # CEO確定: depth:"none" は fetch_content.py の _facts() で ok:false のとき実際に
@@ -232,8 +280,12 @@ def _improved(prev_rec, new_rec):
     return False
 
 
-def run(target, limit, max_attempts, dry_run, timeout):
+def run(target, limit, max_attempts, dry_run, timeout, max_total=None):
     import ledger
+
+    if max_total is None:
+        max_total = _default_max_total(limit, timeout)
+    deadline = time.monotonic() + max_total if max_total > 0 else None
 
     candidates = ledger.backfill_candidates(target, max_attempts=max_attempts)
     total_candidates = len(candidates)
@@ -281,7 +333,7 @@ def run(target, limit, max_attempts, dry_run, timeout):
                      g["last_attempt_at"]))
         print("BACKFILL_STATUS: target=%s candidates=%d attempted=0 improved=0 unchanged=0 "
               "failed=0 exhausted_skipped=%d rid_mismatch=0 rid_changed_skipped=%d stub_written=0 "
-              "unreadable_day_file=0"
+              "unreadable_day_file=0 budget_stopped=0"
               % (target, total_candidates, exhausted_skipped, rid_changed_skipped))
         return 0
 
@@ -294,8 +346,21 @@ def run(target, limit, max_attempts, dry_run, timeout):
     rid_mismatch = 0
     stub_written = 0
     unreadable_day_file = 0
+    budget_stopped = 0
 
-    for g in picked:
+    for idx, g in enumerate(picked):
+        # 総時間予算のチェック（2026-09-05 追加）。この候補を短縮せずに1回分
+        # （timeout 秒）走らせる時間が残っていなければ、起動せずに打ち切る。
+        # 残件数を budget_stopped として成果物側の
+        # BACKFILL_STATUS に残す（無人運用ではログを誰も読まないため、打ち切りが
+        # 起きたこと自体が観測できないと「何件目で止まったか」が失われる）。
+        # 起動しなかった候補は試行回数を消費しないので、翌晩そのまま候補に残る。
+        if deadline is not None:
+            remaining = deadline - time.monotonic()
+            if remaining < timeout:
+                budget_stopped = len(picked) - idx
+                break
+
         key = g["key"]
         rid = key[1]
         latest = g["latest"]
@@ -398,10 +463,10 @@ def run(target, limit, max_attempts, dry_run, timeout):
 
     print("BACKFILL_STATUS: target=%s candidates=%d attempted=%d improved=%d unchanged=%d "
           "failed=%d exhausted_skipped=%d rid_mismatch=%d rid_changed_skipped=%d stub_written=%d "
-          "unreadable_day_file=%d"
+          "unreadable_day_file=%d budget_stopped=%d"
           % (target, total_candidates, attempted, improved, unchanged, failed,
              exhausted_skipped, rid_mismatch, rid_changed_skipped, stub_written,
-             unreadable_day_file))
+             unreadable_day_file, budget_stopped))
     return 0
 
 
@@ -412,6 +477,8 @@ def main(argv):
     parser.add_argument("--max-attempts", type=int, default=None)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
+    parser.add_argument("--max-total", type=int, default=None,
+                        help="総時間予算(秒)。既定は limit×timeout。0で無効化。")
     args = parser.parse_args(argv)
 
     target = args.target or _default_target()
@@ -424,12 +491,13 @@ def main(argv):
         max_attempts = args.max_attempts if args.max_attempts is not None else 3
 
     try:
-        return run(target, args.limit, max_attempts, args.dry_run, args.timeout)
+        return run(target, args.limit, max_attempts, args.dry_run, args.timeout,
+                   max_total=args.max_total)
     except Exception as e:
         traceback.print_exc(file=sys.stderr)
         print("BACKFILL_STATUS: target=%s candidates=0 attempted=0 improved=0 unchanged=0 "
               "failed=0 exhausted_skipped=0 rid_mismatch=0 rid_changed_skipped=0 stub_written=0 "
-              "unreadable_day_file=0 error=%s" % (target, type(e).__name__))
+              "unreadable_day_file=0 budget_stopped=0 error=%s" % (target, type(e).__name__))
         return 0
 
 
@@ -441,7 +509,7 @@ if __name__ == "__main__":
         traceback.print_exc(file=sys.stderr)
         print("BACKFILL_STATUS: target=unknown candidates=0 attempted=0 improved=0 unchanged=0 "
               "failed=0 exhausted_skipped=0 rid_mismatch=0 rid_changed_skipped=0 stub_written=0 "
-              "unreadable_day_file=0 error=%s" % type(e).__name__)
+              "unreadable_day_file=0 budget_stopped=0 error=%s" % type(e).__name__)
         rc = 0
     sys.stdout.flush()
     sys.exit(rc if isinstance(rc, int) else 0)

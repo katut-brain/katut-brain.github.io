@@ -56,8 +56,10 @@
    - ⚠️ **既知の限界**: 対象抽出は `ledger.py` の `reason_kind` 判定に依存する。`fail_reason`
      の導入（2026-09-03）で `x_article_direct_link` / `x_tweet_id_unparsable` / `ssrf_rejected` /
      `unsupported_scheme` / `bad_host` / HTTP 404・410 は permanent に分類されるようになった
-     （列挙の正本は `ledger.py` の `_FAIL_REASON_KIND`）。og:meta 無し系（IG/Threads/YouTube）は
-     引き続き unknown（構造的と確信できないため）。それ以外の `unknown` 分類のものは
+     （列挙の正本は `ledger.py` の `_FAIL_REASON_KIND`）。2026-09-05 に一般Web・Threads・
+     YouTube でも HTTP ステータスを拾うようにしたので、削除済みURL（404/410）は
+     これらの経路でも permanent になる。og:meta が無いだけ（HTTP 200 で JS殻・ログイン壁）の
+     ケースは引き続き unknown（構造的と確信できないため）。それ以外の `unknown` 分類のものは
      `--max-attempts` 回まで再試行されてから exhausted に落ちる。
    - **運用ゲート（初夜の翌朝、人間が確認する）**: `python3 ledger.py --summary` で
      `exhausted` 件数と `state` 内訳を見る。バックフィル対象になった rid のうち1件は

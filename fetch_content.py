@@ -517,6 +517,16 @@ def fetch_x(url, follow_links=True, understand_video=True):
 # 経緯: Vault Brain/decisions/2026-08-23-instagram-reel-video-give-up.md
 def fetch_instagram(url):
     st, txt = _get(url, CRAWLER_UA)
+    # ⚠️ HTTPステータスの判定は本文・og:meta の解析より **前**（2026-09-05 Codex 5周目
+    # レビュー指摘。fetch_web / fetch_threads / fetch_youtube と順序を揃える）。
+    # 現行の _get() は HTTPError の本文を捨てるので 4xx では txt が空になり、実運用では
+    # 下の `if not txt` に落ちて同じ結果になる。つまりこれは今出ているバグの修正ではなく、
+    # 「本文を保持する実装へ変えた瞬間に、エラーページが og:meta を持っていると
+    # ok:true に化ける」という**取りこぼしを構造的に塞ぐ**ための順序統一。
+    if st is not None and st >= 400:
+        return {"ok": False, "type": "instagram", "reason": "HTTP %s" % st, "url": url,
+                "http_status": st, "fallback": "oEmbed(Metaアプリ) or Apify",
+                "fail_reason": _http_fail_reason("instagram", st)}
     if not txt:
         return {"ok": False, "type": "instagram", "reason": "取得失敗 (status=%s)" % st,
                 "url": url, "fallback": "oEmbed(Metaアプリ) or Apify",
@@ -639,6 +649,13 @@ def fetch_threads(url):
 
     # 2次: og:meta（facebookexternalhit UA）
     st, txt = _get(url, CRAWLER_UA)
+    # ⚠️ HTTPステータスの判定は og:meta のパースより **前**。後ろに置くと、
+    # 404/410 のエラーページが og:title / og:description を載せている場合に
+    # ok:true を先に返してしまい、削除済み投稿が「取得成功・resolved」として
+    # 記録される（2026-09-05 Codex 4周目レビュー指摘。fetch_web() と順序を揃える）。
+    if st is not None and st >= 400:
+        return {"ok": False, "type": "threads", "reason": "HTTP %s" % st, "url": url,
+                "http_status": st, "fail_reason": _http_fail_reason("threads", st)}
     if txt:
         og_title = _meta(txt, "og:title")
         og_desc  = _meta(txt, "og:description")
@@ -724,6 +741,13 @@ def fetch_youtube(url):
             pass
     # フォールバック: og:meta
     st, txt = _get(url, BROWSER_UA)
+    # ⚠️ HTTPステータスの判定は og:meta のパースより **前**。後ろに置くと、
+    # 404/410 のエラーページが og:title / og:description を載せている場合に
+    # ok:true を先に返してしまい、削除済み投稿が「取得成功・resolved」として
+    # 記録される（2026-09-05 Codex 4周目レビュー指摘。fetch_web() と順序を揃える）。
+    if st is not None and st >= 400:
+        return {"ok": False, "type": "youtube", "reason": "HTTP %s" % st, "url": url,
+                "http_status": st, "fail_reason": _http_fail_reason("youtube", st)}
     if txt:
         og_title = _meta(txt, "og:title")
         og_desc  = _meta(txt, "og:description")
@@ -931,6 +955,16 @@ WEB_BODY_MIN_FULL = 600
 
 def fetch_web(url):
     st, txt, reason, fail_code = _safe_get_web(url, BROWSER_UA)
+    # HTTPエラーは本文が返ってきても「取得成功」にしない（2026-09-05 Codex 2周目レビュー指摘）。
+    # _safe_get_web() は urllib ではなく http.client を直接使うため、404/410 でもエラーページの
+    # 本文をそのまま返す。旧実装は `if not txt` しか見ておらず、ナビ・関連リンクで数百字ある
+    # 404ページが ok:true・depth:full として記録され、ledger.py が resolved と判定して
+    # 二度と再取得されなかった（＝失敗が失敗として数えられない）。
+    # 分類は一次データに焼き付けず "<prefix>_http_<st>" として記録し、ledger.py の
+    # _fail_reason_kind() が 404/410→permanent・それ以外→transient に前方一致で導出する。
+    if st is not None and st >= 400:
+        return {"ok": False, "type": "web", "reason": "HTTP %s" % st, "url": url,
+                "http_status": st, "fail_reason": _http_fail_reason("web", st)}
     if not txt:
         return {"ok": False, "type": "web", "reason": reason or ("取得失敗 (status=%s)" % st), "url": url,
                 "fail_reason": fail_code or _http_fail_reason("web", st)}
