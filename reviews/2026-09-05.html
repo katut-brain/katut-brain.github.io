@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026-09-05 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-05 の振り返り</h1>
+  <div class="meta">AIに「作業」ではなく「役割」を渡す動きが目立った日（5件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の5件は3D制作・投資・学割特典とジャンルはばらばらだが、通奏低音は「手順やコマンドを覚える人間」から「役割を設計してAIに任せる人間」への移行だった。RhinoやGrasshopperのコマンド習熟がもはや価値を持たず、今後最重要なのは"MCPStart"の1コマンドだと言い切る投稿、スマホでスキャンした実物がボタン一つでBlenderへ転送されるデモ、そして投資判断を7部署27人のAI社員に分担させる話——どれも「自分でやる」から「役割を渡して任せる」への切り替えを描いている。</p>
+    <p>建築・3D領域（Rhino/Grasshopper、Blender×AIスキャン）と金融領域（AI投資会社）が同じ「役割設計」の語彙で繋がっている点が今日の面白さで、curator/maker軸で見ると、テクスチャチュートリアルの保存に「作りたい」の芽が、Rhino/Grasshopper談義とAI投資会社の話に「知る・紹介したい」の芽が現れている。</p>
+    <ul class="pts">
+      <li><b>Rhino/Grasshopperの地殻変動</b>：コマンド暗記の価値が"MCPStart"1つに収斂しつつあるという含意がある</li>
+      <li><b>スキャン→Blender即転送</b>：3Dモデリングの入口が「作る」から「取り込む」に変わりつつある</li>
+      <li><b>AI社員27人組織</b>：「聞く」から「雇う」への転換は、役割設計こそがAI活用の本体だという示唆を持つ</li>
+      <li><b>Google AI Plus学割</b>：大学生向け12ヶ月無料特典、申込期限は2026年12月31日という実務的な備忘</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>ツールのコマンドを習熟する専門性が「役割を設計してAIに渡す」スキルに置き換わるとき、人間の側に最後まで残る専門性とは何か？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">AIエージェントの役割分担設計</div>
+    <ul class="ilist">
+      <li><a href="https://www.homula.jp/blog/multi-agent-orchestration-2026" target="_blank" rel="noopener"><b>マルチエージェント・オーケストレーションとは——2026年春の新機能ラッシュと、企業が見極めるべき損益分岐点</b></a> <span>→ 役割分担で束ねるほど各エージェントの成功率が掛け算で効き、全体の信頼性は急落する（成功率95%のエージェントを5体連鎖で約77%、10体で約60%）。「AI社員を増やすほど良い」わけではなく、分業の価値がコスト増・信頼性リスクを上回るかで判断すべきという視点。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI活用の現場（3件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.threads.com/share/BASrHtlbyO/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-1.xx.fbcdn.net/v/t39.92108-6/797858515_2499375364225748_3312530777868301028_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=554f3c&_nc_ohc=hEXM9yVeDSYQ7kNvwHKVoDU&_nc_oc=Adr8gJnneV20Vngh4d-DHSLDLc7dYNT4OHkwlWFXc18iObO4V8UjoYRSjccbr1OTGks&_nc_zt=14&_nc_ht=scontent-ord5-1.xx&_nc_gid=GXWgvFlM-UFLFinilfyA-w&_nc_ss=7b100&oh=00_AQIMAhXZp6cp4jdg_fZhUXUS2LJ2zvHiLGD3vbvvQHNVqQ&oe=6AA25528" onerror="this.remove()"><span class="ph">Threads</span></div>
+        <div class="vbody"><div class="vtitle">大学生向け Google AI Plus が12ヶ月無料に</div><div class="vdesc">大学生向け「Google AI Plus」（通常月725円）を12ヶ月無料化。申込期限は2026年12月31日。本文の続きにある"落とし穴"の具体的な中身までは今回取得できなかった。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.threads.com/share/BASrHtlbyO/" data-title="大学生向け Google AI Plus が12ヶ月無料に" data-rid="1844477575">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/shion_takk/status/2095868717322387518?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fshion_takk%2Fstatus%2F2095868717322387518%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Rhino/Grasshopperの次はコマンドより"MCPStart"</div><div class="vdesc">Rhino・Grasshopper・AutoCAD・Revitは、コマンド習熟が好きな人以外はやめた方がいいという主張。今後最重要のRhinoコマンドは"Move"でも"Box"でもなく"MCPStart"だと言い切る。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/shion_takk/status/2095868717322387518?s=12" data-title="Rhino/Grasshopperの次はコマンドより&quot;MCPStart&quot;" data-rid="1843643376">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/leverage_noah/status/2095641801772409205?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HRUzltkaYAAdKmv.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">個人投資家がAI社員27人を雇った話</div><div class="vdesc">個人投資家が証券会社に対抗するため、Codex/Claude Code上に7部署27人のAI社員を組織。決裁は人間のみ・AIは発注しない・成果は約束しないの3原則を敷き、「反対意見しか言わないレッドチーム」が自分に一番欠けていた役割だったと述懐。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/leverage_noah/status/2095641801772409205?s=12" data-title="個人投資家がAI社員27人を雇った話" data-rid="1843633105">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🎨 3D制作×AI（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Daz5qSRMvV-/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.82787-15/749259800_18038121278811071_102010172549465652_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=107&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=9IReRb_dStQQ7kNvwFmxug2&_nc_oc=Adod7hTOBTJCCSqvvkfYgkasxiUFKVoC60eHfNKIFgWcA0WDv5WLTZRCCL2c7LCtMsI&_nc_zt=23&_nc_ht=scontent-ord5-2.cdninstagram.com&_nc_gid=iFCoSg-nx79IDT-1mtgU1g&_nc_ss=7b60f&oh=00_AQKO4zh5TIXLc9LxGIjfOQGUiVInB_5sLvwlDMnv-rSvNQ&oe=6AA23CFF" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">継ぎ目なしテクスチャの塗装法（Krita×Blender×UE）</div><div class="vdesc">水彩調テクスチャを継ぎ目なくタイル化する塗装法をKrita/Blender/UnrealEngineで実演（詳しい手順動画は後日公開予定とのこと）。動画の内容は未取得。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Daz5qSRMvV-/" data-title="継ぎ目なしテクスチャの塗装法（Krita×Blender×UE）" data-rid="1844474651">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/michaelzsguo/status/2095658503436415030?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2095464769612546048/img/omc1_22CPEt5-PE9.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">スマホでスキャン→即Blenderへ転送するAIデモ</div><div class="vdesc">GLM-5.3やClaude Fable 5.1、Astraなど最新AIモデルが軒並みBlenderデモを披露する流行を紹介。動画では実物のヘッドホンをスマホで撮影→点群から3Dモデルを生成→「SEND TO BLENDER」ボタン一つでBlender画面へ即転送する様子を実演。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/michaelzsguo/status/2095658503436415030?s=12" data-title="スマホでスキャン→即Blenderへ転送するAIデモ" data-rid="1843638359">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
