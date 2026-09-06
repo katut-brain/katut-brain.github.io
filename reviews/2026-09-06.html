@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-09-06 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-06 の振り返り</h1>
+  <div class="meta">保存1件：Claude Code無料運用ノウハウ発信アカウントのInstagram投稿</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>9月6日の保存は1件のみで、Claude Codeの運用コストを無料枠だけで賄う「OmniRoute設定書」の配布告知と、同アカウントが開くAI×SNS運用勉強会（無料・約2時間）の集客を兼ねたInstagramリールだった。実際にOmniRouteを調べると、Mistral・Groq・Gemini Flashなど複数プロバイダの無料枠をプールして「月16億トークン」を謳う設計で、技術的には成立するが各プロバイダへの個別登録・OAuth認証・レート制限管理という運用コストと引き換えの「疑似無料」であることが分かる。</p>
+    <p>今週はこれで3日以上、Claude Code関連のハーネス設計・活用事例・無料運用ノウハウの保存が続いている（9/1・9/3にも複数件）。単発の話題追いというより、「AIツールをどう安く・効率よく使い倒すか」という関心がこの1週間で育ってきている。</p>
+    <ul class="pts">
+      <li><b>OmniRouteの実態</b>：複数無料枠を束ねる仕組みだが「真の無料」ではなく、セットアップ・運用の手間とコスト削減効果のトレードオフ</li>
+      <li><b>発信の構造</b>：Claude Codeの実用ネタを入口に、AI×SNS運用マーケ講座へ誘導する集客導線になっている</li>
+      <li><b>継続する関心</b>：Claude Code関連のノウハウ収集はこの1週間で3日以上活性化している</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>無料枠プールツールを運用する手間（複数アカウント管理・認証・レート制限対応）は、素直に通常料金を払うコストを本当に下回っているのか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">OmniRoute実態</div>
+    <ul class="ilist">
+      <li><a href="https://zenn.dev/mskbhd/articles/lab-127-omniroot-free-claude-code16" target="_blank" rel="noopener"><b>OmniRoute+OpenCodeで月16億トークン無料は実現できるのか</b></a> <span>→ 複数プロバイダの無料枠を束ねる仕組みで技術的には可能だが、個別登録・認証・レート制限管理という運用コストと引き換えの「疑似無料」</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI・ツール（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Dcf6PtczgXm/?stkn=MWFlb2hudzk5d3A3ag==" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.82787-15/784747851_18095269589548543_7522107078441281481_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=102&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=PDR83dN4wc8Q7kNvwF_FU2M&_nc_oc=Adq6wcRabfvA-6ClVrbwfylicE-Q5QGavIBbLZBtyBEOg10DWw89EsMCktf4TfSJVU8&_nc_zt=23&_nc_ht=scontent-ord5-2.cdninstagram.com&_nc_gid=ckI6YKza4ibVTRN0uYpNFQ&_nc_ss=7b60f&oh=00_AQI1P9k0uB2dS3EQqDN4gSSslKp6D1UMNkIqHA-9qAfS3A&oe=6AA38D1C" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">OmniRouteで実現？Claude Code月16億トークン無料化ガイド配布</div><div class="vdesc">「Claude Codeを毎月16億トークン無料で回すOmniRoute設定書」をプロフィールから配布中と告知しつつ、AI×SNS運用のオンライン勉強会（無料・約2時間）へも誘導する投稿。動画の内容は未取得。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Dcf6PtczgXm/?stkn=MWFlb2hudzk5d3A3ag==" data-title="OmniRouteで実現？Claude Code月16億トークン無料化ガイド配布" data-rid="1844650582">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>

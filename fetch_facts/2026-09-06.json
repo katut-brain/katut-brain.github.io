@@ -1,0 +1,29 @@
+{
+ "https://www.instagram.com/reel/Dcf6PtczgXm/?stkn=MWFlb2hudzk5d3A3ag==": {
+  "fetched_at": "2026-09-06T19:06:39Z",
+  "elapsed_ms": 1551,
+  "fetcher_version": "2026-09-03.1",
+  "url": "https://www.instagram.com/reel/Dcf6PtczgXm/?stkn=MWFlb2hudzk5d3A3ag==",
+  "route": "instagram",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "video_content"
+  ],
+  "raindrop_id": 1844650582,
+  "rid_source": "exact",
+  "text_chars": 435,
+  "text_sha1": "d8343a2bae19a9f7fb5d00fca4768b7f8d9cbd31",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": true,
+  "video_understood": false,
+  "video_reason": "instagram_reel_abandoned",
+  "reason": "",
+  "fail_reason": "",
+  "attempt_seq": 1
+ }
+}
