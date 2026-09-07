@@ -213,6 +213,17 @@ def _fail_reason_kind(rec):
     return None                # 知らないコード。推測しない
 
 
+# fetcher が再取得しても埋められない欠損キー(=構造的な穴)。
+# 「これ**だけ**が欠けているなら再取得は無駄」を表す集合であって、
+# 1つでも含まれていれば permanent、という意味ではない(部分一致で判定しない)。
+_STRUCTURAL_MISSING = {
+    "image_content",      # fetch側に画像読解の実装が無い(読むのは Routine 側の仕事)
+    "visual_content",     # 同上
+    "audio_content",      # 同上
+    "article_body_tail",  # 本文上限による設計上の切り詰め。再取得しても同じ
+}
+
+
 def _reason_kind(rec):
     route = rec.get("route", "")
     url = rec.get("url", "") or ""
@@ -235,17 +246,8 @@ def _reason_kind(rec):
     if route == "instagram" and "/reel/" in url and "video_content" in missing:
         # 2026-08-23の構造的断念による設計値。Brain/decisions/2026-08-23-instagram-reel-video-give-up.md
         return "permanent"
-    if route == "instagram" and missing and set(missing) <= {"visual_content", "audio_content"}:
-        # 画像・音声読解の実装が存在しない
-        return "permanent"
-    if route == "threads":
-        # 同上(画像・音声読解の実装が存在しない)
-        return "permanent"
-    if "image_content" in missing:
-        # fetch側に画像読解の実装が無く、読むのはRoutine側の仕事
-        return "permanent"
-    if "article_body_tail" in missing:
-        # 本文上限による設計上の切り詰め。再取得しても同じ
+    if rec.get("ok") and missing and set(missing) <= _STRUCTURAL_MISSING:
+        # 構造的な穴だけが欠けている。再取得しても同じ結果になる
         return "permanent"
     if not missing and rec.get("depth") == "full":
         return "none"
