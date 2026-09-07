@@ -1,0 +1,27 @@
+{
+ "https://x.com/joshinishiguchi/status/2096823074821968087?s=12": {
+  "fetched_at": "2026-09-07T19:07:16Z",
+  "elapsed_ms": 610,
+  "fetcher_version": "2026-09-03.1",
+  "url": "https://x.com/joshinishiguchi/status/2096823074821968087?s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "full",
+  "missing": [],
+  "raindrop_id": 1847066300,
+  "rid_source": "exact",
+  "text_chars": 140,
+  "text_sha1": "8f8152c93f7b644b9c87904c01617163a81d5842",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 0,
+  "has_video": false,
+  "video_understood": false,
+  "video_reason": "",
+  "reason": "",
+  "fail_reason": "",
+  "attempt_seq": 1
+ }
+}
