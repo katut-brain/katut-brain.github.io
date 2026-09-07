@@ -1,0 +1,33 @@
+# capture-pipeline の結合テスト（test_backfill_recovery.py）を走らせる。
+#
+# build-feed.yml とは別ワークフローにする。build-feed.yml は「トップ index.html を
+# 生成して公開サイトへ deploy する」役割で、テストの不具合や失敗がここに波及すると
+# 公開サイトの deploy が止まる事故になる。テストの成否と公開の可否は独立させ、
+# ここでは Pages への書き込み権限も持たせない（permissions: contents: read のみ）。
+#
+# pip install は行わない。test_backfill_recovery.py は標準ライブラリの unittest
+# のみを使う（backfill.py / ledger.py / fetch_content.py 本体も標準ライブラリのみで
+# 動く経路をここで検査する）。
+
+name: test
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run integration tests
+        run: python -m unittest -v test_backfill_recovery.py

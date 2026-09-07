@@ -15,6 +15,9 @@ fx_out.json
 raindrop_latest.json
 raindrop_top2.txt
 
+# テスト実行で必ず生成される(test_backfill_recovery.py 等)
+__pycache__/
+
 # index.html は _build_feed.py の生成物。GitHub Actions が毎回ビルドして
 # Pages へ deploy するので、リポには置かない（手で運ぶと壊れる・2026-08-31）
 index.html
