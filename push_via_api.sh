@@ -20,23 +20,36 @@
 #   - "a script that reads `GITHUB_TOKEN` directly gets the placeholder, not a usable token."
 #     ＝ 素の curl では送れない。必ず gh 経由にすること
 #
-# 設計上の約束:
-#   - 送ったあと必ず GitHub から読み返し、SHA-256 が一致したときだけ成功と見なす。
-#     「push できた」の自己申告を成功条件にしない。
-#   - **本文を argv に置かない**（2026-09-08 のレビュー指摘 P0）。Linux の execve は単一引数が
-#     約128KiB までで、base64 は約4/3倍に膨らむため、argv に置くと元ファイル約98KB で
-#     `Argument list too long` になる。122KB の index.html が壊れたのと同じサイズの崖を
-#     作り直すことになるので、PUT のボディは一時ファイルに書いて `gh api --input` で渡す。
-#   - 1ファイル1コミット（Contents API の仕様）。複数渡すと引数の順にコミットが分かれる。
-#     Actions を最後に正しい状態で発火させるため、reviews は最後に渡すこと。
-#   - 途中で失敗しても、そこまでに成功したファイルは戻さない（無人運用で巻き戻しを試みるほうが危険）。
-#     呼び出し側は WRITE_PATH 行を見て、失敗したパスだけフォールバックすること。
-#   - `--verify-only` は「別の手段（push_files 等）で押したものが、ローカル原本と
-#     バイト単位で一致しているか」だけを確かめる。フォールバックした夜にも SHA-256 の
-#     保証を効かせるためにある（2026-09-08 のレビュー指摘 P0・両系統が独立に指摘）。
+# ■ 順番の設計（2026-09-08 の敵対的レビュー3周目・ここが本体）
+#   「押してから確かめる」ではなく「**確かめてから載せる**」。Contents API は PUT した瞬間に
+#   main へコミットが載るので、その後の照合 GET が失敗しても未検証の中身が main に残る。
+#   そこで Git Data API を使い、次の順で進める:
 #
-# 終了コード: 0=全ファイル成功 / 1=1つ以上失敗 / 2=引数エラー
-# 標準出力に1ファイル1行の `WRITE_PATH:` 行を出す（無人ランのログで経路を追うため）。
+#     1. main の先端 commit sha を取る
+#     2. 各ファイルを blob として作る          ← main からは見えない
+#     3. main の tree を土台に新しい tree を作る ← main からは見えない
+#     4. commit を作る（親＝1で取った先端）      ← main からは見えない・宙に浮いている
+#     5. **作った blob を読み返して SHA-256 を全件照合する**
+#     6. 全件一致したときだけ、main の ref をその commit へ進める（force=false ＝
+#        早送りのみ。途中で main が動いていたら失敗する）
+#
+#   5で1件でも落ちたら6を行わない。**main は一切動かない**（宙に浮いたオブジェクトは
+#   GitHub 側の GC で消える）。副産物として複数ファイルが1コミットにまとまるので、
+#   Actions の二重発火も無くなる。
+#
+# ■ 本文を argv に置かない
+#   Linux の execve は単一引数が約128KiB までで、base64 は約4/3倍に膨らむ。argv に置くと
+#   元ファイル約98KB で `Argument list too long` になり、122KB の index.html が壊れたのと
+#   同じサイズの崖を作り直すことになる。リクエストボディは常に一時ファイルに書いて
+#   `gh api --input` で渡す。
+#
+# ■ --verify-only
+#   「別の手段（push_files 等）で押したものが、ローカル原本とバイト単位で一致しているか」
+#   だけを確かめる。フォールバックした夜にも SHA-256 の保証を効かせるためにある。
+#
+# 終了コード: 0=成功 / 1=失敗（main は動いていない） / 2=引数エラー
+# 標準出力: 1ファイル1行の `WRITE_PATH:` と、最後に `WRITE_COMMIT:` を出す
+#           （無人ランのログで経路を追うため）。
 
 set -uo pipefail
 
@@ -68,92 +81,173 @@ fi
 
 BRANCH="${PUSH_VIA_API_BRANCH:-main}"
 PY="${PUSH_VIA_API_PYTHON:-python3}"
-failed=0
 
-# GitHub 上の実体を一時ファイルへ生バイトで取り、ローカル原本と SHA-256 を比べる。
-# 一致=0 / 不一致=1 / 読めない=2。中身は標準出力に出さない（文脈に載せないため）。
-compare_remote() {
-  local path="$1" local_sha="$2" tmp rc remote_sha
-  tmp=$(mktemp) || return 2
-  if ! gh api "repos/$REPO/contents/$path?ref=$BRANCH" \
-        -H "Accept: application/vnd.github.raw" > "$tmp" 2>/dev/null; then
-    rm -f "$tmp"
-    return 2
-  fi
-  remote_sha=$(sha256sum "$tmp" | cut -d' ' -f1)
-  REMOTE_BYTES=$(wc -c < "$tmp" | tr -d ' ')
-  rm -f "$tmp"
-  [ "$remote_sha" = "$local_sha" ] && rc=0 || rc=1
-  return "$rc"
-}
+TMPDIR_SELF=$(mktemp -d) || { echo "WRITE_PATH: - api=failed reason=mktemp_failed"; exit 1; }
+cleanup() { rm -rf "$TMPDIR_SELF"; }
+trap cleanup EXIT
 
+# 失敗理由を1行に潰す（トークンの値は出さない）。
+squash() { printf '%s' "$1" | tr '\n' ' ' | sed 's/[^ -~]//g' | cut -c1-160; }
+
+# ---------------------------------------------------------------- verify-only
+if [ "$MODE" = "verify" ]; then
+  failed=0
+  for path in "$@"; do
+    if [ ! -f "$path" ]; then
+      echo "WRITE_PATH: $path verify=skipped reason=local_file_missing"
+      failed=1
+      continue
+    fi
+    local_sha=$(sha256sum "$path" | cut -d' ' -f1)
+    tmp="$TMPDIR_SELF/remote"
+    if ! gh api "repos/$REPO/contents/$path?ref=$BRANCH" \
+          -H "Accept: application/vnd.github.raw" > "$tmp" 2>/dev/null; then
+      echo "WRITE_PATH: $path verify=unreadable"
+      failed=1
+      continue
+    fi
+    if [ "$(sha256sum "$tmp" | cut -d' ' -f1)" = "$local_sha" ]; then
+      echo "WRITE_PATH: $path verify=match bytes=$(wc -c < "$path" | tr -d ' ')"
+    else
+      echo "WRITE_PATH: $path verify=MISMATCH local_bytes=$(wc -c < "$path" | tr -d ' ') remote_bytes=$(wc -c < "$tmp" | tr -d ' ')"
+      failed=1
+    fi
+  done
+  exit "$failed"
+fi
+
+# --------------------------------------------------------------------- push
 for path in "$@"; do
   if [ ! -f "$path" ]; then
     echo "WRITE_PATH: $path api=skipped reason=local_file_missing"
-    failed=1
-    continue
+    echo "WRITE_COMMIT: none reason=local_file_missing"
+    exit 1
   fi
-
-  local_bytes=$(wc -c < "$path" | tr -d ' ')
-  local_sha=$(sha256sum "$path" | cut -d' ' -f1)
-  REMOTE_BYTES="?"
-
-  if [ "$MODE" = "verify" ]; then
-    compare_remote "$path" "$local_sha"
-    case "$?" in
-      0) echo "WRITE_PATH: $path verify=match bytes=$local_bytes" ;;
-      1) echo "WRITE_PATH: $path verify=MISMATCH local_bytes=$local_bytes remote_bytes=$REMOTE_BYTES"; failed=1 ;;
-      *) echo "WRITE_PATH: $path verify=unreadable"; failed=1 ;;
-    esac
-    continue
-  fi
-
-  # 既存ファイルの更新には blob sha が要る。存在しなければ空のまま（新規作成）。
-  remote_sha=$(gh api "repos/$REPO/contents/$path?ref=$BRANCH" --jq '.sha' 2>/dev/null || true)
-  case "$remote_sha" in
-    *[!0-9a-f]* | "") remote_sha="" ;;
-  esac
-
-  # PUT のボディを一時ファイルに組み立てる（本文を argv に置かないため）。
-  body=$(mktemp) || { echo "WRITE_PATH: $path api=failed reason=mktemp_failed"; failed=1; continue; }
-  if ! "$PY" -c '
-import base64, json, sys
-path, message, branch, sha, out = sys.argv[1:6]
-payload = {
-    "message": message,
-    "branch": branch,
-    "content": base64.b64encode(open(path, "rb").read()).decode("ascii"),
-}
-if sha:
-    payload["sha"] = sha
-with open(out, "w", encoding="utf-8") as fh:
-    json.dump(payload, fh)
-' "$path" "$MESSAGE" "$BRANCH" "$remote_sha" "$body" 2>/dev/null; then
-    rm -f "$body"
-    echo "WRITE_PATH: $path api=failed reason=payload_build_failed"
-    failed=1
-    continue
-  fi
-
-  put_out=$(gh api -X PUT "repos/$REPO/contents/$path" --input "$body" 2>&1)
-  put_rc=$?
-  rm -f "$body"
-
-  if [ "$put_rc" -ne 0 ]; then
-    # 認証・スコープ・権限のどれで落ちたかを1行に残す（トークンの値は出さない）。
-    reason=$(printf '%s' "$put_out" | tr '\n' ' ' | sed 's/[^ -~]//g' | cut -c1-160)
-    echo "WRITE_PATH: $path api=failed rc=$put_rc reason=${reason:-unknown}"
-    failed=1
-    continue
-  fi
-
-  # 送った内容が本当にその通り載ったかを、読み返して照合する。
-  compare_remote "$path" "$local_sha"
-  case "$?" in
-    0) echo "WRITE_PATH: $path api=ok verify=match bytes=$local_bytes" ;;
-    1) echo "WRITE_PATH: $path api=ok verify=MISMATCH local_bytes=$local_bytes remote_bytes=$REMOTE_BYTES"; failed=1 ;;
-    *) echo "WRITE_PATH: $path api=ok verify=unreadable"; failed=1 ;;
-  esac
 done
 
-exit "$failed"
+# 1. main の先端を取る
+base_sha=$(gh api "repos/$REPO/git/ref/heads/$BRANCH" --jq '.object.sha' 2>&1)
+if [ "$?" -ne 0 ] || [ -z "$base_sha" ]; then
+  echo "WRITE_PATH: - api=failed reason=$(squash "$base_sha")"
+  echo "WRITE_COMMIT: none reason=cannot_read_ref"
+  exit 1
+fi
+base_tree=$(gh api "repos/$REPO/git/commits/$base_sha" --jq '.tree.sha' 2>&1)
+if [ "$?" -ne 0 ] || [ -z "$base_tree" ]; then
+  echo "WRITE_PATH: - api=failed reason=$(squash "$base_tree")"
+  echo "WRITE_COMMIT: none reason=cannot_read_base_tree"
+  exit 1
+fi
+
+# 2. blob を作る（main からは見えない）
+blob_list="$TMPDIR_SELF/blobs.tsv"
+: > "$blob_list"
+for path in "$@"; do
+  body="$TMPDIR_SELF/blob-body.json"
+  if ! "$PY" -c '
+import base64, json, sys
+path, out = sys.argv[1:3]
+with open(out, "w", encoding="utf-8") as fh:
+    json.dump({"content": base64.b64encode(open(path, "rb").read()).decode("ascii"),
+               "encoding": "base64"}, fh)
+' "$path" "$body" 2>/dev/null; then
+    echo "WRITE_PATH: $path api=failed reason=payload_build_failed"
+    echo "WRITE_COMMIT: none reason=payload_build_failed"
+    exit 1
+  fi
+  blob_sha=$(gh api -X POST "repos/$REPO/git/blobs" --input "$body" --jq '.sha' 2>&1)
+  if [ "$?" -ne 0 ] || [ -z "$blob_sha" ]; then
+    echo "WRITE_PATH: $path api=failed reason=$(squash "$blob_sha")"
+    echo "WRITE_COMMIT: none reason=blob_failed"
+    exit 1
+  fi
+  printf '%s\t%s\n' "$blob_sha" "$path" >> "$blob_list"
+done
+
+# 3. tree を作る（main からは見えない）
+tree_body="$TMPDIR_SELF/tree.json"
+if ! "$PY" -c '
+import json, sys
+base, listing, out = sys.argv[1:4]
+entries = []
+with open(listing, encoding="utf-8") as fh:
+    for line in fh:
+        line = line.rstrip("\n")
+        if not line:
+            continue
+        sha, path = line.split("\t", 1)
+        entries.append({"path": path, "mode": "100644", "type": "blob", "sha": sha})
+with open(out, "w", encoding="utf-8") as fh:
+    json.dump({"base_tree": base, "tree": entries}, fh)
+' "$base_tree" "$blob_list" "$tree_body" 2>/dev/null; then
+  echo "WRITE_COMMIT: none reason=tree_build_failed"
+  exit 1
+fi
+tree_sha=$(gh api -X POST "repos/$REPO/git/trees" --input "$tree_body" --jq '.sha' 2>&1)
+if [ "$?" -ne 0 ] || [ -z "$tree_sha" ]; then
+  echo "WRITE_COMMIT: none reason=$(squash "$tree_sha")"
+  exit 1
+fi
+
+# 4. commit を作る（まだ宙に浮いている＝main からは見えない）
+commit_body="$TMPDIR_SELF/commit.json"
+if ! "$PY" -c '
+import json, sys
+message, tree, parent, out = sys.argv[1:5]
+with open(out, "w", encoding="utf-8") as fh:
+    json.dump({"message": message, "tree": tree, "parents": [parent]}, fh)
+' "$MESSAGE" "$tree_sha" "$base_sha" "$commit_body" 2>/dev/null; then
+  echo "WRITE_COMMIT: none reason=commit_build_failed"
+  exit 1
+fi
+commit_sha=$(gh api -X POST "repos/$REPO/git/commits" --input "$commit_body" --jq '.sha' 2>&1)
+if [ "$?" -ne 0 ] || [ -z "$commit_sha" ]; then
+  echo "WRITE_COMMIT: none reason=$(squash "$commit_sha")"
+  exit 1
+fi
+
+# 5. 作った blob を読み返して全件照合する（ここで落ちても main は動いていない）
+verified=1
+while IFS=$'\t' read -r blob_sha path; do
+  [ -z "$blob_sha" ] && continue
+  local_sha=$(sha256sum "$path" | cut -d' ' -f1)
+  tmp="$TMPDIR_SELF/readback"
+  if ! gh api "repos/$REPO/git/blobs/$blob_sha" \
+        -H "Accept: application/vnd.github.raw" > "$tmp" 2>/dev/null; then
+    echo "WRITE_PATH: $path api=staged verify=unreadable"
+    verified=0
+    continue
+  fi
+  if [ "$(sha256sum "$tmp" | cut -d' ' -f1)" = "$local_sha" ]; then
+    echo "WRITE_PATH: $path api=staged verify=match bytes=$(wc -c < "$path" | tr -d ' ')"
+  else
+    echo "WRITE_PATH: $path api=staged verify=MISMATCH local_bytes=$(wc -c < "$path" | tr -d ' ') remote_bytes=$(wc -c < "$tmp" | tr -d ' ')"
+    verified=0
+  fi
+done < "$blob_list"
+
+if [ "$verified" -ne 1 ]; then
+  echo "WRITE_COMMIT: none reason=verify_failed note=main_untouched"
+  exit 1
+fi
+
+# 6. 全件一致したときだけ main を進める（force=false ＝ 早送りのみ）
+ref_body="$TMPDIR_SELF/ref.json"
+if ! "$PY" -c '
+import json, sys
+sha, out = sys.argv[1:3]
+with open(out, "w", encoding="utf-8") as fh:
+    json.dump({"sha": sha, "force": False}, fh)
+' "$commit_sha" "$ref_body" 2>/dev/null; then
+  echo "WRITE_COMMIT: none reason=ref_build_failed note=main_untouched"
+  exit 1
+fi
+ref_out=$(gh api -X PATCH "repos/$REPO/git/refs/heads/$BRANCH" --input "$ref_body" 2>&1)
+if [ "$?" -ne 0 ]; then
+  # 早送りできない＝ラン中に main が動いた。上書きはしない。
+  echo "WRITE_COMMIT: none reason=$(squash "$ref_out") note=main_untouched"
+  exit 1
+fi
+
+echo "WRITE_COMMIT: $commit_sha files=$# branch=$BRANCH"
+exit 0

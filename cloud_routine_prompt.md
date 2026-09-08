@@ -309,9 +309,11 @@
 8. **公開（GitHubへ反映）**：対象は `katut-brain/katut-brain.github.io` リポ（Vaultリポではない）。
    - ⚠️⚠️ **送り方の原則（2026-09-08 変更・ここが最優先）**：**本文を自分で書き写して送らない。ファイルのまま送る。**
      `bash push_via_api.sh <owner/repo> "<コミットメッセージ>" <パス> [<パス> ...]` を使う。このスクリプトはディスク上のファイルを直接読んで `gh api` で送り、**送った後に GitHub から読み返して SHA-256 が一致したときだけ成功**と言う。本文があなたの文脈を一度も通らないので、転記による化けが原理的に起きない。
-     - 成功の判定は**終了コード0**と、標準出力の各行 `WRITE_PATH: <パス> api=ok verify=match` の両方。`verify=MISMATCH` / `verify=unreadable` / `api=failed` はすべて失敗として扱う。
-     - **`WRITE_PATH:` の行は削らず、そのままランのログに残す**（どの経路で書けたかを翌朝こちらが読む。これが今の観測手段）。
-     - Contents API の仕様で **1ファイル1コミット**になる。複数渡すときは **`fetch_facts` を先、`reviews` を最後**の順で渡すこと（Actions が最後に正しい状態で発火する）。
+     - **「確かめてから載せる」順で動く**。スクリプトは Git Data API で blob → tree → commit まで作るが、**この時点では `main` から見えない**。作った blob を読み返して SHA-256 が全件一致したときだけ `main` の ref を進める。**照合に落ちたら `main` は1バイトも動かない**（`WRITE_COMMIT: none reason=verify_failed note=main_untouched` が出る）。
+     - 成功の判定は**終了コード0**と、`WRITE_COMMIT: <commit sha> files=N` が出ていること。`WRITE_COMMIT: none ...` はすべて失敗。各ファイルの行は `WRITE_PATH: <パス> api=staged verify=match`。
+     - **`WRITE_PATH:` と `WRITE_COMMIT:` の行は削らず、そのままランのログに残す**（どの経路で書けたかを翌朝こちらが読む。これが今の観測手段）。
+     - **複数ファイルは1コミットにまとまる**。渡す順は問わない（Actions は1回だけ発火する）。
+     - ラン中に誰かが `main` を進めていた場合は早送りできないので、**上書きせずに諦める**（`WRITE_COMMIT: none reason=... note=main_untouched`）。もう一度同じコマンドを実行すれば、新しい先端を親にして作り直す。
    - **フォールバック（スクリプトが失敗したときだけ・順番を守る）**：失敗したパスに限り、従来どおり `push_files` で送ってよい。**ただしフォールバックは「本文を文字列で運ぶ」経路そのものへ戻ることなので、照合できないなら押さない。押してから考えるのでは遅い（押した時点でもう `main` に載っている）。**
      - ① **押す前に、読み返せるかどうかを先に確かめる**（照合の見込みが無いのに押さないため）。クローンにあって**今回のランで一切変更していない**ファイルを1つ選び、照合専用モードを当てる：
        ```bash
@@ -336,9 +338,9 @@
      ```bash
      bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET>" fetch_facts/<TARGET>.json reviews/<TARGET>.html
      ```
-     （`fetch_facts` が無い日は `reviews/<TARGET>.html` だけを渡す。**引数の順は変えない** — `reviews` が最後になるようにする）
+     （`fetch_facts` が無い日は `reviews/<TARGET>.html` だけを渡す。2つ渡しても1コミットにまとまる）
    - 送る前に、**ファイルが本物であることだけ**確認する（中身を書き写すのではなく、ファイルに対して確認する）：`head -c 20 reviews/<TARGET>.html` が `<!doctype html>` で始まり、`tail -c 20` が `</html>` で終わり、`grep -c PLACEHOLDER reviews/<TARGET>.html` が 0 であること。
-   - **送った後の照合はスクリプトがやる**（SHA-256の完全一致）。`verify=match` が出ていれば、GitHubから改めて読み返す必要はない。`verify=MISMATCH` が出たら、化けたのではなくファイルが送信中に書き換わった可能性があるので、**もう一度同じコマンドを実行する**（Contents API は同じ内容で上書きするだけなので安全）。2回目も `MISMATCH` なら、上のフォールバック条件に従う。
+   - **照合はスクリプトが載せる前にやる**（SHA-256の完全一致）。`WRITE_COMMIT: <sha>` が出ていれば公開まで完了。`note=main_untouched` が出ていたら**何も載っていない**ので、**もう一度同じコマンドを実行する**（作り直しになるだけで、二重コミットにはならない）。2回目も駄目なら、下のフォールバック条件に従う。
 
    **(b) reviews 無し・今回のランで `fetch_facts/<TARGET>.json` に差分が生じた場合（手順2.5のバックフィルだけが書いた日）**：
    - ⚠️ **(b) に入る判定条件は `git status --porcelain -- fetch_facts/<TARGET>.json` の出力が空でないこと、これ1つだけ**にする。
@@ -354,7 +356,7 @@
      bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET> (backfill only)" fetch_facts/<TARGET>.json
      ```
    - 送る前に、ファイルが本物のJSONであることを確認する：`python3 -c "import json; json.load(open('fetch_facts/<TARGET>.json', encoding='utf-8'))"` がエラー無く通ること。
-   - 照合はスクリプトが SHA-256 でやる。`verify=match` なら読み返し不要。失敗したときだけ上のフォールバック条件に従う（JSONは小さいのでサイズ条件には掛からない）。
+   - 照合はスクリプトが載せる前に SHA-256 でやる。`WRITE_COMMIT: <sha>` なら完了。失敗したときだけ上のフォールバック条件に従う。
 
    **(c) reviews 無し・fetch_facts も無し（または `git status --porcelain -- fetch_facts/<TARGET>.json` が空＝今回のランで変更が無い）**：
    - 何も push せず正常終了する。
