@@ -278,9 +278,34 @@ if [ "$?" -ne 0 ]; then
   fi
   case "$cmp_status" in
     identical|ahead)
-      # 我々の commit は祖先＝ PATCH は成功していた。再送してはいけない。
-      echo "WRITE_COMMIT: $commit_sha files=$# branch=$BRANCH note=confirmed_as_ancestor"
-      exit 0
+      # 我々の commit は祖先＝ PATCH は成功していた。ただし**祖先であることと、
+      # 中身が今も載っていることは別**（2026-09-08 の敵対的レビュー6周目の指摘）。
+      # 後続の書き手が対象ファイルを消した／差し替えた場合も status は ahead のまま。
+      # 現在の先端で全パスを実際に読み返して照合する。
+      still_there=1
+      while IFS=$'\t' read -r _blob_sha path; do
+        [ -z "$path" ] && continue
+        want=$(sha256sum "$path" | cut -d' ' -f1)
+        tmp="$TMPDIR_SELF/after"
+        if ! gh api "repos/$REPO/contents/$path?ref=$actual" \
+              -H "Accept: application/vnd.github.raw+json" > "$tmp" 2>/dev/null; then
+          echo "WRITE_PATH: $path after=missing"
+          still_there=0
+          continue
+        fi
+        if [ "$(sha256sum "$tmp" | cut -d' ' -f1)" != "$want" ]; then
+          echo "WRITE_PATH: $path after=replaced"
+          still_there=0
+        fi
+      done < "$blob_list"
+      if [ "$still_there" -eq 1 ]; then
+        echo "WRITE_COMMIT: $commit_sha files=$# branch=$BRANCH note=confirmed_as_ancestor"
+        exit 0
+      fi
+      # 載ったが、その後で誰かが消した/差し替えた。**再送してはいけない**
+      # （相手の意図した変更を古いローカル内容で踏み潰すことになる）。
+      echo "WRITE_COMMIT: $commit_sha note=superseded_do_not_retry"
+      exit 3
       ;;
   esac
   # 祖先ではない＝本当に載っていない（早送りできなかった等）。

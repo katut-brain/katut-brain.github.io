@@ -206,11 +206,20 @@ if tail == "git/refs/heads/main" and method == "PATCH":
         # 早送りできない＝ラン中に main が動いた
         sys.stderr.write("gh: Update is not a fast forward (HTTP 422)\n")
         sys.exit(1)
-    if BEHAVIOR in ("ref_update_lost_advanced", "compare_unreadable_after_lost"):
+    if BEHAVIOR in ("ref_update_lost_advanced", "compare_unreadable_after_lost",
+                    "ref_update_lost_superseded"):
         # PATCH は通ったが応答が消え、その直後に別の書き手が main を進めた
         write_ref(body["sha"])
+        child_tree = commit["tree"]
+        if BEHAVIOR == "ref_update_lost_superseded":
+            # 別の書き手が、我々が載せたファイルを消してしまった場合
+            t = json.loads(get_obj("trees", commit["tree"]))
+            for k in list(t):
+                if k.startswith("reviews/"):
+                    del t[k]
+            child_tree = put_obj("trees", json.dumps(t, sort_keys=True).encode())
         child = put_obj("commits", json.dumps(
-            {"tree": commit["tree"], "parents": [body["sha"]]}, sort_keys=True).encode())
+            {"tree": child_tree, "parents": [body["sha"]]}, sort_keys=True).encode())
         write_ref(child)
         sys.stderr.write("gh: connection reset by peer\n")
         sys.exit(1)
@@ -245,14 +254,15 @@ if tail.startswith("compare/") and method == "GET":
 
 # --- Contents API（--verify-only の読み出しだけに使う） ---------------------
 if tail.startswith("contents/") and method == "GET":
-    contract(query == "ref=main", "the contents GET must pin the ref, got " + repr(query))
+    contract(query.startswith("ref="), "the contents GET must pin the ref, got " + repr(query))
     contract(accept == "Accept: application/vnd.github.raw+json",
              "the contents GET must ask for raw, got " + repr(accept))
     if BEHAVIOR == "get_forbidden":
         sys.stderr.write("gh: not found (HTTP 404)\n")
         sys.exit(1)
     path = tail[len("contents/"):]
-    tree = json.loads(get_obj("commits", read_ref()))
+    wanted = query[len("ref="):]
+    tree = json.loads(get_obj("commits", read_ref() if wanted == "main" else wanted))
     tree = json.loads(get_obj("trees", tree["tree"]))
     if path not in tree:
         sys.stderr.write("gh: not found (HTTP 404)\n")
@@ -466,6 +476,19 @@ class PushViaApiTest(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         self.assertIn("confirmed_as_ancestor", r.stdout)
         self.assertNotIn("main_untouched", r.stdout)
+
+    def test_ancestor_but_file_was_removed_afterwards_is_not_success(self):
+        """祖先であることと、中身が今も載っていることは別（レビュー6周目の指摘）。
+
+        応答消失後に別の書き手が対象ファイルを消しても compare は ahead のまま。
+        ここで成功と言うとその日のレビューが黙って欠ける。かといって再送すると
+        相手の意図した削除を踏み潰すので、再送も禁止する。
+        """
+        r = self._push("ref_update_lost_superseded")
+        self.assertEqual(r.returncode, 3, r.stdout + r.stderr)
+        self.assertIn("superseded_do_not_retry", r.stdout)
+        self.assertIn("after=missing", r.stdout)
+        self.assertNotIn("confirmed_as_ancestor", r.stdout)
 
     def test_cannot_compare_is_unknown_not_untouched(self):
         """祖先かどうかを確かめられないなら unknown。再送を許してはいけない。"""
