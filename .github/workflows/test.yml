@@ -36,3 +36,7 @@ jobs:
       # 本物の GitHub は叩かない（contents: read のままで完結する）。
       - name: Run write-path tests
         run: python -m unittest -v test_push_via_api.py
+
+      # 押せなかった日を翌晩拾い直す装置。
+      - name: Run recovery-target tests
+        run: python -m unittest -v test_recover_target.py

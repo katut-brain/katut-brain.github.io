@@ -118,6 +118,23 @@ if body_file is not None:
         body = json.load(fh)
 
 
+# スクリプトの実行中に別の書き手が main を進める状況を作るためのフック。
+# FAKE_GH_ADVANCE_AFTER に endpoint の一部を入れると、その呼び出しを返した直後に
+# main を1コミット進める（＝競合を「近似」ではなく本当に起こす）。
+ADVANCE_AFTER = os.environ.get("FAKE_GH_ADVANCE_AFTER", "")
+if ADVANCE_AFTER and ADVANCE_AFTER in endpoint:
+    import atexit
+
+    def _advance_main():
+        cur = read_ref()
+        c = json.loads(get_obj("commits", cur))
+        child = put_obj("commits", json.dumps(
+            {"tree": c["tree"], "parents": [cur]}, sort_keys=True).encode())
+        write_ref(child)
+
+    atexit.register(_advance_main)
+
+
 def emit(payload):
     """--jq が来ていればそのスカラだけ返す（本物の gh の挙動に合わせる）。"""
     if jq is None:
@@ -287,6 +304,7 @@ class PushViaApiTest(unittest.TestCase):
         self.bin.mkdir()
         self.store = Path(self.tmp) / "store"
         self.store.mkdir()
+        self.advance_after = ""
 
         gh_py = self.bin / "fake_gh.py"
         gh_py.write_text(FAKE_GH, encoding="utf-8")
@@ -317,6 +335,8 @@ class PushViaApiTest(unittest.TestCase):
         env["FAKE_GH_STORE"] = str(self.store)
         env["FAKE_GH_BEHAVIOR"] = behavior
         env["PUSH_VIA_API_PYTHON"] = sys.executable
+        if self.advance_after:
+            env["FAKE_GH_ADVANCE_AFTER"] = self.advance_after
         return env
 
     def _run(self, behavior, *args):
@@ -415,50 +435,39 @@ class PushViaApiTest(unittest.TestCase):
         self.assertIn("WRITE_COMMIT: none", r.stdout)
         self.assertEqual(self._head(), before)
 
-    def test_concurrent_move_of_main_is_not_forced_over(self):
-        """ラン中に main が動いたら、早送りできないので諦める（上書きしない）。"""
-        # 1回目を成功させたあと、その時点の commit を親とする2回目を作る途中で
-        # main を別の commit へ進める、という状況を模す。
-        self._push("normal")
-        moved_from = self._head()
+    def test_main_moving_before_the_patch_is_not_forced_over(self):
+        """スクリプトが親を読んだ後、PATCH を出す前に main が動いた場合。
 
-        # 別の誰かが main を進めた
-        import json
-        extra_blob = hashlib.sha1(b"blobs\0other").hexdigest()
-        (self.store / "blobs").mkdir(exist_ok=True)
-        (self.store / "blobs" / extra_blob).write_bytes(b"other")
-        commit = json.loads((self.store / "commits" / moved_from).read_bytes())
-        tree = json.loads((self.store / "trees" / commit["tree"]).read_bytes())
-        tree["other.txt"] = extra_blob
-        new_tree = hashlib.sha1(b"trees\0" + json.dumps(tree, sort_keys=True).encode()).hexdigest()
-        (self.store / "trees" / new_tree).write_bytes(json.dumps(tree, sort_keys=True).encode())
-        payload = json.dumps({"tree": new_tree, "parents": [moved_from]}, sort_keys=True).encode()
-        new_commit = hashlib.sha1(b"commits\0" + payload).hexdigest()
-        (self.store / "commits" / new_commit).write_bytes(payload)
-
-        # スクリプトが親を読んだ後で main が動く状況を、事前に動かして近似する
-        # （PATCH の親チェックが働くことを確かめるのが目的）
-        self.src.write_text("<!doctype html>\n<p>二日目（追記）</p>\n</html>\n", encoding="utf-8")
+        早送りできないので 422 になる。上書きしてはいけないし、我々の commit も
+        載ってはいけない。従来のテストは競合を「近似」していただけで、実際に
+        走行中の競合を起こしていなかった（レビュー7周目の指摘）。
+        """
+        before = self._prime()
+        self.advance_after = "git/ref/heads/main"
         r = self._push("normal")
-        self.assertEqual(r.returncode, 0, "通常は早送りできるので成功する: " + r.stdout + r.stderr)
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("main_untouched", r.stdout)
+        self.assertIsNone(self._on_main(self.rel), "競合したのに載っている")
+        self.assertNotEqual(self._head(), before, "他人の更新は残っているはず")
 
-        # 親が現在の先端でない commit へ ref を進めようとすると 422 になることを直接確認
-        stale = self.store / "stale.json"
-        stale.write_text(json.dumps({"sha": new_commit, "force": False}), encoding="utf-8")
-        proc = subprocess.run(
-            [sys.executable, str(self.bin / "fake_gh.py"), "api", "-X", "PATCH",
-             "repos/katut-brain/x/git/refs/heads/main", "--input", str(stale)],
-            env=self._env("normal"), capture_output=True, text=True,
-            encoding="utf-8", errors="replace",
-        )
-        self.assertNotEqual(proc.returncode, 0)
-        self.assertIn("fast forward", proc.stderr)
+    def test_main_moving_during_the_readback_is_not_forced_over(self):
+        """照合の途中で main が動いた場合も同じ（窓はここがいちばん広い）。"""
+        before = self._prime()
+        self.advance_after = "git/blobs/"
+        r = self._push("normal")
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("main_untouched", r.stdout)
+        self.assertIsNone(self._on_main(self.rel))
+        self.assertNotEqual(self._head(), before)
+
+    # --- 引数・入力 ---------------------------------------------------------
+
+    # --- ref を進める要求の「結果不明」（レビュー4〜7周目） ------------------
 
     def test_lost_patch_response_is_confirmed_by_rereading_the_ref(self):
         """ref は進んだのに応答だけ失われた場合を「未更新」と断定しないこと。
 
-        断定すると、手順書が「何も載っていない」と読んで再実行し、二重コミットになる
-        （敵対的レビュー4周目の指摘）。読み直して先端が一致すれば成功として扱う。
+        断定すると、手順書が「何も載っていない」と読んで再実行し、二重コミットになる。
         """
         r = self._push("ref_update_lost")
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
@@ -466,11 +475,11 @@ class PushViaApiTest(unittest.TestCase):
         self.assertEqual(self._on_main(self.rel), self.src.read_bytes())
 
     def test_lost_response_then_someone_else_advanced_main_is_still_success(self):
-        """先端が一致しない＝未更新、と断定してはいけない。
+        """先端が一致しない＝未更新、とも断定してはいけない。
 
         PATCH は通ったが応答が消え、その直後に別の書き手が main を進めた場合、
-        先端は我々の commit の子孫になる。ここで「載っていない」と誤認して再送すると、
-        その別の書き手の変更を古いローカル内容で上書きする（レビュー5周目の指摘）。
+        先端は我々の commit の子孫になる。ここで再送すると相手の変更を
+        古いローカル内容で上書きする。
         """
         r = self._push("ref_update_lost_advanced")
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
@@ -478,7 +487,7 @@ class PushViaApiTest(unittest.TestCase):
         self.assertNotIn("main_untouched", r.stdout)
 
     def test_ancestor_but_file_was_removed_afterwards_is_not_success(self):
-        """祖先であることと、中身が今も載っていることは別（レビュー6周目の指摘）。
+        """祖先であることと、中身が今も載っていることは別。
 
         応答消失後に別の書き手が対象ファイルを消しても compare は ahead のまま。
         ここで成功と言うとその日のレビューが黙って欠ける。かといって再送すると

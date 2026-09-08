@@ -52,7 +52,12 @@
 #   フォールバック自体を廃止したので（2026-09-08 の敵対的レビュー4周目）、
 #   今は常用されない。
 #
-# 終了コード: 0=成功 / 1=失敗（main は動いていない） / 2=引数エラー
+# 終了コード:
+#   0 = 成功（main に載った）
+#   1 = 失敗。**main は動いていない**ので、同じコマンドをそのまま再実行してよい
+#   2 = 引数エラー
+#   3 = 判定不能。載ったかどうか分からない／載ったが後続に消された。
+#       **再実行してはいけない**（二重コミット、または他人の変更の踏み潰しになる）
 # 標準出力: 1ファイル1行の `WRITE_PATH:` と、最後に `WRITE_COMMIT:` を出す
 #           （無人ランのログで経路を追うため）。
 
@@ -270,47 +275,68 @@ if [ "$?" -ne 0 ]; then
   # 先端は我々の commit の *子孫* になる。ここで未更新と誤認して再送すると、
   # その別の書き手の変更を古いローカル内容で上書きしてしまう。
   # そこで、我々の commit が現在の先端の祖先かどうかを確かめる。
-  cmp_status=$(gh api "repos/$REPO/compare/$commit_sha...$actual" --jq '.status' 2>/dev/null)
-  cmp_rc=$?
-  if [ "$cmp_rc" -ne 0 ]; then
-    echo "WRITE_COMMIT: unknown reason=cannot_compare note=state_unknown_do_not_retry"
-    exit 3
-  fi
-  case "$cmp_status" in
-    identical|ahead)
-      # 我々の commit は祖先＝ PATCH は成功していた。ただし**祖先であることと、
-      # 中身が今も載っていることは別**（2026-09-08 の敵対的レビュー6周目の指摘）。
-      # 後続の書き手が対象ファイルを消した／差し替えた場合も status は ahead のまま。
-      # 現在の先端で全パスを実際に読み返して照合する。
-      still_there=1
-      while IFS=$'\t' read -r _blob_sha path; do
-        [ -z "$path" ] && continue
-        want=$(sha256sum "$path" | cut -d' ' -f1)
-        tmp="$TMPDIR_SELF/after"
-        if ! gh api "repos/$REPO/contents/$path?ref=$actual" \
-              -H "Accept: application/vnd.github.raw+json" > "$tmp" 2>/dev/null; then
-          echo "WRITE_PATH: $path after=missing"
-          still_there=0
-          continue
-        fi
-        if [ "$(sha256sum "$tmp" | cut -d' ' -f1)" != "$want" ]; then
-          echo "WRITE_PATH: $path after=replaced"
-          still_there=0
-        fi
-      done < "$blob_list"
-      if [ "$still_there" -eq 1 ]; then
-        echo "WRITE_COMMIT: $commit_sha files=$# branch=$BRANCH note=confirmed_as_ancestor"
-        exit 0
+  #
+  # なお確かめている最中にも main は動きうるので、読み終えたら先端が動いていない
+  # ことを確認し、動いていたらやり直す（7周目の指摘）。3回で落ち着かなければ諦める。
+  attempt=0
+  while : ; do
+    cmp_status=$(gh api "repos/$REPO/compare/$commit_sha...$actual" --jq '.status' 2>/dev/null)
+    cmp_rc=$?
+    if [ "$cmp_rc" -ne 0 ]; then
+      echo "WRITE_COMMIT: unknown reason=cannot_compare note=state_unknown_do_not_retry"
+      exit 3
+    fi
+    case "$cmp_status" in
+      identical|ahead) ;;
+      *)
+        # 祖先ではない＝本当に載っていない（早送りできなかった等）。
+        echo "WRITE_COMMIT: none reason=$(squash "$ref_out") note=main_untouched"
+        exit 1
+        ;;
+    esac
+
+    # 祖先だと分かっても、**中身が今も載っているとは限らない**（6周目の指摘）。
+    # 後続の書き手が対象ファイルを消した／差し替えた場合も status は ahead のまま。
+    still_there=1
+    while IFS=$'	' read -r _blob_sha path; do
+      [ -z "$path" ] && continue
+      want=$(sha256sum "$path" | cut -d' ' -f1)
+      tmp="$TMPDIR_SELF/after"
+      if ! gh api "repos/$REPO/contents/$path?ref=$actual"             -H "Accept: application/vnd.github.raw+json" > "$tmp" 2>/dev/null; then
+        echo "WRITE_PATH: $path after=missing"
+        still_there=0
+        continue
       fi
+      if [ "$(sha256sum "$tmp" | cut -d' ' -f1)" != "$want" ]; then
+        echo "WRITE_PATH: $path after=replaced"
+        still_there=0
+      fi
+    done < "$blob_list"
+
+    if [ "$still_there" -ne 1 ]; then
       # 載ったが、その後で誰かが消した/差し替えた。**再送してはいけない**
       # （相手の意図した変更を古いローカル内容で踏み潰すことになる）。
       echo "WRITE_COMMIT: $commit_sha note=superseded_do_not_retry"
       exit 3
-      ;;
-  esac
-  # 祖先ではない＝本当に載っていない（早送りできなかった等）。
-  echo "WRITE_COMMIT: none reason=$(squash "$ref_out") note=main_untouched"
-  exit 1
+    fi
+
+    settled=$(gh api "repos/$REPO/git/ref/heads/$BRANCH" --jq '.object.sha' 2>/dev/null)
+    settled_rc=$?
+    if [ "$settled_rc" -ne 0 ] || [ -z "$settled" ]; then
+      echo "WRITE_COMMIT: unknown reason=cannot_settle note=state_unknown_do_not_retry"
+      exit 3
+    fi
+    if [ "$settled" = "$actual" ]; then
+      echo "WRITE_COMMIT: $commit_sha files=$# branch=$BRANCH note=confirmed_as_ancestor"
+      exit 0
+    fi
+    attempt=$((attempt + 1))
+    if [ "$attempt" -ge 3 ]; then
+      echo "WRITE_COMMIT: unknown reason=head_kept_moving note=state_unknown_do_not_retry"
+      exit 3
+    fi
+    actual="$settled"
+  done
 fi
 
 echo "WRITE_COMMIT: $commit_sha files=$# branch=$BRANCH"
