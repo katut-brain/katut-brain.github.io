@@ -1,17 +1,20 @@
 """push_via_api.sh の受け入れテスト。
 
-本物の GitHub は叩かない。PATH の先頭に偽の `gh` を置いて、
+本物の GitHub は叩かない。PATH の先頭に偽の `gh`（Python製）を置いて、
 スクリプトが「送って・読み返して・SHA-256 が一致したときだけ成功と言う」ことを確かめる。
 
-特に確かめたいのは、2026-09-08 にこのスクリプトを入れた理由そのもの——
-**中身が途中で変わったのに成功と報告してしまう**経路が無いこと。
+確かめたいのは、2026-09-08 にこのスクリプトを入れた理由そのもの:
+  1. 中身が途中で変わったのに成功と報告する経路が無いこと
+  2. 大きいファイルでも壊れないこと（argv に本文を置くと約98KB で Argument list too long
+     になり、122KB の index.html が壊れたのと同じサイズの崖ができる）
+  3. 別経路（push_files フォールバック）で押したものも、同じ SHA-256 照合に掛けられること
 """
 
-import base64
 import hashlib
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import textwrap
 import unittest
@@ -22,83 +25,63 @@ SCRIPT = REPO_ROOT / "push_via_api.sh"
 
 # Windows のローカル実行でも git-bash があれば動く。無ければスキップする。
 BASH = shutil.which("bash")
-HAS_TOOLS = bool(BASH) and all(shutil.which(c) for c in ("base64", "sha256sum", "mktemp"))
+HAS_TOOLS = bool(BASH) and all(shutil.which(c) for c in ("sha256sum", "mktemp"))
 
+FAKE_GH = textwrap.dedent(
+    '''\
+    import base64, json, os, sys
 
-def _fake_gh(behavior: str) -> str:
-    """偽の `gh` の中身を返す。
+    BEHAVIOR = os.environ["FAKE_GH_BEHAVIOR"]
+    STORE = os.environ["FAKE_GH_STORE"]
+    argv = sys.argv[1:]
 
-    behavior:
-      normal        … PUT を受けて保存し、GET でそのまま返す（正常系）
-      corrupt       … PUT は受けるが、GET では1文字だけ変えて返す（今回直したい事故）
-      put_forbidden … PUT が 403 で落ちる（Vaultリポが到達不能な場合）
-      get_forbidden … PUT は通るが GET が落ちる（照合できない場合）
-    """
-    return textwrap.dedent(
-        f"""\
-        #!/usr/bin/env bash
-        # 偽の gh。$STORE 配下にファイルを置くだけ。
-        BEHAVIOR="{behavior}"
-        STORE="$FAKE_GH_STORE"
-        mkdir -p "$STORE"
+    method = "GET"
+    endpoint = ""
+    body_file = None
+    want_sha = False
+    for i, a in enumerate(argv):
+        if a == "-X":
+            method = argv[i + 1]
+        elif a == "--input":
+            body_file = argv[i + 1]
+        elif a == ".sha":
+            want_sha = True
+        elif a.startswith("repos/"):
+            endpoint = a
+        elif a.startswith("content="):
+            # 本文が argv に乗っていたら、それ自体が回帰。即座に落とす。
+            sys.stderr.write("FAKE_GH: content must not be passed on argv\\n")
+            sys.exit(90)
 
-        # 引数から path とサブコマンドを取り出す
-        method="GET"
-        endpoint=""
-        content=""
-        for ((i=1; i<=$#; i++)); do
-          a="${{!i}}"
-          case "$a" in
-            -X) j=$((i+1)); method="${{!j}}" ;;
-            repos/*) endpoint="$a" ;;
-            content=*) content="${{a#content=}}" ;;
-          esac
-        done
+    rel = endpoint.split("/contents/", 1)[1].split("?", 1)[0] if "/contents/" in endpoint else ""
+    target = os.path.join(STORE, rel)
 
-        # endpoint = repos/<owner>/<repo>/contents/<path>[?ref=...]
-        rel="${{endpoint#repos/}}"
-        rel="${{rel#*/}}"
-        rel="${{rel#*/}}"
-        rel="${{rel#contents/}}"
-        rel="${{rel%%\\?*}}"
-        target="$STORE/$rel"
+    if method == "PUT":
+        if BEHAVIOR == "put_forbidden":
+            sys.stderr.write("gh: Resource not accessible by integration (HTTP 403)\\n")
+            sys.exit(1)
+        payload = json.load(open(body_file, encoding="utf-8"))
+        os.makedirs(os.path.dirname(target) or ".", exist_ok=True)
+        with open(target, "wb") as fh:
+            fh.write(base64.b64decode(payload["content"]))
+        sys.stdout.write(json.dumps({"commit": {"sha": "deadbeef"}}))
+        sys.exit(0)
 
-        if [ "$method" = "PUT" ]; then
-          if [ "$BEHAVIOR" = "put_forbidden" ]; then
-            echo "gh: Resource not accessible by integration (HTTP 403)" >&2
-            exit 1
-          fi
-          mkdir -p "$(dirname "$target")"
-          printf '%s' "$content" | base64 -d > "$target"
-          echo '{{"commit":{{"sha":"deadbeef"}}}}'
-          exit 0
-        fi
+    if BEHAVIOR == "get_forbidden" or not os.path.exists(target):
+        sys.stderr.write("gh: not found (HTTP 404)\\n")
+        sys.exit(1)
 
-        # GET
-        if [ "$BEHAVIOR" = "get_forbidden" ]; then
-          echo "gh: not found (HTTP 404)" >&2
-          exit 1
-        fi
-        if [ ! -f "$target" ]; then
-          echo "gh: not found (HTTP 404)" >&2
-          exit 1
-        fi
-        # sha を訊かれている場合（--jq .sha）
-        for a in "$@"; do
-          if [ "$a" = ".sha" ]; then
-            printf '%s' "$(sha256sum "$target" | cut -c1-40)"
-            exit 0
-          fi
-        done
-        if [ "$BEHAVIOR" = "corrupt" ]; then
-          # 全角括弧を半角に化けさせる。2026-09-04 に実際に起きた化け方。
-          sed 's/（/(/g; s/）/)/g' "$target"
-        else
-          cat "$target"
-        fi
-        exit 0
-        """
-    )
+    data = open(target, "rb").read()
+    if want_sha:
+        sys.stdout.write(hashlib.sha1(data).hexdigest() if False else "0" * 40)
+        sys.exit(0)
+    if BEHAVIOR == "corrupt":
+        # 全角括弧を半角に化けさせる。2026-09-04 に実際に起きた化け方。
+        data = data.replace("（".encode(), b"(").replace("）".encode(), b")")
+    sys.stdout.buffer.write(data)
+    sys.exit(0)
+    '''
+)
 
 
 @unittest.skipUnless(HAS_TOOLS, "bash / coreutils が無い環境ではスキップ")
@@ -111,84 +94,126 @@ class PushViaApiTest(unittest.TestCase):
         self.bin.mkdir()
         self.store = Path(self.tmp) / "store"
 
+        gh_py = self.bin / "fake_gh.py"
+        gh_py.write_text("import hashlib\n" + FAKE_GH, encoding="utf-8")
+        gh = self.bin / "gh"
+        gh.write_text(f'#!/usr/bin/env sh\nexec "{sys.executable}" "{gh_py}" "$@"\n', encoding="utf-8")
+        gh.chmod(0o755)
+
         # 実害と同じ形の本文（全角括弧を含む）
         self.rel = "reviews/2026-09-03.html"
-        src = self.work / self.rel
-        src.parent.mkdir(parents=True, exist_ok=True)
-        src.write_text(
+        self.src = self.work / self.rel
+        self.src.parent.mkdir(parents=True, exist_ok=True)
+        self.src.write_text(
             "<!doctype html>\n<p>ハーネス（活性化・出典照合）の話</p>\n</html>\n",
             encoding="utf-8",
         )
-        self.local_sha = hashlib.sha256(src.read_bytes()).hexdigest()
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
 
-    def _run(self, behavior):
-        gh = self.bin / "gh"
-        gh.write_text(_fake_gh(behavior), encoding="utf-8")
-        gh.chmod(0o755)
+    def _sha(self, path: Path) -> str:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+
+    def _env(self, behavior):
         env = dict(os.environ)
         env["PATH"] = f"{self.bin}{os.pathsep}" + env["PATH"]
         env["FAKE_GH_STORE"] = str(self.store)
+        env["FAKE_GH_BEHAVIOR"] = behavior
+        env["PUSH_VIA_API_PYTHON"] = sys.executable
+        return env
+
+    def _run(self, behavior, *args):
         return subprocess.run(
-            [BASH, str(SCRIPT), "katut-brain/x", "update: test", self.rel],
+            [BASH, str(SCRIPT), *args],
             cwd=self.work,
-            env=env,
+            env=self._env(behavior),
             capture_output=True,
             text=True,
         )
 
+    def _push(self, behavior, *paths):
+        return self._run(behavior, "katut-brain/x", "update: test", *(paths or (self.rel,)))
+
+    # --- 主経路 -------------------------------------------------------------
+
     def test_normal_reports_match_and_exits_zero(self):
-        r = self._run("normal")
+        r = self._push("normal")
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         self.assertIn("verify=match", r.stdout)
-        stored = (self.store / self.rel).read_bytes()
-        self.assertEqual(hashlib.sha256(stored).hexdigest(), self.local_sha)
+        stored = self.store / self.rel
+        self.assertEqual(self._sha(stored), self._sha(self.src))
 
     def test_corruption_is_detected_not_reported_as_success(self):
         """本番で起きた「全角括弧が半角に化ける」を、照合が必ず捕まえること。"""
-        r = self._run("corrupt")
+        r = self._push("corrupt")
         self.assertNotEqual(r.returncode, 0, "化けているのに成功で返してはいけない")
         self.assertIn("verify=MISMATCH", r.stdout)
         self.assertNotIn("verify=match", r.stdout)
 
     def test_put_forbidden_is_a_failure_the_caller_can_see(self):
-        r = self._run("put_forbidden")
+        r = self._push("put_forbidden")
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("api=failed", r.stdout)
         self.assertIn("403", r.stdout)
 
     def test_unreadable_after_put_is_not_success(self):
         """送れても読み返せなければ成功と言わない（照合できていないため）。"""
-        r = self._run("get_forbidden")
+        r = self._push("get_forbidden")
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("verify=unreadable", r.stdout)
 
     def test_missing_local_file_is_reported(self):
-        gh = self.bin / "gh"
-        gh.write_text(_fake_gh("normal"), encoding="utf-8")
-        gh.chmod(0o755)
-        env = dict(os.environ)
-        env["PATH"] = f"{self.bin}{os.pathsep}" + env["PATH"]
-        env["FAKE_GH_STORE"] = str(self.store)
-        r = subprocess.run(
-            [BASH, str(SCRIPT), "katut-brain/x", "m", "reviews/9999-01-01.html"],
-            cwd=self.work,
-            env=env,
-            capture_output=True,
-            text=True,
-        )
+        r = self._push("normal", "reviews/9999-01-01.html")
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("local_file_missing", r.stdout)
 
     def test_usage_error_exits_two(self):
-        r = subprocess.run(
-            [BASH, str(SCRIPT), "katut-brain/x"],
-            cwd=self.work,
-            capture_output=True,
-            text=True,
-        )
+        r = self._run("normal", "katut-brain/x")
+        self.assertEqual(r.returncode, 2)
+
+    # --- サイズの崖（2026-09-08 レビュー指摘 P0） ---------------------------
+
+    def test_large_file_does_not_hit_the_argv_limit(self):
+        """本文を argv に置くと約98KB で `Argument list too long` になる。
+
+        122KB の index.html が壊れたのと同じサイズの崖なので、その帯域を実際に通す。
+        偽 gh 側でも `content=` が argv に現れたら exit 90 で落とすようにしてある。
+        """
+        big = self.work / "reviews/2026-06-14.html"
+        body = "<p>括弧（テスト）と長い本文。</p>\n" * 6000  # 約 180KB
+        big.write_text("<!doctype html>\n" + body + "</html>\n", encoding="utf-8")
+        self.assertGreater(big.stat().st_size, 150_000)
+
+        r = self._push("normal", "reviews/2026-06-14.html")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("verify=match", r.stdout)
+        self.assertEqual(self._sha(self.store / "reviews/2026-06-14.html"), self._sha(big))
+
+    # --- 照合専用モード（フォールバックした夜のため） -----------------------
+
+    def test_verify_only_confirms_a_file_pushed_by_another_route(self):
+        """push_files で押した夜も、同じ SHA-256 照合に掛けられること。"""
+        pushed = self.store / self.rel
+        pushed.parent.mkdir(parents=True, exist_ok=True)
+        pushed.write_bytes(self.src.read_bytes())
+
+        r = self._run("normal", "--verify-only", "katut-brain/x", self.rel)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("verify=match", r.stdout)
+
+    def test_verify_only_catches_the_2026_09_04_corruption(self):
+        pushed = self.store / self.rel
+        pushed.parent.mkdir(parents=True, exist_ok=True)
+        pushed.write_bytes(self.src.read_bytes())
+
+        # corrupt は GET のときだけ化けさせる＝別経路で押した中身が化けていた状況
+        r = self._run("corrupt", "--verify-only", "katut-brain/x", self.rel)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("verify=MISMATCH", r.stdout)
+
+    def test_verify_only_usage_error(self):
+        r = self._run("normal", "--verify-only", "katut-brain/x")
         self.assertEqual(r.returncode, 2)
 
 
