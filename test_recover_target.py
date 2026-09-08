@@ -59,6 +59,10 @@ class RecoverTargetTest(unittest.TestCase):
                                 "source": f"https://x/{rid}"})
         self._write("captures.json", json.dumps(records))
 
+    def _captures_without_rid(self, day, sources):
+        records = [{"date": day.isoformat(), "source": src} for src in sources]
+        self._write("captures.json", json.dumps(records))
+
     def _index(self, mapping):
         payload = {"days": {d.isoformat(): {"rids": sorted(r)}
                             for d, r in mapping.items()}}
@@ -386,6 +390,35 @@ class RecoverTargetTest(unittest.TestCase):
         self.assertIn("SNAPSHOT_ERROR", out)
         self.assertIn("holding tonight's rids back", out)
         self.assertNotIn(self.yesterday.isoformat(), self._read_index_raw())
+
+    def test_records_without_a_rid_still_reach_the_ledger(self):
+        """`rid` の無いレコードだけの日が、台帳から丸ごと落ちないこと。
+
+        台帳は rid の集合でその日を表すので、rid を持たないレコードを飛ばすと
+        「保存0件の日」と区別がつかず、本文がスナップショットに残っていても
+        回収の対象にならない（敵対的レビュー14周目の指摘）。
+        実測では captures.json の320件すべてが整数 rid を持つが、通ったときに
+        黙って落ちる作りにはしない。
+        """
+        day = self.yesterday
+        self._captures_without_rid(day, ["https://x/one", "https://x/two"])
+        target, out = self._run()
+        self.assertEqual(target, day.isoformat())
+        ledger = self._read_index_raw()
+        self.assertIn(day.isoformat(), ledger, "rid が無い日が台帳に載っていない")
+        self.assertEqual(len(ledger[day.isoformat()]["rids"]), 2)
+        self.assertTrue(all(r < 0 for r in ledger[day.isoformat()]["rids"]),
+                        "合成した識別子は負数にして実IDと区別する")
+        self.assertEqual(len(self._read_snapshot(day)), 2)
+
+    def test_a_synthetic_rid_is_stable_across_nights(self):
+        """同じレコードなら毎晩同じ識別子になること（違うと毎晩増える）。"""
+        day = self.yesterday
+        self._captures_without_rid(day, ["https://x/one"])
+        self._run()
+        first = self._read_index_raw()[day.isoformat()]["rids"]
+        self._run()
+        self.assertEqual(self._read_index_raw()[day.isoformat()]["rids"], first)
 
     # --- 窓と壊れた入力 -----------------------------------------------------
 

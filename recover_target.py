@@ -55,6 +55,7 @@
 """
 
 import datetime
+import hashlib
 import json
 import os
 import re
@@ -88,8 +89,29 @@ def _load_json(path):
         return None
 
 
+def synthetic_rid(rec) -> int:
+    """`rid` を持たないレコードに、安定した識別子を振る。
+
+    Raindrop の rid は正の整数なので、**負数**にして合成であることを見て分かるようにする。
+    date + source から決めるので、同じレコードなら毎晩同じ値になる。
+
+    ⚠️ 無いと台帳から丸ごと落ちる（敵対的レビュー14周目の指摘）。台帳は rid の集合で
+    その日を表すので、rid の無いレコードだけの日は「保存0件の日」と区別がつかず、
+    本文がスナップショットに残っていても回収の対象にならない。
+    実測では captures.json の320件すべてが整数 rid を持っており（2026-09-09）、
+    これは今のところ通らない経路だが、通ったときに黙って落ちるのは避ける。
+    """
+    parts = [str(rec.get("date") or "")[:10], str(rec.get("source") or "")]
+    key = chr(31).join(parts)   # 日付にも URL にも現れない区切り
+    return -int(hashlib.sha1(key.encode("utf-8")).hexdigest()[:12], 16)
+
+
 def captures_by_day() -> dict:
-    """captures.json から {日付文字列: [レコード, ...]} を作る。"""
+    """captures.json から {日付文字列: [レコード, ...]} を作る。
+
+    `rid` が無いレコードには合成の rid を振ってから返す（下流はすべて rid で
+    識別するので、ここで揃えておかないと台帳・期待集合・公開済み判定から漏れる）。
+    """
     data = _load_json(CAPTURES)
     records = data if isinstance(data, list) else (data or {}).get("captures", [])
     out = {}
@@ -103,6 +125,9 @@ def captures_by_day() -> dict:
             datetime.date.fromisoformat(value[:10])
         except ValueError:
             continue
+        if not isinstance(rec.get("rid"), int):
+            rec = dict(rec)
+            rec["rid"] = synthetic_rid(rec)
         out.setdefault(value[:10], []).append(rec)
     return out
 
