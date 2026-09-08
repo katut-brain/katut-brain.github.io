@@ -93,6 +93,11 @@ class RecoverTargetTest(unittest.TestCase):
         with open(os.path.join(d, day.isoformat() + ".json"), "w", encoding="utf-8") as fh:
             json.dump(records, fh)
 
+    def _read_snapshot(self, day):
+        with open(os.path.join(self.tmp, "capture_days", day.isoformat() + ".json"),
+                  encoding="utf-8") as fh:
+            return {r["rid"] for r in json.load(fh)}
+
     def _snapshot_exists(self, day):
         return os.path.exists(os.path.join(self.tmp, "capture_days",
                                            day.isoformat() + ".json"))
@@ -237,6 +242,49 @@ class RecoverTargetTest(unittest.TestCase):
         target, out = self._run()
         self.assertEqual(target, alive.isoformat())
         self.assertIn("no material left", out)
+
+    def test_a_partial_import_does_not_shrink_the_snapshot(self):
+        """取り込みが不完全な夜に、既に残した本文を削ってはいけない。
+
+        実際に通る経路（敵対的レビュー11周目の指摘）:
+          初夜  … A と B を観測 → 台帳とスナップショットは押せたが review は失敗
+          翌晩  … 取り込みが INCOMPLETE で A しか見えない
+          翌々晩… Raindrop から B が消える
+        上書きにしていると2晩目でスナップショットが [A] に縮み、3晩目には B の本文が
+        どこにも無くなる。しかも台帳には B の rid が残るので、その日は永久に pending の
+        まま張り付く（材料が A だけ残るので unrecoverable にもならない）。
+        """
+        day = self._d(2)
+
+        # 初夜: A と B を観測
+        self._captures({day: [1, 2]})
+        self._run()
+        self.assertEqual(self._read_snapshot(day), {1, 2})
+
+        # 翌晩: 取り込みが不完全で A しか見えない（review はまだ無い＝pending のまま）
+        self._captures({day: [1], self.yesterday: [9]})
+        self._review(self.yesterday, [9])
+        target, _ = self._run()
+        self.assertEqual(target, day.isoformat())
+        self.assertEqual(self._read_snapshot(day), {1, 2},
+                         "不完全な取り込みでスナップショットが縮んでいる")
+
+        # 翌々晩: Raindrop から B が消えても、本文は残っている
+        self._captures({self.yesterday: [9]})
+        target, out = self._run()
+        self.assertEqual(target, day.isoformat())
+        self.assertEqual(self._read_snapshot(day), {1, 2})
+        self.assertNotIn("no material left", out)
+
+    def test_the_snapshot_keeps_growing_across_nights(self):
+        """別々の晩に見えた保存が、すべて1つのスナップショットに溜まること。"""
+        day = self._d(2)
+        self._captures({day: [1]})
+        self._run()
+        self._captures({day: [2], self.yesterday: [9]})
+        self._review(self.yesterday, [9])
+        self._run()
+        self.assertEqual(self._read_snapshot(day), {1, 2})
 
     # --- 「ファイルがあれば公開済み」にしない（同 P1） ----------------------
 

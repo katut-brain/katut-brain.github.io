@@ -29,7 +29,9 @@
   TARGET に選んでも入力が0件で何も作れず、最古の pending に永久に張り付いて
   新しい日も処理できなくなる——直そうとした永久欠落が、永久停止に化ける。
   そこで `capture_days/<日付>.json` にレコード本文をそのまま残し、台帳と一緒に
-  先に push する。手順3は captures.json が0件のときこれを入力にする。
+  先に push する。**既存があれば rid で併合する**（上書きにすると、翌晩の取り込みが
+  INCOMPLETE だったときにスナップショットが縮んで本文が失われる＝11周目の指摘）。
+  手順3はこれがあれば入力の正本にする。
   それでも材料が無い日（本文がどこにも無い）は `unrecoverable` を台帳に焼き付けて
   飛ばす。飛ばしたことは記録に残るので、黙って消えるのとは違う。
 
@@ -119,13 +121,37 @@ def load_snapshot(day: str):
     return data if isinstance(data, list) else None
 
 
+def merge_records(existing, incoming):
+    """rid をキーに単調併合する。**一度残した本文は減らさない。**
+
+    ⚠️ 上書きにしてはいけない（敵対的レビュー11周目の指摘）。初夜に A/B を観測して
+    残したのに、翌晩の取り込みが INCOMPLETE で A しか見えないと、上書きだと
+    スナップショットが [A] に縮む。そのあと Raindrop から B が消えると、B の本文は
+    どこにも無くなるのに台帳には rid が残るので、その日は永久に pending のまま
+    張り付く（材料が A だけ残るので unrecoverable にもならない）。
+    同じ rid は今夜の観測で更新する（そちらが新しいため）。
+    """
+    by_rid, loose = {}, []
+    for source in (existing or [], incoming or []):
+        for rec in source:
+            if not isinstance(rec, dict):
+                continue
+            rid = rec.get("rid")
+            if isinstance(rid, int):
+                by_rid[rid] = rec          # 後勝ち＝今夜の観測を優先
+            elif rec not in loose:
+                loose.append(rec)
+    return [by_rid[k] for k in sorted(by_rid)] + loose
+
+
 def save_snapshot(day: str, records) -> None:
-    """レコード本文をそのまま日別に残す。
+    """レコード本文を日別に残す（既存があれば併合する）。
 
     ⚠️ rid だけでは足りない（敵対的レビュー10周目の指摘）。押せなかった日の保存が
     Raindrop から消えると、翌晩その日を TARGET に選べても**入力が0件で何も作れず、
     最古の pending に永久に張り付く**。本文ごと残しておけば作り直せる。
     """
+    records = merge_records(load_snapshot(day), records)
     os.makedirs(SNAPSHOT_DIR, exist_ok=True)
     tmp = snapshot_path(day) + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
@@ -343,14 +369,16 @@ def main() -> int:
 
     # 今夜これから作る日と、まだ片付いていない日は、レコード本文を残しておく。
     # これが無いと、押せなかった日の保存が Raindrop から消えたときに作り直せない。
-    for key in {target} | {d for d, _ in pending}:
+    for key in sorted({target} | {d for d, _ in pending}):
         records = seen.get(key)
-        if records:
-            try:
-                save_snapshot(key, records)
-                print(f"SNAPSHOT: {key} ({len(records)} record(s))")
-            except OSError as exc:
-                print(f"SNAPSHOT_ERROR: {key}: {exc}")
+        if not records and load_snapshot(key) is None:
+            continue
+        try:
+            save_snapshot(key, records or [])
+            kept = load_snapshot(key) or []
+            print(f"SNAPSHOT: {key} ({len(kept)} record(s) on file)")
+        except OSError as exc:
+            print(f"SNAPSHOT_ERROR: {key}: {exc}")
 
     print(f"TARGET={target}")
     return 0
