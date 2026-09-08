@@ -204,54 +204,75 @@ class RecoverTargetTest(unittest.TestCase):
         self.assertEqual(target, missed.isoformat())
         self.assertNotIn("unrecoverable", out)
 
-    def test_a_day_with_no_material_left_does_not_stall_the_queue(self):
-        """材料が無い日で止まらないこと。
+    def test_a_save_with_no_body_anywhere_is_dropped_from_what_the_day_must_cover(self):
+        """本文がどこにも無い保存は、その日の期待から外す。
 
-        rid だけ台帳に残っていて本文がどこにも無い日を選び続けると、入力0件で
-        何も作れず、最古の pending に永久に張り付いて新しい日も処理できなくなる
-        ——直そうとした永久欠落が永久停止に化ける（敵対的レビュー10周目の指摘）。
+        外さないと、review はその rid を満たせないので永久に pending のまま
+        その日に張り付き、新しい日の公開まで止まる。
         """
-        gone = self._d(3)
-        self._index({gone: [1]})            # rid だけ残っている
-        self._captures({self.yesterday: [9]})  # Raindrop からは消えた
-        # スナップショットも無い
+        day = self._d(3)
+        self._index({day: [1, 2]})
+        self._snapshot(day, [2])            # 1 の本文はどこにも無い
+        self._captures({self.yesterday: [9]})
+        self._review(day, [2])              # 手元にある 2 だけで公開した
+        self._review(self.yesterday, [9])
         target, out = self._run()
         self.assertEqual(target, self.yesterday.isoformat(),
-                         "材料の無い日に張り付いてはいけない")
-        self.assertIn("no material left", out)
-        self.assertTrue(self._read_index_raw()[gone.isoformat()]["unrecoverable"],
-                        "判定を台帳に焼き付けて、毎晩調べ直さないこと")
+                         "満たしようのない rid のせいで張り付いてはいけない")
+        self.assertIn("no body on file", out)
+        self.assertEqual(self._read_index_raw()[day.isoformat()]["missing"], [1],
+                         "外した理由が台帳に残っていない")
 
-    def test_a_day_marked_unrecoverable_is_not_reconsidered_while_it_stays_gone(self):
-        """材料が無いままの日は、毎晩調べ直さない。"""
+    def test_a_day_with_no_bodies_at_all_is_skipped(self):
+        """本文が1件も無い日は、作り直しても空になるので対象にしない。"""
         gone = self._d(3)
-        self._write("capture_index.json", json.dumps(
-            {"days": {gone.isoformat(): {"rids": [1], "unrecoverable": True}}}))
+        self._index({gone: [1]})
         self._captures({self.yesterday: [9]})
         self._review(self.yesterday, [9])
         target, out = self._run()
         self.assertEqual(target, self.yesterday.isoformat())
-        self.assertIn("nothing to recover", out)
+        self.assertEqual(self._read_index_raw()[gone.isoformat()]["missing"], [1])
 
-    def test_unrecoverable_is_cleared_when_the_records_come_back(self):
-        """`unrecoverable` は「今夜は材料が無い」という観測であって永久の宣告ではない。
+    def test_a_partially_returning_day_does_not_stall(self):
+        """一部だけ戻ってきても張り付かないこと（レビュー13周目の指摘）。
 
-        取り込みが一時的に INCOMPLETE だった夜に立つことがある。永久ラッチにすると、
-        翌晩レコードが戻ってきてもその日は二度と回収されない——材料切れで止まらない
-        ための逃がし弁が、別の永久欠落を作る（敵対的レビュー12周目の指摘。旧テストは
-        この誤った永久化を仕様として固定していた）。
+        日単位の真偽値でやっていたときは、rid 1 の本文が無いまま rid 2 だけ
+        見えるとフラグが解除され、しかも review は 1 を満たせないので、その日に
+        毎晩張り付いて新しい日の公開まで止まった。
         """
-        back = self._d(3)
-        self._write("capture_index.json", json.dumps(
-            {"days": {back.isoformat(): {"rids": [1], "unrecoverable": True}}}))
-        self._captures({back: [1], self.yesterday: [9]})   # 戻ってきた
+        day = self._d(3)
+        self._index({day: [1]})
+        self._captures({self.yesterday: [9]})
         self._review(self.yesterday, [9])
+        self._run()   # 1夜目: 1 の本文が無いので missing に落ちる
+
+        # 2夜目: 同じ日の別の保存 2 だけが見えた
+        self._captures({day: [2], self.yesterday: [9]})
         target, out = self._run()
-        self.assertEqual(target, back.isoformat(), "材料が戻ったら回収を再開すること")
-        self.assertFalse(self._read_index_raw()[back.isoformat()].get("unrecoverable", False),
-                         "フラグが解除されていない")
-        self.assertEqual(self._read_snapshot(back), {1},
-                         "戻ってきた本文をスナップショットに残していない")
+        self.assertEqual(target, day.isoformat(), "2 は公開されていないので対象になる")
+
+        # 3夜目: 2 を載せた review ができたら、1 は満たせないままでも先へ進む
+        self._review(day, [2])
+        self._captures({self.yesterday: [9]})
+        target, out = self._run()
+        self.assertEqual(target, self.yesterday.isoformat(),
+                         "満たせない 1 のせいで張り付いてはいけない")
+
+    def test_a_body_that_comes_back_is_expected_again(self):
+        """一度 missing に落ちた保存でも、本文が戻れば期待に戻す。"""
+        day = self._d(3)
+        self._index({day: [1]})
+        self._captures({self.yesterday: [9]})
+        self._review(self.yesterday, [9])
+        self._run()
+        self.assertEqual(self._read_index_raw()[day.isoformat()]["missing"], [1])
+
+        self._captures({day: [1], self.yesterday: [9]})   # 戻ってきた
+        target, out = self._run()
+        self.assertEqual(target, day.isoformat())
+        self.assertIn("came back", out)
+        self.assertNotIn("missing", self._read_index_raw()[day.isoformat()])
+        self.assertEqual(self._read_snapshot(day), {1})
 
     def test_a_newer_pending_day_is_still_reached_after_a_dead_one(self):
         """材料の無い日を飛ばして、その次の pending へ進むこと。"""
@@ -262,7 +283,7 @@ class RecoverTargetTest(unittest.TestCase):
         self._review(self.yesterday, [9])
         target, out = self._run()
         self.assertEqual(target, alive.isoformat())
-        self.assertIn("no material left", out)
+        self.assertEqual(self._read_index_raw()[gone.isoformat()]["missing"], [1])
 
     def test_a_partial_import_does_not_shrink_the_snapshot(self):
         """取り込みが不完全な夜に、既に残した本文を削ってはいけない。
@@ -349,6 +370,22 @@ class RecoverTargetTest(unittest.TestCase):
         target, out = self._run()
         self.assertEqual(target, day.isoformat())
         self.assertIn("review-meta is missing", out)
+
+    def test_the_ledger_does_not_get_ahead_of_the_snapshot(self):
+        """本文を残せなかった夜は、その日の rid を台帳へ足さない。
+
+        足すと「rid だけあって本文が無い」状態になり、翌晩その rid は missing へ落ちて
+        回収対象から外れる（レビュー13周目の P1）。
+        """
+        os.makedirs(os.path.join(self.tmp, "capture_days"), exist_ok=True)
+        # 書き込み先を塞ぐ: 同名のディレクトリを置いて os.replace を失敗させる
+        os.makedirs(os.path.join(self.tmp, "capture_days",
+                                 self.yesterday.isoformat() + ".json"), exist_ok=True)
+        self._captures({self.yesterday: [1]})
+        _, out = self._run()
+        self.assertIn("SNAPSHOT_ERROR", out)
+        self.assertIn("holding tonight's rids back", out)
+        self.assertNotIn(self.yesterday.isoformat(), self._read_index_raw())
 
     # --- 窓と壊れた入力 -----------------------------------------------------
 

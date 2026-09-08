@@ -193,31 +193,30 @@ def load_index() -> dict:
         rids = entry.get("rids")
         if not isinstance(rids, list) or not all(isinstance(r, int) for r in rids):
             raise LedgerBroken(f"{day}: rids must be a list of integers")
-        unrecoverable = entry.get("unrecoverable", False)
-        if not isinstance(unrecoverable, bool):
+        missing = entry.get("missing", [])
+        if not isinstance(missing, list) or not all(isinstance(r, int) for r in missing):
+            raise LedgerBroken(f"{day}: missing must be a list of integers")
+        # `unrecoverable`（日単位の真偽値）は 2026-09-08 の設計初期に置いていたもの。
+        # 部分的な状態を表せず、rid が1つでも戻ると解除されて張り付く原因になったので
+        # rid 単位の `missing` に置き換えた（敵対的レビュー13周目）。
+        # 古い台帳を壊れ扱いにしないため、読めるが使わない。
+        legacy = entry.get("unrecoverable", False)
+        if not isinstance(legacy, bool):
             raise LedgerBroken(f"{day}: unrecoverable must be true/false")
-        extra = set(entry) - {"rids", "unrecoverable"}
+        extra = set(entry) - {"rids", "missing", "unrecoverable"}
         if extra:
             raise LedgerBroken(f"{day}: unexpected fields {sorted(extra)}")
-        out[day] = {"rids": set(rids), "unrecoverable": unrecoverable}
+        out[day] = {"rids": set(rids), "missing": set(missing)}
     return out
 
 
 def merge_index(index: dict, seen: dict) -> dict:
     """台帳と今夜の観測を合併する。**一度観測した rid は消さない。**"""
-    merged = {day: {"rids": set(e["rids"]), "unrecoverable": e["unrecoverable"]}
+    merged = {day: {"rids": set(e["rids"]), "missing": set(e["missing"])}
               for day, e in index.items()}
     for day, records in seen.items():
-        entry = merged.setdefault(day, {"rids": set(), "unrecoverable": False})
+        entry = merged.setdefault(day, {"rids": set(), "missing": set()})
         entry["rids"].update(rids_of(records))
-        if records:
-            # ⚠️ `unrecoverable` を永久ラッチにしない（敵対的レビュー12周目の指摘）。
-            # あの判定は「今夜は材料がどこにも無い」という**その時点の観測**であって、
-            # 「二度と手に入らない」ではない。取り込みが一時的に INCOMPLETE だった夜に
-            # 立ってしまうことがあり、翌晩レコードが戻ってきても解除されないと、
-            # その日は永久に回収されない——材料切れで止まらないための逃がし弁が、
-            # 別の永久欠落を作っていた。材料が戻ったら必ず解除する。
-            entry["unrecoverable"] = False
     return merged
 
 
@@ -226,8 +225,8 @@ def save_index(index: dict) -> None:
     payload = {"days": {}}
     for day, entry in sorted(index.items()):
         rec = {"rids": sorted(entry["rids"])}
-        if entry["unrecoverable"]:
-            rec["unrecoverable"] = True
+        if entry["missing"]:
+            rec["missing"] = sorted(entry["missing"])
         payload["days"][day] = rec
     tmp = INDEX + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
@@ -307,6 +306,11 @@ def is_done(day: str, expected_rids: set, migration: datetime.date):
     return True, "complete"
 
 
+def available_rids(day: str, seen: dict) -> set:
+    """その日について、**本文が手元にある** rid の集合。"""
+    return rids_of(seen.get(day) or []) | rids_of(load_snapshot(day) or [])
+
+
 def main() -> int:
     today = jst_today()
     yesterday = today - datetime.timedelta(days=1)
@@ -315,20 +319,27 @@ def main() -> int:
     seen = captures_by_day()
 
     try:
-        index = merge_index(load_index(), seen)
+        before = load_index()
+        index = merge_index(before, seen)
     except LedgerBroken as exc:
         # 壊れた台帳を空として書き直すと、そこにしか無い過去の rid が永久に消える。
         # 触らずに昨日を返し、ログに大きく残す（`git status` に差分が出ないので
-        # 手順8も台帳を push しない＝壊れた版が main へ行くこともない）。
+        # 手順2.2 も台帳を push しない＝壊れた版が main へ行くこともない）。
         print(f"LEDGER_ERROR: {INDEX} is unusable ({exc}). Not overwriting it.")
         print("LEDGER_ERROR: recovery is disabled tonight. Fix the ledger by hand.")
         print(f"TARGET={yesterday.isoformat()}")
         return 0
 
-    # ⚠️ 探索に窓を掛けない（敵対的レビュー9周目の指摘）。窓を掛けると、回収しようと
-    # した晩にまた押せなかった日が翌晩には窓の外へ落ち、台帳に残っていても二度と
-    # 拾われない。移行日より前の日は legacy として done になるので、全期間を見ても
-    # 過去に張り付くことはない。
+    # ⚠️ 探索に窓を掛けない（9周目の指摘）。窓を掛けると、回収しようとした晩にまた
+    # 押せなかった日が翌晩には窓の外へ落ち、台帳に残っていても二度と拾われない。
+    # 移行日より前の日は done になるので、全期間を見ても過去に張り付かない。
+    #
+    # ⚠️ 回収可能性は **rid 単位**で持つ（13周目の指摘）。日単位の真偽値
+    # （`unrecoverable`）だと部分的な状態を表せず、「rid 1 の本文は無いが rid 2 だけ
+    # 見えた」ときにフラグが解除され、しかも review は rid 1 を満たせないので、
+    # その日に毎晩張り付いて新しい日の公開まで止まった。
+    # 本文がどこにも無い rid は `missing` に落として**期待から外す**。
+    # 後日その本文が戻ってきたら `missing` から外れ、その日は自動的に pending へ戻る。
     pending = []
     for key in sorted(index):
         try:
@@ -337,46 +348,42 @@ def main() -> int:
             continue
         if day > yesterday:
             continue  # 当日と未来は対象外（まだ確定していない）
+
         entry = index[key]
         if not entry["rids"]:
             continue  # 保存0件の日＝review を作らないのが正しい
-        if entry["unrecoverable"]:
-            continue  # 作り直す材料が無いと確定済み（下で1度だけ判定する）
-        done, why = is_done(key, entry["rids"], migration)
+
+        have = available_rids(key, seen)
+        was_missing = set(entry["missing"])
+        entry["missing"] = entry["rids"] - have
+        recovered = was_missing - entry["missing"]
+        if recovered:
+            print(f"RECOVER: {key}: {len(recovered)} save(s) came back "
+                  f"({sorted(recovered)}); expecting them again")
+        newly_lost = entry["missing"] - was_missing
+        if newly_lost and day >= migration:
+            print(f"RECOVER: {key}: no body on file for {sorted(newly_lost)}; "
+                  f"dropping them from what this day is expected to cover")
+
+        expected = entry["rids"] - entry["missing"]
+        if not expected:
+            # 本文が1件も無い日。作り直しても空になるので対象にしない。
+            # （台帳の `missing` に理由が残るので、黙って消えるのとは違う）
+            continue
+
+        done, why = is_done(key, expected, migration)
         if not done:
             pending.append((key, why))
 
-    # ⚠️ 材料の無い日で止まらないこと（敵対的レビュー10周目の指摘）。
-    # 「押せなかった日の保存が Raindrop から消えた」場合、その日を TARGET に選んでも
-    # 入力が0件なので何も作れない。放っておくと最古の pending に永久に張り付き、
-    # 新しい日も処理できなくなる——直そうとした永久欠落が、永久停止に化ける。
-    # スナップショットも captures.json も無い日は、その旨を台帳に焼き付けて飛ばす。
-    while pending:
-        key = pending[0][0]
-        if seen.get(key) or load_snapshot(key) is not None:
-            break
-        index[key]["unrecoverable"] = True
-        print(f"RECOVER: {key} has no material left (not in captures.json, "
-              f"no snapshot). Marking it unrecoverable and moving on.")
-        pending.pop(0)
-
-    try:
-        save_index(index)
-        print(f"INDEX: {len(index)} day(s) on record -> {INDEX}")
-    except OSError as exc:
-        print(f"LEDGER_ERROR: could not write {INDEX}: {exc}")
-
     if pending:
         target = pending[0][0]
-        print(f"RECOVER: {len(pending)} day(s) pending: "
-              + ", ".join(f"{d} ({w})" for d, w in pending))
-        print("RECOVER: picking the oldest one; the rest follow on later nights")
     else:
         target = yesterday.isoformat()
-        print("RECOVER: nothing to recover")
 
-    # 今夜これから作る日と、まだ片付いていない日は、レコード本文を残しておく。
-    # これが無いと、押せなかった日の保存が Raindrop から消えたときに作り直せない。
+    # ⚠️ 本文を先に確実に残してから台帳を書く（13周目の指摘）。順序が逆だと、
+    # スナップショットの書き込みに失敗した夜に「rid だけ台帳に載って本文が無い」
+    # 状態が残り、翌晩その rid が missing に落ちて回収対象から外れる。
+    snapshot_failed = set()
     for key in sorted({target} | {d for d, _ in pending}):
         records = seen.get(key)
         if not records and load_snapshot(key) is None:
@@ -387,6 +394,29 @@ def main() -> int:
             print(f"SNAPSHOT: {key} ({len(kept)} record(s) on file)")
         except OSError as exc:
             print(f"SNAPSHOT_ERROR: {key}: {exc}")
+            snapshot_failed.add(key)
+
+    for key in snapshot_failed:
+        # 本文を残せなかった日は、今夜の観測を台帳へ足さずに翌晩やり直す。
+        if key in before:
+            index[key] = {"rids": set(before[key]["rids"]),
+                          "missing": set(before[key]["missing"])}
+        else:
+            index.pop(key, None)
+        print(f"LEDGER: {key}: holding tonight's rids back until the bodies are on file")
+
+    try:
+        save_index(index)
+        print(f"INDEX: {len(index)} day(s) on record -> {INDEX}")
+    except OSError as exc:
+        print(f"LEDGER_ERROR: could not write {INDEX}: {exc}")
+
+    if pending:
+        print(f"RECOVER: {len(pending)} day(s) pending: "
+              + ", ".join(f"{d} ({w})" for d, w in pending))
+        print("RECOVER: picking the oldest one; the rest follow on later nights")
+    else:
+        print("RECOVER: nothing to recover")
 
     print(f"TARGET={target}")
     return 0
