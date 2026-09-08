@@ -1,4 +1,4 @@
-# capture-pipeline の結合テスト（backfill / write-path / capture-index）を走らせる。
+# capture-pipeline の結合テスト（backfill / write-path / capture-index / run-timing）を走らせる。
 #
 # build-feed.yml とは別ワークフローにする。build-feed.yml は「トップ index.html を
 # 生成して公開サイトへ deploy する」役割で、テストの不具合や失敗がここに波及すると
@@ -50,3 +50,7 @@ jobs:
       # 受け入れテスト。標準ライブラリの unittest のみ。
       - name: Run disclosure-check tests
         run: python -m unittest -v test_check_disclosure.py
+
+      # 手順ごとの所要時間計測（run_timing.py）の回帰テスト。
+      - name: Run run-timing tests
+        run: python -m unittest -v test_run_timing.py
