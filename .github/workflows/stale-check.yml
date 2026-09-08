@@ -1,0 +1,74 @@
+# 「静かに止まったこと」を検知する見張り番。
+#
+# 2026-09-08 追加。書き込み経路を push_files から Git Data API（push_via_api.sh）へ
+# 切り替えたとき、あわせて入れた。切替の代償として、API が通らない夜は
+# **何も押さずに諦める**設計にしたため（壊れた本文を main に載せないことを優先した）、
+# 失敗が続くと公開が静かに止まる。無人パイプラインでいちばん困るのは
+# 「壊れること」ではなく「壊れたまま誰も気づかないこと」なので、ここで見張る。
+#
+# 見るのは reviews の最新日付だけ。ラン自体の成否ではなく **成果物の鮮度** を見る
+# （プロセスの生死でなく出力で判定する）。
+#
+# 通知経路: このワークフローが失敗すると GitHub から Actions の失敗メールが届く。
+# それ以外の通知先（LINE 等）は今は繋いでいない。
+
+name: stale-check
+
+on:
+  schedule:
+    # 毎日 JST 10:00（= UTC 01:00）。夜間ランは 3〜4時台なので、
+    # その日のぶんが載っていれば余裕をもって間に合っている時刻に見る。
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check that reviews are still being published
+        run: |
+          python3 - <<'PY'
+          import datetime, glob, os, re, sys
+
+          # 保存が0件の日は review を作らないのが仕様なので、1日空くのは正常。
+          # 連休や旅行で数日空くこともある。「装置が止まった」と言い切れる線として
+          # 4日を採る（0件が4日続くこと自体は起こりうるが、そのときは手動で
+          # workflow_dispatch を空振りさせずに済むよう、下のメッセージで区別できるようにする）。
+          MAX_AGE_DAYS = 4
+
+          dates = []
+          for path in glob.glob("reviews/*.html"):
+              m = re.fullmatch(r"(\d{4})-(\d{2})-(\d{2})", os.path.basename(path)[:-5])
+              if m:
+                  dates.append(datetime.date(*map(int, m.groups())))
+
+          if not dates:
+              print("reviews/ に日付形式のファイルが1つも無い。")
+              sys.exit(1)
+
+          newest = max(dates)
+          # 夜間ランは JST。UTC の今日で見ると最大1日ぶんずれるので JST に合わせる。
+          today = (datetime.datetime.now(datetime.timezone.utc)
+                   + datetime.timedelta(hours=9)).date()
+          age = (today - newest).days
+
+          print(f"newest review: {newest} / today (JST): {today} / age: {age} days")
+          print(f"reviews on record: {len(dates)}")
+
+          if age > MAX_AGE_DAYS:
+              print()
+              print(f"::error::公開が {age} 日止まっている（最新 {newest}）。")
+              print("ランのログで WRITE_COMMIT: の行を見ること。")
+              print("  - WRITE_COMMIT: none が続いている → API 経路が通っていない")
+              print("  - WRITE_COMMIT: unknown が出ている → 結果不明のまま止めた（再送禁止の状態）")
+              print("  - そもそも行が無い → Routine 自体が走っていない")
+              print("保存が0件の日が続いただけなら、この失敗は空振り。")
+              sys.exit(1)
+
+          print("OK")
+          PY

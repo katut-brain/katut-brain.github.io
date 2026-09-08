@@ -206,6 +206,14 @@ if tail == "git/refs/heads/main" and method == "PATCH":
         # 早送りできない＝ラン中に main が動いた
         sys.stderr.write("gh: Update is not a fast forward (HTTP 422)\n")
         sys.exit(1)
+    if BEHAVIOR in ("ref_update_lost_advanced", "compare_unreadable_after_lost"):
+        # PATCH は通ったが応答が消え、その直後に別の書き手が main を進めた
+        write_ref(body["sha"])
+        child = put_obj("commits", json.dumps(
+            {"tree": commit["tree"], "parents": [body["sha"]]}, sort_keys=True).encode())
+        write_ref(child)
+        sys.stderr.write("gh: connection reset by peer\n")
+        sys.exit(1)
     if BEHAVIOR in ("ref_update_lost", "ref_update_lost_unreadable"):
         # サーバー側は ref を進めたが、応答だけが失われた
         write_ref(body["sha"])
@@ -215,6 +223,24 @@ if tail == "git/refs/heads/main" and method == "PATCH":
         sys.exit(1)
     write_ref(body["sha"])
     emit({"object": {"sha": body["sha"]}})
+    sys.exit(0)
+
+if tail.startswith("compare/") and method == "GET":
+    base, _, head = tail[len("compare/"):].partition("...")
+    if BEHAVIOR == "compare_unreadable_after_lost":
+        sys.stderr.write("gh: not found (HTTP 404)\n")
+        sys.exit(1)
+    # head から親を辿って base に着けば、base は head の祖先
+    seen, cur = set(), head
+    status = "diverged"
+    while cur and cur not in seen:
+        if cur == base:
+            status = "identical" if head == base else "ahead"
+            break
+        seen.add(cur)
+        parents = json.loads(get_obj("commits", cur))["parents"]
+        cur = parents[0] if parents else None
+    emit({"status": status})
     sys.exit(0)
 
 # --- Contents API（--verify-only の読み出しだけに使う） ---------------------
@@ -428,6 +454,25 @@ class PushViaApiTest(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         self.assertIn("confirmed_after_lost_response", r.stdout)
         self.assertEqual(self._on_main(self.rel), self.src.read_bytes())
+
+    def test_lost_response_then_someone_else_advanced_main_is_still_success(self):
+        """先端が一致しない＝未更新、と断定してはいけない。
+
+        PATCH は通ったが応答が消え、その直後に別の書き手が main を進めた場合、
+        先端は我々の commit の子孫になる。ここで「載っていない」と誤認して再送すると、
+        その別の書き手の変更を古いローカル内容で上書きする（レビュー5周目の指摘）。
+        """
+        r = self._push("ref_update_lost_advanced")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("confirmed_as_ancestor", r.stdout)
+        self.assertNotIn("main_untouched", r.stdout)
+
+    def test_cannot_compare_is_unknown_not_untouched(self):
+        """祖先かどうかを確かめられないなら unknown。再送を許してはいけない。"""
+        r = self._push("compare_unreadable_after_lost")
+        self.assertEqual(r.returncode, 3, r.stdout + r.stderr)
+        self.assertIn("WRITE_COMMIT: unknown", r.stdout)
+        self.assertIn("do_not_retry", r.stdout)
 
     def test_unknown_state_forbids_retry_instead_of_claiming_untouched(self):
         """応答も読み直しも落ちたら、載ったか分からない。再送も別経路も禁止する。"""

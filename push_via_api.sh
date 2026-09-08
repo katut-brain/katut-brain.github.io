@@ -265,7 +265,25 @@ if [ "$?" -ne 0 ]; then
     echo "WRITE_COMMIT: unknown reason=$(squash "$ref_out") note=state_unknown_do_not_retry"
     exit 3
   fi
-  # 読み直せて、なお先端が違う＝本当に載っていない（早送りできなかった等）。
+  # ⚠️ 先端が違う＝未更新、とも断定できない（2026-09-08 の敵対的レビュー5周目の指摘）。
+  # 「PATCH は通ったが応答が消え、その直後に別の書き手が main を進めた」場合、
+  # 先端は我々の commit の *子孫* になる。ここで未更新と誤認して再送すると、
+  # その別の書き手の変更を古いローカル内容で上書きしてしまう。
+  # そこで、我々の commit が現在の先端の祖先かどうかを確かめる。
+  cmp_status=$(gh api "repos/$REPO/compare/$commit_sha...$actual" --jq '.status' 2>/dev/null)
+  cmp_rc=$?
+  if [ "$cmp_rc" -ne 0 ]; then
+    echo "WRITE_COMMIT: unknown reason=cannot_compare note=state_unknown_do_not_retry"
+    exit 3
+  fi
+  case "$cmp_status" in
+    identical|ahead)
+      # 我々の commit は祖先＝ PATCH は成功していた。再送してはいけない。
+      echo "WRITE_COMMIT: $commit_sha files=$# branch=$BRANCH note=confirmed_as_ancestor"
+      exit 0
+      ;;
+  esac
+  # 祖先ではない＝本当に載っていない（早送りできなかった等）。
   echo "WRITE_COMMIT: none reason=$(squash "$ref_out") note=main_untouched"
   exit 1
 fi
