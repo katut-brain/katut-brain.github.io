@@ -210,6 +210,14 @@ def merge_index(index: dict, seen: dict) -> dict:
     for day, records in seen.items():
         entry = merged.setdefault(day, {"rids": set(), "unrecoverable": False})
         entry["rids"].update(rids_of(records))
+        if records:
+            # ⚠️ `unrecoverable` を永久ラッチにしない（敵対的レビュー12周目の指摘）。
+            # あの判定は「今夜は材料がどこにも無い」という**その時点の観測**であって、
+            # 「二度と手に入らない」ではない。取り込みが一時的に INCOMPLETE だった夜に
+            # 立ってしまうことがあり、翌晩レコードが戻ってきても解除されないと、
+            # その日は永久に回収されない——材料切れで止まらないための逃がし弁が、
+            # 別の永久欠落を作っていた。材料が戻ったら必ず解除する。
+            entry["unrecoverable"] = False
     return merged
 
 

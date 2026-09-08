@@ -222,7 +222,8 @@ class RecoverTargetTest(unittest.TestCase):
         self.assertTrue(self._read_index_raw()[gone.isoformat()]["unrecoverable"],
                         "判定を台帳に焼き付けて、毎晩調べ直さないこと")
 
-    def test_a_day_marked_unrecoverable_is_not_reconsidered(self):
+    def test_a_day_marked_unrecoverable_is_not_reconsidered_while_it_stays_gone(self):
+        """材料が無いままの日は、毎晩調べ直さない。"""
         gone = self._d(3)
         self._write("capture_index.json", json.dumps(
             {"days": {gone.isoformat(): {"rids": [1], "unrecoverable": True}}}))
@@ -231,6 +232,26 @@ class RecoverTargetTest(unittest.TestCase):
         target, out = self._run()
         self.assertEqual(target, self.yesterday.isoformat())
         self.assertIn("nothing to recover", out)
+
+    def test_unrecoverable_is_cleared_when_the_records_come_back(self):
+        """`unrecoverable` は「今夜は材料が無い」という観測であって永久の宣告ではない。
+
+        取り込みが一時的に INCOMPLETE だった夜に立つことがある。永久ラッチにすると、
+        翌晩レコードが戻ってきてもその日は二度と回収されない——材料切れで止まらない
+        ための逃がし弁が、別の永久欠落を作る（敵対的レビュー12周目の指摘。旧テストは
+        この誤った永久化を仕様として固定していた）。
+        """
+        back = self._d(3)
+        self._write("capture_index.json", json.dumps(
+            {"days": {back.isoformat(): {"rids": [1], "unrecoverable": True}}}))
+        self._captures({back: [1], self.yesterday: [9]})   # 戻ってきた
+        self._review(self.yesterday, [9])
+        target, out = self._run()
+        self.assertEqual(target, back.isoformat(), "材料が戻ったら回収を再開すること")
+        self.assertFalse(self._read_index_raw()[back.isoformat()].get("unrecoverable", False),
+                         "フラグが解除されていない")
+        self.assertEqual(self._read_snapshot(back), {1},
+                         "戻ってきた本文をスナップショットに残していない")
 
     def test_a_newer_pending_day_is_still_reached_after_a_dead_one(self):
         """材料の無い日を飛ばして、その次の pending へ進むこと。"""
