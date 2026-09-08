@@ -44,8 +44,13 @@
 #   `gh api --input` で渡す。
 #
 # ■ --verify-only
-#   「別の手段（push_files 等）で押したものが、ローカル原本とバイト単位で一致しているか」
-#   だけを確かめる。フォールバックした夜にも SHA-256 の保証を効かせるためにある。
+#   main に載っている実体が、ローカル原本とバイト単位で一致しているかだけを確かめる
+#   （読み取りのみ・何も書かない）。手順書の常用経路ではなく、点検用:
+#     - あるリポジトリに読み取りで到達できるかを確かめる（Vaultリポの疎通確認など）
+#     - 過去に押したファイルが化けていないかを後から調べる
+#   かつて `push_files` へフォールバックした夜の照合に使う設計だったが、
+#   フォールバック自体を廃止したので（2026-09-08 の敵対的レビュー4周目）、
+#   今は常用されない。
 #
 # 終了コード: 0=成功 / 1=失敗（main は動いていない） / 2=引数エラー
 # 標準出力: 1ファイル1行の `WRITE_PATH:` と、最後に `WRITE_COMMIT:` を出す
@@ -101,7 +106,7 @@ if [ "$MODE" = "verify" ]; then
     local_sha=$(sha256sum "$path" | cut -d' ' -f1)
     tmp="$TMPDIR_SELF/remote"
     if ! gh api "repos/$REPO/contents/$path?ref=$BRANCH" \
-          -H "Accept: application/vnd.github.raw" > "$tmp" 2>/dev/null; then
+          -H "Accept: application/vnd.github.raw+json" > "$tmp" 2>/dev/null; then
       echo "WRITE_PATH: $path verify=unreadable"
       failed=1
       continue
@@ -213,7 +218,7 @@ while IFS=$'\t' read -r blob_sha path; do
   local_sha=$(sha256sum "$path" | cut -d' ' -f1)
   tmp="$TMPDIR_SELF/readback"
   if ! gh api "repos/$REPO/git/blobs/$blob_sha" \
-        -H "Accept: application/vnd.github.raw" > "$tmp" 2>/dev/null; then
+        -H "Accept: application/vnd.github.raw+json" > "$tmp" 2>/dev/null; then
     echo "WRITE_PATH: $path api=staged verify=unreadable"
     verified=0
     continue
@@ -244,7 +249,23 @@ with open(out, "w", encoding="utf-8") as fh:
 fi
 ref_out=$(gh api -X PATCH "repos/$REPO/git/refs/heads/$BRANCH" --input "$ref_body" 2>&1)
 if [ "$?" -ne 0 ]; then
-  # 早送りできない＝ラン中に main が動いた。上書きはしない。
+  # ⚠️ 失敗＝未更新、と断定してはいけない（2026-09-08 の敵対的レビュー4周目の指摘）。
+  # サーバー側が ref を進めた後で応答だけ失われることがある。`force=false` は
+  # 上書きを防ぐが、HTTP の「結果不明」問題は解決しない。**必ず読み直して確かめる。**
+  actual=$(gh api "repos/$REPO/git/ref/heads/$BRANCH" --jq '.object.sha' 2>/dev/null)
+  reread_rc=$?
+  if [ "$reread_rc" -eq 0 ] && [ "$actual" = "$commit_sha" ]; then
+    # 応答は失われたが、更新自体は通っていた。
+    echo "WRITE_COMMIT: $commit_sha files=$# branch=$BRANCH note=confirmed_after_lost_response"
+    exit 0
+  fi
+  if [ "$reread_rc" -ne 0 ] || [ -z "$actual" ]; then
+    # 読み直せない＝載ったかどうか分からない。この状態で再送すると二重コミットに、
+    # 別経路で押すと未検証の上書きになる。**何もしないのが正しい。**
+    echo "WRITE_COMMIT: unknown reason=$(squash "$ref_out") note=state_unknown_do_not_retry"
+    exit 3
+  fi
+  # 読み直せて、なお先端が違う＝本当に載っていない（早送りできなかった等）。
   echo "WRITE_COMMIT: none reason=$(squash "$ref_out") note=main_untouched"
   exit 1
 fi

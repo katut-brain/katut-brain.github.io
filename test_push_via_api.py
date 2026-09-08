@@ -10,7 +10,9 @@
      Contents API で先に PUT する設計だと、照合が失敗しても未検証の中身が main に残る）
   3. 大きいファイルでも壊れないこと（argv に本文を置くと約98KB で
      Argument list too long になり、122KB の index.html が壊れたのと同じ崖ができる）
-  4. 別経路（push_files フォールバック）で押したものも、同じ SHA-256 照合に掛けられること
+  4. ref を進める要求の応答が失われた場合に「未更新」と断定しないこと（断定すると
+     手順書が再実行して二重コミットになる）
+  5. 点検用の --verify-only が、main の実体とローカル原本を照合できること
 
 偽 `gh` は寛容にしない。本物の API が受け付けない呼び方をしたら exit 91 で落とす。
 偽実装が甘いと「テストは緑だが本番だけ落ちる」型を見逃すため。
@@ -138,6 +140,10 @@ if not os.path.exists(REF):
 # --- Git Data API -----------------------------------------------------------
 if tail == "git/ref/heads/main":
     contract(method == "GET", "reading a ref must be a GET")
+    if BEHAVIOR == "ref_update_lost_unreadable" and os.path.exists(os.path.join(STORE, "patched")):
+        # 応答も読み直しも落ちる＝載ったかどうか分からない状態
+        sys.stderr.write("gh: connection reset by peer\n")
+        sys.exit(1)
     emit({"object": {"sha": read_ref()}})
     sys.exit(0)
 
@@ -161,7 +167,7 @@ if tail.startswith("git/blobs/") and method == "GET":
     if BEHAVIOR == "get_forbidden":
         sys.stderr.write("gh: not found (HTTP 404)\n")
         sys.exit(1)
-    contract(accept == "Accept: application/vnd.github.raw",
+    contract(accept == "Accept: application/vnd.github.raw+json",
              "reading a blob's bytes must ask for raw, got " + repr(accept))
     data = get_obj("blobs", tail.split("/")[-1])
     if BEHAVIOR == "corrupt":
@@ -200,6 +206,13 @@ if tail == "git/refs/heads/main" and method == "PATCH":
         # 早送りできない＝ラン中に main が動いた
         sys.stderr.write("gh: Update is not a fast forward (HTTP 422)\n")
         sys.exit(1)
+    if BEHAVIOR in ("ref_update_lost", "ref_update_lost_unreadable"):
+        # サーバー側は ref を進めたが、応答だけが失われた
+        write_ref(body["sha"])
+        with open(os.path.join(STORE, "patched"), "w") as fh:
+            fh.write("1")
+        sys.stderr.write("gh: connection reset by peer\n")
+        sys.exit(1)
     write_ref(body["sha"])
     emit({"object": {"sha": body["sha"]}})
     sys.exit(0)
@@ -207,7 +220,7 @@ if tail == "git/refs/heads/main" and method == "PATCH":
 # --- Contents API（--verify-only の読み出しだけに使う） ---------------------
 if tail.startswith("contents/") and method == "GET":
     contract(query == "ref=main", "the contents GET must pin the ref, got " + repr(query))
-    contract(accept == "Accept: application/vnd.github.raw",
+    contract(accept == "Accept: application/vnd.github.raw+json",
              "the contents GET must ask for raw, got " + repr(accept))
     if BEHAVIOR == "get_forbidden":
         sys.stderr.write("gh: not found (HTTP 404)\n")
@@ -404,6 +417,25 @@ class PushViaApiTest(unittest.TestCase):
         )
         self.assertNotEqual(proc.returncode, 0)
         self.assertIn("fast forward", proc.stderr)
+
+    def test_lost_patch_response_is_confirmed_by_rereading_the_ref(self):
+        """ref は進んだのに応答だけ失われた場合を「未更新」と断定しないこと。
+
+        断定すると、手順書が「何も載っていない」と読んで再実行し、二重コミットになる
+        （敵対的レビュー4周目の指摘）。読み直して先端が一致すれば成功として扱う。
+        """
+        r = self._push("ref_update_lost")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("confirmed_after_lost_response", r.stdout)
+        self.assertEqual(self._on_main(self.rel), self.src.read_bytes())
+
+    def test_unknown_state_forbids_retry_instead_of_claiming_untouched(self):
+        """応答も読み直しも落ちたら、載ったか分からない。再送も別経路も禁止する。"""
+        r = self._push("ref_update_lost_unreadable")
+        self.assertEqual(r.returncode, 3, r.stdout + r.stderr)
+        self.assertIn("WRITE_COMMIT: unknown", r.stdout)
+        self.assertIn("do_not_retry", r.stdout)
+        self.assertNotIn("main_untouched", r.stdout)
 
     # --- 引数・入力 ---------------------------------------------------------
 
