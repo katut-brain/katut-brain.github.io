@@ -1,4 +1,4 @@
-# capture-pipeline の結合テスト（test_backfill_recovery.py）を走らせる。
+# capture-pipeline の結合テスト（test_backfill_recovery.py / test_push_via_api.py）を走らせる。
 #
 # build-feed.yml とは別ワークフローにする。build-feed.yml は「トップ index.html を
 # 生成して公開サイトへ deploy する」役割で、テストの不具合や失敗がここに波及すると
@@ -31,3 +31,8 @@ jobs:
 
       - name: Run integration tests
         run: python -m unittest -v test_backfill_recovery.py
+
+      # push_via_api.sh の受け入れテスト。偽の gh を PATH に置いて動かすので
+      # 本物の GitHub は叩かない（contents: read のままで完結する）。
+      - name: Run write-path tests
+        run: python -m unittest -v test_push_via_api.py

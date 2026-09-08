@@ -114,6 +114,7 @@
    - **制約**：実在の検索結果・実際に取得できた本文のみ使う。**`WebSearch` が返したURLをそのまま使い、URLを変形・補完・推測しない**（手順4と同じく、URL捏造は過去に404を量産した事故あり）。`WebFetch` で実際に開けたURLだけを出力する。**全テーマで `WebSearch` を実際に呼んだ上で**それでも1本も本文が取れなければ、その場合に限り手順5の「深掘り」節ごと省略する。
    - 出力先は手順5の振り返りHTML内「深掘り」節のみ（**Vaultには書かない**。手順7.5・8.5で行うVaultリポへのブックマークノート書き込みとは別経路で、この4.5の深掘り内容自体はVaultに書かない、という原則をここでは維持する）。
 5. `reviews/<TARGET>.html` を生成（**下記テンプレート厳守**）。日本語で書く（英語の本文・キャプションは日本語へ要約・翻訳。固有名詞・ハンドルは原文可）。
+   - ⚠️ **必ず「ファイル」として書き出す**（2026-09-08 追加）。頭の中に文字列として持つのではなく、Write ツールか heredoc で `reviews/<TARGET>.html` を**ワークスペース上の実ファイルとして作る**。手順7の読み返しも、手順7.5の `</footer>` 直前への追記も、手順8の送信も、**すべてこの実ファイルを起点にする**。ここでファイルにしないと、手順8がファイルの代わりに「あなたが覚えている本文」を送ることになり、全角括弧が半角に化けた 2026-09-04 の事故（`79cfd12`）と同じことが起きる。
    - **スタイル**：以下の `<style>` ブロックをそのまま使う（CSS変数・ダーク対応込み）。`<title><TARGET> の振り返り</title>`。
      ```html
      <style>
@@ -306,15 +307,27 @@
    - **push前のfrontmatterスキーマ検証（必須）**：この手順で新規作成した各ノートについて、Pythonで frontmatter（`---`〜`---`の間）をYAMLとしてパースし、`date`（文字列・YYYY-MM-DD形式）・`tags`（リストで `type/bookmark` を含む）・`raindrop_id`（数値）・`source`（文字列・`http` で始まる）の4キーの存在と型を確認する。1つでも不合格ならそのノートは push 対象から除外する（ファイル自体はローカルクローンに残ってよい＝次回ランは新規cloneのため無害）。
    - **検証結果の記録**：検証に落ちたノートが1件以上あった場合、`reviews/<TARGET>.html` の `</footer>` 直前に、`_build_feed.py` の抽出対象（`.meta`/`.summary p`/`.notes` 内`li`）と衝突しない独自クラスで1行追記する：`<p class="notegen-warn">⚠️ ノート生成: 検証失敗 N件（rid: 1234, 5678 ...）</p>`。全件合格した場合はこの追記をしない。この追記は手順8で push する `reviews/<TARGET>.html` の内容に含める。
 8. **公開（GitHubへ反映）**：対象は `katut-brain/katut-brain.github.io` リポ（Vaultリポではない）。
-   - ⚠️ **生の `git push` は使わない**。クラウドのルーティンでは git proxy が **403** を返す（権限でなく経路の制約）。**GitHubの組み込み push ツール（`push_files`）で `main` に直接コミットする**。
+   - ⚠️⚠️ **送り方の原則（2026-09-08 変更・ここが最優先）**：**本文を自分で書き写して送らない。ファイルのまま送る。**
+     `bash push_via_api.sh <owner/repo> "<コミットメッセージ>" <パス> [<パス> ...]` を使う。このスクリプトはディスク上のファイルを直接読んで `gh api` で送り、**送った後に GitHub から読み返して SHA-256 が一致したときだけ成功**と言う。本文があなたの文脈を一度も通らないので、転記による化けが原理的に起きない。
+     - 成功の判定は**終了コード0**と、標準出力の各行 `WRITE_PATH: <パス> api=ok verify=match` の両方。`verify=MISMATCH` / `verify=unreadable` / `api=failed` はすべて失敗として扱う。
+     - **`WRITE_PATH:` の行は削らず、そのままランのログに残す**（どの経路で書けたかを翌朝こちらが読む。これが今の観測手段）。
+     - Contents API の仕様で **1ファイル1コミット**になる。複数渡すときは **`fetch_facts` を先、`reviews` を最後**の順で渡すこと（Actions が最後に正しい状態で発火する）。
+   - **フォールバック（スクリプトが失敗したときだけ）**：失敗したパスに限り、従来どおり `push_files` で送ってよい。ただし条件が2つある。
+     - ① **`reviews/<TARGET>.html` が 60,000バイトを超えていたらフォールバックしない**（`wc -c` で測る）。122KBの `index.html` はこの経路で truncate して公開履歴2.5ヶ月分を失った。大きいものを手で運ぶくらいなら、その日は押さずに諦めて翌ランに回すほうが安全。押さなかったことを `WRITE_PATH: <パス> fallback=skipped reason=too_large bytes=<実測>` としてログに残す。
+     - ② フォールバックで押した後も、**GitHubから読み返して中身を照合する**（`<!doctype html>` で始まり `</html>` で終わる・`PLACEHOLDER` を含まない・分量が妥当）。`WRITE_PATH: <パス> fallback=push_files verify=<match|suspect>` を残す。
+   - ⚠️ **生の `git push` は使わない**（2026-06-21 に 403 を観測して以来の方針を維持する。`push_via_api.sh` は git ではなく GitHub API を叩くので、この禁止には抵触しない）。
    - 🚫 **`index.html` は push しない**（2026-08-31 変更・手順6を参照）。GitHub Actions が自動で再生成するので、あなたが触ると壊す側にしかならない。`index.html` を push 対象に入れたくなったら、それは手順6を読み飛ばしている。
    - **`captures.json` / `data.js` は push しない**：captures.json のRaindrop取り込みは冪等（`_build_graph.py` が既存レコードも毎回更新するので翌ランで再現される。2026-08-23に冪等化済み）、data.js は退役ファイル。大きいファイルを読むと文脈が膨らみ自動圧縮で迷子になるため、**触らない・読み込まない**。
    - **この手順は次の3分岐のどれか1つだけを行う**（reviews の有無と fetch_facts の有無で分岐する。手順2.5のバックフィルが reviews 無しの日にも `fetch_facts/<TARGET>.json` を作りうるため、分岐を誤ると「存在しない reviews を扱おうとして失敗する」または「push すべき fetch_facts を見落とす」のどちらかが起きる）：
 
    **(a) reviews あり（手順5で `reviews/<TARGET>.html` を作った場合）**：
-   - 押すファイルは **`reviews/<TARGET>.html` と `fetch_facts/<TARGET>.json` の2つ**（手順4.2で作られている。無ければ `reviews/<TARGET>.html` のみ）。**1回の `push_files` 呼び出し**で `main` にコミット（メッセージ `update: <TARGET>`）。
-   - ⚠️ **push_files に渡す前に、送る中身が本物か必ず確認する**（過去に中身が丸ごと `PLACEHOLDER` という仮文字列に置き換わって公開サイトが一時的に壊れた事故が2回発生している）。`push_files` の引数に入れる `reviews/<TARGET>.html` の内容は、**手順5で実際に生成・確認したファイルの中身をそのまま使う**（要約・省略・仮置きの文字列で代用しない）。呼び出し直前に、渡す文字列が `<!doctype html>` で始まり `</html>` で終わっているか、`PLACEHOLDER` という語を含んでいないかを目視確認してから送信する。
-   - **push後、リポジトリ上の内容を読み返して検証する**（自己申告で「push成功」と判断しない）。**`reviews/<TARGET>.html` のみ**を GitHub から取得し、上と同じ確認（`<!doctype html>`で始まる・`PLACEHOLDER`を含まない・分量が妥当）を行う。異常が見つかったら、正しい内容で即座に再度 `push_files` を実行して直す。
+   - 押すファイルは **`reviews/<TARGET>.html` と `fetch_facts/<TARGET>.json` の2つ**（手順4.2で作られている。無ければ `reviews/<TARGET>.html` のみ）。次の1コマンドで送る：
+     ```bash
+     bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET>" fetch_facts/<TARGET>.json reviews/<TARGET>.html
+     ```
+     （`fetch_facts` が無い日は `reviews/<TARGET>.html` だけを渡す。**引数の順は変えない** — `reviews` が最後になるようにする）
+   - 送る前に、**ファイルが本物であることだけ**確認する（中身を書き写すのではなく、ファイルに対して確認する）：`head -c 20 reviews/<TARGET>.html` が `<!doctype html>` で始まり、`tail -c 20` が `</html>` で終わり、`grep -c PLACEHOLDER reviews/<TARGET>.html` が 0 であること。
+   - **送った後の照合はスクリプトがやる**（SHA-256の完全一致）。`verify=match` が出ていれば、GitHubから改めて読み返す必要はない。`verify=MISMATCH` が出たら、化けたのではなくファイルが送信中に書き換わった可能性があるので、**もう一度同じコマンドを実行する**（Contents API は同じ内容で上書きするだけなので安全）。2回目も `MISMATCH` なら、上のフォールバック条件に従う。
 
    **(b) reviews 無し・今回のランで `fetch_facts/<TARGET>.json` に差分が生じた場合（手順2.5のバックフィルだけが書いた日）**：
    - ⚠️ **(b) に入る判定条件は `git status --porcelain -- fetch_facts/<TARGET>.json` の出力が空でないこと、これ1つだけ**にする。
@@ -325,22 +338,30 @@
      （＝exhaustedに到達しない＝stub/backfill_rid導入の目的が機能しない）。
      `git status --porcelain` による実差分判定なら、`attempted`/`stub_written`/`rid_mismatch` のどれで生じた差分でも正しく拾える。
      新規cloneに同日の既存 `fetch_facts/<TARGET>.json` が既に含まれている再実行でも、今回のランで差分が無ければこの条件で自動的に弾かれる（誤push防止）。
-   - `fetch_facts/<TARGET>.json` **単独**で push する（`reviews/<TARGET>.html` は存在しないので push 対象に含めない。存在しないファイルを push しようとしない）。コミットメッセージは `update: <TARGET> (backfill only)`。
-   - `push_files` に渡す `content` は、**ファイルの中身をそのまま文字列として渡す**（JSON をさらに文字列化・エスケープしない）。
-   - push前に、送る中身が本物のJSONであることを確認する：`python3 -c "import json; json.load(open('fetch_facts/<TARGET>.json', encoding='utf-8'))"` のようなコマンドでパースできることを確認してから渡す（`PLACEHOLDER` 等の仮文字列で代用しない）。
-   - push後、`fetch_facts/<TARGET>.json` を GitHub から読み返し、同じくJSONとしてパースできることを確認する。異常があれば正しい内容で再度 `push_files` を実行する。
+   - `fetch_facts/<TARGET>.json` **単独**で送る（`reviews/<TARGET>.html` は存在しないので対象に含めない。存在しないファイルを送ろうとしない）：
+     ```bash
+     bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET> (backfill only)" fetch_facts/<TARGET>.json
+     ```
+   - 送る前に、ファイルが本物のJSONであることを確認する：`python3 -c "import json; json.load(open('fetch_facts/<TARGET>.json', encoding='utf-8'))"` がエラー無く通ること。
+   - 照合はスクリプトが SHA-256 でやる。`verify=match` なら読み返し不要。失敗したときだけ上のフォールバック条件に従う（JSONは小さいのでサイズ条件には掛からない）。
 
    **(c) reviews 無し・fetch_facts も無し（または `git status --porcelain -- fetch_facts/<TARGET>.json` が空＝今回のランで変更が無い）**：
    - 何も push せず正常終了する。
 
    - 共通: `index.html` の出来ばえは確認しなくてよい（Actions 側の検証ゲートが担当する）。**`index.html` を GitHub から読みに行かないこと** — 122KB を読むと文脈が膨らんで自動圧縮で迷子になる。
-   - 共通: `push_files` が一時失敗しても、生 `git push` には**戻らない**（403ループ防止）。1〜2回だけ `push_files` を試し、ダメなら諦めて翌ランに回す。
+   - 共通: 送信が一時失敗しても、生 `git push` には**戻らない**（403ループ防止）。`push_via_api.sh` を1〜2回、それでもダメならフォールバック条件に従って `push_files` を1〜2回試し、それでもダメなら諦めて翌ランに回す。
 8.5. **公開（Vaultリポへ・ブックマークノート）**（手順7.5でノートを新規作成した場合のみ実行）：対象は `katut-brain/obsidian-vault` リポ（手順8の `katut-brain.github.io` とは別リポ）。
    - 押すファイルは、手順7.5でスキーマ検証に**合格**し新規作成した `Explore/bookmarks/rd-*.md` のみ（検証落ちのファイル・既存ファイルは含めない）。
-   - 対象リポジトリ `katut-brain/obsidian-vault` の `main` ブランチへ、GitHubの組み込み push ツール（`push_files`）で直接コミットする（手順8と同じ理由で生の `git push` は使わない）。コミットメッセージは `bookmark notes: YYYY-MM-DD (N件)` 形式（`YYYY-MM-DD` はTARGET、`N` は今回push するノート件数）。
-   - 手順8と同様、push_files に渡す前に中身が本物か目視確認する（`PLACEHOLDER` 等の仮文字列でないか、frontmatterが崩れていないか）。push後はリポジトリから読み返して検証する。
+   - 手順8と**同じ送り方**をする。対象リポジトリを変えて `push_via_api.sh` を使う（生の `git push` は使わない）：
+     ```bash
+     bash push_via_api.sh katut-brain/obsidian-vault "bookmark notes: <TARGET> (N件)" Explore/bookmarks/rd-....md [...]
+     ```
+     （`N` は今回送るノート件数。ノートは互いに独立なので順序は問わない）
+   - ⚠️ **こちらは経路が通るかまだ確認できていない**（2026-09-08 時点）。公式仕様は「GitHub API はセッションに紐付いたリポジトリにしか到達しない、紐付いていなければ 403」と書いており、Vaultリポが紐付いているかが分かっていない。**403 で落ちたらそれが答え**なので、`WRITE_PATH: ... api=failed ... 403` の行をログにそのまま残したうえで、フォールバック（`push_files`）へ進むこと。翌朝こちらがその行を読んで判断する。
+   - フォールバックで `push_files` を使った場合は、手順8と同様に**押した後リポジトリから読み返して検証する**（frontmatterが崩れていないか・`PLACEHOLDER` 等の仮文字列でないか）。ブックマークノートは1件あたり小さいので、手順8のサイズ条件（60,000バイト）には通常掛からない。
+   - ⚠️ **Vaultリポ側には Actions の検証ゲートが1本も無い**（`total_count: 0`・2026-09-08 実測）。公開リポと違って、壊れたノートを押しても誰も止めない。しかもローカルVaultへは Obsidian Git プラグインが10分以内に取り込む。**照合を省くとそのまま外部脳に入る**ので、上の検証は必ず行うこと。
    - push 対象ノートが0件（新規0件・全件重複スキップ・全件検証落ちのいずれか）の場合は、このpushを行わない。
-   - `push_files` が一時失敗しても生 `git push` には戻らない（403ループ防止）。1〜2回だけ試し、ダメなら諦めて翌ランに回す（取りこぼしたブックマークのノートは翌晩以降の手順7.5で改めて対象になる＝重複チェックにより既存ノートは壊されない）。
+   - 送信が一時失敗しても生 `git push` には戻らない（403ループ防止）。1〜2回だけ試し、ダメなら諦めて翌ランに回す（取りこぼしたブックマークのノートは翌晩以降の手順7.5で改めて対象になる＝重複チェックにより既存ノートは壊されない）。
 
 ## 制約
 - 完全無人。承認・確認を求めない。
