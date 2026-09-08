@@ -32,10 +32,17 @@
    ```bash
    python3 build_capture_index.py
    ```
-   - `capture_index.json` を「既存の台帳 ∪ 今夜の `captures.json`」で更新する。日付と rid だけの小さなファイル（実測43日分で7.3KB）。手順8で他のファイルと一緒に push する。
+   - `capture_index.json` を「既存の台帳 ∪ 今夜の `captures.json`」で更新する。日付と rid だけの小さなファイル（実測43日分で7.3KB）。**この場で単独で push する**（下記）。
    - **何のためにあるか**: 手順8は照合が通らなければ押さない。押さなかった日を**後から人が見つけられるようにするための記録**。`captures.json` は毎晩 Raindrop から作り直されるので、押せなかった日の保存が消えたり取り込みが不完全だったりすると証拠ごと消える。台帳は一度観測した rid を消さない。
    - **⚠️ これはキューではない。自動回収はしない**（2026-09-09 の裁定）。`UNPUBLISHED:` の行が出ても、その日を作り直しに行かないこと。対象日は常に「昨日」のまま。
    - 出力の `UNPUBLISHED:` と `INDEX:` の行はログにそのまま残す。
+   - **作ったら、その場で台帳だけを押す**（差分があるときだけ）：
+     ```bash
+     if git status --porcelain -- capture_index.json | grep -q .; then bash push_via_api.sh katut-brain/katut-brain.github.io "index: <TARGET>" capture_index.json; fi
+     ```
+     - ⚠️ **手順8にまとめてはいけない**。台帳を reviews と同じコミットに入れると、**その夜の push が失敗したとき台帳も載らない** —— つまり「押せなかった日を後から調べる」という台帳の存在理由が、まさにその失敗時に効かなくなる。翌晩 Raindrop から保存が消えていれば、その日の rid はもうどこにも残らない。
+     - 失敗しても手順を止めない（2回まで試して諦める）。`WRITE_COMMIT:` の行はログに残す。
+     - 押す夜と押さない夜があるので、Actions は夜あたり1〜2回発火する。
    - 非ゼロで終わっても**手順を止めない**（台帳が壊れている等。その場合は台帳を書き換えないので `git status` に差分も出ず、手順8の push 対象にも入らない）。
 
 2.5. **バックフィル（過去に取得できなかった rid 持ちレコードの再取得）**：
@@ -337,10 +344,10 @@
    **(a) reviews あり（手順5で `reviews/<TARGET>.html` を作った場合）**：
    - 押すファイルは **`reviews/<TARGET>.html` と `fetch_facts/<TARGET>.json` の2つ**（手順4.2で作られている。無ければ `reviews/<TARGET>.html` のみ）。次の1コマンドで送る：
      ```bash
-     bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET>" capture_index.json fetch_facts/<TARGET>.json reviews/<TARGET>.html
+     bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET>" fetch_facts/<TARGET>.json reviews/<TARGET>.html
      ```
      （`fetch_facts` が無い日はそれを外す。何個渡しても1コミットにまとまる）
-   - `capture_index.json` は手順2.1 が更新した日別台帳。差分が無い夜は引数から外してよい（`git status --porcelain -- capture_index.json` が空なら外す）。
+   - `capture_index.json` はここでは押さない（手順2.1 で押し終えている）。
    - 送る前に、**ファイルが本物であることだけ**確認する（中身を書き写すのではなく、ファイルに対して確認する）：`head -c 20 reviews/<TARGET>.html` が `<!doctype html>` で始まり、`tail -c 20` が `</html>` で終わり、`grep -c PLACEHOLDER reviews/<TARGET>.html` が 0 であること。
    - **照合はスクリプトが載せる前にやる**（SHA-256の完全一致）。`WRITE_COMMIT: <sha>` が出ていれば公開まで完了。`note=main_untouched` が出ていたら**何も載っていない**ので、**もう一度同じコマンドを実行する**（作り直しになるだけで、二重コミットにはならない）。**2回目も駄目なら、その夜は押さずに終える。フォールバックはしない**（手順8には `push_files` へ落ちる経路は存在しない。下の手順8.5に出てくるフォールバックは Vaultリポ専用であって、ここには適用しない）。
 
@@ -355,13 +362,13 @@
      新規cloneに同日の既存 `fetch_facts/<TARGET>.json` が既に含まれている再実行でも、今回のランで差分が無ければこの条件で自動的に弾かれる（誤push防止）。
    - `fetch_facts/<TARGET>.json` **単独**で送る（`reviews/<TARGET>.html` は存在しないので対象に含めない。存在しないファイルを送ろうとしない）：
      ```bash
-     bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET> (backfill only)" capture_index.json fetch_facts/<TARGET>.json
+     bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET> (backfill only)" fetch_facts/<TARGET>.json
      ```
    - 送る前に、ファイルが本物のJSONであることを確認する：`python3 -c "import json; json.load(open('fetch_facts/<TARGET>.json', encoding='utf-8'))"` がエラー無く通ること。
    - 照合はスクリプトが載せる前に SHA-256 でやる。`WRITE_COMMIT: <sha>` なら完了。失敗したときは上の「失敗したときにやること」の①〜③に従う（**フォールバックはしない**）。
 
    **(c) reviews 無し・fetch_facts も無し（または `git status --porcelain -- fetch_facts/<TARGET>.json` が空＝今回のランで変更が無い）**：
-   - `git status --porcelain -- capture_index.json` に差分があれば台帳だけを送る（`"update: <TARGET> (index only)"`）。それも無ければ何も push せず正常終了する。
+   - 何も push せず正常終了する（台帳は手順2.1 で押し終えている）。
 
    - 共通: `index.html` の出来ばえは確認しなくてよい（Actions 側の検証ゲートが担当する）。**`index.html` を GitHub から読みに行かないこと** — 122KB を読むと文脈が膨らんで自動圧縮で迷子になる。
    - 共通: 送信が一時失敗しても、生 `git push` にも `push_files` にも**戻らない**。`push_via_api.sh` を2回まで、それでもダメならその夜は諦める（`unknown` のときは1回も再実行しない）。**押せなかった日は翌晩の手順2.1 が拾い直す**（`captures.json` に保存があるのに reviews が無い日として検出される）。

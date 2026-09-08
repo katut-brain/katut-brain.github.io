@@ -1,13 +1,19 @@
 # 「静かに止まったこと」を検知する見張り番。
 #
-# 2026-09-08 追加。書き込み経路を push_files から Git Data API（push_via_api.sh）へ
-# 切り替えたとき、あわせて入れた。切替の代償として、API が通らない夜は
-# **何も押さずに諦める**設計にしたため（壊れた本文を main に載せないことを優先した）、
-# 失敗が続くと公開が静かに止まる。無人パイプラインでいちばん困るのは
+# 2026-09-08 追加、2026-09-09 に判定を作り直した。書き込み経路を push_files から
+# Git Data API（push_via_api.sh）へ切り替えたとき、あわせて入れた。切替の代償として、
+# API が通らない夜は**何も押さずに諦める**設計にしたため（壊れた本文を main に載せない
+# ことを優先した）、失敗が続くと公開が静かに止まる。無人パイプラインでいちばん困るのは
 # 「壊れること」ではなく「壊れたまま誰も気づかないこと」なので、ここで見張る。
 #
-# 見るのは reviews の最新日付だけ。ラン自体の成否ではなく **成果物の鮮度** を見る
-# （プロセスの生死でなく出力で判定する）。
+# ■ 判定の作り方（ここが要点）
+# 「最新の review が何日前か」だけで見てはいけない。**保存が0件の日は review を作らない
+# のが仕様**で、実際 2026-08-24〜08-26 と 08-29 は0件だった。連休などで1週間保存が
+# 無ければ、正常なのに失敗する——正常運用で鳴る通知は、すぐに読まれなくなる。
+#
+# そこで **「公開されていない保存が有るか」** で見る。日別台帳 `capture_index.json` に
+# 保存が記録されているのに、その日の `reviews/<日付>.html` が無い状態が GRACE 日以上
+# 続いていたら失敗する。保存が無い期間はいくら続いても鳴らない。
 #
 # 通知経路: このワークフローが失敗すると GitHub から Actions の失敗メールが届く。
 # それ以外の通知先（LINE 等）は今は繋いでいない。
@@ -32,46 +38,54 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check that reviews are still being published
+      - name: Check that saved days are getting published
         run: |
           python3 - <<'PY'
-          import datetime, glob, os, re, sys
+          import datetime, glob, json, os, re, sys
 
-          # 保存が0件の日は review を作らないのが仕様なので、数日空くのは正常。
-          # 実測でも 08-24〜08-26 と 08-29 は保存0件で review が無い。
-          # ⚠️ この見張りは「止まったこと」を厳密には判定できない。リポジトリだけを
-          # 見ている限り「保存が無かった日」と「押せなかった日」は区別がつかないため。
-          # 区別するには、保存0件でも毎晩必ず何かを書く heartbeat が要る（未実装・
-          # 別タスク）。それまでは、空振りが出にくい側に倒して7日を採る。
-          MAX_AGE_DAYS = 7
+          # 保存があった日が公開されないまま何日続いたら異常と見なすか。
+          # 夜間ランは翌日の未明なので、1日は普通に空く。2日空いたら1回は失敗している。
+          GRACE_DAYS = 2
+          # 台帳を入れる前の日は見ない（当時の取りこぼしが6日ある）。
+          # 環境変数で差し替えられるのは、この判定を実時計に依存せず試せるようにするため。
+          SINCE = os.environ.get("STALE_CHECK_SINCE", "2026-09-08")
 
-          dates = []
-          for path in glob.glob("reviews/*.html"):
-              m = re.fullmatch(r"(\d{4})-(\d{2})-(\d{2})", os.path.basename(path)[:-5])
-              if m:
-                  dates.append(datetime.date(*map(int, m.groups())))
+          def day_of(name):
+              m = re.fullmatch(r"(\d{4}-\d{2}-\d{2})", name)
+              return m.group(1) if m else None
 
-          if not dates:
-              print("reviews/ に日付形式のファイルが1つも無い。")
-              sys.exit(1)
+          try:
+              with open("capture_index.json", encoding="utf-8") as fh:
+                  days = json.load(fh)["days"]
+          except (OSError, ValueError, KeyError, TypeError):
+              print("capture_index.json が読めない。判定できないので何もしない。")
+              sys.exit(0)
 
-          newest = max(dates)
-          # 夜間ランは JST。UTC の今日で見ると最大1日ぶんずれるので JST に合わせる。
+          saved = {d for d, e in days.items()
+                   if isinstance(e, dict) and e.get("rids") and d >= SINCE}
+          published = {d for d in
+                       (day_of(os.path.basename(p)[:-5]) for p in glob.glob("reviews/*.html"))
+                       if d}
+
           today = (datetime.datetime.now(datetime.timezone.utc)
                    + datetime.timedelta(hours=9)).date()
-          age = (today - newest).days
+          cutoff = (today - datetime.timedelta(days=GRACE_DAYS)).isoformat()
 
-          print(f"newest review: {newest} / today (JST): {today} / age: {age} days")
-          print(f"reviews on record: {len(dates)}")
+          overdue = sorted(d for d in saved - published if d <= cutoff)
 
-          if age > MAX_AGE_DAYS:
+          print(f"days with saves on record (since {SINCE}): {len(saved)}")
+          print(f"days published: {len(published & saved)}")
+          print(f"today (JST): {today} / grace: {GRACE_DAYS} day(s)")
+
+          if overdue:
               print()
-              print(f"::error::公開が {age} 日止まっている（最新 {newest}）。")
+              print(f"::error::保存があるのに公開されていない日が {len(overdue)} 日ある: "
+                    + ", ".join(overdue))
               print("ランのログで WRITE_COMMIT: の行を見ること。")
               print("  - WRITE_COMMIT: none が続いている → API 経路が通っていない")
               print("  - WRITE_COMMIT: unknown が出ている → 結果不明のまま止めた（再送禁止の状態）")
               print("  - そもそも行が無い → Routine 自体が走っていない")
-              print("保存が0件の日が続いただけなら、この失敗は空振り。")
+              print("※ 自動では作り直さない。台帳は記録であってキューではない。")
               sys.exit(1)
 
           print("OK")
