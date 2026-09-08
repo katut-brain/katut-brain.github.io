@@ -1,0 +1,3 @@
+# push_via_api.sh はクラウドの Ubuntu で bash から実行される。
+# CRLF で配られると shebang が壊れるので LF に固定する。
+*.sh text eol=lf
