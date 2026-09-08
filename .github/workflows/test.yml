@@ -1,4 +1,4 @@
-# capture-pipeline の結合テスト（test_backfill_recovery.py / test_push_via_api.py）を走らせる。
+# capture-pipeline の結合テスト（backfill / write-path / capture-index）を走らせる。
 #
 # build-feed.yml とは別ワークフローにする。build-feed.yml は「トップ index.html を
 # 生成して公開サイトへ deploy する」役割で、テストの不具合や失敗がここに波及すると
@@ -37,6 +37,6 @@ jobs:
       - name: Run write-path tests
         run: python -m unittest -v test_push_via_api.py
 
-      # 押せなかった日を翌晩拾い直す装置。
-      - name: Run recovery-target tests
-        run: python -m unittest -v test_recover_target.py
+      # 「どの日が公開できていないか」を後から追える日別台帳。
+      - name: Run capture-index tests
+        run: python -m unittest -v test_capture_index.py

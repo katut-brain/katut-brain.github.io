@@ -24,36 +24,19 @@
 
 ## 手順
 1. **対象日**＝日本時間の「昨日」。`TARGET=$(TZ=Asia/Tokyo date -d yesterday +%F)`。
-   （**ただしこの値は暫定。手順2.1 で「押せなかった日」があればそちらに差し替わる。**）
 1.5. **依存インストール**：`pip install --quiet -r requirements.txt`（YouTube字幕取得用 `youtube-transcript-api`、X動画理解用 `google-genai`）。失敗しても止めない（`fetch_content.py` はこれらのパッケージが無くても他の取得は正常動作する graceful degradation設計。ただしYouTube動画は字幕なし・X動画は音声/映像理解なしのタイトルのみに落ちる）。
 2. `python3 _build_graph.py` を実行。Raindrop の新規を `captures.json` に取り込み、既存レコードも冪等に更新する（失敗してもログして続行）。
    - **出力の `IMPORT_STATUS:` 行を必ず読む**。`INCOMPLETE` だった場合は Raindrop を全件取得できておらず、**その日の振り返りが欠損しうる**。この場合は手順5の `reviews/<TARGET>.html` の `</footer>` 直前に `<p class="notegen-warn">⚠️ 取り込み不完全: Raindrop取得エラー N件。欠けている保存がある可能性あり</p>` を1行足して、欠損の可能性を残す（黙って完走しない）。import は冪等なので翌ランで自動的に回復する。
    - この行を見落として「正常に完走した」と扱わないこと。無人運用ではログを誰も読まないため、**成果物側に痕跡を残すことが唯一の検知手段**になる。
-2.1. **取りこぼしの回収（TARGET の確定）**：
-   `python3 recover_target.py` を実行し、出力の `TARGET=` 行の値を以降の `TARGET` として使う。
-   - **何をしているか**: 日別台帳 `capture_index.json` を「既存の台帳 ∪ 今夜の `captures.json`」で更新したうえで、「その日の保存が台帳にあるのに、ちゃんと公開できていない日」を探す。あればその**最も古い日**を返し、無ければ昨日を返す。**探索に期間の窓は掛けない** —— 窓を掛けると、回収しようとした晩にまた押せなかった日が翌晩には窓の外へ落ち、台帳に残っていても二度と拾われないため。2026-09-08 より前の日は「この装置を入れる前」として対象外なので、過去に張り付くことはない。
-   - **台帳を挟む理由**: `captures.json` は毎晩 Raindrop から作り直されるので、押せなかった日の保存が Raindrop 側で消されたり取り込みが `INCOMPLETE` だったりすると、**証拠ごと消えて回収されない**。台帳は一度観測した rid を消さないので、リポジトリ側に根拠が残る。台帳は日付と rid だけの小さなファイルで、次の手順2.2 で push する（`captures.json` 本体は560KBあるので押さない）。
-   - **「ファイルがあれば公開済み」とは見なさない**: reviews に埋まっている `review-meta`（手順5が書く）の rid 一覧を台帳と突き合わせ、**台帳にあって review に無い保存があれば不完全な公開として作り直す**。`review-meta` が無い古いファイルは公開済みとして扱う（遡って作り直さない）。
-   - **なぜ要るか**（2026-09-08 追加）: 手順8は、照合が通らなければ押さずに終える。押さなかった日は、以前は誰も拾わなかった —— 手順書には「翌ランに回す」と書いてあったのに、翌ランは別の日を対象にするだけで、**前日ぶんは永久に欠けたままだった**。ここで拾う。
-   - **1晩に1日ずつ**しか戻さない。溜まっていても順に消化し、追いつけば自然に「昨日」へ戻る。そのぶん最新の日が1晩遅れるが、欠けたまま放置するよりよい。過去に張り付いて最新が止まった場合は `stale-check.yml` が拾う。
-   - このステップが失敗したら（スクリプトが無い・例外）、手順1の「昨日」をそのまま使って続行する（回収できないだけで、その夜の処理は止めない）。
-
-2.2. **台帳とスナップショットを先に押す**（差分があるときだけ。次の1コマンドが判定も送信も済ませる）：
+2.1. **日別台帳の更新**：
    ```bash
-   git status --porcelain -z --untracked-files=all -- capture_index.json capture_days/ | sed -z 's/^...//' | xargs -0 -r bash push_via_api.sh katut-brain/katut-brain.github.io "index: <TARGET>"
+   python3 build_capture_index.py
    ```
-   - `-z` ＋ `xargs -0` は、ファイル名の空白で壊れないようにするため（今の名前は `capture_days/2026-09-07.json` 固定なので実害は無いが、区切りを空白に頼る書き方を無人ランに置かない）。
-   - `--untracked-files=all` が要るのは、これが無いと**未追跡ぶんが `capture_days/` というディレクトリ1行にまとめられて**、スクリプトにディレクトリを渡してしまうため（実測で確認した）。
-   - 差分が無ければ `xargs -r` が何も起動しない＝この手順は自動的に飛ばされる。
-   - `capture_days/<日付>.json` は手順2.1 が書いた**その日のレコード本文**。台帳（rid だけ）では作り直せないので本文ごと残す。
-   - ⚠️ **これを手順8とまとめない**（2026-09-08 の敵対的レビュー9周目の指摘）。台帳を reviews と同じコミットに入れると、**その夜の push が失敗したとき台帳も残らない** —— 翌晩 Raindrop 側から保存が消えていれば、証拠がどこにも無くなって回収できない。観測した直後に台帳だけ先に永続化しておけば、reviews 側だけが失敗した夜は翌晩に確実に拾える。
-   - `LEDGER_ERROR:` が出ていた夜は台帳を書いていないので、差分も出ない＝ここは自動的に飛ばされる。
-   - ⚠️ **ここが失敗したら、その夜はここで終わる**（2026-09-08 の敵対的レビュー14周目）。`WRITE_COMMIT: <sha>` が出るまで2回試し、それでも駄目なら**手順3以降へ進まずに終了する**。理由は2つ:
-     - ① 台帳とスナップショットが載らない状態は「API 経路が死んでいる」ということなので、どのみち手順8の push も失敗する。1時間かけて作ってから捨てるより、ここで止めたほうが早く・ログも読みやすい。
-     - ② 証拠を残せないまま先へ進むと、**その夜の観測がどこにも残らない**。翌晩 Raindrop 側から保存が消えていれば、その日は回収対象にすら上がらない。
-     - 差分が無くて `xargs -r` が何も起動しなかった場合は「失敗」ではない（押すものが無いだけ）。そのまま手順2.5 へ進む。
-   - **ここで止めても、その日が失われるとは限らない**: 翌晩 `captures.json` に同じ保存が見えれば、手順2.1 が改めて拾う。**残る穴は「GitHub が一晩まるごと不通で、かつ翌晩までに Raindrop から保存が消える」場合だけ**で、これは GitHub と Raindrop の両方から独立した第三の保存先が無い限り原理的に塞げない（別タスク）。
-   - 手順8では台帳を押さない（ここで押し終えている）。
+   - `capture_index.json` を「既存の台帳 ∪ 今夜の `captures.json`」で更新する。日付と rid だけの小さなファイル（実測43日分で7.3KB）。手順8で他のファイルと一緒に push する。
+   - **何のためにあるか**: 手順8は照合が通らなければ押さない。押さなかった日を**後から人が見つけられるようにするための記録**。`captures.json` は毎晩 Raindrop から作り直されるので、押せなかった日の保存が消えたり取り込みが不完全だったりすると証拠ごと消える。台帳は一度観測した rid を消さない。
+   - **⚠️ これはキューではない。自動回収はしない**（2026-09-09 の裁定）。`UNPUBLISHED:` の行が出ても、その日を作り直しに行かないこと。対象日は常に「昨日」のまま。
+   - 出力の `UNPUBLISHED:` と `INDEX:` の行はログにそのまま残す。
+   - 非ゼロで終わっても**手順を止めない**（台帳が壊れている等。その場合は台帳を書き換えないので `git status` に差分も出ず、手順8の push 対象にも入らない）。
 
 2.5. **バックフィル（過去に取得できなかった rid 持ちレコードの再取得）**：
    `FETCH_FACTS_DIR="$PWD/fetch_facts" FACTS_DATE=$TARGET timeout 600 python3 backfill.py --target $TARGET --limit 1 --timeout 480` を実行する。
@@ -93,8 +76,6 @@
      `python3 ledger.py <rid>` で history（fetched_at, depth, ok）を個別に確認し、
      想定通り再試行・記録されているかを見る。
 3. `captures.json` を読み、`date == TARGET` のレコードを抽出。
-   - ⚠️ **`capture_days/<TARGET>.json` があれば、`captures.json` ではなくそちらを入力にする**（2026-09-08 追加）。これは手順2.1 が「これまでに観測した全部 ∪ 今夜の captures.json」を rid で併合して書いたファイルで、**その日について手元にある最大の集合**。`captures.json` は毎晩 Raindrop から作り直されるので、回収中の日の保存が消えていたり、取り込みが `INCOMPLETE` で一部しか見えなかったりする。**両方を自分で見比べて併合しようとしないこと** —— 併合はスクリプトが済ませてあるので、スナップショットがあるならそれだけを読めばよい。
-   - スナップショットが無い日だけ `captures.json` を使う（この装置を入れる前の日など）。
    - **0件なら reviews は作らず手順6へ**（空ノートを作らない）。
      （バックフィル(手順2.5)がその日 `fetch_facts/<TARGET>.json` に何か書いていた場合でも、
      reviews を作る条件（当日新規保存1件以上）とは無関係。手順8のpush判定は reviews の有無ではなく
@@ -143,13 +124,6 @@
    - **制約**：実在の検索結果・実際に取得できた本文のみ使う。**`WebSearch` が返したURLをそのまま使い、URLを変形・補完・推測しない**（手順4と同じく、URL捏造は過去に404を量産した事故あり）。`WebFetch` で実際に開けたURLだけを出力する。**全テーマで `WebSearch` を実際に呼んだ上で**それでも1本も本文が取れなければ、その場合に限り手順5の「深掘り」節ごと省略する。
    - 出力先は手順5の振り返りHTML内「深掘り」節のみ（**Vaultには書かない**。手順7.5・8.5で行うVaultリポへのブックマークノート書き込みとは別経路で、この4.5の深掘り内容自体はVaultに書かない、という原則をここでは維持する）。
 5. `reviews/<TARGET>.html` を生成（**下記テンプレート厳守**）。日本語で書く（英語の本文・キャプションは日本語へ要約・翻訳。固有名詞・ハンドルは原文可）。
-   - ⚠️ **`review-meta` を必ず埋め込む**（2026-09-08 追加）。`</body>` の直前に、その日の実績を機械可読で1行残す：
-     ```html
-     <!-- review-meta: {"date":"<TARGET>","rids":[<この日のrIDを全部・カンマ区切り>],"count":<件数>,"import":"<OK または INCOMPLETE>"} -->
-     ```
-     - `rids` は**手順3で抽出した当日レコードの `rid` を全部**入れる（カードを作らなかったものも含める。「この日に何を扱ったか」の記録なので、扱いを省いたものこそ残す）。
-     - `import` は手順2の `IMPORT_STATUS:` 行が `INCOMPLETE` だったら `"INCOMPLETE"`、そうでなければ `"OK"`。
-     - **これが無いと、翌晩の手順2.1 が「この日は公開済み」と判定してしまい、不完全な公開が永久に残る**。表示には出ない（HTMLコメント）ので見た目は変わらない。
    - ⚠️ **必ず「ファイル」として書き出す**（2026-09-08 追加）。頭の中に文字列として持つのではなく、Write ツールか heredoc で `reviews/<TARGET>.html` を**ワークスペース上の実ファイルとして作る**。手順7の読み返しも、手順7.5の `</footer>` 直前への追記も、手順8の送信も、**すべてこの実ファイルを起点にする**。ここでファイルにしないと、手順8がファイルの代わりに「あなたが覚えている本文」を送ることになり、全角括弧が半角に化けた 2026-09-04 の事故（`79cfd12`）と同じことが起きる。
    - **スタイル**：以下の `<style>` ブロックをそのまま使う（CSS変数・ダーク対応込み）。`<title><TARGET> の振り返り</title>`。
      ```html
@@ -363,10 +337,10 @@
    **(a) reviews あり（手順5で `reviews/<TARGET>.html` を作った場合）**：
    - 押すファイルは **`reviews/<TARGET>.html` と `fetch_facts/<TARGET>.json` の2つ**（手順4.2で作られている。無ければ `reviews/<TARGET>.html` のみ）。次の1コマンドで送る：
      ```bash
-     bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET>" fetch_facts/<TARGET>.json reviews/<TARGET>.html
+     bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET>" capture_index.json fetch_facts/<TARGET>.json reviews/<TARGET>.html
      ```
      （`fetch_facts` が無い日はそれを外す。何個渡しても1コミットにまとまる）
-   - 台帳（`capture_index.json`）はここでは押さない。手順2.2 で先に押し終えている。
+   - `capture_index.json` は手順2.1 が更新した日別台帳。差分が無い夜は引数から外してよい（`git status --porcelain -- capture_index.json` が空なら外す）。
    - 送る前に、**ファイルが本物であることだけ**確認する（中身を書き写すのではなく、ファイルに対して確認する）：`head -c 20 reviews/<TARGET>.html` が `<!doctype html>` で始まり、`tail -c 20` が `</html>` で終わり、`grep -c PLACEHOLDER reviews/<TARGET>.html` が 0 であること。
    - **照合はスクリプトが載せる前にやる**（SHA-256の完全一致）。`WRITE_COMMIT: <sha>` が出ていれば公開まで完了。`note=main_untouched` が出ていたら**何も載っていない**ので、**もう一度同じコマンドを実行する**（作り直しになるだけで、二重コミットにはならない）。**2回目も駄目なら、その夜は押さずに終える。フォールバックはしない**（手順8には `push_files` へ落ちる経路は存在しない。下の手順8.5に出てくるフォールバックは Vaultリポ専用であって、ここには適用しない）。
 
@@ -381,34 +355,34 @@
      新規cloneに同日の既存 `fetch_facts/<TARGET>.json` が既に含まれている再実行でも、今回のランで差分が無ければこの条件で自動的に弾かれる（誤push防止）。
    - `fetch_facts/<TARGET>.json` **単独**で送る（`reviews/<TARGET>.html` は存在しないので対象に含めない。存在しないファイルを送ろうとしない）：
      ```bash
-     bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET> (backfill only)" fetch_facts/<TARGET>.json
+     bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET> (backfill only)" capture_index.json fetch_facts/<TARGET>.json
      ```
    - 送る前に、ファイルが本物のJSONであることを確認する：`python3 -c "import json; json.load(open('fetch_facts/<TARGET>.json', encoding='utf-8'))"` がエラー無く通ること。
    - 照合はスクリプトが載せる前に SHA-256 でやる。`WRITE_COMMIT: <sha>` なら完了。失敗したときは上の「失敗したときにやること」の①〜③に従う（**フォールバックはしない**）。
 
    **(c) reviews 無し・fetch_facts も無し（または `git status --porcelain -- fetch_facts/<TARGET>.json` が空＝今回のランで変更が無い）**：
-   - 何も push せず正常終了する（台帳は手順2.2 で押し終えている）。
+   - `git status --porcelain -- capture_index.json` に差分があれば台帳だけを送る（`"update: <TARGET> (index only)"`）。それも無ければ何も push せず正常終了する。
 
    - 共通: `index.html` の出来ばえは確認しなくてよい（Actions 側の検証ゲートが担当する）。**`index.html` を GitHub から読みに行かないこと** — 122KB を読むと文脈が膨らんで自動圧縮で迷子になる。
    - 共通: 送信が一時失敗しても、生 `git push` にも `push_files` にも**戻らない**。`push_via_api.sh` を2回まで、それでもダメならその夜は諦める（`unknown` のときは1回も再実行しない）。**押せなかった日は翌晩の手順2.1 が拾い直す**（`captures.json` に保存があるのに reviews が無い日として検出される）。
 8.5. **公開（Vaultリポへ・ブックマークノート）**（手順7.5でノートを新規作成した場合のみ実行）：対象は `katut-brain/obsidian-vault` リポ（手順8の `katut-brain.github.io` とは別リポ）。
    - 押すファイルは、手順7.5でスキーマ検証に**合格**し新規作成した `Explore/bookmarks/rd-*.md` のみ（検証落ちのファイル・既存ファイルは含めない）。
-   - 手順8と**同じ送り方**をする。対象リポジトリを変えて `push_via_api.sh` を使う（生の `git push` は使わない）：
+   - ⚠️ **今夜は書き込み経路を変えない。従来どおり `push_files` で押す**（2026-09-09 の裁定）。Vaultリポに `gh api` が届くかがまだ確認できていないため、確認が取れるまで動かさない。
+   - **ただし、届くかどうかだけ先に測る**（読み取りのみ・何も書かない）：
      ```bash
-     bash push_via_api.sh katut-brain/obsidian-vault "bookmark notes: <TARGET> (N件)" Explore/bookmarks/rd-....md [...]
+     bash push_via_api.sh --verify-only katut-brain/obsidian-vault RULES.md
      ```
-     （`N` は今回送るノート件数。ノートは互いに独立なので順序は問わない）
-   - ⚠️ **こちらは経路が通るかまだ確認できていない**（2026-09-08 時点）。公式仕様は「GitHub API はセッションに紐付いたリポジトリにしか到達しない、紐付いていなければ 403」と書いており、Vaultリポが紐付いているかが分かっていない。**403 で落ちたらそれが答え**なので、`WRITE_PATH: ... api=failed ... 403` の行をログにそのまま残すこと。翌朝こちらがその行を読んで判断する。
-   - ⚠️ **ここだけは `push_files` を残す**（手順8とは扱いが違う。2026-09-08 の敵対的レビュー5周目の裁定）。理由: Vaultリポは経路が通るか未確認で、**もし構造的に到達不能なら「一時失敗」ではなく毎晩必ず失敗する**。手順8と同じく諦めると、ブックマーク公開が静かに永久停止する。「翌晩また対象になる」は失敗が一時的なときにしか成り立たない。
-     - ① `push_via_api.sh` を2回まで試す。`WRITE_COMMIT: <sha>` が出たら完了（**この行が出た夜のログは必ず残すこと** —— これが「Vaultリポにも API 経路が通る」という証拠になり、確認できたらフォールバックを外す）。
-     - ② 2回とも駄目なら、**従来どおり `push_files` で押す**。これは今までと同じ経路・同じリスクであって、新しく増やしたものではない（今夜の変更で悪くなる部分は無い）。押した後に照合を当てる：
-       ```bash
-       bash push_via_api.sh --verify-only katut-brain/obsidian-vault <押したパス>
-       ```
-       `verify=match` なら完了。`verify=MISMATCH` なら押し直して再照合、2回目も駄目なら `WRITE_PATH: <パス> fallback=push_files verify=GIVEUP` を残す。`verify=unreadable` なら `verify=UNCHECKED` を残す（読み取り経路が無い＝照合できない状態。成功と書かない）。
-     - ③ フォールバックで押したコミットのメッセージ末尾に ` [fallback]` を付ける（`git log` に残るので、翌朝 `grep fallback` で拾える）。
-     - ④ ⚠️ `WRITE_COMMIT: unknown ... state_unknown_do_not_retry`（終了コード3）が出た場合だけは、**再実行もフォールバックもしない**。載ったかどうか分からない状態で押すと二重書き込みになる。
-   - ⚠️ **Vaultリポ側には Actions の検証ゲートが1本も無い**（`total_count: 0`・2026-09-08 実測）。公開リポと違って、壊れたノートを押しても誰も止めない。しかもローカルVaultへは Obsidian Git プラグインが10分以内に取り込む。**照合を省くとそのまま外部脳に入る**ので、上の検証は必ず行うこと。
+     `RULES.md` はクローンにあり今回のランで触っていないので、ローカルとリモートが一致するはず。
+     - `verify=match` → **Vaultリポにも API が届く**。次のセッションで手順8.5 を手順8と同じ経路へ切り替えられる
+     - `verify=unreadable` → 届かない（公式仕様の「セッションに紐付いていないリポには 403」に該当する可能性が高い）
+     - **どちらでも手順は止めない。** これは測るだけの行で、結果はログに残せばよい
+   - 押した後は、手順8と同じく `--verify-only` で照合する：
+     ```bash
+     bash push_via_api.sh --verify-only katut-brain/obsidian-vault <押したパス>
+     ```
+     `verify=match` なら完了。`MISMATCH` なら押し直して再照合し、2回目も駄目なら諦めて `WRITE_PATH: <パス> fallback=push_files verify=GIVEUP` を残す。`unreadable` なら照合できないので `verify=UNCHECKED` と残す（成功と書かない）。
+   - コミットメッセージは `bookmark notes: <TARGET> (N件)` 形式。
+   - ⚠️ **Vaultリポ側には Actions の検証ゲートが1本も無い**（`total_count: 0`・2026-09-08 実測）。公開リポと違って、壊れたノートを押しても誰も止めない。しかもローカルVaultへは Obsidian Git プラグインが10分以内に取り込む。**照合を省くとそのまま外部脳に入る**ので、上の照合は必ず行うこと。
    - push 対象ノートが0件（新規0件・全件重複スキップ・全件検証落ちのいずれか）の場合は、このpushを行わない。
    - 送信が一時失敗しても生 `git push` には戻らない（403ループ防止）。1〜2回だけ試し、ダメなら諦めて翌ランに回す（取りこぼしたブックマークのノートは翌晩以降の手順7.5で改めて対象になる＝重複チェックにより既存ノートは壊されない）。
 
