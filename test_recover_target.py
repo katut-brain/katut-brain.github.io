@@ -81,6 +81,22 @@ class RecoverTargetTest(unittest.TestCase):
         with open(os.path.join(self.tmp, "capture_index.json"), encoding="utf-8") as fh:
             return {d: set(v["rids"]) for d, v in json.load(fh)["days"].items()}
 
+    def _read_index_raw(self):
+        with open(os.path.join(self.tmp, "capture_index.json"), encoding="utf-8") as fh:
+            return json.load(fh)["days"]
+
+    def _snapshot(self, day, rids):
+        d = os.path.join(self.tmp, "capture_days")
+        os.makedirs(d, exist_ok=True)
+        records = [{"rid": r, "date": day.isoformat(), "source": f"https://x/{r}",
+                    "title": f"t{r}"} for r in rids]
+        with open(os.path.join(d, day.isoformat() + ".json"), "w", encoding="utf-8") as fh:
+            json.dump(records, fh)
+
+    def _snapshot_exists(self, day):
+        return os.path.exists(os.path.join(self.tmp, "capture_days",
+                                           day.isoformat() + ".json"))
+
     def _run(self):
         env = dict(os.environ)
         env["RECOVER_MIGRATION_DATE"] = self.migration.isoformat()
@@ -129,12 +145,16 @@ class RecoverTargetTest(unittest.TestCase):
     # --- 台帳が根拠であること（レビュー8周目の指摘） ------------------------
 
     def test_ledger_survives_the_save_disappearing_from_raindrop(self):
-        """押せなかった日の保存が Raindrop から消えても、台帳が残っていれば拾う。
+        """押せなかった日の保存が Raindrop から消えても拾う。
 
-        captures.json は毎晩作り直されるので、これが無いと証拠ごと消える。
+        captures.json は毎晩作り直されるので、台帳が無いと証拠ごと消える。
+        ただし台帳（rid だけ）では作り直せないので、本文のスナップショットも要る
+        （敵対的レビュー10周目で判明。当初この検査はスナップショット無しで
+        「拾える」ことにしていたが、拾っても何も作れなかった）。
         """
         missed = self._d(2)
         self._index({missed: [1, 2]})          # 前の晩に観測して押した台帳
+        self._snapshot(missed, [1, 2])         # 同じ晩に押した本文
         self._captures({self.yesterday: [9]})  # 今夜の Raindrop には missed の保存が無い
         self._review(self.yesterday, [9])
         target, out = self._run()
@@ -158,6 +178,65 @@ class RecoverTargetTest(unittest.TestCase):
         _, out = self._run()
         self.assertIn("INDEX:", out)
         self.assertEqual(self._read_index()[self.yesterday.isoformat()], {7})
+
+    # --- 材料まで残す（レビュー10周目の指摘） ------------------------------
+
+    def test_snapshot_is_written_for_the_day_being_processed(self):
+        """今夜これから作る日の本文を残す。押せずに終わっても翌晩作り直せる。"""
+        self._captures({self.yesterday: [1, 2]})
+        _, out = self._run()
+        self.assertIn("SNAPSHOT:", out)
+        self.assertTrue(self._snapshot_exists(self.yesterday))
+
+    def test_a_day_kept_only_by_its_snapshot_is_still_recovered(self):
+        """Raindrop から消えても、本文のスナップショットがあれば回収し続ける。"""
+        missed = self._d(2)
+        self._index({missed: [1, 2]})
+        self._snapshot(missed, [1, 2])
+        self._captures({self.yesterday: [9]})
+        self._review(self.yesterday, [9])
+        target, out = self._run()
+        self.assertEqual(target, missed.isoformat())
+        self.assertNotIn("unrecoverable", out)
+
+    def test_a_day_with_no_material_left_does_not_stall_the_queue(self):
+        """材料が無い日で止まらないこと。
+
+        rid だけ台帳に残っていて本文がどこにも無い日を選び続けると、入力0件で
+        何も作れず、最古の pending に永久に張り付いて新しい日も処理できなくなる
+        ——直そうとした永久欠落が永久停止に化ける（敵対的レビュー10周目の指摘）。
+        """
+        gone = self._d(3)
+        self._index({gone: [1]})            # rid だけ残っている
+        self._captures({self.yesterday: [9]})  # Raindrop からは消えた
+        # スナップショットも無い
+        target, out = self._run()
+        self.assertEqual(target, self.yesterday.isoformat(),
+                         "材料の無い日に張り付いてはいけない")
+        self.assertIn("no material left", out)
+        self.assertTrue(self._read_index_raw()[gone.isoformat()]["unrecoverable"],
+                        "判定を台帳に焼き付けて、毎晩調べ直さないこと")
+
+    def test_a_day_marked_unrecoverable_is_not_reconsidered(self):
+        gone = self._d(3)
+        self._write("capture_index.json", json.dumps(
+            {"days": {gone.isoformat(): {"rids": [1], "unrecoverable": True}}}))
+        self._captures({self.yesterday: [9]})
+        self._review(self.yesterday, [9])
+        target, out = self._run()
+        self.assertEqual(target, self.yesterday.isoformat())
+        self.assertIn("nothing to recover", out)
+
+    def test_a_newer_pending_day_is_still_reached_after_a_dead_one(self):
+        """材料の無い日を飛ばして、その次の pending へ進むこと。"""
+        gone, alive = self._d(4), self._d(2)
+        self._index({gone: [1], alive: [2]})
+        self._snapshot(alive, [2])
+        self._captures({self.yesterday: [9]})
+        self._review(self.yesterday, [9])
+        target, out = self._run()
+        self.assertEqual(target, alive.isoformat())
+        self.assertIn("no material left", out)
 
     # --- 「ファイルがあれば公開済み」にしない（同 P1） ----------------------
 
@@ -214,6 +293,7 @@ class RecoverTargetTest(unittest.TestCase):
         """
         long_ago = self.migration
         self._index({long_ago: [1]})
+        self._snapshot(long_ago, [1])
         self._captures({self.yesterday: [9]})
         self._review(self.yesterday, [9])
         target, out = self._run()

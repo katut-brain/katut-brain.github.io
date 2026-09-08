@@ -38,10 +38,11 @@
    - **1晩に1日ずつ**しか戻さない。溜まっていても順に消化し、追いつけば自然に「昨日」へ戻る。そのぶん最新の日が1晩遅れるが、欠けたまま放置するよりよい。過去に張り付いて最新が止まった場合は `stale-check.yml` が拾う。
    - このステップが失敗したら（スクリプトが無い・例外）、手順1の「昨日」をそのまま使って続行する（回収できないだけで、その夜の処理は止めない）。
 
-2.2. **台帳を先に押す**（`git status --porcelain -- capture_index.json` に差分があるときだけ）：
+2.2. **台帳とスナップショットを先に押す**（`git status --porcelain -- capture_index.json capture_days/` に差分があるときだけ）：
    ```bash
-   bash push_via_api.sh katut-brain/katut-brain.github.io "index: <TARGET>" capture_index.json
+   bash push_via_api.sh katut-brain/katut-brain.github.io "index: <TARGET>" capture_index.json $(git status --porcelain -- capture_days/ | awk '{print $2}')
    ```
+   - `capture_days/<日付>.json` は手順2.1 が書いた**その日のレコード本文**。台帳（rid だけ）では作り直せないので本文ごと残す。
    - ⚠️ **これを手順8とまとめない**（2026-09-08 の敵対的レビュー9周目の指摘）。台帳を reviews と同じコミットに入れると、**その夜の push が失敗したとき台帳も残らない** —— 翌晩 Raindrop 側から保存が消えていれば、証拠がどこにも無くなって回収できない。観測した直後に台帳だけ先に永続化しておけば、reviews 側だけが失敗した夜は翌晩に確実に拾える。
    - `LEDGER_ERROR:` が出ていた夜は台帳を書いていないので、差分も出ない＝ここは自動的に飛ばされる。
    - ここが失敗しても手順を止めない（その夜の回収保証が無くなるだけ）。`WRITE_COMMIT:` の行はログに残す。
@@ -85,6 +86,7 @@
      `python3 ledger.py <rid>` で history（fetched_at, depth, ok）を個別に確認し、
      想定通り再試行・記録されているかを見る。
 3. `captures.json` を読み、`date == TARGET` のレコードを抽出。
+   - ⚠️ **0件で、かつ `capture_days/<TARGET>.json` があれば、そちらを入力として使う**（2026-09-08 追加）。回収でこの日を選んでいる場合、その保存は Raindrop 側から消えていることがある。台帳には rid しか無いので作り直せないが、スナップショットには本文が残っている。**スナップショットが使えるなら「0件」ではない**ので、以降は通常どおり進む。
    - **0件なら reviews は作らず手順6へ**（空ノートを作らない）。
      （バックフィル(手順2.5)がその日 `fetch_facts/<TARGET>.json` に何か書いていた場合でも、
      reviews を作る条件（当日新規保存1件以上）とは無関係。手順8のpush判定は reviews の有無ではなく

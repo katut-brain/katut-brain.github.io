@@ -18,10 +18,20 @@
 
       {"days": {"2026-09-07": {"rids": [123, 456]}, ...}}
 
-  これは毎晩「既存の台帳 ∪ 今夜の captures.json」で更新し、手順8で push する。
+  これは毎晩「既存の台帳 ∪ 今夜の captures.json」で更新し、手順2.2 で先に push する。
   **一度でも観測した保存は、あとから Raindrop で消えても台帳に残る。**
   日付と rid だけの小さなファイルなので、毎晩押しても負担にならない
   （`captures.json` 本体は 560KB あるので押さない）。
+
+■ rid だけでは足りない。本文も残す（敵対的レビュー10周目の指摘）
+  台帳があれば「この日はまだ公開できていない」と分かるが、rid しか無いので
+  **作り直せない**。押せなかった日の保存が Raindrop から消えていると、その日を
+  TARGET に選んでも入力が0件で何も作れず、最古の pending に永久に張り付いて
+  新しい日も処理できなくなる——直そうとした永久欠落が、永久停止に化ける。
+  そこで `capture_days/<日付>.json` にレコード本文をそのまま残し、台帳と一緒に
+  先に push する。手順3は captures.json が0件のときこれを入力にする。
+  それでも材料が無い日（本文がどこにも無い）は `unrecoverable` を台帳に焼き付けて
+  飛ばす。飛ばしたことは記録に残るので、黙って消えるのとは違う。
 
 ■ 「ファイルがあれば公開済み」とは見なさない（同レビュー P1）
   reviews に埋め込まれた `review-meta` コメント（手順5が書く）を読み、
@@ -57,6 +67,7 @@ MIGRATION_DATE = datetime.date.fromisoformat(
 
 CAPTURES = "captures.json"
 INDEX = "capture_index.json"
+SNAPSHOT_DIR = "capture_days"
 REVIEWS_DIR = "reviews"
 
 META_RE = re.compile(r"<!--\s*review-meta:\s*(\{.*?\})\s*-->", re.S)
@@ -76,7 +87,7 @@ def _load_json(path):
 
 
 def captures_by_day() -> dict:
-    """captures.json から {日付文字列: set(rid)} を作る。"""
+    """captures.json から {日付文字列: [レコード, ...]} を作る。"""
     data = _load_json(CAPTURES)
     records = data if isinstance(data, list) else (data or {}).get("captures", [])
     out = {}
@@ -84,17 +95,45 @@ def captures_by_day() -> dict:
         if not isinstance(rec, dict):
             continue
         value = rec.get("date")
-        rid = rec.get("rid")
         if not isinstance(value, str) or len(value) < 10:
             continue
         try:
             datetime.date.fromisoformat(value[:10])
         except ValueError:
             continue
-        out.setdefault(value[:10], set())
-        if rid is not None:
-            out[value[:10]].add(rid)
+        out.setdefault(value[:10], []).append(rec)
     return out
+
+
+def rids_of(records) -> set:
+    return {r["rid"] for r in records if isinstance(r.get("rid"), int)}
+
+
+def snapshot_path(day: str) -> str:
+    return os.path.join(SNAPSHOT_DIR, day + ".json")
+
+
+def load_snapshot(day: str):
+    """その日のレコード本文のスナップショット。無ければ None。"""
+    data = _load_json(snapshot_path(day))
+    return data if isinstance(data, list) else None
+
+
+def save_snapshot(day: str, records) -> None:
+    """レコード本文をそのまま日別に残す。
+
+    ⚠️ rid だけでは足りない（敵対的レビュー10周目の指摘）。押せなかった日の保存が
+    Raindrop から消えると、翌晩その日を TARGET に選べても**入力が0件で何も作れず、
+    最古の pending に永久に張り付く**。本文ごと残しておけば作り直せる。
+    """
+    os.makedirs(SNAPSHOT_DIR, exist_ok=True)
+    tmp = snapshot_path(day) + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(records, fh, ensure_ascii=False, indent=1, sort_keys=True)
+        fh.write("\n")
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, snapshot_path(day))
 
 
 class LedgerBroken(Exception):
@@ -128,22 +167,34 @@ def load_index() -> dict:
         rids = entry.get("rids")
         if not isinstance(rids, list) or not all(isinstance(r, int) for r in rids):
             raise LedgerBroken(f"{day}: rids must be a list of integers")
-        out[day] = set(rids)
+        unrecoverable = entry.get("unrecoverable", False)
+        if not isinstance(unrecoverable, bool):
+            raise LedgerBroken(f"{day}: unrecoverable must be true/false")
+        extra = set(entry) - {"rids", "unrecoverable"}
+        if extra:
+            raise LedgerBroken(f"{day}: unexpected fields {sorted(extra)}")
+        out[day] = {"rids": set(rids), "unrecoverable": unrecoverable}
     return out
 
 
 def merge_index(index: dict, seen: dict) -> dict:
     """台帳と今夜の観測を合併する。**一度観測した rid は消さない。**"""
-    merged = {day: set(rids) for day, rids in index.items()}
-    for day, rids in seen.items():
-        merged.setdefault(day, set()).update(rids)
+    merged = {day: {"rids": set(e["rids"]), "unrecoverable": e["unrecoverable"]}
+              for day, e in index.items()}
+    for day, records in seen.items():
+        entry = merged.setdefault(day, {"rids": set(), "unrecoverable": False})
+        entry["rids"].update(rids_of(records))
     return merged
 
 
 def save_index(index: dict) -> None:
     """一時ファイルへ書いてから置き換える（途中で落ちても台帳を壊さない）。"""
-    payload = {"days": {day: {"rids": sorted(rids)}
-                        for day, rids in sorted(index.items())}}
+    payload = {"days": {}}
+    for day, entry in sorted(index.items()):
+        rec = {"rids": sorted(entry["rids"])}
+        if entry["unrecoverable"]:
+            rec["unrecoverable"] = True
+        payload["days"][day] = rec
     tmp = INDEX + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(payload, fh, ensure_ascii=False, indent=1, sort_keys=True)
@@ -240,12 +291,6 @@ def main() -> int:
         print(f"TARGET={yesterday.isoformat()}")
         return 0
 
-    try:
-        save_index(index)
-        print(f"INDEX: {len(index)} day(s) on record -> {INDEX}")
-    except OSError as exc:
-        print(f"LEDGER_ERROR: could not write {INDEX}: {exc}")
-
     # ⚠️ 探索に窓を掛けない（敵対的レビュー9周目の指摘）。窓を掛けると、回収しようと
     # した晩にまた押せなかった日が翌晩には窓の外へ落ち、台帳に残っていても二度と
     # 拾われない。移行日より前の日は legacy として done になるので、全期間を見ても
@@ -258,11 +303,34 @@ def main() -> int:
             continue
         if day > yesterday:
             continue  # 当日と未来は対象外（まだ確定していない）
-        if not index[key]:
+        entry = index[key]
+        if not entry["rids"]:
             continue  # 保存0件の日＝review を作らないのが正しい
-        done, why = is_done(key, index[key], migration)
+        if entry["unrecoverable"]:
+            continue  # 作り直す材料が無いと確定済み（下で1度だけ判定する）
+        done, why = is_done(key, entry["rids"], migration)
         if not done:
             pending.append((key, why))
+
+    # ⚠️ 材料の無い日で止まらないこと（敵対的レビュー10周目の指摘）。
+    # 「押せなかった日の保存が Raindrop から消えた」場合、その日を TARGET に選んでも
+    # 入力が0件なので何も作れない。放っておくと最古の pending に永久に張り付き、
+    # 新しい日も処理できなくなる——直そうとした永久欠落が、永久停止に化ける。
+    # スナップショットも captures.json も無い日は、その旨を台帳に焼き付けて飛ばす。
+    while pending:
+        key = pending[0][0]
+        if seen.get(key) or load_snapshot(key) is not None:
+            break
+        index[key]["unrecoverable"] = True
+        print(f"RECOVER: {key} has no material left (not in captures.json, "
+              f"no snapshot). Marking it unrecoverable and moving on.")
+        pending.pop(0)
+
+    try:
+        save_index(index)
+        print(f"INDEX: {len(index)} day(s) on record -> {INDEX}")
+    except OSError as exc:
+        print(f"LEDGER_ERROR: could not write {INDEX}: {exc}")
 
     if pending:
         target = pending[0][0]
@@ -272,6 +340,17 @@ def main() -> int:
     else:
         target = yesterday.isoformat()
         print("RECOVER: nothing to recover")
+
+    # 今夜これから作る日と、まだ片付いていない日は、レコード本文を残しておく。
+    # これが無いと、押せなかった日の保存が Raindrop から消えたときに作り直せない。
+    for key in {target} | {d for d, _ in pending}:
+        records = seen.get(key)
+        if records:
+            try:
+                save_snapshot(key, records)
+                print(f"SNAPSHOT: {key} ({len(records)} record(s))")
+            except OSError as exc:
+                print(f"SNAPSHOT_ERROR: {key}: {exc}")
 
     print(f"TARGET={target}")
     return 0
