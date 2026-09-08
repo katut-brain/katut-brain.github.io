@@ -39,11 +39,251 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # 縮み検知（下の Check reviews shrink ステップ）が sha までの全祖先を
+      # 辿れるよう、このジョブだけ全履歴を取得する。
+      # 既定の fetch-depth: 1 だと履歴が無く、基準集合を導出できない。
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      # 経緯: 2026-08-31の事故は「index.html が壊れて公開される」形だったが、
+      # reviews/*.html がリポから静かに消えた場合は index.html 自体は
+      # 正しく組み上がってしまう（材料が減っただけなので Verify index.html の
+      # 集合差チェックは空のまま通る）。ここでは「生成前の材料が過去のどこかの
+      # 時点と比べて静かに縮んでいないか」だけを見る。生成物の健全性チェックは
+      # 次の Verify index.html に任せる（役割を分けている）。
+      #
+      # 設計変更の経緯（2026-09-08・Codex 敵対的レビューの P0 を受けて）:
+      # 旧実装は github.event.before と github.sha の「2点間の差分」だけを見ていた。
+      # これは一度通り抜けられた変化を二度と見ない。例: 削除 push A で 49→48件になり
+      # A の Actions は exit 1 になる。しかし翌晩の無害な push B では before=A であり、
+      # A も B も既に48件なので diff(A, B) に削除は出ない → B は exit 0 で通り、
+      # 縮小済みの状態がそのまま Pages に deploy される。CEO が実機で再現済み。
+      # 同じ根から出るもう一つの穴: before のコミットが無い（force push・履歴書き換え）
+      # ときに「スキップして通す」分岐も、縮小版をそのまま deploy してしまう。
+      #
+      # 新設計は github.event.before を一切使わない。基準点は「2点間の差分」ではなく
+      # git 履歴そのもの（sha までの全祖先）にする。これにより:
+      #   - event_name が push でなくても（workflow_dispatch でも）同じ判定になる
+      #   - before が無くても（ブランチ初回 push・force push 後でも）同じ判定になる
+      #   - 一度縮小が検知されたら、再追加されるまで恒久的に NG であり続ける
+      #     （旧実装のように「次の無害な push で自動的に見えなくなる」ことがない）
+      # ＝ event_name / before の有無で判定を止める分岐は存在しない。
+      #
+      # 既知の限界（2026-09-08・Codex 敵対的レビュー2周目。原理的に閉じられない）:
+      # 基準は「sha から到達可能な履歴」なので、force push で main の履歴自体を
+      # 書き換えて review の追加コミットごと切り離すと、ever_added からもその日付が
+      # 消えて missing にならない＝検知できない。到達不能になった履歴の存在を、
+      # 同じ到達可能履歴だけから知ることはできない。
+      # 対処はコードではなくリポ設定側に置いた: main のブランチ保護で force push と
+      # 削除を（管理者を含めて）禁止する。外部の状態ファイルや専用 ref を増やして
+      # 「同じ情報を2箇所に持つ」ことを避けるための判断（ユーザー裁定 2026-09-08）。
+      # この保護を外すときは、この限界が復活することを承知して外すこと。
+      - name: Check reviews shrink
+        run: |
+          python - <<'PY'
+          import os
+          import re
+          import subprocess
+          import sys
+
+          FLOOR_BYTES = 2000   # 実測: reviews/*.html の現行49件・最小 8,224 バイト
+                                # （2026-09-07）。床はその1/4以下なので、正当な
+                                # ファイルを誤って落とすことはない。
+          SHRINK_RATIO = 0.7   # 現在サイズが「そのファイルが履歴上で持った最大
+                                # サイズ」の70%未満に縮んだら中身の空洞化とみなす。
+          ALLOW_MARKER = "[allow-review-shrink]"
+          DATE_RE = re.compile(r"^reviews/(\d{4}-\d\d-\d\d)\.html$")
+
+          def sh(*args):
+              return subprocess.run(
+                  ["git", *args], capture_output=True, text=True, encoding="utf-8"
+              )
+
+          def ever_added_dates(sha):
+              """sha までの履歴で一度でも追加された reviews/<日付>.html の日付集合。"""
+              r = sh(
+                  "log", sha, "--diff-filter=A", "--name-only", "--format=",
+                  "--", "reviews/",
+              )
+              dates = set()
+              for name in r.stdout.splitlines():
+                  m = DATE_RE.match(name)
+                  if m:
+                      dates.add(m.group(1))
+              return dates
+
+          def current_reviews(sha):
+              """sha 時点の reviews/*.html を { 日付: (path, size) } で返す。
+              git ls-tree -l でサイズも同時に取得し、床チェック用の cat-file
+              個別呼び出し（ファイル数ぶんのプロセス起動）を避ける。
+              """
+              r = sh("ls-tree", "-r", "-l", sha, "--", "reviews/")
+              out = {}
+              line_re = re.compile(r"^\S+\s+\S+\s+\S+\s+(\S+)\t(.+)$")
+              for line in r.stdout.splitlines():
+                  m = line_re.match(line)
+                  if not m:
+                      continue
+                  size_s, path = m.group(1), m.group(2)
+                  dm = DATE_RE.match(path)
+                  if dm and size_s != "-":
+                      out[dm.group(1)] = (path, int(size_s))
+              return out
+
+          def last_delete_commit(sha, path):
+              """sha までの履歴で path を最後に削除したコミット（無ければ None）。"""
+              r = sh("log", sha, "--diff-filter=D", "--format=%H", "--", path)
+              lines = r.stdout.splitlines()
+              return lines[0] if lines else None
+
+          def commit_message(commit):
+              return sh("log", "-1", "--format=%B", commit).stdout
+
+          def all_touch_commits(sha):
+              """sha までの履歴で reviews/<日付>.html を追加(A)・変更(M)した
+              コミット一覧を { path: [commit, ...] } で返す。1回の git log
+              呼び出しで全ファイル分をまとめて取る（ファイルごとに git log を
+              回すと49ファイル分の履歴で重くなるのを避けるため）。
+              """
+              r = sh(
+                  "log", sha, "--format=commit:%H", "--name-status",
+                  "--diff-filter=AM", "--", "reviews/",
+              )
+              result = {}
+              current_commit = None
+              for line in r.stdout.splitlines():
+                  if line.startswith("commit:"):
+                      current_commit = line[len("commit:"):]
+                      continue
+                  if not line.strip():
+                      continue
+                  parts = line.split("\t")
+                  if len(parts) < 2:
+                      continue
+                  path = parts[-1]
+                  if DATE_RE.match(path):
+                      result.setdefault(path, []).append(current_commit)
+              return result
+
+          def max_sizes_ever(path_to_commits):
+              """{ path: [commit,...] } を受け取り { path: 最大サイズ } を返す。
+              全 (commit, path) ペアを1回の git cat-file --batch-check にまとめて
+              渡すことで、ファイル数×コミット数ぶんプロセスを起動するコストを避ける。
+              """
+              pairs = []
+              for path, commits in path_to_commits.items():
+                  for c in commits:
+                      pairs.append((path, c))
+              if not pairs:
+                  return {}
+              batch_input = "\n".join("%s:%s" % (c, p) for p, c in pairs) + "\n"
+              r = subprocess.run(
+                  ["git", "cat-file", "--batch-check"],
+                  input=batch_input, capture_output=True, text=True, encoding="utf-8",
+              )
+              max_size = {}
+              lines = r.stdout.splitlines()
+              if len(lines) != len(pairs):
+                  raise RuntimeError(
+                      "cat-file --batch-check の出力行数が不一致: %d行 (期待 %d行)"
+                      % (len(lines), len(pairs))
+                  )
+              for (path, _commit), line in zip(pairs, lines):
+                  parts = line.split()
+                  if len(parts) == 2 and parts[1] == "missing":
+                      continue
+                  if len(parts) < 3:
+                      continue
+                  try:
+                      size = int(parts[2])
+                  except ValueError:
+                      continue
+                  if path not in max_size or size > max_size[path]:
+                      max_size[path] = size
+              return max_size
+
+          def main():
+              sha = os.environ.get("GITHUB_SHA", "")
+              if not sha:
+                  sha = sh("rev-parse", "HEAD").stdout.strip()
+
+              # --- A. 日付集合（削除の検知） ---
+              ever_added = ever_added_dates(sha)
+              current = current_reviews(sha)
+              current_dates = set(current.keys())
+              missing_dates = ever_added - current_dates
+
+              allowed_missing = set()
+              for date in sorted(missing_dates):
+                  path = "reviews/%s.html" % date
+                  commit = last_delete_commit(sha, path)
+                  if commit and ALLOW_MARKER in commit_message(commit):
+                      allowed_missing.add(date)
+
+              remaining_missing = sorted(missing_dates - allowed_missing)
+
+              errors = []
+              if remaining_missing:
+                  errors.append(
+                      "reviews/*.html の日付が履歴上の追加から消えている"
+                      "(削除が[allow-review-shrink]で意図的として許可されていない): %s"
+                      " / ever_added %d件 -> current %d件"
+                      " / 最古日(ever_added) %s / 最古日(current) %s"
+                      % (
+                          ", ".join(remaining_missing),
+                          len(ever_added),
+                          len(current_dates),
+                          min(ever_added) if ever_added else "(なし)",
+                          min(current_dates) if current_dates else "(なし)",
+                      )
+                  )
+
+              # --- B-1. 絶対値の床 ---
+              tiny = []
+              for date, (path, size) in sorted(current.items()):
+                  if size < FLOOR_BYTES:
+                      tiny.append("%s(%dバイト)" % (date, size))
+              if tiny:
+                  errors.append(
+                      "reviews/*.html に %d バイト未満のものがある: %s"
+                      % (FLOOR_BYTES, ", ".join(tiny))
+                  )
+
+              # --- B-2. 縮小率（履歴上の最大サイズ比） ---
+              touch = all_touch_commits(sha)
+              max_sizes = max_sizes_ever(touch)
+              shrunk = []
+              for date, (path, size) in sorted(current.items()):
+                  max_size = max_sizes.get(path)
+                  if max_size is None:
+                      continue
+                  if size < max_size * SHRINK_RATIO:
+                      shrunk.append(
+                          "%s(最大%d -> 現在%dバイト)" % (date, max_size, size)
+                      )
+              if shrunk:
+                  errors.append(
+                      "reviews/*.html が履歴上の最大サイズの%d%%未満に縮んでいる: %s"
+                      % (int(SHRINK_RATIO * 100), ", ".join(shrunk))
+                  )
+
+              if errors:
+                  print("NG: " + " / ".join(errors))
+                  sys.exit(1)
+
+              print(
+                  "OK: reviews/*.html の削除/空洞化なし"
+                  " (ever_added=%d件 current=%d件 sha=%s)"
+                  % (len(ever_added), len(current_dates), sha[:7])
+              )
+
+          main()
+          PY
 
       # _build_feed.py は標準ライブラリのみ・環境変数もネットワークも不要
       - name: Rebuild index.html
