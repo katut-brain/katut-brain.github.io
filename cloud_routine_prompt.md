@@ -24,19 +24,28 @@
 
 ## 手順
 1. **対象日**＝日本時間の「昨日」。`TARGET=$(TZ=Asia/Tokyo date -d yesterday +%F)`。
-   （**ただしこの値は暫定。手順2.6 で「押せなかった日」があればそちらに差し替わる。**）
+   （**ただしこの値は暫定。手順2.1 で「押せなかった日」があればそちらに差し替わる。**）
 1.5. **依存インストール**：`pip install --quiet -r requirements.txt`（YouTube字幕取得用 `youtube-transcript-api`、X動画理解用 `google-genai`）。失敗しても止めない（`fetch_content.py` はこれらのパッケージが無くても他の取得は正常動作する graceful degradation設計。ただしYouTube動画は字幕なし・X動画は音声/映像理解なしのタイトルのみに落ちる）。
 2. `python3 _build_graph.py` を実行。Raindrop の新規を `captures.json` に取り込み、既存レコードも冪等に更新する（失敗してもログして続行）。
    - **出力の `IMPORT_STATUS:` 行を必ず読む**。`INCOMPLETE` だった場合は Raindrop を全件取得できておらず、**その日の振り返りが欠損しうる**。この場合は手順5の `reviews/<TARGET>.html` の `</footer>` 直前に `<p class="notegen-warn">⚠️ 取り込み不完全: Raindrop取得エラー N件。欠けている保存がある可能性あり</p>` を1行足して、欠損の可能性を残す（黙って完走しない）。import は冪等なので翌ランで自動的に回復する。
    - この行を見落として「正常に完走した」と扱わないこと。無人運用ではログを誰も読まないため、**成果物側に痕跡を残すことが唯一の検知手段**になる。
-2.6. **取りこぼしの回収（TARGET の確定）**：
+2.1. **取りこぼしの回収（TARGET の確定）**：
    `python3 recover_target.py` を実行し、出力の `TARGET=` 行の値を以降の `TARGET` として使う。
-   - **何をしているか**: 日別台帳 `capture_index.json` を「既存の台帳 ∪ 今夜の `captures.json`」で更新したうえで、直近14日のうち「その日の保存が台帳にあるのに、ちゃんと公開できていない日」を探す。あればその**最も古い日**を返し、無ければ昨日を返す。
-   - **台帳を挟む理由**: `captures.json` は毎晩 Raindrop から作り直されるので、押せなかった日の保存が Raindrop 側で消されたり取り込みが `INCOMPLETE` だったりすると、**証拠ごと消えて回収されない**。台帳は一度観測した rid を消さないので、リポジトリ側に根拠が残る。台帳は日付と rid だけの小さなファイルで、手順8で push する（`captures.json` 本体は560KBあるので押さない）。
+   - **何をしているか**: 日別台帳 `capture_index.json` を「既存の台帳 ∪ 今夜の `captures.json`」で更新したうえで、「その日の保存が台帳にあるのに、ちゃんと公開できていない日」を探す。あればその**最も古い日**を返し、無ければ昨日を返す。**探索に期間の窓は掛けない** —— 窓を掛けると、回収しようとした晩にまた押せなかった日が翌晩には窓の外へ落ち、台帳に残っていても二度と拾われないため。2026-09-08 より前の日は「この装置を入れる前」として対象外なので、過去に張り付くことはない。
+   - **台帳を挟む理由**: `captures.json` は毎晩 Raindrop から作り直されるので、押せなかった日の保存が Raindrop 側で消されたり取り込みが `INCOMPLETE` だったりすると、**証拠ごと消えて回収されない**。台帳は一度観測した rid を消さないので、リポジトリ側に根拠が残る。台帳は日付と rid だけの小さなファイルで、次の手順2.2 で push する（`captures.json` 本体は560KBあるので押さない）。
    - **「ファイルがあれば公開済み」とは見なさない**: reviews に埋まっている `review-meta`（手順5が書く）の rid 一覧を台帳と突き合わせ、**台帳にあって review に無い保存があれば不完全な公開として作り直す**。`review-meta` が無い古いファイルは公開済みとして扱う（遡って作り直さない）。
    - **なぜ要るか**（2026-09-08 追加）: 手順8は、照合が通らなければ押さずに終える。押さなかった日は、以前は誰も拾わなかった —— 手順書には「翌ランに回す」と書いてあったのに、翌ランは別の日を対象にするだけで、**前日ぶんは永久に欠けたままだった**。ここで拾う。
    - **1晩に1日ずつ**しか戻さない。溜まっていても順に消化し、追いつけば自然に「昨日」へ戻る。そのぶん最新の日が1晩遅れるが、欠けたまま放置するよりよい。過去に張り付いて最新が止まった場合は `stale-check.yml` が拾う。
    - このステップが失敗したら（スクリプトが無い・例外）、手順1の「昨日」をそのまま使って続行する（回収できないだけで、その夜の処理は止めない）。
+
+2.2. **台帳を先に押す**（`git status --porcelain -- capture_index.json` に差分があるときだけ）：
+   ```bash
+   bash push_via_api.sh katut-brain/katut-brain.github.io "index: <TARGET>" capture_index.json
+   ```
+   - ⚠️ **これを手順8とまとめない**（2026-09-08 の敵対的レビュー9周目の指摘）。台帳を reviews と同じコミットに入れると、**その夜の push が失敗したとき台帳も残らない** —— 翌晩 Raindrop 側から保存が消えていれば、証拠がどこにも無くなって回収できない。観測した直後に台帳だけ先に永続化しておけば、reviews 側だけが失敗した夜は翌晩に確実に拾える。
+   - `LEDGER_ERROR:` が出ていた夜は台帳を書いていないので、差分も出ない＝ここは自動的に飛ばされる。
+   - ここが失敗しても手順を止めない（その夜の回収保証が無くなるだけ）。`WRITE_COMMIT:` の行はログに残す。
+   - 手順8では台帳を押さない（ここで押し終えている）。
 
 2.5. **バックフィル（過去に取得できなかった rid 持ちレコードの再取得）**：
    `FETCH_FACTS_DIR="$PWD/fetch_facts" FACTS_DATE=$TARGET timeout 600 python3 backfill.py --target $TARGET --limit 1 --timeout 480` を実行する。
@@ -130,7 +139,7 @@
      ```
      - `rids` は**手順3で抽出した当日レコードの `rid` を全部**入れる（カードを作らなかったものも含める。「この日に何を扱ったか」の記録なので、扱いを省いたものこそ残す）。
      - `import` は手順2の `IMPORT_STATUS:` 行が `INCOMPLETE` だったら `"INCOMPLETE"`、そうでなければ `"OK"`。
-     - **これが無いと、翌晩の手順2.6 が「この日は公開済み」と判定してしまい、不完全な公開が永久に残る**。表示には出ない（HTMLコメント）ので見た目は変わらない。
+     - **これが無いと、翌晩の手順2.1 が「この日は公開済み」と判定してしまい、不完全な公開が永久に残る**。表示には出ない（HTMLコメント）ので見た目は変わらない。
    - ⚠️ **必ず「ファイル」として書き出す**（2026-09-08 追加）。頭の中に文字列として持つのではなく、Write ツールか heredoc で `reviews/<TARGET>.html` を**ワークスペース上の実ファイルとして作る**。手順7の読み返しも、手順7.5の `</footer>` 直前への追記も、手順8の送信も、**すべてこの実ファイルを起点にする**。ここでファイルにしないと、手順8がファイルの代わりに「あなたが覚えている本文」を送ることになり、全角括弧が半角に化けた 2026-09-04 の事故（`79cfd12`）と同じことが起きる。
    - **スタイル**：以下の `<style>` ブロックをそのまま使う（CSS変数・ダーク対応込み）。`<title><TARGET> の振り返り</title>`。
      ```html
@@ -344,10 +353,10 @@
    **(a) reviews あり（手順5で `reviews/<TARGET>.html` を作った場合）**：
    - 押すファイルは **`reviews/<TARGET>.html` と `fetch_facts/<TARGET>.json` の2つ**（手順4.2で作られている。無ければ `reviews/<TARGET>.html` のみ）。次の1コマンドで送る：
      ```bash
-     bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET>" capture_index.json fetch_facts/<TARGET>.json reviews/<TARGET>.html
+     bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET>" fetch_facts/<TARGET>.json reviews/<TARGET>.html
      ```
      （`fetch_facts` が無い日はそれを外す。何個渡しても1コミットにまとまる）
-   - ⚠️ **`capture_index.json` を必ず含める**（手順2.6 が更新した日別台帳）。これが押されないと、押せなかった日の証拠が翌晩に残らず、回収装置が働かない。
+   - 台帳（`capture_index.json`）はここでは押さない。手順2.2 で先に押し終えている。
    - 送る前に、**ファイルが本物であることだけ**確認する（中身を書き写すのではなく、ファイルに対して確認する）：`head -c 20 reviews/<TARGET>.html` が `<!doctype html>` で始まり、`tail -c 20` が `</html>` で終わり、`grep -c PLACEHOLDER reviews/<TARGET>.html` が 0 であること。
    - **照合はスクリプトが載せる前にやる**（SHA-256の完全一致）。`WRITE_COMMIT: <sha>` が出ていれば公開まで完了。`note=main_untouched` が出ていたら**何も載っていない**ので、**もう一度同じコマンドを実行する**（作り直しになるだけで、二重コミットにはならない）。**2回目も駄目なら、その夜は押さずに終える。フォールバックはしない**（手順8には `push_files` へ落ちる経路は存在しない。下の手順8.5に出てくるフォールバックは Vaultリポ専用であって、ここには適用しない）。
 
@@ -362,21 +371,16 @@
      新規cloneに同日の既存 `fetch_facts/<TARGET>.json` が既に含まれている再実行でも、今回のランで差分が無ければこの条件で自動的に弾かれる（誤push防止）。
    - `fetch_facts/<TARGET>.json` **単独**で送る（`reviews/<TARGET>.html` は存在しないので対象に含めない。存在しないファイルを送ろうとしない）：
      ```bash
-     bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET> (backfill only)" capture_index.json fetch_facts/<TARGET>.json
+     bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET> (backfill only)" fetch_facts/<TARGET>.json
      ```
    - 送る前に、ファイルが本物のJSONであることを確認する：`python3 -c "import json; json.load(open('fetch_facts/<TARGET>.json', encoding='utf-8'))"` がエラー無く通ること。
    - 照合はスクリプトが載せる前に SHA-256 でやる。`WRITE_COMMIT: <sha>` なら完了。失敗したときは上の「失敗したときにやること」の①〜③に従う（**フォールバックはしない**）。
 
    **(c) reviews 無し・fetch_facts も無し（または `git status --porcelain -- fetch_facts/<TARGET>.json` が空＝今回のランで変更が無い）**：
-   - `git status --porcelain -- capture_index.json` に差分があれば、**台帳だけ**を送る：
-     ```bash
-     bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET> (index only)" capture_index.json
-     ```
-     （台帳が押されないと、押せなかった日の証拠が翌晩に残らない。台帳は小さいので毎回押してよい）
-   - 台帳にも差分が無ければ、何も push せず正常終了する。
+   - 何も push せず正常終了する（台帳は手順2.2 で押し終えている）。
 
    - 共通: `index.html` の出来ばえは確認しなくてよい（Actions 側の検証ゲートが担当する）。**`index.html` を GitHub から読みに行かないこと** — 122KB を読むと文脈が膨らんで自動圧縮で迷子になる。
-   - 共通: 送信が一時失敗しても、生 `git push` にも `push_files` にも**戻らない**。`push_via_api.sh` を2回まで、それでもダメならその夜は諦める（`unknown` のときは1回も再実行しない）。**押せなかった日は翌晩の手順2.6 が拾い直す**（`captures.json` に保存があるのに reviews が無い日として検出される）。
+   - 共通: 送信が一時失敗しても、生 `git push` にも `push_files` にも**戻らない**。`push_via_api.sh` を2回まで、それでもダメならその夜は諦める（`unknown` のときは1回も再実行しない）。**押せなかった日は翌晩の手順2.1 が拾い直す**（`captures.json` に保存があるのに reviews が無い日として検出される）。
 8.5. **公開（Vaultリポへ・ブックマークノート）**（手順7.5でノートを新規作成した場合のみ実行）：対象は `katut-brain/obsidian-vault` リポ（手順8の `katut-brain.github.io` とは別リポ）。
    - 押すファイルは、手順7.5でスキーマ検証に**合格**し新規作成した `Explore/bookmarks/rd-*.md` のみ（検証落ちのファイル・既存ファイルは含めない）。
    - 手順8と**同じ送り方**をする。対象リポジトリを変えて `push_via_api.sh` を使う（生の `git push` は使わない）：

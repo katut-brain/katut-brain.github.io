@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """その夜に処理すべき日付（TARGET）を決め、日別の台帳を更新する。
 
-既定は「日本時間の昨日」。ただし直近 WINDOW_DAYS 日のうちに
-**保存があったのに公開できていない日**があれば、その最も古い日を返す。
+既定は「日本時間の昨日」。ただし台帳に「保存があったのに公開できていない日」が
+あれば、その最も古い日を返す。
 
 なぜ要るか（2026-09-08）:
   書き込み経路を push_via_api.sh へ切り替えたとき、「照合が通らなければ押さない」
@@ -26,8 +26,16 @@
 ■ 「ファイルがあれば公開済み」とは見なさない（同レビュー P1）
   reviews に埋め込まれた `review-meta` コメント（手順5が書く）を読み、
   その日の rid を台帳と突き合わせる。台帳にあって review に無い rid があれば、
-  **不完全な公開**として回収対象にする。`review-meta` が無い古いファイルは、
-  遡って作り直しても仕方がないので公開済みとして扱う。
+  **不完全な公開**として回収対象にする。**meta が無い・壊れている・日付が違う・
+  count が合わない場合も未公開として扱う**（9周目の指摘。無人LLMが書き忘れるのは
+  いちばん起きやすい逸脱で、それを公開済みと判定すると欠けた review が永久に残る）。
+  MIGRATION_DATE より前のファイルだけは、meta を書く前に作られたものなので
+  公開済みとして扱う（遡って作り直さない）。
+
+■ 探索に窓を掛けない（9周目の指摘）
+  窓を掛けると、回収しようとした晩にまた押せなかった日が翌晩には窓の外へ落ち、
+  台帳に残っていても二度と拾われない。移行日より前は legacy として done になるので、
+  全期間を見ても過去に張り付くことはない。
 
 ■ 1晩に1日ずつ
   溜まっていても古い順に消化する。追いつけば自然に「昨日」へ戻る。
@@ -40,7 +48,13 @@ import os
 import re
 import sys
 
-WINDOW_DAYS = 14
+# この日以降の reviews は `review-meta` を持っていることを必須にする。
+# 2026-09-08 ＝ この装置を入れた夜が扱う最初の対象日。これより前は meta を書く前に
+# 作られたファイルなので、欠けていても遡って作り直さない（実際 2026-06-15 など、
+# 保存があるのに振り返りが無い日が6日ある。当時の取りこぼしであって今回の対象ではない）。
+MIGRATION_DATE = datetime.date.fromisoformat(
+    os.environ.get("RECOVER_MIGRATION_DATE", "2026-09-08"))
+
 CAPTURES = "captures.json"
 INDEX = "capture_index.json"
 REVIEWS_DIR = "reviews"
@@ -83,15 +97,38 @@ def captures_by_day() -> dict:
     return out
 
 
+class LedgerBroken(Exception):
+    """台帳が読めない・形が違う。**この場合は絶対に上書きしない。**
+
+    壊れた台帳を空として受け入れて書き直すと、そこにしか無かった過去の rid が
+    永久に消える（敵対的レビュー9周目の指摘）。読めないなら触らないほうが安全。
+    """
+
+
 def load_index() -> dict:
-    data = _load_json(INDEX)
-    days = (data or {}).get("days")
-    if not isinstance(days, dict):
+    """台帳を厳格に読む。ファイルが無ければ空、壊れていれば LedgerBroken。"""
+    if not os.path.exists(INDEX):
         return {}
+    data = _load_json(INDEX)
+    if data is None:
+        raise LedgerBroken("not valid JSON")
+    if not isinstance(data, dict):
+        raise LedgerBroken("top level is not an object")
+    days = data.get("days")
+    if not isinstance(days, dict):
+        raise LedgerBroken('"days" is not an object')
     out = {}
     for day, entry in days.items():
-        rids = entry.get("rids") if isinstance(entry, dict) else None
-        out[day] = set(rids or [])
+        try:
+            datetime.date.fromisoformat(day)
+        except (TypeError, ValueError):
+            raise LedgerBroken(f"bad day key: {day!r}")
+        if not isinstance(entry, dict):
+            raise LedgerBroken(f"{day}: entry is not an object")
+        rids = entry.get("rids")
+        if not isinstance(rids, list) or not all(isinstance(r, int) for r in rids):
+            raise LedgerBroken(f"{day}: rids must be a list of integers")
+        out[day] = set(rids)
     return out
 
 
@@ -104,49 +141,82 @@ def merge_index(index: dict, seen: dict) -> dict:
 
 
 def save_index(index: dict) -> None:
+    """一時ファイルへ書いてから置き換える（途中で落ちても台帳を壊さない）。"""
     payload = {"days": {day: {"rids": sorted(rids)}
                         for day, rids in sorted(index.items())}}
-    with open(INDEX, "w", encoding="utf-8") as fh:
+    tmp = INDEX + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(payload, fh, ensure_ascii=False, indent=1, sort_keys=True)
         fh.write("\n")
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, INDEX)
 
 
-def review_meta(day: str):
-    """reviews/<day>.html に埋まっている review-meta を読む。
-
-    戻り値: None=ファイルが無い / {}=meta が無い（古い形式）/ dict=meta
-    """
+def review_text(day: str):
     path = os.path.join(REVIEWS_DIR, day + ".html")
     try:
         with open(path, encoding="utf-8") as fh:
-            text = fh.read()
+            return fh.read()
     except OSError:
         return None
+
+
+def parse_meta(text: str, day: str):
+    """review-meta を厳格に読む。(meta または None, 理由) を返す。
+
+    ⚠️ 壊れた meta を「古い形式」として通してはいけない（敵対的レビュー9周目の指摘）。
+    無人LLMが書き忘れる・JSONを少し壊す、は最も起きやすい逸脱で、それを
+    「公開済み」と判定すると、rid が欠けた review が永久に正常扱いになる。
+    """
     m = META_RE.search(text)
     if not m:
-        return {}
+        return None, "review-meta is missing"
     try:
-        return json.loads(m.group(1))
+        meta = json.loads(m.group(1))
     except ValueError:
-        return {}
+        return None, "review-meta is not valid JSON"
+    if not isinstance(meta, dict):
+        return None, "review-meta is not an object"
+    if meta.get("date") != day:
+        return None, f"review-meta date is {meta.get('date')!r}, expected {day}"
+    rids = meta.get("rids")
+    if not isinstance(rids, list) or not all(isinstance(r, int) for r in rids):
+        return None, "review-meta rids must be a list of integers"
+    if len(set(rids)) != len(rids):
+        return None, "review-meta rids contains duplicates"
+    if meta.get("count") != len(rids):
+        return None, f"review-meta count is {meta.get('count')!r}, rids has {len(rids)}"
+    if meta.get("import") not in ("OK", "INCOMPLETE"):
+        return None, f"review-meta import is {meta.get('import')!r}"
+    return meta, "ok"
 
 
-def is_done(day: str, expected_rids: set):
+def is_done(day: str, expected_rids: set, migration: datetime.date):
     """その日が「ちゃんと公開できている」か。(判定, 理由) を返す。"""
-    meta = review_meta(day)
-    if meta is None:
+    if datetime.date.fromisoformat(day) < migration:
+        # この装置を入れる前の日。review が欠けていても遡って作り直さない
+        # （実際 2026-06-15 など、保存があるのに振り返りが無い日が6日ある。
+        #  当時の取りこぼしであって、今から作り直す対象ではない）。
+        return True, "before the migration date"
+
+    text = review_text(day)
+    if text is None:
         return False, "no review file"
-    if not meta:
-        # review-meta を書く前に作られた古いファイル。遡って作り直さない。
-        return True, "legacy review (no meta)"
-    if meta.get("import") == "INCOMPLETE":
-        # 取り込みが不完全だった日は、新しい保存が見えるようになったときだけやり直す。
-        covered = set(meta.get("rids") or [])
-        if expected_rids - covered:
+
+    meta, why = parse_meta(text, day)
+    if meta is None:
+        # 移行日以降は meta が必須。無い・壊れている＝未公開として扱う。
+        return False, why
+
+    covered = set(meta["rids"])
+    missing = expected_rids - covered
+    if meta["import"] == "INCOMPLETE":
+        # 取り込みが不完全だった日は、新しい保存が見えるようになったときだけやり直す
+        # （毎晩やり直しても足せるものが無いなら前へ進めない）。
+        if missing:
             return False, "import was incomplete and new saves appeared"
         return True, "import was incomplete but nothing new to add"
-    covered = set(meta.get("rids") or [])
-    missing = expected_rids - covered
     if missing:
         return False, f"{len(missing)} save(s) not in the published review"
     return True, "complete"
@@ -155,24 +225,42 @@ def is_done(day: str, expected_rids: set):
 def main() -> int:
     today = jst_today()
     yesterday = today - datetime.timedelta(days=1)
+    migration = MIGRATION_DATE
 
     seen = captures_by_day()
-    index = merge_index(load_index(), seen)
+
+    try:
+        index = merge_index(load_index(), seen)
+    except LedgerBroken as exc:
+        # 壊れた台帳を空として書き直すと、そこにしか無い過去の rid が永久に消える。
+        # 触らずに昨日を返し、ログに大きく残す（`git status` に差分が出ないので
+        # 手順8も台帳を push しない＝壊れた版が main へ行くこともない）。
+        print(f"LEDGER_ERROR: {INDEX} is unusable ({exc}). Not overwriting it.")
+        print("LEDGER_ERROR: recovery is disabled tonight. Fix the ledger by hand.")
+        print(f"TARGET={yesterday.isoformat()}")
+        return 0
+
     try:
         save_index(index)
         print(f"INDEX: {len(index)} day(s) on record -> {INDEX}")
     except OSError as exc:
-        print(f"INDEX: could not write {INDEX}: {exc}")
+        print(f"LEDGER_ERROR: could not write {INDEX}: {exc}")
 
-    window = sorted(yesterday - datetime.timedelta(days=i) for i in range(WINDOW_DAYS))
-
+    # ⚠️ 探索に窓を掛けない（敵対的レビュー9周目の指摘）。窓を掛けると、回収しようと
+    # した晩にまた押せなかった日が翌晩には窓の外へ落ち、台帳に残っていても二度と
+    # 拾われない。移行日より前の日は legacy として done になるので、全期間を見ても
+    # 過去に張り付くことはない。
     pending = []
-    for day in window:
-        key = day.isoformat()
-        rids = index.get(key)
-        if not rids:
-            continue  # その日は保存0件＝review を作らないのが正しい
-        done, why = is_done(key, rids)
+    for key in sorted(index):
+        try:
+            day = datetime.date.fromisoformat(key)
+        except ValueError:
+            continue
+        if day > yesterday:
+            continue  # 当日と未来は対象外（まだ確定していない）
+        if not index[key]:
+            continue  # 保存0件の日＝review を作らないのが正しい
+        done, why = is_done(key, index[key], migration)
         if not done:
             pending.append((key, why))
 

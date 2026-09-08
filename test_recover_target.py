@@ -22,6 +22,12 @@ from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent / "recover_target.py"
 
+# recover_target.MIGRATION_DATE と同じ値。これより前の日は「装置を入れる前」として
+# 対象外になるので、テストの日付はすべてこれ以降に置く。
+# 本番の移行日は 2026-09-08（この装置を入れた夜が扱う最初の対象日）。
+# テストは実時計に依存しないよう、環境変数 RECOVER_MIGRATION_DATE で
+# 「昨日の60日前」へ差し替える（setUp で self.migration に入る）。
+
 
 def jst_today():
     return (datetime.datetime.now(datetime.timezone.utc)
@@ -34,6 +40,7 @@ class RecoverTargetTest(unittest.TestCase):
         self.today = jst_today()
         self.yesterday = self.today - datetime.timedelta(days=1)
         os.mkdir(os.path.join(self.tmp, "reviews"))
+        self.migration = self.yesterday - datetime.timedelta(days=60)
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
@@ -75,7 +82,9 @@ class RecoverTargetTest(unittest.TestCase):
             return {d: set(v["rids"]) for d, v in json.load(fh)["days"].items()}
 
     def _run(self):
-        r = subprocess.run([sys.executable, str(SCRIPT)], cwd=self.tmp,
+        env = dict(os.environ)
+        env["RECOVER_MIGRATION_DATE"] = self.migration.isoformat()
+        r = subprocess.run([sys.executable, str(SCRIPT)], cwd=self.tmp, env=env,
                            capture_output=True, text=True,
                            encoding="utf-8", errors="replace")
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
@@ -179,21 +188,43 @@ class RecoverTargetTest(unittest.TestCase):
         self.assertEqual(target, day.isoformat())
         self.assertIn("incomplete", out)
 
-    def test_legacy_reviews_without_meta_are_left_alone(self):
-        """review-meta を書く前のファイルまで遡って作り直さない。"""
-        day = self._d(3)
+    def test_a_review_without_meta_after_migration_is_pending(self):
+        """移行日以降に meta を書き忘れたら、公開済みと見なさない。
+
+        無人LLMの書き忘れはいちばん起きやすい逸脱で、それを通すと rid が欠けた
+        review が永久に正常扱いになる（敵対的レビュー9周目の指摘）。
+        """
+        day = self._d(1)
         self._captures({day: [1, 2], self.yesterday: [9]})
         self._review(day, legacy=True)
         self._review(self.yesterday, [9])
         target, out = self._run()
-        self.assertEqual(target, self.yesterday.isoformat())
-        self.assertIn("nothing to recover", out)
+        self.assertEqual(target, day.isoformat())
+        self.assertIn("review-meta is missing", out)
 
     # --- 窓と壊れた入力 -----------------------------------------------------
 
-    def test_does_not_look_further_back_than_the_window(self):
-        ancient = self._d(40)
-        self._captures({self.yesterday: [9], ancient: [1]})
+    def test_pending_days_are_never_dropped_by_age(self):
+        """一度 pending と分かった日は、何日経っても捨てない。
+
+        以前は14日の窓を掛けていたが、回収しようとした晩にまた押せなかった日が
+        翌晩には窓の外へ落ち、台帳に残っていても二度と拾われなかった
+        （敵対的レビュー9周目の指摘。しかも旧テストがその挙動を「仕様」として
+        固定していた）。
+        """
+        long_ago = self.migration
+        self._index({long_ago: [1]})
+        self._captures({self.yesterday: [9]})
+        self._review(self.yesterday, [9])
+        target, out = self._run()
+        self.assertEqual(target, long_ago.isoformat())
+        self.assertIn("pending", out)
+
+    def test_days_before_the_migration_date_are_left_alone(self):
+        """装置を入れる前の欠落まで遡らない（実際に6日ある）。"""
+        before = self.migration - datetime.timedelta(days=1)
+        self._index({before: [1]})
+        self._captures({self.yesterday: [9]})
         self._review(self.yesterday, [9])
         target, out = self._run()
         self.assertEqual(target, self.yesterday.isoformat())
@@ -208,21 +239,87 @@ class RecoverTargetTest(unittest.TestCase):
         target, _ = self._run()
         self.assertEqual(target, self.yesterday.isoformat())
 
-    def test_broken_index_file_does_not_stop_the_run(self):
+    def test_a_broken_ledger_is_never_overwritten(self):
+        """壊れた台帳を空として書き直すと、そこにしか無い過去の rid が永久に消える。"""
         self._write("capture_index.json", "not json either")
         self._captures({self.yesterday: [1]})
         self._review(self.yesterday, [1])
-        target, _ = self._run()
-        self.assertEqual(target, self.yesterday.isoformat())
+        target, out = self._run()
+        self.assertEqual(target, self.yesterday.isoformat(), "その夜の処理は止めない")
+        self.assertIn("LEDGER_ERROR", out)
+        with open(os.path.join(self.tmp, "capture_index.json"), encoding="utf-8") as fh:
+            self.assertEqual(fh.read(), "not json either", "壊れた台帳を書き換えている")
 
-    def test_broken_review_meta_is_treated_as_legacy(self):
+    def test_a_ledger_with_a_bad_shape_is_never_overwritten(self):
+        self._write("capture_index.json",
+                    json.dumps({"days": {"2026-09-09": {"rids": "not a list"}}}))
+        self._captures({self.yesterday: [1]})
+        self._review(self.yesterday, [1])
+        _, out = self._run()
+        self.assertIn("LEDGER_ERROR", out)
+        self.assertIn("rids", out)
+
+    def test_a_ledger_with_a_bad_day_key_is_never_overwritten(self):
+        self._write("capture_index.json",
+                    json.dumps({"days": {"not-a-date": {"rids": [1]}}}))
+        self._captures({self.yesterday: [1]})
+        self._review(self.yesterday, [1])
+        _, out = self._run()
+        self.assertIn("LEDGER_ERROR", out)
+
+    def test_broken_review_meta_is_pending_not_legacy(self):
         day = self._d(1)
         self._captures({day: [1], self.yesterday: [9]})
         self._write(os.path.join("reviews", day.isoformat() + ".html"),
                     "<!doctype html><!-- review-meta: {broken --></html>")
         self._review(self.yesterday, [9])
-        target, _ = self._run()
-        self.assertEqual(target, self.yesterday.isoformat())
+        target, out = self._run()
+        self.assertEqual(target, day.isoformat())
+        self.assertIn("review-meta", out)
+
+    def _raw_meta(self, day, meta):
+        self._write(os.path.join("reviews", day.isoformat() + ".html"),
+                    "<!doctype html><!-- review-meta: " + json.dumps(meta) + " --></html>")
+
+    def test_meta_with_the_wrong_date_is_pending(self):
+        day = self._d(1)
+        self._captures({day: [1], self.yesterday: [9]})
+        self._raw_meta(day, {"date": "1999-01-01", "rids": [1],
+                             "count": 1, "import": "OK"})
+        self._review(self.yesterday, [9])
+        target, out = self._run()
+        self.assertEqual(target, day.isoformat())
+        self.assertIn("expected", out)
+
+    def test_meta_with_a_count_that_does_not_match_is_pending(self):
+        day = self._d(1)
+        self._captures({day: [1, 2], self.yesterday: [9]})
+        self._raw_meta(day, {"date": day.isoformat(), "rids": [1, 2],
+                             "count": 5, "import": "OK"})
+        self._review(self.yesterday, [9])
+        target, out = self._run()
+        self.assertEqual(target, day.isoformat())
+        self.assertIn("count", out)
+
+    def test_meta_with_a_bad_import_value_is_pending(self):
+        day = self._d(1)
+        self._captures({day: [1], self.yesterday: [9]})
+        self._raw_meta(day, {"date": day.isoformat(), "rids": [1],
+                             "count": 1, "import": "maybe"})
+        self._review(self.yesterday, [9])
+        target, out = self._run()
+        self.assertEqual(target, day.isoformat())
+        self.assertIn("import", out)
+
+    def test_meta_with_duplicate_rids_is_pending(self):
+        day = self._d(1)
+        self._captures({day: [1], self.yesterday: [9]})
+        self._raw_meta(day, {"date": day.isoformat(), "rids": [1, 1],
+                             "count": 2, "import": "OK"})
+        self._review(self.yesterday, [9])
+        target, out = self._run()
+        self.assertEqual(target, day.isoformat())
+        self.assertIn("duplicates", out)
 
     def test_odd_filenames_in_reviews_are_ignored(self):
         self._captures({self.yesterday: [1]})
