@@ -35,46 +35,78 @@ FAKE_GH = textwrap.dedent(
     STORE = os.environ["FAKE_GH_STORE"]
     argv = sys.argv[1:]
 
+    def contract(cond, msg):
+        """本物の GitHub API が受け付けない呼び方をしたら、その場で落とす。
+
+        偽 gh が寛容だと「テストは緑だが本番だけ落ちる」型を見逃す（2026-09-08 の
+        レビュー指摘 P1）。ここは本物の Contents API の契約を模して厳しくする。
+        """
+        if not cond:
+            sys.stderr.write("FAKE_GH: contract violation: " + msg + "\\n")
+            sys.exit(91)
+
     method = "GET"
     endpoint = ""
     body_file = None
     want_sha = False
+    accept = None
     for i, a in enumerate(argv):
         if a == "-X":
             method = argv[i + 1]
         elif a == "--input":
             body_file = argv[i + 1]
+        elif a == "-H":
+            accept = argv[i + 1]
         elif a == ".sha":
             want_sha = True
         elif a.startswith("repos/"):
             endpoint = a
-        elif a.startswith("content="):
+        elif a.startswith("content=") or a.startswith("-f") and "content=" in a:
             # 本文が argv に乗っていたら、それ自体が回帰。即座に落とす。
             sys.stderr.write("FAKE_GH: content must not be passed on argv\\n")
             sys.exit(90)
 
-    rel = endpoint.split("/contents/", 1)[1].split("?", 1)[0] if "/contents/" in endpoint else ""
+    contract("/contents/" in endpoint, "endpoint must address the contents API")
+    rel, _, query = endpoint.split("/contents/", 1)[1].partition("?")
     target = os.path.join(STORE, rel)
 
     if method == "PUT":
+        contract(body_file is not None, "PUT must send its body with --input")
+        contract(query == "", "PUT takes branch in the body, not as ?ref=")
         if BEHAVIOR == "put_forbidden":
             sys.stderr.write("gh: Resource not accessible by integration (HTTP 403)\\n")
             sys.exit(1)
         payload = json.load(open(body_file, encoding="utf-8"))
+        contract(set(payload) <= {"message", "branch", "content", "sha"},
+                 "unexpected fields: " + repr(sorted(payload)))
+        contract(payload.get("message"), "message is required")
+        contract(payload.get("branch") == "main", "branch must be main, got " + repr(payload.get("branch")))
+        contract("content" in payload, "content is required")
+        # 本物の Contents API は、既存ファイルの更新に blob sha を要求し、
+        # 新規作成では sha を受け付けない。
+        exists = os.path.exists(target)
+        contract(bool(payload.get("sha")) == exists,
+                 "sha must be sent iff the file already exists (exists=%r, sha=%r)"
+                 % (exists, payload.get("sha")))
         os.makedirs(os.path.dirname(target) or ".", exist_ok=True)
         with open(target, "wb") as fh:
             fh.write(base64.b64decode(payload["content"]))
         sys.stdout.write(json.dumps({"commit": {"sha": "deadbeef"}}))
         sys.exit(0)
 
+    contract(query == "ref=main", "GET must pin the ref, got " + repr(query))
     if BEHAVIOR == "get_forbidden" or not os.path.exists(target):
         sys.stderr.write("gh: not found (HTTP 404)\\n")
         sys.exit(1)
 
     data = open(target, "rb").read()
     if want_sha:
-        sys.stdout.write(hashlib.sha1(data).hexdigest() if False else "0" * 40)
+        # blob sha を訊く GET は raw を要求してはいけない。
+        contract(accept is None, "the metadata GET must not ask for raw")
+        sys.stdout.write(hashlib.sha1(b"blob %d\\0" % len(data) + data).hexdigest())
         sys.exit(0)
+    contract(accept == "Accept: application/vnd.github.raw",
+             "the content GET must ask for raw, got " + repr(accept))
     if BEHAVIOR == "corrupt":
         # 全角括弧を半角に化けさせる。2026-09-04 に実際に起きた化け方。
         data = data.replace("（".encode(), b"(").replace("）".encode(), b")")
@@ -130,6 +162,11 @@ class PushViaApiTest(unittest.TestCase):
             env=self._env(behavior),
             capture_output=True,
             text=True,
+            # Windows のローカル実行では既定が cp932 になり、日本語を含むパスが
+            # 出力に混じった瞬間にデコードで落ちる（テスト側の事故であって
+            # スクリプトの不具合ではない）。CI の Ubuntu と揃えて UTF-8 で読む。
+            encoding="utf-8",
+            errors="replace",
         )
 
     def _push(self, behavior, *paths):
@@ -171,6 +208,30 @@ class PushViaApiTest(unittest.TestCase):
     def test_usage_error_exits_two(self):
         r = self._run("normal", "katut-brain/x")
         self.assertEqual(r.returncode, 2)
+
+    def test_updating_an_existing_file_sends_the_blob_sha(self):
+        """2度目の送信は「更新」になる。blob sha を付けないと本物のAPIは422で落とす。
+
+        偽 gh 側で「sha は既存のときだけ・新規では付けない」を契約として強制している
+        ので、実装がこれを外したらこのテストが落ちる（2026-09-08 レビュー指摘 P1）。
+        """
+        first = self._push("normal")
+        self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
+
+        self.src.write_text(
+            "<!doctype html>\n<p>二日目の本文（追記）</p>\n</html>\n", encoding="utf-8"
+        )
+        second = self._push("normal")
+        self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
+        self.assertIn("verify=match", second.stdout)
+        self.assertEqual(self._sha(self.store / self.rel), self._sha(self.src))
+
+    def test_path_with_spaces_survives_quoting(self):
+        odd = self.work / "reviews/2026-09-03 (再送).html"
+        odd.write_text("<!doctype html>\n<p>括弧（と空白）</p>\n</html>\n", encoding="utf-8")
+        r = self._push("normal", "reviews/2026-09-03 (再送).html")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("verify=match", r.stdout)
 
     # --- サイズの崖（2026-09-08 レビュー指摘 P0） ---------------------------
 
