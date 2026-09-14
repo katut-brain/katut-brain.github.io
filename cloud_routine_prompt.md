@@ -39,8 +39,9 @@
    - 出力の `UNPUBLISHED:` と `INDEX:` の行はログにそのまま残す。
    - **作ったら、その場で台帳だけを押す**（差分があるときだけ）：
      ```bash
-     if git status --porcelain -- capture_index.json | grep -q .; then bash push_via_api.sh katut-brain/katut-brain.github.io "index: <TARGET>" capture_index.json; fi
+     if git status --porcelain -- capture_index.json | grep -q .; then PUSH_VIA_BRANCH_WAIT=0 bash push_via_branch.sh "index: <TARGET>" capture_index.json; fi
      ```
+     - 台帳は main への取り込みを待たない（`PUSH_VIA_BRANCH_WAIT=0`）。`WRITE_COMMIT: <sha> ... branch=...` が出ればブランチまで届いており、取り込みは Actions がやる。
      - ⚠️ **手順8にまとめてはいけない**。台帳を reviews と同じコミットに入れると、**その夜の push が失敗したとき台帳も載らない** —— つまり「押せなかった日を後から調べる」という台帳の存在理由が、まさにその失敗時に効かなくなる。翌晩 Raindrop から保存が消えていれば、その日の rid はもうどこにも残らない。
      - 失敗しても手順を止めない（2回まで試して諦める）。`WRITE_COMMIT:` の行はログに残す。
      - 押す夜と押さない夜があるので、Actions は夜あたり1〜2回発火する。
@@ -326,18 +327,20 @@
    - **検証結果の記録**：検証に落ちたノートが1件以上あった場合、`reviews/<TARGET>.html` の `</footer>` 直前に、`_build_feed.py` の抽出対象（`.meta`/`.summary p`/`.notes` 内`li`）と衝突しない独自クラスで1行追記する：`<p class="notegen-warn">⚠️ ノート生成: 検証失敗 N件（rid: 1234, 5678 ...）</p>`。全件合格した場合はこの追記をしない。この追記は手順8で push する `reviews/<TARGET>.html` の内容に含める。
 8. **公開（GitHubへ反映）**：対象は `katut-brain/katut-brain.github.io` リポ（Vaultリポではない）。
    - ⚠️⚠️ **送り方の原則（2026-09-08 変更・ここが最優先）**：**本文を自分で書き写して送らない。ファイルのまま送る。**
-     `bash push_via_api.sh <owner/repo> "<コミットメッセージ>" <パス> [<パス> ...]` を使う。このスクリプトはディスク上のファイルを直接読んで `gh api` で送り、**送った後に GitHub から読み返して SHA-256 が一致したときだけ成功**と言う。本文があなたの文脈を一度も通らないので、転記による化けが原理的に起きない。
-     - **「確かめてから載せる」順で動く**。スクリプトは Git Data API で blob → tree → commit まで作るが、**この時点では `main` から見えない**。作った blob を読み返して SHA-256 が全件一致したときだけ `main` の ref を進める。**照合に落ちたら `main` は1バイトも動かない**（`WRITE_COMMIT: none reason=verify_failed note=main_untouched` が出る）。
-     - 成功の判定は**終了コード0**と、`WRITE_COMMIT: <commit sha> files=N` が出ていること。`WRITE_COMMIT: none ...` はすべて失敗。各ファイルの行は `WRITE_PATH: <パス> api=staged verify=match`。
-     - **`WRITE_PATH:` と `WRITE_COMMIT:` の行は削らず、そのままランのログに残す**（どの経路で書けたかを翌朝こちらが読む。これが今の観測手段）。
-     - **複数ファイルは1コミットにまとまる**。渡す順は問わない（Actions は1回だけ発火する）。
-     - ラン中に誰かが `main` を進めていた場合は早送りできないので、**上書きせずに諦める**（`WRITE_COMMIT: none reason=... note=main_untouched`）。もう一度同じコマンドを実行すれば、新しい先端を親にして作り直す。
+     `bash push_via_branch.sh "<コミットメッセージ>" <パス> [<パス> ...]` を使う（2026-09-14 変更）。このスクリプトはディスク上のファイルを git でそのまま `claude/publish-<時刻>` という新しいブランチに送る。本文があなたの文脈を一度も通らないので、転記による化けが原理的に起きない。
+     - **なぜブランチなのか**: クラウドの GitHub プロキシは API 経由の書き込み（旧 `push_via_api.sh`）を `Write access to this GitHub API path is not permitted through this proxy.` で拒否し、2026-09-09〜13 の公開が全部止まった。git push で新しい `claude/` ブランチを作ることはできる（2026-09-14 疎通試験で確認）。
+     - **main への取り込みは公開リポの Actions（`publish-from-branch.yml`）がやる**。スクリプトが一緒に送る `.publish/manifest.json`（各ファイルの SHA-256）と実ファイルを照合し、許可パス以外が混じっていないか・HTML が途中で切れていないか・PLACEHOLDER が無いか等を確かめてから main に載せ、Pages を再ビルドする。**検証に落ちたら main は1バイトも動かない**（Actions が失敗し、GitHub から失敗メールが届く）。
+     - 成功の判定は**終了コード0**と、`WRITE_COMMIT: <commit sha> files=N branch=<ブランチ名>` が出ていること。`WRITE_COMMIT: none ...` はすべて失敗。各ファイルの行は `WRITE_PATH: <パス> blob=... sha256=...`。
+     - スクリプトはその後、Actions が main に取り込むのを最大5分待ち、main 上のファイルが原本とバイト単位で一致したら `PUBLISHED: yes main=<sha>` を出す。`PUBLISHED: pending` はブランチまでは届いているが時間内に取り込みを確認できなかった状態で、**再実行しない**（Actions が処理中か、検証に落ちている。どちらも人が翌朝メールと Actions で分かる）。
+     - **`WRITE_PATH:` `WRITE_COMMIT:` `PUBLISHED:` の行は削らず、そのままランのログに残す**。
+     - **複数ファイルは1コミットにまとまる**。渡す順は問わない。
+     - 送れるのは `reviews/<日付>.html`・`fetch_facts/<日付>.json`・`capture_index.json` だけ。それ以外を渡すと何も送らず exit 2 になる。
    - 🚫 **`push_files` を使わない。フォールバック経路は廃止した**（2026-09-08）。本文を文字列で運ぶ経路は、**今直したはずの破損そのもの**であり、化けを検出できても押した後では `main` に壊れた版が残る。**「その日が公開されない」は許容するが、「検証に落ちた中身が `main` に載る」は許容しない。**
    - **失敗したときにやること（この3つだけ）**：
-     - ① `WRITE_COMMIT: none ... note=main_untouched` なら、**何も載っていない**。同じコマンドをもう一度実行する（作り直しになるだけで、二重コミットにはならない）。**2回までで打ち切る。**
+     - ① `WRITE_COMMIT: none ... note=main_untouched`（終了コード1）なら、**何も届いていない**。同じコマンドをもう一度実行する。**2回までで打ち切る。**
      - ② 2回とも駄目なら、その夜は押さずに諦める。`WRITE_COMMIT:` の行をログにそのまま残すこと。`reviews/<TARGET>.html` はその日の分が公開されない（公開サイトが更新されないので翌朝すぐ分かる）。**ブックマークノートは翌晩の手順7.5が改めて対象にするので失われない**（重複チェックはリポ上の既存ノートを見るため、押していないノートは「まだ無い」と判定される）。
-     - ③ ⚠️ **`WRITE_COMMIT: unknown ... note=state_unknown_do_not_retry`（終了コード3）が出たら、絶対に再実行しない。** これは「ref を進める要求は送ったが、通ったかどうか分からない」状態（応答が失われ、読み直しもできなかった）。ここで再送すると同じ内容の二重コミットになり得る。何もせずログを残して手順を終える。
-   - ⚠️ **生の `git push` は使わない**（2026-06-21 に 403 を観測して以来の方針を維持する。`push_via_api.sh` は git ではなく GitHub API を叩くので、この禁止には抵触しない）。
+     - ③ `WRITE_COMMIT: <sha> ... branch=...` が出た後の `PUBLISHED: pending` は失敗ではない。**再実行しない**（同じ内容のブランチが2本できるだけで、Actions 側は同一内容なら何も変えないが、無駄な発火になる）。
+   - ⚠️ **自分で `git push` を打たない**。`main` への push はプロキシに拒否される（2026-06-21 に 403 を観測）。git で送ってよいのは `push_via_branch.sh` が作る `claude/publish-*` ブランチだけで、それはスクリプトがやる。`git add` / `git commit` も自分でしない（スクリプトは作業ツリーと index に触らずにコミットを作るので、`captures.json` 等の未コミット変更は巻き込まれない）。
    - 🚫 **`index.html` は push しない**（2026-08-31 変更・手順6を参照）。GitHub Actions が自動で再生成するので、あなたが触ると壊す側にしかならない。`index.html` を push 対象に入れたくなったら、それは手順6を読み飛ばしている。
    - **`captures.json` / `data.js` は push しない**：captures.json のRaindrop取り込みは冪等（`_build_graph.py` が既存レコードも毎回更新するので翌ランで再現される。2026-08-23に冪等化済み）、data.js は退役ファイル。大きいファイルを読むと文脈が膨らみ自動圧縮で迷子になるため、**触らない・読み込まない**。
    - **この手順は次の3分岐のどれか1つだけを行う**（reviews の有無と fetch_facts の有無で分岐する。手順2.5のバックフィルが reviews 無しの日にも `fetch_facts/<TARGET>.json` を作りうるため、分岐を誤ると「存在しない reviews を扱おうとして失敗する」または「push すべき fetch_facts を見落とす」のどちらかが起きる）：
@@ -345,12 +348,12 @@
    **(a) reviews あり（手順5で `reviews/<TARGET>.html` を作った場合）**：
    - 押すファイルは **`reviews/<TARGET>.html` と `fetch_facts/<TARGET>.json` の2つ**（手順4.2で作られている。無ければ `reviews/<TARGET>.html` のみ）。次の1コマンドで送る：
      ```bash
-     bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET>" fetch_facts/<TARGET>.json reviews/<TARGET>.html
+     bash push_via_branch.sh "update: <TARGET>" fetch_facts/<TARGET>.json reviews/<TARGET>.html
      ```
      （`fetch_facts` が無い日はそれを外す。何個渡しても1コミットにまとまる）
    - `capture_index.json` はここでは押さない（手順2.1 で押し終えている）。
    - 送る前に、**ファイルが本物であることだけ**確認する（中身を書き写すのではなく、ファイルに対して確認する）：`head -c 20 reviews/<TARGET>.html` が `<!doctype html>` で始まり、`tail -c 20` が `</html>` で終わり、`grep -c PLACEHOLDER reviews/<TARGET>.html` が 0 であること。
-   - **照合はスクリプトが載せる前にやる**（SHA-256の完全一致）。`WRITE_COMMIT: <sha>` が出ていれば公開まで完了。`note=main_untouched` が出ていたら**何も載っていない**ので、**もう一度同じコマンドを実行する**（作り直しになるだけで、二重コミットにはならない）。**2回目も駄目なら、その夜は押さずに終える。フォールバックはしない**（手順8には `push_files` へ落ちる経路は存在しない。下の手順8.5に出てくるフォールバックは Vaultリポ専用であって、ここには適用しない）。
+   - **照合は Actions が main に載せる前にやる**（manifest の SHA-256 と実ファイルの完全一致）。`WRITE_COMMIT: <sha> ... branch=...` が出ていればブランチまで届いており、`PUBLISHED: yes` なら公開まで完了。`note=main_untouched` が出ていたら**何も届いていない**ので、**もう一度同じコマンドを実行する**。**2回目も駄目なら、その夜は押さずに終える。フォールバックはしない**（手順8には `push_files` へ落ちる経路は存在しない。下の手順8.5に出てくるフォールバックは Vaultリポ専用であって、ここには適用しない）。
 
    **(b) reviews 無し・今回のランで `fetch_facts/<TARGET>.json` に差分が生じた場合（手順2.5のバックフィルだけが書いた日）**：
    - ⚠️ **(b) に入る判定条件は `git status --porcelain -- fetch_facts/<TARGET>.json` の出力が空でないこと、これ1つだけ**にする。
@@ -363,16 +366,16 @@
      新規cloneに同日の既存 `fetch_facts/<TARGET>.json` が既に含まれている再実行でも、今回のランで差分が無ければこの条件で自動的に弾かれる（誤push防止）。
    - `fetch_facts/<TARGET>.json` **単独**で送る（`reviews/<TARGET>.html` は存在しないので対象に含めない。存在しないファイルを送ろうとしない）：
      ```bash
-     bash push_via_api.sh katut-brain/katut-brain.github.io "update: <TARGET> (backfill only)" fetch_facts/<TARGET>.json
+     bash push_via_branch.sh "update: <TARGET> (backfill only)" fetch_facts/<TARGET>.json
      ```
    - 送る前に、ファイルが本物のJSONであることを確認する：`python3 -c "import json; json.load(open('fetch_facts/<TARGET>.json', encoding='utf-8'))"` がエラー無く通ること。
-   - 照合はスクリプトが載せる前に SHA-256 でやる。`WRITE_COMMIT: <sha>` なら完了。失敗したときは上の「失敗したときにやること」の①〜③に従う（**フォールバックはしない**）。
+   - 照合は Actions が main に載せる前に SHA-256 でやる。`WRITE_COMMIT: <sha> ... branch=...` ならブランチまで完了。失敗したときは上の「失敗したときにやること」の①〜③に従う（**フォールバックはしない**）。
 
    **(c) reviews 無し・fetch_facts も無し（または `git status --porcelain -- fetch_facts/<TARGET>.json` が空＝今回のランで変更が無い）**：
    - 何も push せず正常終了する（台帳は手順2.1 で押し終えている）。
 
    - 共通: `index.html` の出来ばえは確認しなくてよい（Actions 側の検証ゲートが担当する）。**`index.html` を GitHub から読みに行かないこと** — 122KB を読むと文脈が膨らんで自動圧縮で迷子になる。
-   - 共通: 送信が一時失敗しても、生 `git push` にも `push_files` にも**戻らない**。`push_via_api.sh` を2回まで、それでもダメならその夜は諦める（`unknown` のときは1回も再実行しない）。**押せなかった日は翌晩の手順2.1 が拾い直す**（`captures.json` に保存があるのに reviews が無い日として検出される）。
+   - 共通: 送信が一時失敗しても、自分で打つ `git push` にも `push_files` にも**戻らない**。`push_via_branch.sh` を2回まで、それでもダメならその夜は諦める（`WRITE_COMMIT: <sha>` が出た後は再実行しない）。**押せなかった日は翌晩の手順2.1 が拾い直す**（`captures.json` に保存があるのに reviews が無い日として検出される）。
 8.5. **公開（Vaultリポへ・ブックマークノート）**（手順7.5でノートを新規作成した場合のみ実行）：対象は `katut-brain/obsidian-vault` リポ（手順8の `katut-brain.github.io` とは別リポ）。
    - 押すファイルは、手順7.5でスキーマ検証に**合格**し新規作成した `Explore/bookmarks/rd-*.md` のみ（検証落ちのファイル・既存ファイルは含めない）。
    - ⚠️ **今夜は書き込み経路を変えない。従来どおり `push_files` で押す**（2026-09-09 の裁定）。Vaultリポに `gh api` が届くかがまだ確認できていないため、確認が取れるまで動かさない。

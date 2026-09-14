@@ -37,6 +37,11 @@ jobs:
       - name: Run write-path tests
         run: python -m unittest -v test_push_via_api.py
 
+      # push_via_branch.sh の受け入れテスト。ローカルの bare リポを相手にするので
+      # 本物の GitHub には書かない。
+      - name: Run branch-publish tests
+        run: python -m unittest -v test_push_via_branch.py
+
       # 「どの日が公開できていないか」を後から追える日別台帳。
       - name: Run capture-index tests
         run: python -m unittest -v test_capture_index.py

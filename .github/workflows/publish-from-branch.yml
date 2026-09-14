@@ -1,0 +1,169 @@
+# クラウド Routine が claude/publish-* ブランチに送ったファイルを、検証してから main に取り込み、
+# Pages の再ビルド（build-feed.yml）を起動する。
+#
+# 経緯（2026-09-14）: クラウドの GitHub プロキシが API 経由の書き込みを拒否し（push_via_api.sh が
+# 全滅、2026-09-09〜13 の公開が停止）、git push で許されるのは新しい作業ブランチだけだった。
+# そこで Routine は push_via_branch.sh で claude/publish-* に送り、main への取り込みはここで行う。
+#
+# 守ること:
+#   - 取り込んでよいのは reviews/<日付>.html・fetch_facts/<日付>.json・capture_index.json だけ。
+#     ブランチに他の変更が1つでも混じっていたら何も取り込まず失敗する。
+#   - .publish/manifest.json の SHA-256 と実ファイルが1つでも違えば失敗する（伝送中の破損を検出）。
+#   - 失敗したら main は動かさず、ブランチは調査用に残す。ワークフローの失敗は GitHub から
+#     メールで届く（＝公開が止まったことに気づける）。
+#   - GITHUB_TOKEN で main に push しても build-feed.yml の push トリガーは発火しない（GitHub の仕様）。
+#     workflow_dispatch は GITHUB_TOKEN からでも発火するので、最後に明示的に起動する。
+
+name: publish-from-branch
+
+on:
+  push:
+    branches: ['claude/publish-**']
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: publish-to-main
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate branch contents against manifest
+        id: validate
+        run: |
+          python - <<'PY'
+          import hashlib, html.parser, json, os, re, subprocess, sys
+
+          sha = os.environ["GITHUB_SHA"]
+          ALLOW = re.compile(r"^(reviews/\d{4}-\d\d-\d\d\.html|fetch_facts/\d{4}-\d\d-\d\d\.json|capture_index\.json)$")
+          MANIFEST = ".publish/manifest.json"
+
+          def git(*a):
+              r = subprocess.run(["git", *a], capture_output=True, text=True)
+              if r.returncode != 0:
+                  sys.exit(f"git {' '.join(a)} failed: {r.stderr}")
+              return r.stdout.strip()
+
+          def fail(msg):
+              print(f"::error::{msg}")
+              sys.exit(1)
+
+          try:
+              m = json.load(open(MANIFEST, encoding="utf-8"))
+          except Exception as e:
+              fail(f"manifest unreadable: {e}")
+
+          base = m.get("base", "")
+          files = [f["path"] for f in m.get("files", [])]
+          if not files:
+              fail("manifest lists no files")
+          # ブランチの変更は「manifest 記載ファイル + manifest」の範囲に収まっていなければならない
+          # （内容が main と同一のファイルは差分に出ないので、部分集合で判定する）
+          changed = set(git("diff", "--name-only", f"{base}..{sha}").splitlines())
+          expected = set(files) | {MANIFEST}
+          if not (MANIFEST in changed and changed <= expected):
+              fail(f"branch changes {sorted(changed)} not within manifest {sorted(expected)}")
+          if git("rev-list", "--count", f"{base}..{sha}") != "1":
+              fail("branch must be exactly one commit on top of manifest base")
+
+          for f in m["files"]:
+              p = f["path"]
+              if not ALLOW.match(p):
+                  fail(f"path not allowed: {p}")
+              data = open(p, "rb").read()
+              if hashlib.sha256(data).hexdigest() != f["sha256"]:
+                  fail(f"sha256 mismatch: {p}")
+              if len(data) != f["bytes"]:
+                  fail(f"size mismatch: {p}")
+              if p.endswith(".html"):
+                  text = data.decode("utf-8")
+                  if not text.lstrip().lower().startswith("<!doctype html"):
+                      fail(f"{p}: does not start with <!doctype html>")
+                  if not text.rstrip().endswith("</html>"):
+                      fail(f"{p}: does not end with </html> (truncated?)")
+                  if "PLACEHOLDER" in text:
+                      fail(f"{p}: contains PLACEHOLDER")
+                  if len(data) < 2000:
+                      fail(f"{p}: only {len(data)} bytes")
+                  html.parser.HTMLParser().feed(text)
+              else:
+                  json.loads(data.decode("utf-8"))
+
+          # 台帳は縮まない（一度観測した日付を消さない）
+          if "capture_index.json" in files:
+              old = subprocess.run(["git", "show", f"origin/main:capture_index.json"], capture_output=True, text=True)
+              if old.returncode == 0 and old.stdout.strip():
+                  old_days = set(json.loads(old.stdout).get("days", {}))
+                  new_days = set(json.load(open("capture_index.json", encoding="utf-8")).get("days", {}))
+                  if not old_days <= new_days:
+                      fail(f"capture_index.json would drop days: {sorted(old_days - new_days)}")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write("files=" + " ".join(files) + "\n")
+          print(f"OK: {len(files)} file(s) validated: {files}")
+          PY
+
+      - name: Apply to main
+        id: apply
+        env:
+          FILES: ${{ steps.validate.outputs.files }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          msg=$(git log -1 --format=%B "$GITHUB_SHA")
+          for attempt in 1 2 3; do
+            git fetch -q origin main
+            git checkout -q -B publish-main origin/main
+            git checkout "$GITHUB_SHA" -- $FILES
+            if git diff --cached --quiet; then
+              echo "nothing to change on main (already published)"
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            git commit -q -m "$msg" -m "published from ${GITHUB_REF_NAME} ($GITHUB_SHA)"
+            if git push -q origin HEAD:main; then
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "push rejected (main moved?), retry $attempt"
+            sleep 5
+          done
+          echo "::error::could not push to main after 3 attempts"
+          exit 1
+
+      - name: Verify main has identical bytes
+        run: |
+          set -euo pipefail
+          git fetch -q origin main
+          python - <<'PY'
+          import json, subprocess, sys
+          m = json.load(open(".publish/manifest.json", encoding="utf-8"))
+          for f in m["files"]:
+              got = subprocess.run(["git", "rev-parse", f"origin/main:{f['path']}"], capture_output=True, text=True).stdout.strip()
+              if got != f["blob"]:
+                  print(f"::error::main blob for {f['path']} is {got}, expected {f['blob']}")
+                  sys.exit(1)
+          print("main matches manifest byte-for-byte")
+          PY
+
+      - name: Trigger Pages rebuild
+        if: steps.apply.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run build-feed.yml --ref main
+
+      - name: Delete publish branch
+        run: git push -q origin --delete "$GITHUB_REF_NAME"
