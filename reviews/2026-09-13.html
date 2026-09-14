@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026-09-13 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-13 の振り返り</h1>
+  <div class="meta">AIに実行権限を委ねる動きと、投資煽り系投稿の急増が同居した一日（21件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の保存を貫くのは「AIに実行まで任せる」という一線を越える動きだ。MCP経由でChatGPTから楽天証券を操作する、Claude CodeとFXトレードを組み合わせて自動化する、Claudeに音源を渡せばテンポ解析からMIDI生成まで一気通貫で終わる——いずれも、これまで人間が手で行っていた「判断と実行」の接続をAIに預ける方向への保存だった。</p>
+    <p>一方で保存の半数近く（9件）は「速報」「もう一度言う」「来るぞ、大急騰」といった煽り文句を伴う投資系アカウントの投稿で占められ、信用倍率や5日移動平均線といった具体的なスクリーニング条件を公開する堅実な投稿と、銘柄名だけで急騰を匂わせる投稿とが同じタイムライン上に混在していた。建築・デザイン軸ではReer DesktopがRhino・Grasshopper・Revitを横断するエージェント型ワークスペースとして登場し、模型づくりの裏ワザ動画やCAD学習体験談も含めて"作りたい"より"知っておきたい"の関心が優勢な一日だった。</p>
+    <ul class="pts">
+      <li><b>AIの実行権限化</b>：MCP×証券操作、Claude Code×FX自動化、Claude×音源解析が同じ日に並び、「判断」から「実行」までAIに委ねる動きが具体化している。</li>
+      <li><b>投資コンテンツの量的急増</b>：21件中9件が煽り系の投資・ポイ活投稿で、堅実なスクリーニング手法の公開と、銘柄名だけを煽る投稿が同じタイムラインに混在した。</li>
+      <li><b>建築・デザインは紹介ベース</b>：Reer DesktopのRhino/Grasshopper/Revit横断化やCAD学習体験談など、"作りたい"より"知っておきたい"の関心が優勢だった。</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>AIに証券操作やFX執行まで委ねる先で、これまで人力の勘所だった「信用倍率7.0以下」のような判断基準は、誰がどう設計し直すのか。MCPを軸にAIを実務・資金操作へ直結させる関心はこの一週間で4日にわたって現れており（9/9 OpenCADStudio MCP、9/11 WebMCP新機能・AI社員投資、9/12 Claude Codeでの株取引・WebMCP教科書、9/13 MCP×楽天証券・Claude Code×FX）、単発の流行ではなく育ちつつある関心と言えそうだ。</div>
+  </section>
+
+  <h2>やりたい・気になったこと</h2>
+  <section class="notes">
+    <div class="ntag">気になった</div>
+    <ul class="qlist">
+      <li><a href="https://www.instagram.com/reel/Dc5y5S-oeE0/?stkn=eDl1MmljcHI2aTJ0" target="_blank" rel="noopener"><b>模型に吹きかけている物は何？</b></a> <span>キャプションはハッシュタグのみで素材の明記は無く、未確認→次ラン</span></li>
+    </ul>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">AIエージェントの実務直結（金融操作・音声OSS化）</div>
+    <ul class="ilist">
+      <li><a href="https://note.com/guaran/n/nf02154a3a96b" target="_blank" rel="noopener"><b>MCP：人間が銀行アプリを操作するから、「AIが必要な金融操作を組み立てる」時代へ</b></a> <span>→ MCP経由の証券操作は現状「技術的に繋がる」段階に過ぎず、記事は2026〜2031年を人間の最終承認を前提とした段階的自律化の過程と描く。三菱UFJ信託銀行が本人確認・安全性を検討する分科会を既に設置している点は、個人の「操作できた」の先に来る制度的な壁を示す。</span></li>
+      <li><a href="https://kachibito.net/useful-resource/voice-studio" target="_blank" rel="noopener"><b>ElevenLabs代替として開発されたオープンソースのマルチAIモデル対応TTSエンジン「Voice Studio」</b></a> <span>→ VoiceStudioは単一モデルの再現ではなく、VibeVoiceやKokoro、Chatterboxなど6つのOSSエンジンを束ねてローカル完結・APIキー不要で動かす統合型ツールで、商用音声AIのOSS再現が「クローン」ではなく「複数OSSの寄せ集め＋UI提供」という形で進んでいる。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AIエージェント・ツール活用（5件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/k_kureshima/status/2098620897649402361?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HR_MlV3aYAAIDhb?format=webp&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Typelessを支える高音質マイクイヤホン</div><div class="vdesc">「nothing ear 3」のイヤホンケースが高音質マイクになり、カフェなど人の多い環境でも小声の音声入力がクリアに通ると絶賛。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/k_kureshima/status/2098620897649402361?s=12" data-title="Typelessを支える高音質マイクイヤホン" data-rid="1852134800">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/t2aman1e/status/2098440378529796223?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HR8oTPuawAAtmBU?format=webp&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">MCP経由でChatGPTから楽天証券を操作</div><div class="vdesc">MCPを繋いだことで、ChatGPT側から楽天証券の操作までできるようになったと報告する一言投稿。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/t2aman1e/status/2098440378529796223?s=12" data-title="MCP経由でChatGPTから楽天証券を操作" data-rid="1851917009">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/ogawa_hal/status/2098893119945310570?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fogawa_hal%2Fstatus%2F2098893119945310570%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claudeに音源を渡すだけでテンポ解析→MIDI化</div><div class="vdesc">音源をClaudeに投げるとテンポ解析、拍単位の揺れを反映したMIDIデータ、クリック音源まで自動生成でき、精度は上々だったという実践報告。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ogawa_hal/status/2098893119945310570?s=12" data-title="Claudeに音源を渡すだけでテンポ解析→MIDI化" data-rid="1852026416">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/comagerton79278/status/2098752221152440438?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSBEBVLacAAachY?format=webp&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">GPT-6 Astraはデフォルト運用のままだと勿体ない</div><div class="vdesc">デフォルト設定のままGPT-6 Astraを使う人が多すぎると指摘し、ストレスが激減したというカスタム指示を共有。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/comagerton79278/status/2098752221152440438?s=12" data-title="GPT-6 Astraはデフォルト運用のままだと勿体ない" data-rid="1851918044">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/shanyanggm/status/2099017499199348920?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2099017499199348920" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">ElevenLabsを個人がOSS化した「VoiceStudio」がGitHubで急伸</div><div class="vdesc">声を学習させて動画の音声を646言語に差し替えたり、書き起こし・朗読までこなすOSSツール「VoiceStudio」がGitHubで2万star近くに到達、搭載エンジンは本家ElevenLabsの32種を上回る14種類だと紹介。今回は動画の内容を取得できなかった。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/shanyanggm/status/2099017499199348920?s=12" data-title="ElevenLabsを個人がOSS化した「VoiceStudio」がGitHubで急伸" data-rid="1852024519">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🏗️ 建築・CAD実務（5件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DdOAb3SJjO-/?stkn=NzQ4NWY4NGRhNXF4" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.71878-15/807590635_1110896148549380_2406660730174151683_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=102&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=9ykeRwe-HK0Q7kNvwF2oaZZ&_nc_oc=AdpyfOMJ26ob1uywo5TYJ6DqLAGB9X-U_0LSaE9VO_ca2EmdSLU6vF7ZacE22USyVH0&_nc_zt=23&_nc_ht=scontent-fra5-1.cdninstagram.com&_nc_gid=MrZ4G_vHy4DtrHaMrMfCog&_nc_ss=7ba02&oh=00_AQJtFpi14Sv5jp2opIDeU0PvZFmj9GCmbkL-6ySoquqeNQ&oe=6AAC85CC" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">Rhino・Grasshopper・RevitをまたぐAIワークスペース「Reer Desktop」始動</div><div class="vdesc">プロジェクトの知性は単一ツールに閉じるべきではないとし、複数フォーマットをまたいでAIと協働できるエージェント型デスクトップワークスペースをローンチ。動画の内容は未取得。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DdOAb3SJjO-/?stkn=NzQ4NWY4NGRhNXF4" data-title="Rhino・Grasshopper・RevitをまたぐAIワークスペース「Reer Desktop」始動" data-rid="1852083950">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DbNHNuXTZtH/?stkn=cHY4anNoNXEzbzQw" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra5-2.cdninstagram.com/v/t51.71878-15/754143248_1340376687727412_2517465869807155979_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=107&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=7rrwkJO1QWAQ7kNvwEKTZYX&_nc_oc=AdrPYzhEkJfEMOrGizqyd4xr8sdOLG3vKJIL2730q0ZMgvPSIApHWsehmWit-XyhuL4&_nc_zt=23&_nc_ht=scontent-fra5-2.cdninstagram.com&_nc_gid=5RFXuhSjVsj0kFrnylnnhA&_nc_ss=7b60f&oh=00_AQK47SQx990ZDTyEq0ZgJkPUKvK-7WJfn2SH4V7MOC7R6A&oe=6AAC891A" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">CAD初心者がつまずきやすい学習曲線への経験談</div><div class="vdesc">CADは最初の学習曲線が急だが、練習を重ねて機能に慣れ、実務でも毎日使ううちに身についたという経験を紹介し、コメント欄で学習リンクを配布。動画の内容は未取得。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DbNHNuXTZtH/?stkn=cHY4anNoNXEzbzQw" data-title="CAD初心者がつまずきやすい学習曲線への経験談" data-rid="1852143830">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DZ3PSquogsF/?stkn=czBucmJrdXVpZ2U0" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.71878-15/728152303_1459498882615930_5070530937971813292_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=108&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=Mdot4_MD6ZgQ7kNvwEpCgFH&_nc_oc=AdpJYoe-KC4VN6fAjeCTZH8rf-AHt9jd-YvaAzs4lgaau_jnL2cjUUFOJ690GX7Y-rg&_nc_zt=23&_nc_ht=scontent-fra3-1.cdninstagram.com&_nc_gid=YDocIuDlhVspVebI0o-3TQ&_nc_ss=7b60f&oh=00_AQLuqmqiL7ViqGajlw6oyp48TEdulc1glM1zIc5izIlxyg&oe=6AAC9FCA" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">建築模型づくりのモデリングハック動画</div><div class="vdesc">段ボールなどを使った建築模型制作の裏ワザを紹介する投稿（本文はハッシュタグのみ）。動画の内容は未取得。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DZ3PSquogsF/?stkn=czBucmJrdXVpZ2U0" data-title="建築模型づくりのモデリングハック動画" data-rid="1852141997">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Dc5y5S-oeE0/?stkn=eDl1MmljcHI2aTJ0" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra5-2.cdninstagram.com/v/t51.71878-15/796188817_3990167111278320_221202329424583597_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=107&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=1vts7Oax8VgQ7kNvwGpsc5L&_nc_oc=AdoEYOFnkgOqd95McGclW191HhGRekkFLwibdj-gTz5fWT8ghRdQGpOl3z3XkdHBDVU&_nc_zt=23&_nc_ht=scontent-fra5-2.cdninstagram.com&_nc_gid=RDQwq1dnLzDuS3S5VUKKDA&_nc_ss=7ba02&oh=00_AQJ0GSripiqQMMllkJh7hzjEO-q8mAxBLl1_6oOOdiJ7Hw&oe=6AAC90BC" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">模型に何かを吹きかける建築モデリングハック</div><div class="vdesc">同じく建築模型づくりの裏ワザ動画で、何のスプレーを吹きかけているのか気になるというユーザーコメントが付いた一本。動画の内容は未取得。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Dc5y5S-oeE0/?stkn=eDl1MmljcHI2aTJ0" data-title="模型に何かを吹きかける建築モデリングハック" data-rid="1852086012">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/norimenman/status/2098915683749019787?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/card_img/2098915726140809216/x8CY0hmF?format=webp&name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">CADで法枠図面を書く方法（測点管理〜山の作図まで完全版）</div><div class="vdesc">測点管理から起伏の激しい山の作図までを扱うCAD実務解説記事。今夜の処理枠上限に達したため、今回はタイトル以上の内容を取得していない。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/norimenman/status/2098915683749019787?s=12" data-title="CADで法枠図面を書く方法（測点管理〜山の作図まで完全版）" data-rid="1851826137">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🎨 デザイン・ビジュアル（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DdOhutgPiC1/?stkn=MTlhN3pyYXlsMzR0bg==" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.82787-15/808729581_18579250936068861_4235154161982417323_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=102&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=oz9ySwEFQNMQ7kNvwFs925p&_nc_oc=Adq8GpPKXOzePEiOj-StM9_Qla9p_j5ayHLW6PBLPTL4OOol6BdZ_KiqbeC0ih7zvWQ&_nc_zt=23&_nc_ht=scontent-fra5-1.cdninstagram.com&_nc_gid=Q58SkCIPn8Cm6P9zkUM35w&_nc_ss=7b60f&oh=00_AQIGSfQd78uu99E7gC_dYxGP4AFGb6PVRPFcksxcgYjHaw&oe=6AAC9E93" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">iPhone Duoの新ステータスアイコンアニメーションを模写</div><div class="vdesc">Appleが導入するとみられる新ステータスアイコンのアニメーションを1時間半かけて模写し、ゼロから発想するより模写の方が易しいと述懐。動画の内容は未取得。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DdOhutgPiC1/?stkn=MTlhN3pyYXlsMzR0bg==" data-title="iPhone Duoの新ステータスアイコンアニメーションを模写" data-rid="1852142500">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/gwamoleipstop/status/2099023871383101782?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2099023871383101782" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">世界中のブランドガイドラインを集めたサイトを発見</div><div class="vdesc">大企業のブランドガイドPDFをまとめて閲覧・ダウンロードできるサイトを見つけたとし、チームのデザイナーに今すぐブックマークするよう呼びかける投稿。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/gwamoleipstop/status/2099023871383101782?s=12" data-title="世界中のブランドガイドラインを集めたサイトを発見" data-rid="1851929582">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>💰 投資・マネー速報（9件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/centurionfhr/status/2098707178488303765?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/card_img/2098707180161765376/BJShJ0KE?format=webp&name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">航空マイル入門を25,000字超で無料公開</div><div class="vdesc">有料セミナー不要と謳い、航空系マイルの仕組みと使い方を初心者向けに25,000字超でまとめた記事を無料公開。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/centurionfhr/status/2098707178488303765?s=12" data-title="航空マイル入門を25,000字超で無料公開" data-rid="1852059532">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/river13051305/status/2098928172930842978?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Friver13051305%2Fstatus%2F2098928172930842978%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">フォロワー投票で集まった「神優待」銘柄まとめ</div><div class="vdesc">クリエイトレストランツ・焼肉酒井HD・スカイラークなど外食系を中心に手厚い株主優待をまとめ、一番人気は楽天グループだったと紹介。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/river13051305/status/2098928172930842978?s=12" data-title="フォロワー投票で集まった「神優待」銘柄まとめ" data-rid="1852033233">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/202yuu285/status/2099038507633443278?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2099038507633443278" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">低位株CRAVIA（6573）急騰を予感させる投稿</div><div class="vdesc">現在26円のCRAVIAが125円に到達すれば投資額が10倍超になり得るとしつつ、結果は誰にも分からないと留保を添えて煽る一本。今回は動画の内容を取得できなかった。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/202yuu285/status/2099038507633443278?s=12" data-title="低位株CRAVIA（6573）急騰を予感させる投稿" data-rid="1852030187">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/takicha1206/status/2099028024339685595?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2099028024339685595" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">「買わない理由がない」日本株7選という煽り投稿</div><div class="vdesc">JT・三菱重工・トヨタ自動車・ソフトバンク・NTTなど、300株保有を前提にした高配当・国策銘柄7選を順位付きで紹介。今回は動画の内容を取得できなかった。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/takicha1206/status/2099028024339685595?s=12" data-title="「買わない理由がない」日本株7選という煽り投稿" data-rid="1852030091">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/maneota_fire/status/2098775450453717170?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSBZJVqaEAA63NF?format=webp&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">「オルカン高配当」が9月30日から新登場という速報</div><div class="vdesc">オールカントリー指数の高配当版が9月30日から始まるという速報形式の投稿。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/maneota_fire/status/2098775450453717170?s=12" data-title="「オルカン高配当」が9月30日から新登場という速報" data-rid="1852028834">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/tomorotenn/status/2099105835112890811?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2099105835112890811" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">ジャパンディスプレイ（6740）が化けるかもという煽り</div><div class="vdesc">現在価格47円のジャパンディスプレイがフジクラ・村田製作所・太陽誘電・キオクシア以上に来るかもしれないとし、空気が変わった瞬間に一気に飛ぶと予告。今回は動画の内容を取得できなかった。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/tomorotenn/status/2099105835112890811?s=12" data-title="ジャパンディスプレイ（6740）が化けるかもという煽り" data-rid="1852040378">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/hinaharutrader/status/2098976433364500858?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2098976433364500858" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">需給とチャートで銘柄を絞り込むスクリーニング条件</div><div class="vdesc">信用倍率・貸借倍率・回転日数をすべて7.0以下、出来高100万株以上、5日移動平均線をローソク足が上回る、という具体的な条件で銘柄を抽出する手法を公開。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/hinaharutrader/status/2098976433364500858?s=12" data-title="需給とチャートで銘柄を絞り込むスクリーニング条件" data-rid="1851917216">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/roku_mile/status/2098726865783730324?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2098726865783730324" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">年10万円超のポイントを生む「決済デッキ」構想</div><div class="vdesc">特定カードの組み合わせ（決済デッキ）だけで年2〜3回の旅行分、年換算5〜6万マイル前後・10万円超相当のポイントを積み増せると試算。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/roku_mile/status/2098726865783730324?s=12" data-title="年10万円超のポイントを生む「決済デッキ」構想" data-rid="1851918320">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/foodloss_otoko/status/2098974160555004059?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Ffoodloss_otoko%2Fstatus%2F2098974160555004059%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claude Code×FXで自動化できるものをまとめた</div><div class="vdesc">Claude CodeとFXトレードを掛け合わせ、自動化できる作業をまとめたと予告する投稿（具体的な自動化内容は本文には含まれず）。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/foodloss_otoko/status/2098974160555004059?s=12" data-title="Claude Code×FXで自動化できるものをまとめた" data-rid="1851949938">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
