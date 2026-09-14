@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026-09-08 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-08 の振り返り</h1>
+  <div class="meta">Threads投稿3件｜Claude CodeをMCPで拡張する連載（整理・調査・制作）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存は同一アカウント（角食ちゃん）が連番で投稿しているMCP紹介シリーズの3件（#3〜#5）で、Miro MCP（企画・情報の可視化）、Apify MCP（Web/SNSリサーチの自動化）、Higgsfield MCP（画像・動画生成）と、それぞれ別の外部SaaSをClaude Codeに接続する内容だった。3件を貫く通奏低音は、Claude Codeを「コードを書くツール」から「企画→調査→制作物まで一気通貫で回すハブ」へ押し広げる動きで、いずれもチャットの外にある実作業（ボード整理・スクレイピング・生成物づくり）をMCP経由で手元に引き込む方向を向いている。</p>
+    <p>深掘りで確認すると、定番のMCP紹介記事（GitHub・Playwright・Context7など開発/検索系が中心）にはMiro・Apify・HiggsfieldのようなSaaS連携系はほとんど登場しない。つまりこの日の保存は「まず入れるべき定番」より一歩先、制作・リサーチ寄りのニッチな拡張を追いかけている回だったことになる。</p>
+    <ul class="pts">
+      <li><b>整理</b>：Miro MCPで新商品の企画整理・サイト構成・業務フローをボード上に並べて可視化</li>
+      <li><b>調査</b>：Apify MCPで競合投稿・口コミ・検索結果・EC価格を横断収集し比較まで自動化</li>
+      <li><b>制作</b>：Higgsfield MCPで広告画像・SNS画像・ショート動画素材の生成までをClaude Codeから直結</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>リサーチ（Apify）から制作物（Higgsfield）までをMCPで自動化した先で、「何を作るか」を考える企画そのものは、どこまで人の手に残るのか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">MCP拡張の主流との対比</div>
+    <ul class="ilist">
+      <li><a href="https://ai-workflow.jp/mcp-server-osusume/" target="_blank" rel="noopener"><b>MCPサーバーおすすめ20選＋一覧表｜Claude Code/Cursor/VSCode対応【2026年版】</b></a> <span>→ 定番として挙げられるのはGitHub・Playwright・Context7など開発/DB/検索系20種で、Miro・Apify・Higgsfieldのような制作・SaaS連携系は含まれていない。この日の保存はその外側の拡張を追っている</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI・ツール（3件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.threads.com/share/BBQ00fnmZk/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra3-1.xx.fbcdn.net/v/t39.92108-6/798743929_2236500937144382_2970184189756996221_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=554f3c&_nc_ohc=RGw-h8M4VuAQ7kNvwHOIb6e&_nc_oc=Adpf8LpE45sySh3rNXR4qAwOgxbFMkqiORR8ZLTs5cH9XzJ_sUdqpmocgDpMpkHIuXE&_nc_zt=14&_nc_ht=scontent-fra3-1.xx&_nc_gid=Jg03JjAR-HTl6LZueLycuw&_nc_ss=7920f&oh=00_AQJLSssiBh_XXcJDutTYQbNXgVamJYbLpYEm-2_moqcYyQ&oe=6AA569F3" onerror="this.remove()"><span class="ph">Threads (@kakusyoku_chan)</span></div>
+        <div class="vbody"><div class="vtitle">Miro MCPで企画・情報をボード整理</div><div class="vdesc">新商品の企画整理やサイト構成、業務フローをボード上に並べて可視化する使い方を紹介。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.threads.com/share/BBQ00fnmZk/" data-title="Miro MCPで企画・情報をボード整理" data-rid="1847744815">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.threads.com/share/BApSNK5Bgz/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra5-1.xx.fbcdn.net/v/t39.92108-6/798930410_1120677407054721_1975780478410881090_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=554f3c&_nc_ohc=BPL9gGMMhpwQ7kNvwFyIsPl&_nc_oc=AdpL0Rj8GrebI5MaO1W8C7tKb29VujtNSTs7dLSNa9hg9N4xsJB6hvY_0sW1HmqsR2M&_nc_zt=14&_nc_ht=scontent-fra5-1.xx&_nc_gid=GCoYtmaIGJbmdAGsfE2RPg&_nc_ss=7920f&oh=00_AQKHsGVYV5T2q71btYDzPs5y0gzem7813pduju7WMuOY-w&oe=6AA5687B" onerror="this.remove()"><span class="ph">Threads (@kakusyoku_chan)</span></div>
+        <div class="vbody"><div class="vtitle">Apify MCPでWeb/SNSリサーチを自動化</div><div class="vdesc">競合投稿・口コミ・検索結果・EC価格を横断収集し、1件ずつ開いてコピペする手間を省けると説明。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.threads.com/share/BApSNK5Bgz/" data-title="Apify MCPでWeb/SNSリサーチを自動化" data-rid="1847744947">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.threads.com/share/BAY7Zm6kIj/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-2.xx.fbcdn.net/v/t39.92108-6/810246566_1868756880777759_5850065372426406832_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=554f3c&_nc_ohc=WSU98KmVmX8Q7kNvwEoMSW7&_nc_oc=AdoU1CSZ7_d7bH7yIw0Dvf93k0S5d99ctgfYa9xvG286PMGYxIXNlPO7ZHpGPfhpY2k&_nc_zt=14&_nc_ht=scontent-ord5-2.xx&_nc_gid=I9frlNub7ypuohRamwRu0g&_nc_ss=7b100&oh=00_AQKBh8a76L9SMBCMMzgHXeUYaxSAhG47PnFIqV2-Xw12pA&oe=6AAD858C" onerror="this.remove()"><span class="ph">Threads (@kakusyoku_chan)</span></div>
+        <div class="vbody"><div class="vtitle">Higgsfield MCPで画像・動画生成まで接続</div><div class="vdesc">広告画像・SNS画像・ショート動画素材まで、企画から生成物への同じ流れで作れるという接続例。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.threads.com/share/BAY7Zm6kIj/" data-title="Higgsfield MCPで画像・動画生成まで接続" data-rid="1847745101">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
