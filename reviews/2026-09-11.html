@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-09-11 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-11 の振り返り</h1>
+  <div class="meta">AIエージェントが人間の代わりに動く一日 ｜ X投稿4件・Instagram Reel1件</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>AIエージェントが人間の代わりに「見る・書く・選ぶ・作る」を担い始めた一日。ChatGPTがYouTube動画を見ながらリアルタイムで解説を挟む機能、Anthropic幹部が自身のClaude Code環境を公開したという投稿、AI社員に株式投資の判断を委ねる話、そしてGPT-6 ASTRAがRevitモデルからカメラパスとマテリアル指定まで自動提案する建築ワークフロー——分野は視聴・開発環境・資産運用・空間設計とばらばらだが、どれも「人間の判断や操作をAIエージェントに手渡す」という同じ動きの断面になっている。</p>
+    <p>今日は「作りたい」より「知る・紹介したい」の軸が強く、なかでもGPT-6 ASTRA×Revit×Higgsfieldの投稿は建築×AIの具体的なワークフロー事例として、curator-maker的な関心と直結する保存だった。一方でClaude Code「オープンソース化」の投稿は、深掘りで裏取りすると実態と乖離がある可能性が高く、X上のAIニュースの真偽をどう見極めるかという課題も同時に浮かぶ。なお「AI社員」に投資判断を委ねる関心は9/5の保存（AI社員27人を雇った話）にも通じており、単発の流行追いとは言い切れない。</p>
+    <ul class="pts">
+      <li><b>ChatGPT×YouTube同期</b>：WebMCPで一時停止→解説→再生継続、セットアップ10秒という具体的な使用感</li>
+      <li><b>建築ワークフローの自動化</b>：Revit→Three.js変換でASTRAがカメラパスとマテリアル指定を提案、手動カメラワークからの解放</li>
+      <li><b>AI社員への意思決定委譲</b>：株式投資をAIエージェントに任せる流れへの期待が断言口調で表れる</li>
+      <li><b>「オープンソース化」報道の真偽</b>：Claude Code環境公開という主張は、深掘りで見ると実態と食い違う可能性が高い</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>AIがカメラパスやマテリアル指定まで代行するようになったとき、建築家の設計判断はどこに残るのか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">Claude Codeの「オープンソース化」報道</div>
+    <ul class="ilist">
+      <li><a href="https://findskill.ai/blog/is-claude-code-open-source/" target="_blank" rel="noopener"><b>Is Claude Code Open Source? The 512K-Line Leak Explained (2026)</b></a> <span>→ 実際は2026年3月末にAnthropicが誤ってソースコード512,000行を公開してしまった「漏洩」が発端で、意図的なオープンソース化ではない。今回の投稿の「丸ごとオープンソース化」という表現はこの漏洩騒動を指している可能性が高く、Anthropicは依然として非公開の有料製品として提供している。</span></li>
+    </ul>
+  </section>
+
+  <h2>🏛️ 建築×AI（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DdHo6BKv_YD/?stkn=dnl0eGppcnl6aGtn" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.82787-15/804647268_17930334810400733_1500978375439679956_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=104&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=W03Oyi4AgLkQ7kNvwEpgvn3&amp;_nc_oc=AdqXCJwPxKTBMhJ0kj8xGxCHNJQZLxb-Ws2tclH9bdyDBSCvrvUpNNilyFWNTzrQVtY&amp;_nc_zt=23&amp;_nc_ht=scontent-ord5-2.cdninstagram.com&amp;_nc_gid=rU7JufZ0hyGN20EAgsLqfQ&amp;_nc_ss=7b60f&amp;oh=00_AQIggDecBIMWpOqFkySg1Hx082lfo190mAu8mEYxPPEXpQ&amp;oe=6AAD81B4" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">GPT-6 ASTRAで変わる建築ワークフロー</div><div class="vdesc">RevitモデルをThree.js環境に変換しASTRAが空間構成を読んでカメラパスを自動提案、同じジオメトリのカラーマップ動画をHiggsfieldのマテリアル指定にも使う二段構え。動画の内容は未取得</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DdHo6BKv_YD/?stkn=dnl0eGppcnl6aGtn" data-title="GPT-6 ASTRAで変わる建築ワークフロー" data-rid="1850230050">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🤖 AIツール・エージェント（4件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/masahirochaen/status/2097990179227414850?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2097990127461216257/img/hTNZ1KSVvLp06t7i.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">ChatGPTがYouTube再生とリアルタイム同期、WebMCPで解説付き再生</div><div class="vdesc">WebMCPでページのツールを自動検出し、YouTube再生と同期して一時停止→解説→再生継続。対応はGPT-5.6 SolとTerraのみでLunaは非対応、セットアップは10秒と紹介。今回は動画の中身までは追えていない</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/masahirochaen/status/2097990179227414850?s=12" data-title="ChatGPTがYouTube再生とリアルタイム同期、WebMCPで解説付き再生" data-rid="1850403031">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/claudecode84/status/2097959830942367747?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2097959778484199424/img/CyCRkqtejDJbjToZ.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Anthropic幹部が自身のClaude Code環境をオープンソース化と投稿</div><div class="vdesc">Anthropicの最高責任者本人が、自分のClaude Code環境を丸ごと公開したと投稿（実態は要検証、上の深掘り参照）。動画部分は今回未確認</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/claudecode84/status/2097959830942367747?s=12" data-title="Anthropic幹部が自身のClaude Code環境をオープンソース化と投稿" data-rid="1850401311">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/sokichi_hoshino/status/2098193107628290238?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2098193086082125824/img/5K9R-MaWjv_fihCm.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">AI社員を使った株式投資が「最強」と断言</div><div class="vdesc">投資歴15年の投稿者が「AI社員を使った株式投資はマジで最強」と断言するのみで、具体的な運用実績や再現性の記載は本文には無い。動画は今回見られていない</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/sokichi_hoshino/status/2098193107628290238?s=12" data-title="AI社員を使った株式投資が「最強」と断言" data-rid="1850309485">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/shion_takk/status/2097899460923969883?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fshion_takk%2Fstatus%2F2097899460923969883%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">「これめっちゃ素晴らしい内容だし、大事な事だよな…」</div><div class="vdesc">「めっちゃ素晴らしい内容」「大事なこと」という反応のみが本文にあり、対象の投稿内容そのものは引用に含まれず不明</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/shion_takk/status/2097899460923969883?s=12" data-title="「これめっちゃ素晴らしい内容だし、大事な事だよな…」" data-rid="1850099850">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
