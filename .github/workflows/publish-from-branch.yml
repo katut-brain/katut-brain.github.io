@@ -149,8 +149,10 @@ jobs:
           set -euo pipefail
           git fetch -q origin main
           python - <<'PY'
-          import json, subprocess, sys
-          m = json.load(open(".publish/manifest.json", encoding="utf-8"))
+          import json, os, subprocess, sys
+          # Apply で main に切り替えた後なので、manifest は作業ツリーではなくブランチのコミットから読む
+          m = json.loads(subprocess.run(["git", "show", os.environ["GITHUB_SHA"] + ":.publish/manifest.json"],
+                                        capture_output=True, text=True, check=True).stdout)
           for f in m["files"]:
               got = subprocess.run(["git", "rev-parse", f"origin/main:{f['path']}"], capture_output=True, text=True).stdout.strip()
               if got != f["blob"]:
@@ -159,8 +161,8 @@ jobs:
           print("main matches manifest byte-for-byte")
           PY
 
+      # 取り込み済みで差分が無い再実行でも起動する（前回 main 更新後に失敗して再ビルドが漏れた場合の回復のため）
       - name: Trigger Pages rebuild
-        if: steps.apply.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run build-feed.yml --ref main
