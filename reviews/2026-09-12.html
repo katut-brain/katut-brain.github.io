@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-09-12 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-12 の振り返り</h1>
+  <div class="meta">Claude Codeで稼ぐ・WebMCPでサイトを操作する・Rhinoで図面を読む——「AIに任せる」が全方位で進んだ日（4件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の4件を貫くのは、AIが「提案するだけの相談相手」から「実際に手を動かして結果を出す実行主体」へ移りつつある、という一本の軸だ。Claude Codeの運用を型として売る投稿、それを使って株の自動売買システムを2ヶ月で組んだという実例、AIがWebサイトを直接操作するための標準規格WebMCP、そしてRhinoをCADパーサーに仕立ててDWGをREVITへ自動モデリングする建築の実験——ジャンルは金融・Web標準・建築設計とバラバラだが、いずれも「AIにどこまで実行を委ねるか」という同じ問いの上に立っている。</p>
+    <p>今日は「知る・紹介したい」軸がやや優勢（WebMCPの解説記事、トレーディング事例の保存）だが、Rhino×REVITの自動モデリングは建築学生としての「作りたい」に直結しうる一件で、実務のワークフローそのものを覗き見る保存になっている。</p>
+    <ul class="pts">
+      <li><b>Claude Code×マネタイズ</b>：フォルダ構成をテンプレ化して月80万円、韓国人開発者の株トレシステムは初週で200万ウォンの収益——「使いこなし方」の共有が「型」の売買に変わりつつある</li>
+      <li><b>WebMCP</b>：Shopify(8/5)・Cloudflare(8/6)・ChatGPT(8/25)・Fastly(8/31)が相次いで対応する一方、Appleは「サイトが書くツールの説明文は誰も検証していない」として反対を崩していない</li>
+      <li><b>建築×AI</b>：Rhino 8をCADパーサーに仕立ててDWG（レイヤー216・オブジェクト30,595・完全重複線13,523）を読み込み、構造部材1,119点をREVITへ自動モデリング——まだパイロット段階</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>WebMCPの記事が指摘する「サイトが自分で書くツールの説明文は誰も検証していない」という空白と、同じ日に保存されたClaude Codeでの自動発注・自動売買の実例を並べると、AIに実行の権限を渡すとき、その正しさを最終的に誰がどう担保するのかという問いが立つ。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">WebMCP</div>
+    <ul class="ilist">
+      <li><a href="https://dev.to/r0bertini/gemini-in-chrome-is-about-to-call-webmcp-the-no-agent-uses-it-yet-excuse-just-got-an-expiry-date-51be" target="_blank" rel="noopener"><b>Gemini in Chrome is about to call WebMCP</b></a> <span>→ Chrome 149〜156のオリジントライアル段階で、GeminiがWebMCPを呼ぶようになれば「どのエージェントも使っていない」という様子見の言い訳が効かなくなる、という指摘。WebKitは依然反対のままで仕様も未確定</span></li>
+    </ul>
+    <div class="ntag">Claude Code×自動売買</div>
+    <ul class="ilist">
+      <li><a href="https://note.com/claude_sidejob/n/n59f05d1a00c8" target="_blank" rel="noopener"><b>勝率82%・2日で+10%。Claude Codeで株の自動売買を作った</b></a> <span>→ 東証4,370銘柄を自動スクリーニングし、毎日29タスクをタスクスケジューラで実行、kabuStation API経由で完全自動発注する実例。2日で+10%を確定させた一方、投資助言業の登録業者ではないと明記——自動化の再現性と、結果への責任の所在は別物だと分かる</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI活用・マネタイズ（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.threads.com/share/BAZj3RDXFs/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-2.xx.fbcdn.net/v/t39.92108-6/800864173_1607184257425856_1099141734328424186_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=554f3c&_nc_ohc=h5NiwlrJ9GoQ7kNvwFDATBf&_nc_oc=AdpAdKcvqWc4vhrtozh8EV_hotvuI8l66KZGrACahnWFv3VaBqecKB9sqFei28dwf0k&_nc_zt=14&_nc_ht=scontent-ord5-2.xx&_nc_gid=qvGvlfnUKUCtlsGn341BwA&_nc_ss=7b100&oh=00_AQItVCjFEFseK_7lV3aR99Iv4XOQ3ydr0aE0LXizzTO9UQ&oe=6AAD9392" onerror="this.remove()"><span class="ph">Threads</span></div>
+        <div class="vbody"><div class="vtitle">Claude Codeで月80万稼いだフォルダ構成</div><div class="vdesc">CLAUDE.md・persona.md・learn.md・domain.md・references.md・post-types.md・ng-rules.md・checklistの8ファイルで役割分担する運用テンプレを公開。どのファイルが特に重要かを続けて解説する構成だが、その先の本文はThreads側の要約制限で取得できていない</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.threads.com/share/BAZj3RDXFs/" data-title="Claude Codeで月80万稼いだフォルダ構成" data-rid="1851132721">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/zellipo/status/2098124930626060388?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2098120263389110272/img/84XAagYofwobxQTN.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">39歳の韓国人開発者がClaude Codeで株トレ情報システムを構築</div><div class="vdesc">開発2ヶ月・元手50万ウォンから、初週で200万ウォンの収益を達成したという投稿。動画付きだが今回は動画の内容を取得できなかった</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/zellipo/status/2098124930626060388?s=12" data-title="39歳の韓国人開発者がClaude Codeで株トレ情報システムを構築" data-rid="1851095582">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🌐 WebMCP・AI×Web操作（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/lucky_note_lab/status/2097802826890240345?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HRutUbpacAAY-ha?format=webp&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">非エンジニア向け WebMCP×ChatGPTの教科書</div><div class="vdesc">AIがサイトの機能を「ツール」として呼び出す標準規格WebMCPを解説。Shopifyが8月5日、Cloudflareが8月6日、ChatGPTが8月25日、Fastlyが8月31日と1ヶ月で相次いで対応した一方、Appleだけが「ツールの説明文は検証されていない」として反対の立場を崩していないと詳述する</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/lucky_note_lab/status/2097802826890240345?s=12" data-title="非エンジニア向け WebMCP×ChatGPTの教科書" data-rid="1851093712">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🏛️ 建築×AI（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DdJBLMlSz0I/?stkn=MTVvemEzZWxjcDBqdg==" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra3-2.cdninstagram.com/v/t51.82787-15/805804057_18092660282388166_8534043605555769293_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=104&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=fuGde4fhHdUQ7kNvwH66H5k&_nc_oc=AdpOfn_UceHCWcg_fgjvBkRBjBG-11wSJEuatYVgxZtofYWiSVxjqspAFh0ZDZJ7UJQ&_nc_zt=23&_nc_ht=scontent-ord5-2.cdninstagram.com&_nc_gid=So8zXWkBHjCB5HMOVUOo6A&_nc_ss=7b60f&oh=00_AQKUxBshcwEKwtSKZfNRZctOx0BMwLculkwWEoxCB_q_kA&oe=6AADB2F6" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">Rhino 8をCADパーサーにしてDWGをREVITへ自動モデリング</div><div class="vdesc">レイヤー216・オブジェクト30,595・完全重複線13,523というDWGを丸ごと読み込み、MIDASの構造モデルから部材1,119点をREVITへ自動モデリング。まだパイロット段階と明記。動画の内容は未取得</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DdJBLMlSz0I/?stkn=MTVvemEzZWxjcDBqdg==" data-title="Rhino 8をCADパーサーにしてDWGをREVITへ自動モデリング" data-rid="1850945581">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
