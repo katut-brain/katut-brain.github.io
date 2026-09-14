@@ -84,10 +84,36 @@ if [ "$MODE" = "push" ]; then
   MESSAGE="$1"; shift
 fi
 
-if ! command -v gh >/dev/null 2>&1; then
+# クラウド Routine の実行環境には gh が入っていない（2026-09-09〜13 の5晩、ここで
+# gh_not_found になり公開が止まっていた）。無ければ自分で入れる。
+# apt が使えればそれを、駄目ならリリースの静的バイナリを $HOME/.local/bin に置く。
+# 出力はすべて stderr に逃がす（標準出力の WRITE_PATH / WRITE_COMMIT 行を汚さない）。
+GH_FALLBACK_VERSION="${PUSH_VIA_API_GH_VERSION:-2.100.0}"
+ensure_gh() {
+  command -v gh >/dev/null 2>&1 && return 0
+  [ -n "${PUSH_VIA_API_NO_INSTALL:-}" ] && return 1
+  mkdir -p "$HOME/.local/bin" && export PATH="$HOME/.local/bin:$PATH"
+  command -v gh >/dev/null 2>&1 && return 0
+  if command -v apt-get >/dev/null 2>&1; then
+    { timeout 120 apt-get install -y -qq gh || { timeout 120 apt-get update -qq && timeout 120 apt-get install -y -qq gh; }; } >&2 2>&1
+    command -v gh >/dev/null 2>&1 && return 0
+  fi
+  local tgz="gh_${GH_FALLBACK_VERSION}_linux_amd64.tar.gz" tmp
+  tmp=$(mktemp -d) || return 1
+  if timeout 120 curl -fsSL -o "$tmp/$tgz" \
+       "https://github.com/cli/cli/releases/download/v${GH_FALLBACK_VERSION}/${tgz}" >&2 2>&1 \
+     && tar -xzf "$tmp/$tgz" -C "$tmp" >&2 2>&1; then
+    cp "$tmp/gh_${GH_FALLBACK_VERSION}_linux_amd64/bin/gh" "$HOME/.local/bin/gh" && chmod +x "$HOME/.local/bin/gh"
+  fi
+  rm -rf "$tmp"
+  command -v gh >/dev/null 2>&1
+}
+
+if ! ensure_gh; then
   echo "WRITE_PATH: - api=unavailable reason=gh_not_found"
   exit 1
 fi
+echo "GH_PATH: $(command -v gh) $(gh --version 2>/dev/null | head -1)" >&2
 
 BRANCH="${PUSH_VIA_API_BRANCH:-main}"
 PY="${PUSH_VIA_API_PYTHON:-python3}"
