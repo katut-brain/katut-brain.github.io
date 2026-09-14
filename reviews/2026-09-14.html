@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026-09-14 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-14 の振り返り</h1>
+  <div class="meta">AIボイスレコーダー・文字起こしツールへの関心が一気に噴き出した一日（14件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の保存の半分近くを貫くのは「録る・入力する・書き起こす、という音声まわりの摩擦をAIでどう軽くするか」という問いだ。既製のAIボイスレコーダー（Plaud・moriなど）が本体＋サブスクで年6万円かかることへの抵抗感を起点に、iPhoneだけで完結する自作アプリ「Recory」、ローカルCPUだけで動くOSSの多言語文字起こしエンジン「早耳 hayamimi」、通信を一切行わない完全ローカルの「おまかせ文字起こし」まで、"既製品を買う"より"自分で組む・選ぶ"方向に振れた保存が並んだ。</p>
+    <p>もう一つの軸はCodex 6 Astraの運用作法。「空フォルダで起動しろ」「AGENTS.mdやSkillsを最新化しないと性能を半減させる」という具体的なTipsが2件保存されており、前日9/13の「GPT-6 Astraをデフォルトのままで使ってる人多すぎ」という指摘と合わせて2日連続で現れている。ユーザー文脈で見ると、今日は"知る/紹介したい"より"作りたい"軸が明確に優勢で、音声入力機材の試行錯誤やRecory開発のような自作エピソードが目立った。</p>
+    <ul class="pts">
+      <li><b>既製品への課金抵抗とDIY化</b>：PlaudやmoriのAIボイスレコーダーが年6万円かかるのに対し、小型レコーダー＋Whisper文字起こし＋GPT整形の自作フローなら5000円に抑えられるという試算が、OSS（hayamimi）やローカル完結アプリの保存と重なって出現した。</li>
+      <li><b>Astra運用ノウハウが2日連続で活性化</b>：9/13の「デフォルト運用は勿体ない」指摘に続き、今日は「空フォルダ起動」「AGENTS.md/Skills更新必須」という具体的な作法が共有され、単発の流行ではなく育ちつつある関心と言える。</li>
+      <li><b>"作りたい"軸が優勢</b>：Recoryの自作エピソードや音声入力機材の試行錯誤など、既製品より自作を選ぶ姿勢の保存が並んだ一日だった。</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>「Whisper＋GPTで組めば5000円」という試算が正しいなら、Plaud・moriが年6万円で売っているのは体験（UX）なのか、それとも自作する手間そのものへの対価なのか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">AIボイスレコーダー・文字起こしツール比較</div>
+    <ul class="ilist">
+      <li><a href="https://miralab.co.jp/media/ai_voice_recorders_transcription_top10/" target="_blank" rel="noopener"><b>【2026年9月最新】AIボイスレコーダー比較おすすめランキング12選！簡単文字起こし</b></a> <span>→ Plaud Note ProやNotta Memoのようなサブスク型に加え、「完全オフライン文字起こし」を謳う買い切り型のVOITER SR302Proも同じ比較軸に並んでおり、今日の保存にあった「年6万円 vs 自作5000円」という対立軸の間に、業界側も"買い切り・オフライン"という第三の選択肢を用意し始めている過渡期であることが分かる。</span></li>
+    </ul>
+  </section>
+
+  <h2>🎙️ AIボイスレコーダー・文字起こし（6件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/onebookofmag/status/2099326755903606856?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fonebookofmag%2Fstatus%2F2099326755903606856%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">音声入力ガジェットを買い漁った結論はSHOKZ</div><div class="vdesc">ランニング中もジムもカフェも超小声の音声入力をやりたくて機材を買い漁った結果、最強はSHOKZ、装着できない場面はiPhoneのマイクに落ち着いたと結論。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/onebookofmag/status/2099326755903606856?s=12" data-title="音声入力ガジェットを買い漁った結論はSHOKZ" data-rid="1853167782">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/recory_/status/2096971283296895123?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2096971137238593536/img/qFK4UFVEqGvTEyGf.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">iPhone完結の自作AIボイスレコーダー「Recory」</div><div class="vdesc">AIボイスレコーダーが2〜3万円で手が出しにくいことから、iPhoneだけで完結する「Recory」を自作。録音・リアルタイム文字起こし・議事録・タスク化に加え、MCP経由でGPTやClaudeが議事録の文脈を呼び出せる設計。今回は動画の内容を取得できなかった。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/recory_/status/2096971283296895123?s=12" data-title="iPhone完結の自作AIボイスレコーダー「Recory」" data-rid="1853166438">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/daichi_genshiai/status/2098287292104540366?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HR6dJiibEAAUhHL.jpg?format=jpg&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">医療特化の文字起こしアプリ「GENSHI Voice」iPhone版公開</div><div class="vdesc">医療機関向け音声文字起こし「GENSHI Voice」のiPhoneアプリをリリース、医療用語対応・高速・低価格を武器に医療系文字起こしアプリで実質No.1だと自負する開発者本人の投稿。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/daichi_genshiai/status/2098287292104540366?s=12" data-title="医療特化の文字起こしアプリ「GENSHI Voice」iPhone版公開" data-rid="1853166327">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/toso_abc/status/2099197715771228360?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Ftoso_abc%2Fstatus%2F2099197715771228360%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">AIボイスレコーダー年6万円 vs 自作5000円</div><div class="vdesc">PlaudやMoriのAIボイスレコーダーは本体＋サブスクで年6万円かかるのに対し、小型ボイスレコーダー＋ノイズ除去→Whisper文字起こし→GPT-5.6整形→蓄積というAI自作フローなら5000円で組めると試算。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/toso_abc/status/2099197715771228360?s=12" data-title="AIボイスレコーダー年6万円 vs 自作5000円" data-rid="1853166169">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/oboroge9/status/2092280181918511590?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2092269125431132160/img/CB3MA91-JIeN7qFX.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">ローカルCPU完結の多言語文字起こしOSS「早耳」</div><div class="vdesc">ローカルCPUだけで動く多言語リアルタイム文字起こしエンジン「早耳 hayamimi」をOSS公開。実放送の日本語でCER 5.8%、発話終了から約0.1秒で字幕確定、日英中韓含む約1600言語対応、GPU不要・RAM 2GBで動作という仕様をMITライセンスで公開。今回は動画の内容を取得できなかった。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/oboroge9/status/2092280181918511590?s=12" data-title="ローカルCPU完結の多言語文字起こしOSS「早耳」" data-rid="1853165924">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/sasakireijiyagi/status/2085712134273716530?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fsasakireijiyagi%2Fstatus%2F2085712134273716530%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">完全ローカル・無料の文字起こしアプリ「おまかせ文字起こし」</div><div class="vdesc">臨床心理学の実務者にも薦めたいとして、動画を開くだけで完全ローカル・無料・外部通信なしで文字起こしできるMac/Windowsアプリを紹介。標準モデルlarge-v3-turboは約1.6GBで最上位large-v3にほぼ並ぶ精度だという。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/sasakireijiyagi/status/2085712134273716530?s=12" data-title="完全ローカル・無料の文字起こしアプリ「おまかせ文字起こし」" data-rid="1853165808">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🤖 Astra/Codex運用ノウハウ（3件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/gigabit_million/status/2099264412876247359?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fgigabit_million%2Fstatus%2F2099264412876247359%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Astraは空フォルダで起動しろという流儀</div><div class="vdesc">Astraは空フォルダから起動し、過去のスキルを持ち込まず一撃で答えに辿り着かせるのが本来の使い方だと指摘、他人が作ったルールを見せるとやる気を失う性質があると分析。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/gigabit_million/status/2099264412876247359?s=12" data-title="Astraは空フォルダで起動しろという流儀" data-rid="1853228453">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/gencoin8/status/2099302097909158238?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2099302051503292416/img/H3TFfNJGd5VQc8H3.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Codex 6 Astra、設定更新を怠ると性能半減の恐れ</div><div class="vdesc">Codex 6 Astraをメインモデルにしているなら、OpenAI公式案内どおりAGENTS.mdやSkillsも合わせて更新しないと本来の性能を半減させかねないと注意喚起。今回は動画の内容を取得できなかった。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/gencoin8/status/2099302097909158238?s=12" data-title="Codex 6 Astra、設定更新を怠ると性能半減の恐れ" data-rid="1853167142">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/codex_lab_/status/2097712902493155385?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2097401171166044161/img/MU98O7dGLMorkLgw.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">動画をAIと同時視聴する「Watch with Codex」</div><div class="vdesc">動画をAIとリアルタイムに同時視聴する「Watch with Codex」が登場、ChatGPT/Codex内蔵ブラウザとWebMCPで再生位置と同期し、任意の瞬間で一時停止して解説させられる。今回は動画の内容を取得できなかった。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/codex_lab_/status/2097712902493155385?s=12" data-title="動画をAIと同時視聴する「Watch with Codex」" data-rid="1853166010">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🧩 AI活用・自動化事例（3件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/unity_foryou/status/2098619834267529469?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/card_img/2097545276789755904/BXcV-Iem?format=webp&name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">今週GitHubで急上昇したAIリポジトリ10選</div><div class="vdesc">今週GitHubで急上昇したAIリポジトリ10選の1位は、コーディングエージェントの回答を「結論・手順・次の行動」中心に整えるAgent Skill「i-have-adhd」で、週間約1.3万starを集めてTrending首位に浮上した。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/unity_foryou/status/2098619834267529469?s=12" data-title="今週GitHubで急上昇したAIリポジトリ10選" data-rid="1853166581">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/hiraoka_dx/status/1638658560170274818?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/ext_tw_video_thumb/1638597724361883649/pu/img/so4EnayF6le7eqoj.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Zoom後の文字起こし〜Slack通知まで無料自動化</div><div class="vdesc">ChatGPTとノーコードを組み合わせ、Zoom終了と同時に文字起こし→要約→ドキュメント作成→Slack通知まで自動で走るワークフローを構築、非エンジニアでも30分・無料で作れると述べる。今回は動画の内容を取得できなかった。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/hiraoka_dx/status/1638658560170274818?s=12" data-title="Zoom後の文字起こし〜Slack通知まで無料自動化" data-rid="1853166384">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DdOYxd_za51/?stkn=dmc5ZzF4aGI3eThx" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-1.cdninstagram.com/v/t51.82787-15/807900719_17949890046130082_3901992343449336572_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=101&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=N1ahrcn7eQcQ7kNvwH8KHgD&_nc_oc=AdphjKxVq2wbTbORKvo-8H0nyUKE4Ff0D9jkCszrvWZTwbx3DQ6OGCBuON5F2Hj-1Ps&_nc_zt=23&_nc_ht=scontent-ord5-1.cdninstagram.com&_nc_gid=DtwWCyhVhIoyKqU7p4u9Bw&_nc_ss=7b60f&oh=00_AQJuSeVf11cYZ1V5hAHT0GTipRVqRdlA6VDS4Jg7RbMsDg&oe=6AAE11FB" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">『AI一人社長』を支える声のClaudeアーキテクチャ</div><div class="vdesc">自分のAI相棒の構成を種明かし：頭脳はClaude、日常会話は反応の速いHaiku、発話はAzure Speech、開発はCodexとClaude Codeという役割分担で、金額決定や外部送信など重要操作は実行前に本人へ確認する設計と説明。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DdOYxd_za51/?stkn=dmc5ZzF4aGI3eThx" data-title="『AI一人社長』を支える声のClaudeアーキテクチャ" data-rid="1853055093">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🛠️ 3Dプリント・CAD Tips（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Db3VEMEPBrr/?stkn=MWJ2ZnkwN3lybnhpMg==" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.71878-15/767068088_1535207531679861_8995678868804129410_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=103&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=qVUOBsBV8TIQ7kNvwFVq6Mm&_nc_oc=AdpYUX4hyH4nsatY3fmkkyovFJrOVb18cSn_z1fA-LDi-WuRBGD6_tR8deB0nQIy_iw&_nc_zt=23&_nc_ht=scontent-ord5-2.cdninstagram.com&_nc_gid=6WBmpTX1hhjIFdEiIBElSw&_nc_ss=7b60f&oh=00_AQKqmRbm7gcEjI0E1IkU77j4l346NGzq87t-ACNV6te9Wg&oe=6AAE2D19" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">SolidWorksでリブを作る前の6ルール</div><div class="vdesc">厚みは壁の50〜60%、抜き勾配は射出成形0.5〜3°・3Dプリントは不要、高さは厚みの約3倍、根元フィレット0.5〜1mm、意匠面裏へのリブ配置はヒケ発生リスクがあるため回避、3Dプリントでは積層方向も要考慮というTipsをまとめた投稿（タミル語）。動画の内容は未取得。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Db3VEMEPBrr/?stkn=MWJ2ZnkwN3lybnhpMg==" data-title="SolidWorksでリブを作る前の6ルール" data-rid="1852251457">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>💰 マネー系（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/bond_ai1/status/2098898447906607307?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2098686412753403904/img/QdTGVSpr0-qXsacC.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claude Codeで組んだトレードbotが寝てる間に稼ぐ</div><div class="vdesc">19歳の日本人学生がClaude Codeで2日で組んだトレードbotが元手$68（約1万円）から初日の夜だけで+$6,732（約100万円）稼いだと紹介する投稿。今回は動画の内容を取得できなかった。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/bond_ai1/status/2098898447906607307?s=12" data-title="Claude Codeで組んだトレードbotが寝てる間に稼ぐ" data-rid="1852251612">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
