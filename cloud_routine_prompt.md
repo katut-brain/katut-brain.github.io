@@ -23,7 +23,8 @@
 - リポジトリ `katut-brain/obsidian-vault`（個人Vault、private）も同じワークスペースに clone 済みの前提（Routine設定でのリポジトリ追加はユーザー側で別途実施済み）。ディレクトリ名がワークスペース内で異なる場合は `Explore/bookmarks/` を含むリポをVaultリポとして特定する。以下「Vaultリポ」はこのリポを指し、常に上記 `katut-brain/katut-brain.github.io` とは別リポとして扱う（作業ディレクトリ・push先を混同しない）。
 
 ## 手順
-1. **対象日**＝日本時間の「昨日」。`TARGET=$(TZ=Asia/Tokyo date -d yesterday +%F)`。
+1. **対象日**＝日本時間の「昨日」。`TARGET=${TARGET_OVERRIDE:-$(TZ=Asia/Tokyo date -d yesterday +%F)}`。
+   - 環境変数 `TARGET_OVERRIDE`（`YYYY-MM-DD`）が設定されていればその日を対象にする。公開できなかった日を後から作り直す一回きりのランで使う（2026-09-14 追加）。**形式が `YYYY-MM-DD` でなければ無視して「昨日」を使う**。通常の毎晩のランでは設定しない。
 1.5. **依存インストール**：`pip install --quiet -r requirements.txt`（YouTube字幕取得用 `youtube-transcript-api`、X動画理解用 `google-genai`）。失敗しても止めない（`fetch_content.py` はこれらのパッケージが無くても他の取得は正常動作する graceful degradation設計。ただしYouTube動画は字幕なし・X動画は音声/映像理解なしのタイトルのみに落ちる）。
 2. `python3 _build_graph.py` を実行。Raindrop の新規を `captures.json` に取り込み、既存レコードも冪等に更新する（失敗してもログして続行）。
    - **出力の `IMPORT_STATUS:` 行を必ず読む**。`INCOMPLETE` だった場合は Raindrop を全件取得できておらず、**その日の振り返りが欠損しうる**。この場合は手順5の `reviews/<TARGET>.html` の `</footer>` 直前に `<p class="notegen-warn">⚠️ 取り込み不完全: Raindrop取得エラー N件。欠けている保存がある可能性あり</p>` を1行足して、欠損の可能性を残す（黙って完走しない）。import は冪等なので翌ランで自動的に回復する。
