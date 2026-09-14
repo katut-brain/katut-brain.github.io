@@ -1,0 +1,56 @@
+{
+ "https://x.com/vibeeverything/status/2097191015711121730?s=12": {
+  "fetched_at": "2026-09-14T10:10:35Z",
+  "elapsed_ms": 7291,
+  "fetcher_version": "2026-09-03.1",
+  "url": "https://x.com/vibeeverything/status/2097191015711121730?s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "video_content"
+  ],
+  "raindrop_id": 1848175166,
+  "rid_source": "exact",
+  "text_chars": 474,
+  "text_sha1": "ecac153450770253468654f7cfdc6a3731acaa6a",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": true,
+  "video_understood": false,
+  "video_reason": "gemini_quota",
+  "reason": "",
+  "fail_reason": "",
+  "attempt_seq": 1
+ },
+ "https://x.com/kokaraka/status/2097307156873978151?s=12": {
+  "fetched_at": "2026-09-14T10:10:40Z",
+  "elapsed_ms": 1866,
+  "fetcher_version": "2026-09-03.1",
+  "url": "https://x.com/kokaraka/status/2097307156873978151?s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "image_content"
+  ],
+  "raindrop_id": 1848171753,
+  "rid_source": "exact",
+  "text_chars": 8176,
+  "text_sha1": "074c4e4f34e28d2c8634dc76113cc2ea4e8894b3",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 4,
+  "has_video": false,
+  "video_understood": false,
+  "video_reason": "",
+  "reason": "",
+  "fail_reason": "",
+  "attempt_seq": 1
+ }
+}
