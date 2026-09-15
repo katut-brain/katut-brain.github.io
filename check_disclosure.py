@@ -599,10 +599,12 @@ def process_date(date, facts_dir, reviews_dir, capture_index, rid_origin,
                     )
             if record_edits:
                 edits.extend(record_edits)
+            if len(record_edits) == len(undisclosed):
                 result.disclosed += 1
                 result.fixed.append(rid_str)
                 continue
-            # 挿入位置が見つからなかった場合のみ違反として記録する。
+            # undisclosed の一部でも挿入位置が見つからなかった場合は
+            # 積めた分の edit だけ残しつつ違反として記録する。
 
         result.violation += 1
         result.violations.append(
@@ -671,8 +673,12 @@ def _apply_fixes(raw, edits):
         phrase = "".join(MARKERS[k] + "。" for k in keys_to_add)
         # 句点等で終わっているかは vdesc の開始位置からの中身で判定する
         # （インラインタグが挟まっていても末尾テキストの位置がずれないように）。
+        # タグを除去し実体参照を解決したプレーンテキストの末尾で判定する
+        # （<span>本文。</span> のような生HTML末尾がタグで終わり、
+        # 誤って句点なしと判定されるのを防ぐ）。
         desc_tail = raw[content_start:close_pos]
-        stripped_tail = desc_tail.rstrip()
+        plain_tail = html_module.unescape(TAG_RE.sub(" ", desc_tail))
+        stripped_tail = plain_tail.rstrip()
         needs_period = not stripped_tail.endswith(("。", "！", "？", "」", "』"))
         insertion = ("。" if needs_period and stripped_tail else "") + phrase
         raw = raw[:close_pos] + insertion + raw[close_pos:]

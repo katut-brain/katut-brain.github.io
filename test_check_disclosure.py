@@ -509,6 +509,42 @@ class DisclosureCheckTest(unittest.TestCase):
         after2 = self._read_review("2026-09-04")
         self.assertEqual(after, after2)
 
+    def test_fix_does_not_double_period_when_vdesc_ends_with_inline_tag(self):
+        """.vdesc の中身が <span>本文。</span> のようにインラインタグで
+        終わっている場合、タグを除去した後のテキスト末尾（句点）で句点判定
+        するべきで、生HTML末尾（閉じタグ）を見て「句点なし」と誤判定し
+        「。。」を作ってはいけない。2回目の --fix はバイト一致（冪等）。
+        """
+        self._write_facts("2026-09-04", {
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
+                "route": "instagram", "missing": ["video_content"],
+                "raindrop_id": 1842608050,
+            },
+        })
+        desc = "<span>進捗を見せながら生成する。</span>"
+        self._write_review("2026-09-04", self._vcard(
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/",
+            "写真1枚をRhinoモデルに変換するAIエージェント「STF Agent」",
+            desc, "1842608050",
+        ))
+
+        out = self._run(["--date", "2026-09-04", "--fix"])
+        self.assertIn("DISCLOSURE_FIXED: date=2026-09-04 rid=1842608050", out)
+        after = self._read_review("2026-09-04")
+        self.assertNotIn("。。", after)
+        self.assertIn(V_MARKER + "。", after)
+
+        out2 = self._run(["--date", "2026-09-04"])
+        self.assertIn(
+            "DISCLOSURE_CHECK: date=2026-09-04 duty=1 disclosed=1 "
+            "violation=0 excluded=0 out_of_scope=0", out2)
+
+        # 2回目の --fix はファイルをバイト単位で変化させない（冪等）。
+        out3 = self._run(["--date", "2026-09-04", "--fix"])
+        self.assertNotIn("DISCLOSURE_FIXED:", out3)
+        after2 = self._read_review("2026-09-04")
+        self.assertEqual(after, after2)
+
     def test_fix_threads_only_adds_the_missing_marker(self):
         """threads で片方（visual_content）だけ既にマーカー済みの場合、
         --fix は足りない方（audio_content）のマーカーだけを追記する。
@@ -630,6 +666,57 @@ class DisclosureCheckTest(unittest.TestCase):
         self.assertIn(
             "DISCLOSURE_CHECK: date=2026-09-04 duty=1 disclosed=1 "
             "violation=0 excluded=0 out_of_scope=0", out3)
+
+    def _vcard_without_vdesc(self, url, title, rid):
+        """.vdesc 自体が無いカード（_vdesc_insert_point が None になる）。"""
+        return (
+            '    <div class="vcard">\n'
+            '      <a class="vlink" href="%s" target="_blank" rel="noopener">\n'
+            '        <div class="thumb"><span class="ph">X</span></div>\n'
+            '        <div class="vbody"><div class="vtitle">%s</div></div>\n'
+            "      </a>\n"
+            '      <button class="deepdive" onclick="openChat(this)" '
+            'data-url="%s" data-title="%s" data-rid="%s">💬 AIと話す</button>\n'
+            "    </div>\n"
+        ) % (url, title, url, title, rid)
+
+    def test_fix_stays_violation_when_one_of_the_duplicate_cards_has_no_vdesc(self):
+        """同じ rid の候補カードが2枚あり、片方は .vdesc 自体が無く挿入不能。
+        --fix は挿入できるカードには文言を追記するが、undisclosed 全部には
+        挿入できていないので disclosed/fixed に入れず違反として記録する
+        （挿入できたカードだけ直って成功申告になってしまうのを防ぐ）。
+        """
+        self._write_facts("2026-09-04", {
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
+                "route": "instagram", "missing": ["video_content"],
+                "raindrop_id": 1842608050,
+            },
+        })
+        cards = (
+            self._vcard(
+                "https://www.instagram.com/reel/Dcy4SIYiD7U/",
+                "写真1枚をRhinoモデルに変換するAIエージェント「STF Agent」",
+                "進捗を見せながらRhino上に3Dモデルを自動生成する。",
+                "1842608050")
+            + self._vcard_without_vdesc(
+                "https://www.instagram.com/reel/Dcy4SIYiD7U/",
+                "同じ投稿の.vdesc欠損カード（検証用）",
+                "1842608050")
+        )
+        self._write_review("2026-09-04", cards)
+
+        out = self._run(["--date", "2026-09-04", "--fix"])
+        self.assertNotIn("DISCLOSURE_FIXED:", out)
+        self.assertIn(
+            "DISCLOSURE_VIOLATION: date=2026-09-04 kind=reel "
+            "rid=1842608050", out)
+        self.assertIn(
+            "DISCLOSURE_CHECK: date=2026-09-04 duty=1 disclosed=0 "
+            "violation=1 excluded=0 out_of_scope=0", out)
+
+        after = self._read_review("2026-09-04")
+        # 挿入できた1枚目には積まれた edit が反映されている。
+        self.assertIn(V_MARKER + "。", after)
 
     def test_all_and_since_and_github_flags_do_not_crash(self):
         self._write_facts("2026-09-04", {
