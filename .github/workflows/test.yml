@@ -45,3 +45,8 @@ jobs:
       # 「どの日が公開できていないか」を後から追える日別台帳。
       - name: Run capture-index tests
         run: python -m unittest -v test_capture_index.py
+
+      # 動画・視覚コンテンツ未取得の開示チェッカー（check_disclosure.py）の
+      # 受け入れテスト。標準ライブラリの unittest のみ。
+      - name: Run disclosure-check tests
+        run: python -m unittest -v test_check_disclosure.py

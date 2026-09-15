@@ -285,6 +285,20 @@ jobs:
           main()
           PY
 
+      # 開示義務チェック（機械判定）。無人Routineの指示遵守だけに頼ると
+      # 手順書に文言指示があっても実際に書き漏らす（2026-09-04 Reel 3件・
+      # 2026-09-14 Reel 1件・2026-09-08 Threads 3件など実例あり）ため、
+      # reviews/*.html と fetch_facts/*.json を突き合わせて機械的に検出する。
+      # 判定ロジックの正本は check_disclosure.py 側（このymlには語リストを
+      # 複製しない）。--since 2026-09-15 はこの仕組みを入れた日より前の
+      # 既知の違反を再警告しないための足切り。
+      # 警告のみ・公開を止めない（ユーザー裁定 2026-09-15）: continue-on-error
+      # により、このステップが失敗しても Rebuild index.html 以降・deploy は
+      # 従来どおり進む。
+      - name: Check disclosure of unfetched video/visual content
+        continue-on-error: true
+        run: python check_disclosure.py --all --since 2026-09-15 --github
+
       # _build_feed.py は標準ライブラリのみ・環境変数もネットワークも不要
       - name: Rebuild index.html
         run: python _build_feed.py
