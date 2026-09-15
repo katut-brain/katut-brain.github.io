@@ -1,10 +1,13 @@
 """check_disclosure.py の受け入れテスト。
 
-fixture は実データ（fetch_facts/*.json・reviews/*.html の実レコード・実カード）
-から書き写している。手で作ったダミーは使わない。実データの出典は各テストの
-docstring / コメントに日付とrid・URLで明記した。
+2026-09-15 3周目差し戻し（固定マーカー方式への作り替え）に伴い、開示判定は
+「自由文を読んで判定」から「固定マーカー文（cd.MARKERS）の有無判定」に
+変わった。このテストファイルも自由文判定用のデータ（FALSE_POSITIVE_TEXTS・
+real_cases 30件Trueなど）をマーカー方式のデータに置き換えている。
 
-判定の正解ラベル（人間判定）は作業時のスクラッチパッドに作成した labels.tsv。
+fixture は実データ（fetch_facts/*.json・reviews/*.html の実レコード・実カード）
+から書き写している箇所はその旨を各テストのdocstringに明記する。マーカー方式の
+境界条件テストはこのタスクで新規作成したデータ駆動テストである。
 """
 
 import datetime
@@ -34,6 +37,10 @@ REVIEW_TAIL = """  </div>
 </body>
 </html>
 """
+
+V_MARKER = cd.MARKERS["video_content"]
+I_MARKER = cd.MARKERS["visual_content"]
+A_MARKER = cd.MARKERS["audio_content"]
 
 
 class DisclosureCheckTest(unittest.TestCase):
@@ -108,7 +115,7 @@ class DisclosureCheckTest(unittest.TestCase):
         (https://www.instagram.com/reel/Dcy4SIYiD7U/, route=instagram,
         missing=["video_content"])。reviews/2026-09-04.html のカードは
         「Interpreting→Modeling→Refiningと進捗を見せながら」等、動画を
-        見たかのような記述で開示文言が無い（実際の事故）。
+        見たかのような記述でマーカーが無い（実際の事故）。
         """
         self._write_facts("2026-09-04", {
             "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
@@ -157,12 +164,14 @@ class DisclosureCheckTest(unittest.TestCase):
             "DISCLOSURE_VIOLATION: date=2026-09-14 kind=reel rid=1853055093",
             out)
 
-    # --- 実データ: 2026-09-11 X の3件、揺れた言い回しがすべて開示ありになる --
+    # --- 実データ: 2026-09-11 X の3件。マーカーが無いので全件違反 -----------
 
-    def test_20260911_x_varied_phrasing_all_count_as_disclosed(self):
+    def test_20260911_x_varied_phrasing_without_marker_is_a_violation(self):
         """実データ: fetch_facts/2026-09-11.json の3件。route=x・
-        missing=["video_content"]。言い回しがそれぞれ違う
-        （追えていない／未確認／見られていない）が全部開示として扱われる。
+        missing=["video_content"]。方式変更前は言い回しの揺れ
+        （追えていない／未確認／見られていない）を自由文判定で開示扱いに
+        していたが、マーカー方式ではこれらにマーカーが無いため全件違反に
+        なる（＝方式変更の意図の固定）。
         """
         self._write_facts("2026-09-11", {
             "https://x.com/masahirochaen/status/2097990179227414850?s=12": {
@@ -200,8 +209,8 @@ class DisclosureCheckTest(unittest.TestCase):
         self._write_review("2026-09-11", cards)
         out = self._run(["--date", "2026-09-11"])
         self.assertIn(
-            "DISCLOSURE_CHECK: date=2026-09-11 duty=3 disclosed=3 "
-            "violation=0 excluded=0 out_of_scope=0", out)
+            "DISCLOSURE_CHECK: date=2026-09-11 duty=3 disclosed=0 "
+            "violation=3 excluded=0 out_of_scope=0", out)
 
     # --- 実データ: 2026-09-14 facts のバックフィルrid が除外される -----------
 
@@ -244,7 +253,7 @@ class DisclosureCheckTest(unittest.TestCase):
         })
         self._write_review("2026-09-14", self._vcard(
             "https://x.com/gencoin8/status/2099302097909158238?s=12",
-            "別の当日カード", "今回は動画の内容を取得できなかった。",
+            "別の当日カード", V_MARKER + "。",
             "1853167142",
         ))
         out = self._run(["--date", "2026-09-11", "--date", "2026-09-14"])
@@ -275,7 +284,7 @@ class DisclosureCheckTest(unittest.TestCase):
         # 09-14 の reviews には対応カードが無い。
         self._write_review("2026-09-10", self._vcard(
             "https://x.com/example/status/999", "過去のカード",
-            "今回は動画の内容を取得できなかった。", "999",
+            V_MARKER + "。", "999",
         ))
         self._write_review("2026-09-14", self._vcard(
             "https://x.com/other/status/1", "無関係カード", "本文のみ。", "1",
@@ -329,7 +338,7 @@ class DisclosureCheckTest(unittest.TestCase):
         })
         self._write_review("2026-09-14", self._vcard(
             "https://x.com/gencoin8/status/2099302097909158238?s=12",
-            "別の当日カード", "今回は動画の内容を取得できなかった。",
+            "別の当日カード", V_MARKER + "。",
             "1853167142",
         ))
         self.assertFalse(os.path.isfile(self.capture_index_path))
@@ -345,7 +354,7 @@ class DisclosureCheckTest(unittest.TestCase):
     def test_20260908_threads_no_disclosure_is_violation(self):
         """実データ: fetch_facts/2026-09-08.json rid=1847745101
         （https://www.threads.com/share/BAY7Zm6kIj/、route=threads、
-        missing=["visual_content","audio_content"]）。カードに開示文言なし。
+        missing=["visual_content","audio_content"]）。カードにマーカー無し。
         """
         self._write_facts("2026-09-08", {
             "https://www.threads.com/share/BAY7Zm6kIj/": {
@@ -369,10 +378,9 @@ class DisclosureCheckTest(unittest.TestCase):
     # --- 実データ: 2026-09-12 Threads「本文…取得できていない」は違反 --------
 
     def test_20260912_threads_text_only_limitation_is_still_a_violation(self):
-        """実データ: fetch_facts/2026-09-12.json rid=1851132721。開示文が
-        「その先の本文はThreads側の要約制限で取得できていない」で、媒体語
-        （画像/動画/音声等）が無い＝テキスト取得限界の話のみ。threadsの
-        画像・動画・音声欠損への開示にはならないので違反。
+        """実データ: fetch_facts/2026-09-12.json rid=1851132721。文中に
+        マーカーが無い（テキスト取得限界の話のみ）。threadsの画像・動画・
+        音声欠損への開示にはならないので違反。
         """
         self._write_facts("2026-09-12", {
             "https://www.threads.com/share/BAZj3RDXFs/": {
@@ -394,12 +402,11 @@ class DisclosureCheckTest(unittest.TestCase):
             "DISCLOSURE_VIOLATION: date=2026-09-12 kind=threads "
             "rid=1851132721", out)
 
-    # --- 実データ: 2026-09-13 X (image+video欠損、動画のみ開示) は開示あり ---
+    # --- X (image+video欠損、動画マーカーのみ) は開示あり ---------------------
 
     def test_20260913_x_video_only_disclosure_counts_when_image_also_missing(self):
-        """実データ: fetch_facts/2026-09-13.json rid=1852040378
-        （missing=["image_content","video_content"]）。x_videoの判定対象は
-        video_contentのみなので、動画についてだけ開示していれば足りる。
+        """missing=["image_content","video_content"]。x_videoの判定対象は
+        video_contentのみなので、動画マーカーがあれば足りる。
         """
         self._write_facts("2026-09-13", {
             "https://x.com/tomorotenn/status/2099105835112890811?s=12": {
@@ -412,7 +419,7 @@ class DisclosureCheckTest(unittest.TestCase):
             "https://x.com/tomorotenn/status/2099105835112890811?s=12",
             "ジャパンディスプレイ（6740）が化けるかもという煽り",
             "現在価格47円のジャパンディスプレイが化けるかもしれないと予告。"
-            "今回は動画の内容を取得できなかった。",
+            + V_MARKER + "。",
             "1852040378",
         ))
         out = self._run(["--date", "2026-09-13"])
@@ -472,7 +479,7 @@ class DisclosureCheckTest(unittest.TestCase):
 
         after = self._read_review("2026-09-04")
         self.assertNotEqual(before, after)
-        self.assertIn("動画の内容は未取得。", after)
+        self.assertIn(V_MARKER + "。", after)
 
         # 差分は挿入文字列だけ（他のバイトは不変）。挿入位置以外が一致することを
         # 前後不一致の最長共通接頭辞・接尾辞で確認する。
@@ -487,11 +494,8 @@ class DisclosureCheckTest(unittest.TestCase):
             suffix_len += 1
         self.assertEqual(before[:prefix_len] + before[len(before) - suffix_len:],
                           before)
-        self.assertEqual(after[:prefix_len] + after[len(after) - suffix_len:]
-                          == after[:prefix_len] + after[len(after) - suffix_len:],
-                          True)
         inserted = after[prefix_len:len(after) - suffix_len]
-        self.assertIn("動画の内容は未取得。", inserted)
+        self.assertIn(V_MARKER + "。", inserted)
 
         # 再判定で違反0
         out2 = self._run(["--date", "2026-09-04"])
@@ -504,6 +508,34 @@ class DisclosureCheckTest(unittest.TestCase):
         self.assertNotIn("DISCLOSURE_FIXED:", out3)
         after2 = self._read_review("2026-09-04")
         self.assertEqual(after, after2)
+
+    def test_fix_threads_only_adds_the_missing_marker(self):
+        """threads で片方（visual_content）だけ既にマーカー済みの場合、
+        --fix は足りない方（audio_content）のマーカーだけを追記する。
+        """
+        self._write_facts("2026-09-08", {
+            "https://www.threads.com/share/BAY7Zm6kIj/": {
+                "route": "threads",
+                "missing": ["visual_content", "audio_content"],
+                "raindrop_id": 1847745101,
+            },
+        })
+        self._write_review("2026-09-08", self._vcard(
+            "https://www.threads.com/share/BAY7Zm6kIj/",
+            "Higgsfield MCPで画像・動画生成まで接続",
+            "広告画像・SNS画像・ショート動画素材の接続例。" + I_MARKER + "。",
+            "1847745101",
+        ))
+        out = self._run(["--date", "2026-09-08", "--fix"])
+        self.assertIn("DISCLOSURE_FIXED: date=2026-09-08 rid=1847745101", out)
+        after = self._read_review("2026-09-08")
+        self.assertEqual(after.count(I_MARKER), 1)
+        self.assertIn(A_MARKER + "。", after)
+
+        out2 = self._run(["--date", "2026-09-08"])
+        self.assertIn(
+            "DISCLOSURE_CHECK: date=2026-09-08 duty=1 disclosed=1 "
+            "violation=0 excluded=0 out_of_scope=0", out2)
 
     # --- 例外・ファイル欠如でも終了コード0 ------------------------------------
 
@@ -578,7 +610,7 @@ class DisclosureCheckTest(unittest.TestCase):
             + self._vcard(
                 "https://www.instagram.com/reel/Dcy4SIYiD7U/",
                 "重複カード（実データにはないが検証用）",
-                "同じ投稿が誤って2枚生成されたケース。動画の内容は未取得。",
+                "同じ投稿が誤って2枚生成されたケース。" + V_MARKER + "。",
                 "1842608050")
         )
         self._write_review("2026-09-04", cards)
@@ -590,9 +622,9 @@ class DisclosureCheckTest(unittest.TestCase):
         out2 = self._run(["--date", "2026-09-04", "--fix"])
         self.assertIn("DISCLOSURE_FIXED: date=2026-09-04 rid=1842608050", out2)
         after = self._read_review("2026-09-04")
-        # 両方のカードに定型文が入り、元々開示済みだった2枚目も変化しない
+        # 両方のカードにマーカーが入り、元々開示済みだった2枚目も変化しない
         # （冪等）はずなので、未開示だった1枚目だけに文言が追加される。
-        self.assertEqual(after.count("動画の内容は未取得。"), 2)
+        self.assertEqual(after.count(V_MARKER + "。"), 2)
 
         out3 = self._run(["--date", "2026-09-04"])
         self.assertIn(
@@ -646,7 +678,7 @@ class DisclosureCheckTest(unittest.TestCase):
             "class='vlink' target=\"_blank\">\n"
             '        <div class="thumb"><span class="ph">IG</span></div>\n'
             '        <div class="vbody"><div class="vtitle">title</div>'
-            "<div class='vdesc'>進捗を見せながら生成する。動画の内容は未取得。"
+            "<div class='vdesc'>進捗を見せながら生成する。" + V_MARKER + "。"
             "</div></div>\n"
             "      </a>\n"
             "      <button class=\"deepdive\" data-rid='1842608050' "
@@ -707,7 +739,7 @@ class DisclosureCheckTest(unittest.TestCase):
         })
         self._write_review("2026-09-14", self._vcard(
             "https://x.com/gencoin8/status/2099302097909158238?s=12",
-            "別の当日カード", "今回は動画の内容を取得できなかった。",
+            "別の当日カード", V_MARKER + "。",
             "1853167142",
         ))
         out = self._run(["--date", "2026-09-14"])
@@ -722,7 +754,7 @@ class DisclosureCheckTest(unittest.TestCase):
     def test_html_comment_inside_vdesc_does_not_break_card_extraction(self):
         """.vdesc の中に <!-- <div> --> のようなHTMLコメントがあっても、
         div開閉カウントを乱さず1枚のカードとして正しく抽出でき、開示判定も
-        正しく行える（未取得語が無いので違反のまま）。
+        正しく行える（マーカーが無いので違反のまま）。
         """
         self._write_facts("2026-09-04", {
             "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
@@ -749,7 +781,7 @@ class DisclosureCheckTest(unittest.TestCase):
         self.assertNotIn("card_parse_failed", out)
 
     def test_html_comment_with_disclosure_phrase_after_it_is_disclosed(self):
-        """コメントの後に本物の開示文言が続く場合はちゃんと開示ありになる
+        """コメントの後に本物のマーカーが続く場合はちゃんと開示ありになる
         （コメントに惑わされてカード境界がずれていないことの確認）。
         """
         self._write_facts("2026-09-04", {
@@ -760,7 +792,7 @@ class DisclosureCheckTest(unittest.TestCase):
         })
         desc = (
             "<!-- TODO: <div class=\"note\">後で書く</div> -->"
-            "動画の内容は未取得。"
+            + V_MARKER + "。"
         )
         self._write_review("2026-09-04", self._vcard(
             "https://www.instagram.com/reel/Dcy4SIYiD7U/",
@@ -771,6 +803,27 @@ class DisclosureCheckTest(unittest.TestCase):
         self.assertIn(
             "DISCLOSURE_CHECK: date=2026-09-04 duty=1 disclosed=1 "
             "violation=0 excluded=0 out_of_scope=0", out)
+
+    def test_marker_only_inside_html_comment_is_not_disclosed(self):
+        """マーカーが HTML コメントの中にだけある場合は開示扱いにならない
+        （vdesc_text はコメントの中身も含めてタグとして除去するため）。
+        """
+        self._write_facts("2026-09-04", {
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
+                "route": "instagram", "missing": ["video_content"],
+                "raindrop_id": 1842608050,
+            },
+        })
+        desc = "進捗を見せながら生成する<!-- " + V_MARKER + "。 -->。本文のみ。"
+        self._write_review("2026-09-04", self._vcard(
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/",
+            "写真1枚をRhinoモデルに変換するAIエージェント「STF Agent」",
+            desc, "1842608050",
+        ))
+        out = self._run(["--date", "2026-09-04"])
+        self.assertIn(
+            "DISCLOSURE_CHECK: date=2026-09-04 duty=1 disclosed=0 "
+            "violation=1 excluded=0 out_of_scope=0", out)
 
     # --- E: CRLF保持（2周目指示4） -------------------------------------------
 
@@ -803,7 +856,7 @@ class DisclosureCheckTest(unittest.TestCase):
 
         after = self._read_review("2026-09-04")
         self.assertNotEqual(before, after)
-        self.assertIn("動画の内容は未取得。", after)
+        self.assertIn(V_MARKER + "。", after)
 
         prefix_len = 0
         while (prefix_len < len(before) and prefix_len < len(after)
@@ -815,7 +868,7 @@ class DisclosureCheckTest(unittest.TestCase):
                and before[-1 - suffix_len] == after[-1 - suffix_len]):
             suffix_len += 1
         inserted = after[prefix_len:len(after) - suffix_len]
-        self.assertIn("動画の内容は未取得。", inserted)
+        self.assertIn(V_MARKER + "。", inserted)
         # 挿入文字列自体には改行が無いはずなので、CRLFがLFに化けていれば
         # ここで prefix/suffix の外に取りこぼされたCRLFが現れて長さが
         # ずれる。挿入部を除いた残り全体が前後で一致することを確認する。
@@ -826,7 +879,7 @@ class DisclosureCheckTest(unittest.TestCase):
         # 全体の \r\n の個数（挿入文言を除く）が変わっていないこと。
         self.assertEqual(
             before.count("\r\n"),
-            after.replace("動画の内容は未取得。", "").count("\r\n"),
+            after.replace(V_MARKER + "。", "").count("\r\n"),
         )
 
     # --- F: --since と card_parse_failed/error の::warning抑止（2周目指示5）-
@@ -879,30 +932,88 @@ class DisclosureCheckTest(unittest.TestCase):
                        r.stdout)
         self.assertIn("::warning title=disclosure::", r.stdout)
 
+    # --- G: no_review の ::warning（このタスクで追加した仕様） --------------
 
-class DisclosureTextMatchingTest(unittest.TestCase):
-    """開示判定コア（cd.text_disclosed）のデータ駆動テスト（2周目指示1）。
+    def test_no_review_warns_when_duty_positive_and_within_since(self):
+        """duty>0 の日に reviews/<日付>.html が無く、--since 以降なら
+        ::warning を出す（手順7を飛ばした夜を公開ゲートで検知するため）。
+        """
+        self._write_facts("2026-09-16", {
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
+                "route": "instagram", "missing": ["video_content"],
+                "raindrop_id": 1842608050,
+            },
+        })
+        summary = os.path.join(self.tmp, "summary.md")
+        env = dict(os.environ)
+        env["GITHUB_STEP_SUMMARY"] = summary
+        cmd = [sys.executable, str(SCRIPT), "--facts-dir", self.facts_dir,
+               "--reviews-dir", self.reviews_dir,
+               "--capture-index", self.capture_index_path,
+               "--date", "2026-09-16", "--since", "2026-09-15", "--github"]
+        r = subprocess.run(cmd, capture_output=True, text=True,
+                            encoding="utf-8", errors="replace", env=env)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("DISCLOSURE_CHECK: date=2026-09-16 status=no_review",
+                       r.stdout)
+        self.assertIn("::warning title=disclosure::", r.stdout)
+        self.assertIn("status=no_review", r.stdout.split("::warning", 1)[1])
+
+    def test_no_review_does_not_warn_before_since(self):
+        """--since より前の日付の no_review は ::warning を出さない。"""
+        self._write_facts("2026-09-04", {
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
+                "route": "instagram", "missing": ["video_content"],
+                "raindrop_id": 1842608050,
+            },
+        })
+        summary = os.path.join(self.tmp, "summary.md")
+        env = dict(os.environ)
+        env["GITHUB_STEP_SUMMARY"] = summary
+        cmd = [sys.executable, str(SCRIPT), "--facts-dir", self.facts_dir,
+               "--reviews-dir", self.reviews_dir,
+               "--capture-index", self.capture_index_path,
+               "--date", "2026-09-04", "--since", "2026-09-15", "--github"]
+        r = subprocess.run(cmd, capture_output=True, text=True,
+                            encoding="utf-8", errors="replace", env=env)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("DISCLOSURE_CHECK: date=2026-09-04 status=no_review",
+                       r.stdout)
+        self.assertNotIn("::warning", r.stdout)
+
+    def test_no_review_does_not_warn_when_duty_is_zero(self):
+        """duty=0（対象となる欠損レコードが無い）日は、reviewsが無くても
+        ::warning を出さない。
+        """
+        self._write_facts("2026-09-16", {
+            "https://www.instagram.com/p/whatever/": {
+                "route": "instagram",
+                "missing": ["visual_content", "audio_content"],
+                "raindrop_id": None,
+            },
+        })
+        summary = os.path.join(self.tmp, "summary.md")
+        env = dict(os.environ)
+        env["GITHUB_STEP_SUMMARY"] = summary
+        cmd = [sys.executable, str(SCRIPT), "--facts-dir", self.facts_dir,
+               "--reviews-dir", self.reviews_dir,
+               "--capture-index", self.capture_index_path,
+               "--date", "2026-09-16", "--since", "2026-09-15", "--github"]
+        r = subprocess.run(cmd, capture_output=True, text=True,
+                            encoding="utf-8", errors="replace", env=env)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("DISCLOSURE_CHECK: date=2026-09-16 status=no_review",
+                       r.stdout)
+        self.assertNotIn("::warning", r.stdout)
+
+
+class DisclosureMarkerMatchingTest(unittest.TestCase):
+    """開示判定コア（cd.text_disclosed）のマーカー方式データ駆動テスト。
+
     HTMLを組み立てず、.vdesc相当のプレーンテキストに対して直接判定する。
+    マーカー文字列は cd.MARKERS を正本として参照し、このテストファイルに
+    複製しない。
     """
-
-    # (a) 誤合格してはいけない文。x_video/reel/threads(視覚のみ)/
-    # threads(音声のみ)/threads(両方)のどの kind/missing の組でも
-    # Falseでなければならない（媒体を問わず誤合格しないことを見る文）。
-    FALSE_POSITIVE_TEXTS = [
-        # verifier 2周目 反例7文
-        "この動画は展開が早くまだ誰も未確認のまま拡散している",
-        "画像は鮮明で未確認ながら話題性は高いようだ",
-        "写真集（未取得の新刊）が発表された",
-        "Reelとして人気だが真偽は未確認のまま拡散",
-        "写真（この記事とは別件だが）は未確認のままだ",
-        "動画（前作の話）は今のところ未確認",
-        "画像・文章とも簡潔だが真偽は未確認",
-        # 追加の同型反例（このタスクで作成）
-        "映像は事前に確認済みなのに、音声だけが未取得のままとされている",
-        "写真は良い出来だが、動画のほうは今のところ未確認とのこと",
-        "リールは伸びているらしいが実態は未確認。画像だけ後日追加予定",
-        "音声トラックは収録済みで、動画は未取得情報として社内共有された",
-    ]
 
     KIND_MISSING_COMBOS = [
         ("x_video", ["video_content"]),
@@ -912,211 +1023,262 @@ class DisclosureTextMatchingTest(unittest.TestCase):
         ("threads", ["visual_content", "audio_content"]),
     ]
 
-    def test_a_false_positive_sentences_are_false_for_every_kind(self):
-        for text in self.FALSE_POSITIVE_TEXTS:
+    # --- True: マーカーが境界条件を満たして現れる -----------------------
+
+    def test_true_marker_at_end_of_text(self):
+        self.assertTrue(cd.text_disclosed(V_MARKER, "x_video", ["video_content"]))
+        self.assertTrue(cd.text_disclosed(V_MARKER, "reel", ["video_content"]))
+
+    def test_true_marker_followed_by_period(self):
+        self.assertTrue(
+            cd.text_disclosed(V_MARKER + "。", "x_video", ["video_content"]))
+
+    def test_true_marker_followed_by_space(self):
+        self.assertTrue(
+            cd.text_disclosed(V_MARKER + " 続き", "reel", ["video_content"]))
+
+    def test_true_marker_followed_by_newline(self):
+        self.assertTrue(
+            cd.text_disclosed(V_MARKER + "\n続き", "reel", ["video_content"]))
+
+    def test_true_marker_after_free_text(self):
+        text = "キッチン什器の写真を投げて生成する。" + V_MARKER + "。"
+        self.assertTrue(cd.text_disclosed(text, "reel", ["video_content"]))
+
+    def test_true_marker_before_free_text_with_boundary(self):
+        # マーカー直後が「。」なので、その後にどんな文が続いても構わない。
+        text = V_MARKER + "。詳細は後日追記予定。"
+        self.assertTrue(cd.text_disclosed(text, "x_video", ["video_content"]))
+
+    def test_true_threads_both_markers_present(self):
+        text = I_MARKER + "。" + A_MARKER + "。"
+        self.assertTrue(
+            cd.text_disclosed(text, "threads",
+                               ["visual_content", "audio_content"]))
+
+    def test_true_fix_phrases_are_self_consistent(self):
+        """--fixが実際に挿入する定型文自体も自己整合していることを確認。"""
+        self.assertTrue(
+            cd.text_disclosed(cd.FIX_PHRASES["x_video"], "x_video",
+                               ["video_content"]))
+        self.assertTrue(
+            cd.text_disclosed(cd.FIX_PHRASES["reel"], "reel",
+                               ["video_content"]))
+        self.assertTrue(
+            cd.text_disclosed(cd.FIX_PHRASES["threads"], "threads",
+                               ["visual_content", "audio_content"]))
+
+    # --- False: マーカーが無い自由文（旧real_cases30件・方式変更の意図の固定）-
+
+    # 2026-09-15 3周目差し戻し前の自由文判定では True 扱いだった実文
+    # （旧 test_check_disclosure.py の real_cases 30件から逐語コピー）。
+    # マーカー文字列が無いため、方式変更後はどれも False にならなければ
+    # ならない。
+    OLD_REAL_CASE_TEXTS_WITHOUT_MARKERS = [
+        "白背景の即答カードで支払い状況・与信利用率を示しつつ、"
+        "グラデーションのクレジットカード表示でローンごとの識別性を"
+        "確保。動画の内容は未取得（Instagram Reelの動画理解は構造的"
+        "に撤去済みのため、キャプションと画像から判断）",
+        "撥水加工・丈夫さを生かし、複数の巾着袋をナップサック代わりに"
+        "使うアイデアを紹介(動画内容は未取得、キャプションのみ)",
+        "Tord Björklund設計、2002年発売。各トレイにCD51枚収納可能・"
+        "壁掛けにも対応するヴィンテージIKEA品を4台集めたと紹介"
+        "(動画内容は未取得、キャプションのみ)",
+        "「バズったやつ」とのキャプションで、横断歩道を渡るPOV映像が"
+        "話題に。動画の中身は未取得（Instagram Reelは動画取得を構造的"
+        "に断念済みのため）で、キャプションと画像から推測。",
+        "FRAGG・VINK・GRUBBE×2・JUTISと廃盤プロダクトを並べた投稿。"
+        "動画の中身は未取得（同上の構造的制約）で、キャプションと画像"
+        "から推測。",
+        "水彩調テクスチャを継ぎ目なくタイル化する塗装法をKrita/"
+        "Blender/UnrealEngineで実演（詳しい手順動画は後日公開予定と"
+        "のこと）。動画の内容は未取得。",
+        "「Claude Codeを毎月16億トークン無料で回すOmniRoute設定書」を"
+        "プロフィールから配布中と告知しつつ、AI×SNS運用のオンライン"
+        "勉強会（無料・約2時間）へも誘導する投稿。動画の内容は未取得。",
+        "カメラワーク・照明・構図・ジャンル/スタイル別に、映画の撮影・"
+        "演出技法150個をAI動画生成用プロンプトとして整理。サンプル"
+        "映像を選ぶと技法解説とプロンプトがそのまま出てきてコピー"
+        "できる（今回は埋め込み動画自体の内容は取得できなかった）",
+        "RevitモデルをThree.js環境に変換しASTRAが空間構成を読んで"
+        "カメラパスを自動提案、同じジオメトリのカラーマップ動画を"
+        "Higgsfieldのマテリアル指定にも使う二段構え。動画の内容は"
+        "未取得",
+        "WebMCPでページのツールを自動検出し、YouTube再生と同期して"
+        "一時停止→解説→再生継続。対応はGPT-5.6 SolとTerraのみでLuna"
+        "は非対応、セットアップは10秒と紹介。今回は動画の中身までは"
+        "追えていない",
+        "Anthropicの最高責任者本人が、自分のClaude Code環境を丸ごと"
+        "公開したと投稿（実態は要検証、上の深掘り参照）。動画部分は"
+        "今回未確認",
+        "投資歴15年の投稿者が「AI社員を使った株式投資はマジで最強」と"
+        "断言するのみで、具体的な運用実績や再現性の記載は本文には"
+        "無い。動画は今回見られていない",
+        "レイヤー216・オブジェクト30,595・完全重複線13,523という"
+        "DWGを丸ごと読み込み、MIDASの構造モデルから部材1,119点を"
+        "REVITへ自動モデリング。まだパイロット段階と明記。動画の内容"
+        "は未取得",
+        "開発2ヶ月・元手50万ウォンから、初週で200万ウォンの収益を"
+        "達成したという投稿。動画付きだが今回は動画の内容を取得でき"
+        "なかった",
+        "CADは最初の学習曲線が急だが、練習を重ねて機能に慣れ、実務"
+        "でも毎日使ううちに身についたという経験を紹介し、コメント欄"
+        "で学習リンクを配布。動画の内容は未取得。",
+        "Appleが導入するとみられる新ステータスアイコンのアニメーショ"
+        "ンを1時間半かけて模写し、ゼロから発想するより模写の方が易し"
+        "いと述懐。動画の内容は未取得。",
+        "段ボールなどを使った建築模型制作の裏ワザを紹介する投稿（本文"
+        "はハッシュタグのみ）。動画の内容は未取得。",
+        "同じく建築模型づくりの裏ワザ動画で、何のスプレーを吹きかけて"
+        "いるのか気になるというユーザーコメントが付いた一本。動画の"
+        "内容は未取得。",
+        "プロジェクトの知性は単一ツールに閉じるべきではないとし、複数"
+        "フォーマットをまたいでAIと協働できるエージェント型デスクトッ"
+        "プワークスペースをローンチ。動画の内容は未取得。",
+        "現在価格47円のジャパンディスプレイが化けるかもしれないと予告"
+        "した投稿。今回は動画の内容を取得できなかった。",
+        "現在価格47円のジャパンディスプレイがフジクラ・村田製作所・"
+        "太陽誘電・キオクシア以上に来るかもしれないとし、空気が変わっ"
+        "た瞬間に一気に飛ぶと予告。今回は動画の内容を取得できなかっ"
+        "た。",
+        "現在26円のCRAVIAが125円に到達すれば投資額が10倍超になり得る"
+        "としつつ、結果は誰にも分からないと留保を添えて煽る一本。今回"
+        "は動画の内容を取得できなかった。",
+        "JT・三菱重工・トヨタ自動車・ソフトバンク・NTTなど、300株保有"
+        "を前提にした高配当・国策銘柄7選を順位付きで紹介。今回は動画"
+        "の内容を取得できなかった。",
+        "声を学習させて動画の音声を646言語に差し替えたり、書き起こし"
+        "・朗読までこなすOSSツール「VoiceStudio」がGitHubで2万star近"
+        "くに到達、搭載エンジンは本家ElevenLabsの32種を上回る14種類だ"
+        "と紹介。今回は動画の内容を取得できなかった。",
+        "厚みは壁の50〜60%、抜き勾配は射出成形0.5〜3°・3Dプリントは"
+        "不要、高さは厚みの約3倍、根元フィレット0.5〜1mm、意匠面裏へ"
+        "のリブ配置はヒケ発生リスクがあるため回避、3Dプリントでは積層"
+        "方向も要考慮というTipsをまとめた投稿（タミル語）。動画の内容"
+        "は未取得。",
+        "Codex 6 Astraをメインモデルにしているなら、OpenAI公式案内ど"
+        "おりAGENTS.mdやSkillsも合わせて更新しないと本来の性能を半減"
+        "させかねないと注意喚起。今回は動画の内容を取得できなかっ"
+        "た。",
+        "AIボイスレコーダーが2〜3万円で手が出しにくいことから、"
+        "iPhoneだけで完結する「Recory」を自作。録音・リアルタイム文字"
+        "起こし・議事録・タスク化に加え、MCP経由でGPTやClaudeが議事録"
+        "の文脈を呼び出せる設計。今回は動画の内容を取得できなかっ"
+        "た。",
+        "ChatGPTとノーコードを組み合わせ、Zoom終了と同時に文字起こし"
+        "→要約→ドキュメント作成→Slack通知まで自動で走るワークフロー"
+        "を構築、非エンジニアでも30分・無料で作れると述べる。今回は"
+        "動画の内容を取得できなかった。",
+        "ローカルCPUだけで動く多言語リアルタイム文字起こしエンジン"
+        "「早耳 hayamimi」をOSS公開。実放送の日本語でCER 5.8%、発話"
+        "終了から約0.1秒で字幕確定、日英中韓含む約1600言語対応、GPU"
+        "不要・RAM 2GBで動作という仕様をMITライセンスで公開。今回は"
+        "動画の内容を取得できなかった。",
+        "19歳の日本人学生がClaude Codeで2日で組んだトレードbotが元手"
+        "$68（約1万円）から初日の夜だけで+$6,732（約100万円）稼いだと"
+        "紹介する投稿。今回は動画の内容を取得できなかった。",
+    ]
+
+    def test_false_old_real_case_texts_without_markers_are_all_false(self):
+        self.assertEqual(len(self.OLD_REAL_CASE_TEXTS_WITHOUT_MARKERS), 30)
+        for text in self.OLD_REAL_CASE_TEXTS_WITHOUT_MARKERS:
             for kind, missing in self.KIND_MISSING_COMBOS:
                 self.assertFalse(
                     cd.text_disclosed(text, kind, missing),
-                    "開示なしと判定されるべき（kind=%s missing=%s）: %s"
-                    % (kind, missing, text))
+                    "マーカーが無いので開示なしと判定されるべき"
+                    "（kind=%s missing=%s）: %s" % (kind, missing, text))
 
-    def test_a_codex_repro_video_swapped_for_image_is_false_for_video_kinds(self):
-        """Codex 1周目P0（CEOが再現）: `動画は確認済みだが、画像は未取得。`
-        が x_video/reel で開示ありと誤判定される問題。video_content が要る
-        kind と、threads で画像語を持たない audio_content 単独では False。
-        （なお threads の visual_content 単独では「画像は未取得」の部分が
-        文字通り画像の開示に該当するため True が正しい。これは誤合格では
-        なく、文中に無関係な話題が混じっていても該当媒体の開示自体は
-        別途成立しているケース。x_videoの video_content がこの文の
-        「画像は未取得」に釣られて誤って開示扱いになっていたのが元のバグ）。
-        """
-        text = "動画は確認済みだが、画像は未取得。"
-        self.assertFalse(cd.text_disclosed(text, "x_video", ["video_content"]))
-        self.assertFalse(cd.text_disclosed(text, "reel", ["video_content"]))
-        self.assertFalse(cd.text_disclosed(text, "threads", ["audio_content"]))
-        # 参考: threads の visual_content 単独では「画像は未取得」により
-        # 正当にTrueになる（誤合格ではない。上のdocstring参照）。
-        self.assertTrue(cd.text_disclosed(text, "threads", ["visual_content"]))
+    # 前周までの自由文判定の反例（全角コロン・否定・Threads代行・Reel内
+    # 画像など）。マーカーが無いのでどれも False。
+    PREVIOUS_ROUND_COUNTEREXAMPLE_TEXTS = [
+        "動画：画像は未取得",
+        "未取得ではない",
+        "動画は音声も含めて未取得",  # Threadsでaudio_contentを動画語が代行
+        "このReel内の画像は未取得",
+    ]
 
-    def test_b_real_disclosed_vdesc_texts_are_true(self):
-        """実データ: fetch_facts/*.json と reviews/*.html を突き合わせて
-        「全候補カードが開示済み」と判定された実際のduty レコードから、
-        .vdesc の中身をそのまま抽出した実文（kind/missing 付き）。
-        手で書いた文例は含めない。30件（reel19件相当＋x_video11件相当、
-        重複rid分含む）。
-        """
-        # (date, kind, missing, rid, text) — text は
-        # check_disclosure.vdesc_text() で実カードから抽出した逐語。
-        real_cases = [
-            ("2026-08-23", "reel", ["video_content"], None,
-             "白背景の即答カードで支払い状況・与信利用率を示しつつ、"
-             "グラデーションのクレジットカード表示でローンごとの識別性を"
-             "確保。動画の内容は未取得（Instagram Reelの動画理解は構造的"
-             "に撤去済みのため、キャプションと画像から判断）"),
-            ("2026-08-28", "reel", ["video_content"], None,
-             "撥水加工・丈夫さを生かし、複数の巾着袋をナップサック代わりに"
-             "使うアイデアを紹介(動画内容は未取得、キャプションのみ)"),
-            ("2026-08-28", "reel", ["video_content"], None,
-             "Tord Björklund設計、2002年発売。各トレイにCD51枚収納可能・"
-             "壁掛けにも対応するヴィンテージIKEA品を4台集めたと紹介"
-             "(動画内容は未取得、キャプションのみ)"),
-            ("2026-08-30", "reel", ["video_content"], None,
-             "「バズったやつ」とのキャプションで、横断歩道を渡るPOV映像が"
-             "話題に。動画の中身は未取得（Instagram Reelは動画取得を構造的"
-             "に断念済みのため）で、キャプションと画像から推測。"),
-            ("2026-08-30", "reel", ["video_content"], None,
-             "FRAGG・VINK・GRUBBE×2・JUTISと廃盤プロダクトを並べた投稿。"
-             "動画の中身は未取得（同上の構造的制約）で、キャプションと画像"
-             "から推測。"),
-            ("2026-09-05", "reel", ["video_content"], "1844474651",
-             "水彩調テクスチャを継ぎ目なくタイル化する塗装法をKrita/"
-             "Blender/UnrealEngineで実演（詳しい手順動画は後日公開予定と"
-             "のこと）。動画の内容は未取得。"),
-            ("2026-09-06", "reel", ["video_content"], "1844650582",
-             "「Claude Codeを毎月16億トークン無料で回すOmniRoute設定書」を"
-             "プロフィールから配布中と告知しつつ、AI×SNS運用のオンライン"
-             "勉強会（無料・約2時間）へも誘導する投稿。動画の内容は未取得。"),
-            ("2026-09-09", "x_video", ["video_content"], "1848175166",
-             "カメラワーク・照明・構図・ジャンル/スタイル別に、映画の撮影・"
-             "演出技法150個をAI動画生成用プロンプトとして整理。サンプル"
-             "映像を選ぶと技法解説とプロンプトがそのまま出てきてコピー"
-             "できる（今回は埋め込み動画自体の内容は取得できなかった）"),
-            ("2026-09-11", "reel", ["video_content"], "1850230050",
-             "RevitモデルをThree.js環境に変換しASTRAが空間構成を読んで"
-             "カメラパスを自動提案、同じジオメトリのカラーマップ動画を"
-             "Higgsfieldのマテリアル指定にも使う二段構え。動画の内容は"
-             "未取得"),
-            ("2026-09-11", "x_video", ["video_content"], "1850403031",
-             "WebMCPでページのツールを自動検出し、YouTube再生と同期して"
-             "一時停止→解説→再生継続。対応はGPT-5.6 SolとTerraのみでLuna"
-             "は非対応、セットアップは10秒と紹介。今回は動画の中身までは"
-             "追えていない"),
-            ("2026-09-11", "x_video", ["video_content"], "1850401311",
-             "Anthropicの最高責任者本人が、自分のClaude Code環境を丸ごと"
-             "公開したと投稿（実態は要検証、上の深掘り参照）。動画部分は"
-             "今回未確認"),
-            ("2026-09-11", "x_video", ["video_content"], "1850309485",
-             "投資歴15年の投稿者が「AI社員を使った株式投資はマジで最強」と"
-             "断言するのみで、具体的な運用実績や再現性の記載は本文には"
-             "無い。動画は今回見られていない"),
-            ("2026-09-12", "reel", ["video_content"], "1850945581",
-             "レイヤー216・オブジェクト30,595・完全重複線13,523という"
-             "DWGを丸ごと読み込み、MIDASの構造モデルから部材1,119点を"
-             "REVITへ自動モデリング。まだパイロット段階と明記。動画の内容"
-             "は未取得"),
-            ("2026-09-12", "x_video", ["video_content"], "1851095582",
-             "開発2ヶ月・元手50万ウォンから、初週で200万ウォンの収益を"
-             "達成したという投稿。動画付きだが今回は動画の内容を取得でき"
-             "なかった"),
-            ("2026-09-13", "reel", ["video_content"], "1852143830",
-             "CADは最初の学習曲線が急だが、練習を重ねて機能に慣れ、実務"
-             "でも毎日使ううちに身についたという経験を紹介し、コメント欄"
-             "で学習リンクを配布。動画の内容は未取得。"),
-            ("2026-09-13", "reel", ["video_content"], "1852142500",
-             "Appleが導入するとみられる新ステータスアイコンのアニメーショ"
-             "ンを1時間半かけて模写し、ゼロから発想するより模写の方が易し"
-             "いと述懐。動画の内容は未取得。"),
-            ("2026-09-13", "reel", ["video_content"], "1852141997",
-             "段ボールなどを使った建築模型制作の裏ワザを紹介する投稿（本文"
-             "はハッシュタグのみ）。動画の内容は未取得。"),
-            ("2026-09-13", "reel", ["video_content"], "1852086012",
-             "同じく建築模型づくりの裏ワザ動画で、何のスプレーを吹きかけて"
-             "いるのか気になるというユーザーコメントが付いた一本。動画の"
-             "内容は未取得。"),
-            ("2026-09-13", "reel", ["video_content"], "1852083950",
-             "プロジェクトの知性は単一ツールに閉じるべきではないとし、複数"
-             "フォーマットをまたいでAIと協働できるエージェント型デスクトッ"
-             "プワークスペースをローンチ。動画の内容は未取得。"),
-            ("2026-09-13", "x_video", ["image_content", "video_content"],
-             "1852040378",
-             "現在価格47円のジャパンディスプレイがフジクラ・村田製作所・"
-             "太陽誘電・キオクシア以上に来るかもしれないとし、空気が変わっ"
-             "た瞬間に一気に飛ぶと予告。今回は動画の内容を取得できなかっ"
-             "た。"),
-            ("2026-09-13", "x_video", ["video_content"], "1852030187",
-             "現在26円のCRAVIAが125円に到達すれば投資額が10倍超になり得る"
-             "としつつ、結果は誰にも分からないと留保を添えて煽る一本。今回"
-             "は動画の内容を取得できなかった。"),
-            ("2026-09-13", "x_video", ["video_content"], "1852030091",
-             "JT・三菱重工・トヨタ自動車・ソフトバンク・NTTなど、300株保有"
-             "を前提にした高配当・国策銘柄7選を順位付きで紹介。今回は動画"
-             "の内容を取得できなかった。"),
-            ("2026-09-13", "x_video", ["video_content"], "1852024519",
-             "声を学習させて動画の音声を646言語に差し替えたり、書き起こし"
-             "・朗読までこなすOSSツール「VoiceStudio」がGitHubで2万star近"
-             "くに到達、搭載エンジンは本家ElevenLabsの32種を上回る14種類だ"
-             "と紹介。今回は動画の内容を取得できなかった。"),
-            ("2026-09-14", "reel", ["video_content"], "1852251457",
-             "厚みは壁の50〜60%、抜き勾配は射出成形0.5〜3°・3Dプリントは"
-             "不要、高さは厚みの約3倍、根元フィレット0.5〜1mm、意匠面裏へ"
-             "のリブ配置はヒケ発生リスクがあるため回避、3Dプリントでは積層"
-             "方向も要考慮というTipsをまとめた投稿（タミル語）。動画の内容"
-             "は未取得。"),
-            ("2026-09-14", "x_video", ["video_content"], "1853167142",
-             "Codex 6 Astraをメインモデルにしているなら、OpenAI公式案内ど"
-             "おりAGENTS.mdやSkillsも合わせて更新しないと本来の性能を半減"
-             "させかねないと注意喚起。今回は動画の内容を取得できなかっ"
-             "た。"),
-            ("2026-09-14", "x_video", ["video_content"], "1853166438",
-             "AIボイスレコーダーが2〜3万円で手が出しにくいことから、"
-             "iPhoneだけで完結する「Recory」を自作。録音・リアルタイム文字"
-             "起こし・議事録・タスク化に加え、MCP経由でGPTやClaudeが議事録"
-             "の文脈を呼び出せる設計。今回は動画の内容を取得できなかっ"
-             "た。"),
-            ("2026-09-14", "x_video", ["video_content"], "1853166384",
-             "ChatGPTとノーコードを組み合わせ、Zoom終了と同時に文字起こし"
-             "→要約→ドキュメント作成→Slack通知まで自動で走るワークフロー"
-             "を構築、非エンジニアでも30分・無料で作れると述べる。今回は"
-             "動画の内容を取得できなかった。"),
-            ("2026-09-14", "x_video", ["video_content"], "1853166010",
-             "動画をAIとリアルタイムに同時視聴する「Watch with Codex」が"
-             "登場、ChatGPT/Codex内蔵ブラウザとWebMCPで再生位置と同期し、"
-             "任意の瞬間で一時停止して解説させられる。今回は動画の内容を"
-             "取得できなかった。"),
-            ("2026-09-14", "x_video", ["video_content"], "1853165924",
-             "ローカルCPUだけで動く多言語リアルタイム文字起こしエンジン"
-             "「早耳 hayamimi」をOSS公開。実放送の日本語でCER 5.8%、発話"
-             "終了から約0.1秒で字幕確定、日英中韓含む約1600言語対応、GPU"
-             "不要・RAM 2GBで動作という仕様をMITライセンスで公開。今回は"
-             "動画の内容を取得できなかった。"),
-            ("2026-09-14", "x_video", ["video_content"], "1852251612",
-             "19歳の日本人学生がClaude Codeで2日で組んだトレードbotが元手"
-             "$68（約1万円）から初日の夜だけで+$6,732（約100万円）稼いだと"
-             "紹介する投稿。今回は動画の内容を取得できなかった。"),
-        ]
-        self.assertEqual(len(real_cases), 30, "実データ抽出件数が変わった")
-        for date, kind, missing, rid, text in real_cases:
-            self.assertTrue(
-                cd.text_disclosed(text, kind, missing),
-                "開示ありと判定されるべき（%s kind=%s rid=%s）: %s"
-                % (date, kind, rid, text))
+    def test_false_previous_round_counterexample_texts(self):
+        for text in self.PREVIOUS_ROUND_COUNTEREXAMPLE_TEXTS:
+            for kind, missing in self.KIND_MISSING_COMBOS:
+                self.assertFalse(
+                    cd.text_disclosed(text, kind, missing),
+                    "マーカーが無いので開示なしと判定されるべき"
+                    "（kind=%s missing=%s）: %s" % (kind, missing, text))
 
-    def test_c_kind_mismatch_x_video_image_only_is_false(self):
-        """x_video (video_content欠損) に「画像は未取得」だけでは開示にならない。"""
+    # --- False: 別媒体のマーカーのみ ------------------------------------
+
+    def test_false_reel_with_only_image_marker(self):
+        """reel（video_content欠損）に画像マーカーだけでは開示にならない。"""
         self.assertFalse(
-            cd.text_disclosed("画像は未取得。", "x_video", ["video_content"]))
+            cd.text_disclosed(I_MARKER + "。", "reel", ["video_content"]))
         self.assertFalse(
-            cd.text_disclosed("画像は未取得。", "reel", ["video_content"]))
+            cd.text_disclosed(I_MARKER + "。", "x_video", ["video_content"]))
 
-    def test_c_kind_mismatch_threads_audio_only_image_word_is_false(self):
-        """threads で audio_content のみ欠損のとき「画像は未取得」だけでは
-        音声の開示にならない（画像語は audio_content の語彙に無い）。
+    def test_false_threads_audio_missing_with_only_video_marker(self):
+        """threads で audio_content のみ欠損のとき、動画マーカーだけでは
+        音声の開示にならない（動画マーカーは audio_content 用ではない）。
         """
         self.assertFalse(
-            cd.text_disclosed("画像は未取得。", "threads", ["audio_content"]))
+            cd.text_disclosed(V_MARKER + "。", "threads", ["audio_content"]))
 
-    def test_c_threads_both_missing_requires_both_words(self):
-        """threads で画像・音声両方欠損のとき、画像だけの開示では不十分。
-        両方揃って初めて開示扱いになる。
-        """
+    def test_false_threads_both_missing_only_one_marker(self):
+        """threads で画像・音声両方欠損のとき、画像マーカーだけでは不十分。"""
         missing = ["visual_content", "audio_content"]
-        self.assertFalse(cd.text_disclosed("画像は未取得。", "threads", missing))
-        self.assertFalse(cd.text_disclosed("音声は未取得。", "threads", missing))
+        self.assertFalse(cd.text_disclosed(I_MARKER + "。", "threads", missing))
+        self.assertFalse(cd.text_disclosed(A_MARKER + "。", "threads", missing))
         self.assertTrue(
-            cd.text_disclosed("画像・音声は未取得。", "threads", missing))
-        # --fixが実際に挿入する定型文自体も自己整合していることを確認。
-        self.assertTrue(
-            cd.text_disclosed(cd.FIX_PHRASES["threads"], "threads", missing))
+            cd.text_disclosed(I_MARKER + "。" + A_MARKER + "。",
+                               "threads", missing))
+
+    # --- False: マーカー直後に文字が続く（否定・別の文の一部） --------------
+
+    def test_false_marker_followed_by_negation(self):
+        self.assertFalse(
+            cd.text_disclosed(V_MARKER + "ではない", "reel", ["video_content"]))
+        self.assertFalse(
+            cd.text_disclosed(V_MARKER + "ではない。", "x_video",
+                               ["video_content"]))
+
+    def test_false_marker_followed_by_past_tense_continuation(self):
+        self.assertFalse(
+            cd.text_disclosed(V_MARKER + "だった", "reel", ["video_content"]))
+
+    def test_false_marker_is_a_prefix_of_a_longer_word(self):
+        """マーカー文字列がたまたま別の語の一部として現れているだけの場合
+        （直後に境界文字が来ない）は開示にならない。
+        """
+        self.assertFalse(
+            cd.text_disclosed(V_MARKER + "情報として社内共有", "x_video",
+                               ["video_content"]))
+
+    # --- False: マーカーがHTMLコメント内にだけある（card_disclosed経由）----
+
+    def test_false_marker_only_inside_html_comment_via_card_disclosed(self):
+        card_raw = (
+            '<div class="vcard"><div class="vdesc">'
+            "本文のみ。<!-- " + V_MARKER + "。 -->"
+            "</div></div>"
+        )
+        self.assertFalse(
+            cd.card_disclosed(card_raw, "reel", ["video_content"]))
+
+    # --- missing_marker_keys の直接テスト（--fix が使う足りないキー抽出）---
+
+    def test_missing_marker_keys_threads_partial(self):
+        text = I_MARKER + "。"
+        self.assertEqual(
+            cd.missing_marker_keys(text, "threads",
+                                    ["visual_content", "audio_content"]),
+            ["audio_content"],
+        )
+
+    def test_missing_marker_keys_empty_when_all_present(self):
+        text = I_MARKER + "。" + A_MARKER + "。"
+        self.assertEqual(
+            cd.missing_marker_keys(text, "threads",
+                                    ["visual_content", "audio_content"]),
+            [],
+        )
 
 
 if __name__ == "__main__":

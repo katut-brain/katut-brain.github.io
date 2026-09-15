@@ -7,17 +7,19 @@
 Threads 3件など、見たかのような記述や開示ゼロが実例として発生した）。
 このスクリプトは `reviews/<日付>.html` の各カードを機械的に読み、
 `fetch_facts/<日付>.json` の欠損記録と突き合わせて、開示すべきなのに
-していないカードを検出する。判定語リストはこのファイル先頭の定数
-（MEDIA_ALT_BY_KEY / UNGOTTEN_ALT）にのみ置き、他所へ複製しない。
+していないカードを検出する。判定語（マーカー文）はこのファイル先頭の定数
+（MARKERS）にのみ置き、他所へ複製しない。
 
-開示判定（2026-09-15 2周目差し戻しで作り替え）は「missing の欠損キーごとに
-専用の媒体語（MEDIA_ALT_BY_KEY）が、未取得語より前に・8文字以内の接続部
-（区切り記号を挟まない）で・一方向にだけ近接している」ことを要求する。
-媒体語どうしが「・」「、」「と」で直接連結されている場合だけ、その並びを
-1つの塊として扱い、塊に含まれるどの媒体語がどの欠損キーの語彙かで判定する
-（「画像・動画・音声の内容は未取得」の定型文1つで画像/動画/音声すべてが
-開示扱いになる）。「動画は確認済みだが、画像は未取得」のように別の媒体の
-話とすり替わっている文は合格しない（媒体語ごとに専用の未取得語彙が必要）。
+開示判定（2026-09-15 3周目差し戻しで固定マーカー方式に作り替え）は、自由文を
+読んで判定するのをやめ、欠損キーごとに決まった1つのマーカー文
+（「※動画の内容は未取得」等）の**有無**だけで判定する。マーカー文字列の
+直後が「文末（テキスト終端）」「。」「空白」「改行」のいずれかであれば
+開示ありとみなし、それ以外（マーカーが無い・マーカーの直後に文字が続く
+＝「※動画の内容は未取得ではない」等）は開示なしとする。自由文の内容を
+解釈する処理（語彙の近接判定・否定の先読み等）は一切行わない。3周にわたる
+外部レビューで自由文判定に新しい誤合格反例（全角コロン・否定・Threadsでの
+語の代行・別媒体のマーカーの流用など）が出続けたため、いたちごっこを
+終わらせる目的でこの方式に切り替えた（ユーザー裁定 2026-09-15）。
 
 判定対象（duty）は3種類のみ:
   - x_video   : route=x かつ missing に video_content
@@ -54,56 +56,49 @@ from urllib.parse import urlsplit
 
 # --- 判定語（正本はここ一箇所） -------------------------------------------
 
-# missing の欠損キーごとの媒体語。threads は visual_content/audio_content
-# それぞれに専用の語彙を持ち、欠損キーごとに個別の開示が要る
-# （「画像は未取得」だけでは audio_content の開示にはならない）。
-MEDIA_ALT_BY_KEY = {
-    "video_content": r"動画|映像|リール|Reel",
-    "visual_content": r"画像|写真|映像|動画|視覚",
-    "audio_content": r"音声|動画|映像",
+# missing の欠損キーごとの固定マーカー文。自由文ではなく、この文字列の
+# 有無だけで開示を判定する。threads は visual_content/audio_content
+# それぞれに専用のマーカーを持ち、欠損キーごとに個別の開示が要る
+# （「※画像の内容は未取得」だけでは audio_content の開示にはならない）。
+MARKERS = {
+    "video_content": "※動画の内容は未取得",
+    "visual_content": "※画像の内容は未取得",
+    "audio_content": "※音声の内容は未取得",
 }
-# 上記の和集合（テスト等で「どの欠損キーにも属さない語」を判定するときに使う）。
-ANY_MEDIA_ALT = r"動画|映像|画像|音声|視覚|写真|リール|Reel"
 
-UNGOTTEN_ALT = (
-    r"未取得|取得できていない|取得できな|取れていない|取れなかった|"
-    r"見られていない|見ていない|視聴していない|未確認|"
-    r"確認できていない|追えていない|未視聴"
-)
-# 未取得語の直後にこれが続く場合は「未取得の開示」ではない
-# （噂・真偽の「未確認」など、別の話をしているだけ）。
-NEGATIVE_LOOKAHEAD_ALT = r"のまま|ながら|だが|情報|とされ|とのこと"
+# マーカー文字列の直後がこれらのいずれかであれば「開示あり」とみなす境界文字
+# （文末は別途 index が末尾に達したかで判定する）。
+_BOUNDARY_PUNCT = "。"
 
-# 媒体語(の並び)から未取得語までの接続部に使える最大文字数。
-CONNECTOR_MAX = 8
-# 接続部にこれらの文字が入っていたら、近接していても別の話として扱う。
-CONNECTOR_BLOCK_CHARS = "。、，,.!?！？()（）「」『』・\n"
-# 媒体語どうしがこれらの文字で直接連結されている場合だけ「並列」として
-# 1つの塊にまとめる（例:「画像・動画・音声」）。
-PARALLEL_SEP_CHARS = "・、と"
 
-# 「媒体語(区切り 媒体語)*」の塊を検出する正規表現（塊の中の語彙は
-# キーを問わず和集合で連結を許す。どのキーを満たすかは塊の中身を
-# MEDIA_ALT_BY_KEY で個別に再チェックする）。
-CLUSTER_RE = re.compile(
-    r"(?:%s)(?:[%s](?:%s))*"
-    % (ANY_MEDIA_ALT, re.escape(PARALLEL_SEP_CHARS), ANY_MEDIA_ALT)
-)
-# 塊の直後から「接続部（最大CONNECTOR_MAX文字・区切り記号を含まない）＋
-# 未取得語（直後に否定先読み語が続かない）」が続くかを見る正規表現。
-# re.match(text, pos) で塊の終端位置に固定して使う。
-UNGOTTEN_AFTER_RE = re.compile(
-    r"[^%s]{0,%d}(?:%s)(?!%s)"
-    % (re.escape(CONNECTOR_BLOCK_CHARS), CONNECTOR_MAX, UNGOTTEN_ALT,
-       NEGATIVE_LOOKAHEAD_ALT)
-)
-KEY_ALT_RE = {k: re.compile(v) for k, v in MEDIA_ALT_BY_KEY.items()}
+def _marker_disclosed(text, marker):
+    """text 内に marker が現れ、かつその直後が文末／「。」／空白／改行の
+    いずれかである箇所が1つでもあれば True。直後に他の文字が続く場合
+    （「※動画の内容は未取得ではない」等）はその出現を合格させず、
+    後続に同じマーカーが別途あれば改めて探す。
+    """
+    start = 0
+    n = len(text)
+    while True:
+        idx = text.find(marker, start)
+        if idx == -1:
+            return False
+        after = idx + len(marker)
+        if after >= n:
+            return True
+        ch = text[after]
+        if ch == _BOUNDARY_PUNCT or ch.isspace():
+            return True
+        start = idx + 1
 
-# 種別ごとの --fix 定型文
+
+# 種別ごとの --fix 定型文（欠損キー全部が missing だった場合の参考値。
+# 実際の --fix 挿入は process_date 側で missing の実キーだけを個別に
+# MARKERS から組み立てる。テスト等の参照用にここにも用意する）。
 FIX_PHRASES = {
-    "x_video": "今回は動画の内容を取得できなかった。",
-    "reel": "動画の内容は未取得。",
-    "threads": "画像・動画・音声の内容は未取得。",
+    "x_video": MARKERS["video_content"] + "。",
+    "reel": MARKERS["video_content"] + "。",
+    "threads": MARKERS["visual_content"] + "。" + MARKERS["audio_content"] + "。",
 }
 
 TAG_RE = re.compile(r"<[^>]+>")
@@ -375,33 +370,24 @@ def required_missing_keys(kind, missing):
     return []
 
 
-def _forward_disclosed_keys(text):
-    """text の中で「媒体語の塊 → (近接した)未取得語」の並びが成立している
-    箇所をすべて洗い出し、その塊に含まれる語が該当する欠損キーの集合を返す
-    （複数箇所あれば和集合。媒体語が未取得語より後ろにある場合は数えない
-    ＝「動画は確認済みだが、画像は未取得」で video_content 側が誤って
-    開示扱いにならないようにするため）。
+def missing_marker_keys(text, kind, missing):
+    """text の中に、kind/missing から要る各欠損キーのマーカーが
+    （境界条件を満たす形で）まだ無いものだけをキーのリストで返す
+    （空リスト＝全部開示済み）。required_missing_keys が返す順序を保つ。
     """
-    found = set()
-    for m in CLUSTER_RE.finditer(text):
-        cluster_text = m.group(0)
-        if UNGOTTEN_AFTER_RE.match(text, m.end()) is None:
-            continue
-        for key, key_re in KEY_ALT_RE.items():
-            if key_re.search(cluster_text):
-                found.add(key)
-    return found
+    keys = required_missing_keys(kind, missing)
+    return [k for k in keys if not _marker_disclosed(text, MARKERS[k])]
 
 
 def text_disclosed(text, kind, missing):
     """.vdesc相当のプレーンテキストを直接判定するコア関数（テストからも
-    HTMLを組み立てずに直接呼べるようにここを正本にする）。
+    HTMLを組み立てずに直接呼べるようにここを正本にする）。要る欠損キーの
+    マーカーが全部そろっていれば True（要るキーが無ければ False）。
     """
     keys = required_missing_keys(kind, missing)
     if not keys:
         return False
-    found = _forward_disclosed_keys(text)
-    return all(k in found for k in keys)
+    return not missing_marker_keys(text, kind, missing)
 
 
 def card_disclosed(card_raw, kind, missing):
@@ -528,17 +514,18 @@ def process_date(date, facts_dir, reviews_dir, capture_index, rid_origin,
         result.error = str(exc)
         return result
 
-    review_path = os.path.join(reviews_dir, "%s.html" % date)
-    if not os.path.isfile(review_path):
-        result.status = "no_review"
-        return result
-
     duty_records = [
         (url, rec, classify_record(url, rec)) for url, rec in facts.items()
     ]
     duty_count = sum(
         1 for _u, _r, k in duty_records if k not in (None, "out_of_scope")
     )
+
+    review_path = os.path.join(reviews_dir, "%s.html" % date)
+    if not os.path.isfile(review_path):
+        result.status = "no_review"
+        result.duty = duty_count
+        return result
 
     raw, cards, by_rid, by_url, malformed = load_review_cards(review_path)
 
@@ -549,7 +536,7 @@ def process_date(date, facts_dir, reviews_dir, capture_index, rid_origin,
         result.status = "card_parse_failed"
         return result
 
-    edits = []  # [(close_pos, rid_str, kind, card, content_start)]
+    edits = []  # [(close_pos, rid_str, keys_to_add, card, content_start)]
 
     for url, rec, kind in duty_records:
         if kind is None:
@@ -604,7 +591,12 @@ def process_date(date, facts_dir, reviews_dir, capture_index, rid_origin,
                 vp = _vdesc_insert_point(raw, c)
                 if vp is not None:
                     content_start, close_pos = vp
-                    record_edits.append((close_pos, rid_str, kind, c, content_start))
+                    keys_to_add = missing_marker_keys(
+                        vdesc_text(c["raw"]), kind, missing
+                    )
+                    record_edits.append(
+                        (close_pos, rid_str, keys_to_add, c, content_start)
+                    )
             if record_edits:
                 edits.extend(record_edits)
                 result.disclosed += 1
@@ -673,8 +665,10 @@ def _apply_fixes(raw, edits):
     # 同じファイル内で複数カードを直す場合、後ろの挿入から先に適用して
     # 前方のオフセットがずれないようにする。
     edits_sorted = sorted(edits, key=lambda e: e[0], reverse=True)
-    for close_pos, rid_str, kind, card, content_start in edits_sorted:
-        phrase = FIX_PHRASES[kind]
+    for close_pos, rid_str, keys_to_add, card, content_start in edits_sorted:
+        # 足りないマーカーだけを組み立てる（threads で片方だけ既にある
+        # 場合は足りない方のマーカーだけを追記する）。
+        phrase = "".join(MARKERS[k] + "。" for k in keys_to_add)
         # 句点等で終わっているかは vdesc の開始位置からの中身で判定する
         # （インラインタグが挟まっていても末尾テキストの位置がずれないように）。
         desc_tail = raw[content_start:close_pos]
@@ -696,6 +690,12 @@ def print_check_line(result, github=False, warn=True):
         return
     if result.status == "no_review":
         print("DISCLOSURE_CHECK: date=%s status=no_review" % result.date)
+        if github and warn and result.duty > 0:
+            print(
+                "::warning title=disclosure::DISCLOSURE_CHECK: date=%s "
+                "status=no_review duty=%d (reviews file missing)"
+                % (result.date, result.duty)
+            )
         return
     if result.status == "card_parse_failed":
         line = "DISCLOSURE_ERROR: date=%s card_parse_failed" % result.date
