@@ -18,6 +18,8 @@ import unittest
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent / "check_disclosure.py"
+sys.path.insert(0, str(SCRIPT.parent))
+import check_disclosure as cd  # noqa: E402
 
 REVIEW_HEAD = """<!doctype html>
 <html lang="ja">
@@ -39,6 +41,10 @@ class DisclosureCheckTest(unittest.TestCase):
         self.tmp = tempfile.mkdtemp()
         self.facts_dir = os.path.join(self.tmp, "fetch_facts")
         self.reviews_dir = os.path.join(self.tmp, "reviews")
+        # 既定では capture_index.json を作らない（＝読み込むと None になり、
+        # バックフィル除外は一切発生しない安全側の挙動になる）。バックフィル
+        # を検証するテストだけ _write_capture_index で明示的に作る。
+        self.capture_index_path = os.path.join(self.tmp, "capture_index.json")
         os.mkdir(self.facts_dir)
         os.mkdir(self.reviews_dir)
 
@@ -51,6 +57,12 @@ class DisclosureCheckTest(unittest.TestCase):
         path = os.path.join(self.facts_dir, "%s.json" % date)
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(records, fh, ensure_ascii=False, indent=1)
+
+    def _write_capture_index(self, mapping):
+        """mapping: {"YYYY-MM-DD": [rid, ...]}"""
+        days = {d: {"rids": rids} for d, rids in mapping.items()}
+        with open(self.capture_index_path, "w", encoding="utf-8") as fh:
+            json.dump({"days": days}, fh, ensure_ascii=False, indent=1)
 
     def _write_review(self, date, cards_html):
         path = os.path.join(self.reviews_dir, "%s.html" % date)
@@ -82,7 +94,8 @@ class DisclosureCheckTest(unittest.TestCase):
 
     def _run(self, args, expect=0):
         cmd = [sys.executable, str(SCRIPT), "--facts-dir", self.facts_dir,
-               "--reviews-dir", self.reviews_dir] + args
+               "--reviews-dir", self.reviews_dir,
+               "--capture-index", self.capture_index_path] + args
         r = subprocess.run(cmd, capture_output=True, text=True,
                             encoding="utf-8", errors="replace")
         self.assertEqual(r.returncode, expect, r.stdout + r.stderr)
@@ -195,9 +208,15 @@ class DisclosureCheckTest(unittest.TestCase):
     def test_backfill_rid_from_other_date_is_excluded_not_violation(self):
         """実データ: fetch_facts/2026-09-14.json には09-11のrid(1850403031)が
         再取得で追記されている。そのカードは reviews/2026-09-11.html にあり
-        reviews/2026-09-14.html には無い。card_in_other_date として除外され、
+        reviews/2026-09-14.html には無い。capture_index.json（実データの
+        当日保存台帳）では 1850403031 は 2026-09-11 の rids にのみ入っており
+        2026-09-14 の rids には入っていない＝バックフィルとして除外され、
         違反にしてはいけない。
         """
+        self._write_capture_index({
+            "2026-09-11": [1850403031],
+            "2026-09-14": [1853167142],
+        })
         self._write_facts("2026-09-11", {
             "https://x.com/masahirochaen/status/2097990179227414850?s=12": {
                 "route": "x", "missing": ["video_content"],
@@ -218,6 +237,10 @@ class DisclosureCheckTest(unittest.TestCase):
                 "raindrop_id": 1850403031,
                 "video_reason": "exception:ServerError",
             },
+            "https://x.com/gencoin8/status/2099302097909158238?s=12": {
+                "route": "x", "missing": ["video_content"],
+                "raindrop_id": 1853167142,
+            },
         })
         self._write_review("2026-09-14", self._vcard(
             "https://x.com/gencoin8/status/2099302097909158238?s=12",
@@ -226,12 +249,96 @@ class DisclosureCheckTest(unittest.TestCase):
         ))
         out = self._run(["--date", "2026-09-11", "--date", "2026-09-14"])
         self.assertIn(
-            "DISCLOSURE_CHECK: date=2026-09-14 duty=1 disclosed=0 "
+            "DISCLOSURE_CHECK: date=2026-09-14 duty=2 disclosed=1 "
             "violation=0 excluded=1 out_of_scope=0", out)
         self.assertIn(
             "DISCLOSURE_EXCLUDED: date=2026-09-14 rid=1850403031 "
-            "reason=card_in_other_date(2026-09-11)", out)
+            "reason=backfill(2026-09-11,card=yes)", out)
         self.assertNotIn("DISCLOSURE_VIOLATION: date=2026-09-14", out)
+
+    # --- capture_index.json ベースの違反/除外境界（B: CEO差し戻し指示A） ----
+
+    def test_rid_present_today_but_no_card_is_a_violation_not_backfill(self):
+        """当日の capture_index に rid が載っているのにカードが無い場合、
+        過去日にカードがあっても違反(no_card)にする（バックフィル扱いしない）。
+        """
+        self._write_capture_index({
+            "2026-09-10": [999],
+            "2026-09-14": [999],
+        })
+        self._write_facts("2026-09-14", {
+            "https://x.com/example/status/999": {
+                "route": "x", "missing": ["video_content"], "raindrop_id": 999,
+            },
+        })
+        # 過去日 09-10 には同じURLのカードが実在する（同一URL再保存の想定）が、
+        # 09-14 の reviews には対応カードが無い。
+        self._write_review("2026-09-10", self._vcard(
+            "https://x.com/example/status/999", "過去のカード",
+            "今回は動画の内容を取得できなかった。", "999",
+        ))
+        self._write_review("2026-09-14", self._vcard(
+            "https://x.com/other/status/1", "無関係カード", "本文のみ。", "1",
+        ))
+        out = self._run(["--date", "2026-09-14"])
+        self.assertIn(
+            "DISCLOSURE_VIOLATION: date=2026-09-14 kind=x_video rid=999 "
+            "url=https://x.com/example/status/999 reason=no_card", out)
+        self.assertNotIn("DISCLOSURE_EXCLUDED:", out)
+
+    def test_rid_none_with_no_card_is_a_violation(self):
+        """rid が無い（raindrop_id: null）レコードでカードも見つからない場合、
+        バックフィル判定のしようがないので違反(no_card)にする。
+        """
+        self._write_capture_index({"2026-09-14": [1]})
+        self._write_facts("2026-09-14", {
+            "https://x.com/nowhere/status/1": {
+                "route": "x", "missing": ["video_content"], "raindrop_id": None,
+            },
+        })
+        self._write_review("2026-09-14", self._vcard(
+            "https://x.com/other/status/1", "無関係カード", "本文のみ。", "1",
+        ))
+        out = self._run(["--date", "2026-09-14"])
+        self.assertIn(
+            "DISCLOSURE_VIOLATION: date=2026-09-14 kind=x_video rid=None "
+            "url=https://x.com/nowhere/status/1 reason=no_card", out)
+        self.assertNotIn("DISCLOSURE_EXCLUDED:", out)
+
+    def test_missing_capture_index_means_no_card_is_always_a_violation(self):
+        """capture_index.json が無い（今回のテストでは作らない）ときは、
+        本来ならバックフィルに見える状況でも一切除外しない。
+        """
+        self._write_facts("2026-09-11", {
+            "https://x.com/masahirochaen/status/2097990179227414850?s=12": {
+                "route": "x", "missing": ["video_content"],
+                "raindrop_id": 1850403031,
+            },
+        })
+        self._write_review("2026-09-11", self._vcard(
+            "https://x.com/masahirochaen/status/2097990179227414850?s=12",
+            "ChatGPTがYouTube再生とリアルタイム同期",
+            "今回は動画の中身までは追えていない",
+            "1850403031",
+        ))
+        self._write_facts("2026-09-14", {
+            "https://x.com/masahirochaen/status/2097990179227414850?s=12": {
+                "route": "x", "missing": ["video_content"],
+                "raindrop_id": 1850403031,
+            },
+        })
+        self._write_review("2026-09-14", self._vcard(
+            "https://x.com/gencoin8/status/2099302097909158238?s=12",
+            "別の当日カード", "今回は動画の内容を取得できなかった。",
+            "1853167142",
+        ))
+        self.assertFalse(os.path.isfile(self.capture_index_path))
+        out = self._run(["--date", "2026-09-14"])
+        self.assertIn(
+            "DISCLOSURE_VIOLATION: date=2026-09-14 kind=x_video "
+            "rid=1850403031 url=https://x.com/masahirochaen/"
+            "status/2097990179227414850?s=12 reason=no_card", out)
+        self.assertNotIn("DISCLOSURE_EXCLUDED:", out)
 
     # --- 実データ: 2026-09-08 Threads 開示ゼロ ------------------------------
 
@@ -509,7 +616,8 @@ class DisclosureCheckTest(unittest.TestCase):
         env = dict(os.environ)
         env["GITHUB_STEP_SUMMARY"] = summary
         cmd = [sys.executable, str(SCRIPT), "--facts-dir", self.facts_dir,
-               "--reviews-dir", self.reviews_dir, "--all",
+               "--reviews-dir", self.reviews_dir,
+               "--capture-index", self.capture_index_path, "--all",
                "--since", "2026-09-01", "--github", "--json"]
         r = subprocess.run(cmd, capture_output=True, text=True,
                             encoding="utf-8", errors="replace", env=env)
@@ -519,6 +627,93 @@ class DisclosureCheckTest(unittest.TestCase):
         self.assertTrue(os.path.isfile(summary))
         with open(summary, encoding="utf-8") as fh:
             self.assertIn("disclosure check", fh.read())
+
+    # --- B: class属性の揺れに強いカード抽出 ------------------------------
+
+    def test_card_extraction_tolerates_class_attribute_variation(self):
+        """class="vcard" の完全一致に依存しない: 追加クラス・属性順の入替・
+        シングルクォートでも .vcard / .vlink / .vdesc / data-rid を拾える。
+        """
+        self._write_facts("2026-09-04", {
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
+                "route": "instagram", "missing": ["video_content"],
+                "raindrop_id": 1842608050,
+            },
+        })
+        card = (
+            '    <div data-x="1" class="mt-2 vcard highlight">\n'
+            "      <a href='https://www.instagram.com/reel/Dcy4SIYiD7U/' "
+            "class='vlink' target=\"_blank\">\n"
+            '        <div class="thumb"><span class="ph">IG</span></div>\n'
+            '        <div class="vbody"><div class="vtitle">title</div>'
+            "<div class='vdesc'>進捗を見せながら生成する。動画の内容は未取得。"
+            "</div></div>\n"
+            "      </a>\n"
+            "      <button class=\"deepdive\" data-rid='1842608050' "
+            'data-url="https://www.instagram.com/reel/Dcy4SIYiD7U/">💬</button>\n'
+            "    </div>\n"
+        )
+        self._write_review("2026-09-04", card)
+        out = self._run(["--date", "2026-09-04"])
+        self.assertIn(
+            "DISCLOSURE_CHECK: date=2026-09-04 duty=1 disclosed=1 "
+            "violation=0 excluded=0 out_of_scope=0", out)
+
+    def test_zero_cards_extracted_with_duty_is_card_parse_failed(self):
+        """duty>0 なのに .vcard が1枚も抽出できない場合、違反/除外と混ぜず
+        別枠のエラーとして報告する。
+        """
+        self._write_facts("2026-09-04", {
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
+                "route": "instagram", "missing": ["video_content"],
+                "raindrop_id": 1842608050,
+            },
+        })
+        self._write_review("2026-09-04", "")  # cardsセクションが空
+        out = self._run(["--date", "2026-09-04"])
+        self.assertIn("DISCLOSURE_ERROR: date=2026-09-04 card_parse_failed", out)
+        self.assertNotIn("DISCLOSURE_VIOLATION:", out)
+        self.assertNotIn("DISCLOSURE_EXCLUDED:", out)
+        self.assertNotIn("DISCLOSURE_CHECK: date=2026-09-04 duty=", out)
+
+    # --- C: .vdesc限定＋近接判定・偽陽性除外（CEO差し戻し指示C） -----------
+
+    def test_false_positive_mikakunin_jouhou_is_not_disclosure(self):
+        """「未確認情報」は未取得の開示ではない（噂の枕詞）。"""
+        self.assertFalse(cd._disclosed_in_text(
+            "画像は綺麗な仕上がりだが、これはまだ未確認情報として噂されている。"
+        ))
+
+    def test_false_positive_unrelated_media_and_ungotten_word_far_apart(self):
+        """媒体語と未取得語の間に読点があり文意が分かれている場合は開示にしない。"""
+        self.assertFalse(cd._disclosed_in_text(
+            "この投稿は写真映えを狙った構図で、未確認だが人気らしい。"
+        ))
+
+    def test_all_30_real_disclosed_cards_still_pass_with_proximity_rule(self):
+        """labels.tsv で disclosed=yes の実カードの開示文言が、.vdesc限定＋
+        近接判定に変えても引き続き開示ありと判定されることを確認する
+        （実データの代表的な言い回しを列挙）。
+        """
+        real_disclosed_texts = [
+            "動画の内容は未取得（Instagram Reelの動画理解は構造的に撤去済み"
+            "のため、キャプションと画像から判断）",
+            "(動画内容は未取得、キャプションのみ)",
+            "動画の中身は未取得（Instagram Reelは動画取得を構造的に断念済み"
+            "のため）で、キャプションと画像から推測。",
+            "動画の内容は未取得。",
+            "（今回は埋め込み動画自体の内容は取得できなかった）",
+            "動画の内容は未取得",
+            "今回は動画の中身までは追えていない",
+            "動画部分は今回未確認",
+            "動画は今回見られていない",
+            "動画付きだが今回は動画の内容を取得できなかった",
+            "今回は動画の内容を取得できなかった。",
+            "今回は動画の内容を取得できなかった。",
+        ]
+        for text in real_disclosed_texts:
+            self.assertTrue(
+                cd._disclosed_in_text(text), "開示ありと判定されるべき: %s" % text)
 
 
 if __name__ == "__main__":

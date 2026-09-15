@@ -291,7 +291,9 @@ jobs:
       # reviews/*.html と fetch_facts/*.json を突き合わせて機械的に検出する。
       # 判定ロジックの正本は check_disclosure.py 側（このymlには語リストを
       # 複製しない）。--since 2026-09-15 はこの仕組みを入れた日より前の
-      # 既知の違反を再警告しないための足切り。
+      # 既知の違反を再警告しないための足切り。--capture-index は既定の
+      # capture_index.json（リポ直下）をそのまま使う。
+      # この仕組みは無人Routine側の手順7の実行自体を強制しない。
       # 警告のみ・公開を止めない（ユーザー裁定 2026-09-15）: continue-on-error
       # により、このステップが失敗しても Rebuild index.html 以降・deploy は
       # 従来どおり進む。
