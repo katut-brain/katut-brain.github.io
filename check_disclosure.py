@@ -8,7 +8,16 @@ Threads 3件など、見たかのような記述や開示ゼロが実例とし�
 このスクリプトは `reviews/<日付>.html` の各カードを機械的に読み、
 `fetch_facts/<日付>.json` の欠損記録と突き合わせて、開示すべきなのに
 していないカードを検出する。判定語リストはこのファイル先頭の定数
-（MEDIA_WORDS / UNGOTTEN_WORDS）にのみ置き、他所へ複製しない。
+（MEDIA_ALT_BY_KEY / UNGOTTEN_ALT）にのみ置き、他所へ複製しない。
+
+開示判定（2026-09-15 2周目差し戻しで作り替え）は「missing の欠損キーごとに
+専用の媒体語（MEDIA_ALT_BY_KEY）が、未取得語より前に・8文字以内の接続部
+（区切り記号を挟まない）で・一方向にだけ近接している」ことを要求する。
+媒体語どうしが「・」「、」「と」で直接連結されている場合だけ、その並びを
+1つの塊として扱い、塊に含まれるどの媒体語がどの欠損キーの語彙かで判定する
+（「画像・動画・音声の内容は未取得」の定型文1つで画像/動画/音声すべてが
+開示扱いになる）。「動画は確認済みだが、画像は未取得」のように別の媒体の
+話とすり替わっている文は合格しない（媒体語ごとに専用の未取得語彙が必要）。
 
 判定対象（duty）は3種類のみ:
   - x_video   : route=x かつ missing に video_content
@@ -45,21 +54,50 @@ from urllib.parse import urlsplit
 
 # --- 判定語（正本はここ一箇所） -------------------------------------------
 
-MEDIA_WORDS = r"動画|映像|画像|音声|視覚|写真|リール|Reel"
-# 「未確認情報」は未取得の開示ではなく単なる伝聞の枕詞なので、
-# 「未確認」の直後に「情報」が続く場合は除外する（否定先読み）。
-UNGOTTEN_WORDS = (
+# missing の欠損キーごとの媒体語。threads は visual_content/audio_content
+# それぞれに専用の語彙を持ち、欠損キーごとに個別の開示が要る
+# （「画像は未取得」だけでは audio_content の開示にはならない）。
+MEDIA_ALT_BY_KEY = {
+    "video_content": r"動画|映像|リール|Reel",
+    "visual_content": r"画像|写真|映像|動画|視覚",
+    "audio_content": r"音声|動画|映像",
+}
+# 上記の和集合（テスト等で「どの欠損キーにも属さない語」を判定するときに使う）。
+ANY_MEDIA_ALT = r"動画|映像|画像|音声|視覚|写真|リール|Reel"
+
+UNGOTTEN_ALT = (
     r"未取得|取得できていない|取得できな|取れていない|取れなかった|"
-    r"見られていない|見ていない|視聴していない|未確認(?!情報)|"
+    r"見られていない|見ていない|視聴していない|未確認|"
     r"確認できていない|追えていない|未視聴"
 )
-MEDIA_RE = re.compile(MEDIA_WORDS)
-UNGOTTEN_RE = re.compile(UNGOTTEN_WORDS)
+# 未取得語の直後にこれが続く場合は「未取得の開示」ではない
+# （噂・真偽の「未確認」など、別の話をしているだけ）。
+NEGATIVE_LOOKAHEAD_ALT = r"のまま|ながら|だが|情報|とされ|とのこと"
 
-# 媒体語と未取得語がこの文字数以内に近接していれば開示ありとみなす。
-NEAR_WINDOW = 15
-# この文字が間に挟まっていれば、近接していても別の話として開示にしない。
-BLOCK_CHARS = "。、，\n"
+# 媒体語(の並び)から未取得語までの接続部に使える最大文字数。
+CONNECTOR_MAX = 8
+# 接続部にこれらの文字が入っていたら、近接していても別の話として扱う。
+CONNECTOR_BLOCK_CHARS = "。、，,.!?！？()（）「」『』・\n"
+# 媒体語どうしがこれらの文字で直接連結されている場合だけ「並列」として
+# 1つの塊にまとめる（例:「画像・動画・音声」）。
+PARALLEL_SEP_CHARS = "・、と"
+
+# 「媒体語(区切り 媒体語)*」の塊を検出する正規表現（塊の中の語彙は
+# キーを問わず和集合で連結を許す。どのキーを満たすかは塊の中身を
+# MEDIA_ALT_BY_KEY で個別に再チェックする）。
+CLUSTER_RE = re.compile(
+    r"(?:%s)(?:[%s](?:%s))*"
+    % (ANY_MEDIA_ALT, re.escape(PARALLEL_SEP_CHARS), ANY_MEDIA_ALT)
+)
+# 塊の直後から「接続部（最大CONNECTOR_MAX文字・区切り記号を含まない）＋
+# 未取得語（直後に否定先読み語が続かない）」が続くかを見る正規表現。
+# re.match(text, pos) で塊の終端位置に固定して使う。
+UNGOTTEN_AFTER_RE = re.compile(
+    r"[^%s]{0,%d}(?:%s)(?!%s)"
+    % (re.escape(CONNECTOR_BLOCK_CHARS), CONNECTOR_MAX, UNGOTTEN_ALT,
+       NEGATIVE_LOOKAHEAD_ALT)
+)
+KEY_ALT_RE = {k: re.compile(v) for k, v in MEDIA_ALT_BY_KEY.items()}
 
 # 種別ごとの --fix 定型文
 FIX_PHRASES = {
@@ -183,10 +221,41 @@ def build_rid_origin_index(capture_index):
 
 # --- reviews 読み込みとカード抽出 ------------------------------------------
 
+COMMENT_RE = re.compile(r"<!--.*?-->", re.S)
+
+
+def _blank_comments(html_str):
+    """`<!-- ... -->` の中身をオフセット長を保ったまま無害化したコピーを
+    返す（改行はそのまま残し、他は空白に置換）。div の開閉カウントなど
+    「構造」を数えるときだけこれを使い、実際に取り出す文字列
+    （card_raw・vdesc の中身など）は元の html_str から切り出す。
+    """
+    def repl(m):
+        s = m.group(0)
+        return "".join(ch if ch == "\n" else " " for ch in s)
+    return COMMENT_RE.sub(repl, html_str)
+
+
+def _find_next_div_open(html_str, pos):
+    """`<div` の直後が空白・`>`・`/` のときだけ開きタグとみなして探す
+    （`<divider>` のような別要素を誤ってdivとして数えない）。
+    """
+    n = len(html_str)
+    while True:
+        i = html_str.find("<div", pos)
+        if i == -1:
+            return -1
+        after = i + 4
+        if after < n and (html_str[after].isspace() or html_str[after] in ">/"):
+            return i
+        pos = i + 4
+
+
 def extract_vcards(review_html):
     """class トークンに "vcard" を含む <div> ブロックを、開閉の深さを数えて
     切り出す。属性順・追加クラス・引用符の揺れに対応する（正規表現の
-    完全一致 `<div class="vcard">` には依存しない）。
+    完全一致 `<div class="vcard">` には依存しない）。HTMLコメントの中に
+    書かれた `<div>` 等は構造カウントから除外する。
     返り値は (cards, malformed) のタプル。
     cards は [{"start", "end", "raw"}, ...]。malformed は、閉じタグが
     足りずに最後まで閉じられなかったカードが1件でもあれば True。
@@ -195,7 +264,8 @@ def extract_vcards(review_html):
     malformed = False
     idx = 0
     n = len(review_html)
-    for m in DIV_OPEN_RE.finditer(review_html):
+    structural = _blank_comments(review_html)
+    for m in DIV_OPEN_RE.finditer(structural):
         start = m.start()
         if start < idx:
             continue  # 既に前のカードの範囲に含まれている
@@ -206,8 +276,8 @@ def extract_vcards(review_html):
         pos = m.end()
         depth = 1
         while depth > 0:
-            next_open = review_html.find("<div", pos)
-            next_close = review_html.find("</div>", pos)
+            next_open = _find_next_div_open(structural, pos)
+            next_close = structural.find("</div>", pos)
             if next_close == -1:
                 pos = n
                 malformed = True
@@ -244,10 +314,12 @@ def _vdesc_span(card_raw, start=0):
     """card_raw 内の class トークン "vdesc" を持つ最初の <div> の中身の
     (content_start, close) を card_raw 相対オフセットで返す。無ければ None。
     テンプレート上 vdesc の中に別の div は入らない想定だが、万一入れ子に
-    なっていても深さカウントで正しい閉じタグを見つける。
+    なっていても深さカウントで正しい閉じタグを見つける。HTMLコメントの
+    中の `<div>` は構造カウントから除外する。
     """
+    structural = _blank_comments(card_raw)
     m = None
-    for cand in DIV_OPEN_RE.finditer(card_raw, start):
+    for cand in DIV_OPEN_RE.finditer(structural, start):
         tag = cand.group(0)
         cls = _get_attr(tag, "class")
         if _has_class_token(cls, "vdesc"):
@@ -257,10 +329,9 @@ def _vdesc_span(card_raw, start=0):
         return None
     pos = m.end()
     depth = 1
-    n = len(card_raw)
     while depth > 0:
-        next_open = card_raw.find("<div", pos)
-        next_close = card_raw.find("</div>", pos)
+        next_open = _find_next_div_open(structural, pos)
+        next_close = structural.find("</div>", pos)
         if next_close == -1:
             return None
         if next_open != -1 and next_open < next_close:
@@ -286,41 +357,62 @@ def vdesc_text(card_raw):
     return html_module.unescape(stripped)
 
 
-def _near_without_block(text, a_start, a_end, b_start, b_end):
-    if b_start >= a_end:
-        gap_text = text[a_end:b_start]
-    elif a_start >= b_end:
-        gap_text = text[b_end:a_start]
-    else:
-        gap_text = ""  # 重なっている（通常は起きない）
-    if len(gap_text) > NEAR_WINDOW:
-        return False
-    return not any(c in BLOCK_CHARS for c in gap_text)
-
-
-def _disclosed_in_text(text):
-    """媒体語と未取得語が、間に句読点・改行を挟まず NEAR_WINDOW 文字以内で
-    近接していれば開示ありとする（順序は両方向可）。
+def required_missing_keys(kind, missing):
+    """kind と missing から、開示が要る欠損キーのリストを返す。
+    x_video/reel は video_content 固定1つ。threads は missing に実際に
+    入っているキーだけ（visual_content と audio_content は独立に開示が要る）。
     """
-    media_spans = [(m.start(), m.end()) for m in MEDIA_RE.finditer(text)]
-    if not media_spans:
-        return False
-    ungotten_spans = [(m.start(), m.end()) for m in UNGOTTEN_RE.finditer(text)]
-    if not ungotten_spans:
-        return False
-    for ms, me in media_spans:
-        for us, ue in ungotten_spans:
-            if _near_without_block(text, ms, me, us, ue):
-                return True
-    return False
+    missing = missing or []
+    if kind in ("x_video", "reel"):
+        return ["video_content"]
+    if kind == "threads":
+        keys = []
+        if "visual_content" in missing:
+            keys.append("visual_content")
+        if "audio_content" in missing:
+            keys.append("audio_content")
+        return keys
+    return []
 
 
-def card_disclosed(card_raw):
-    return _disclosed_in_text(vdesc_text(card_raw))
+def _forward_disclosed_keys(text):
+    """text の中で「媒体語の塊 → (近接した)未取得語」の並びが成立している
+    箇所をすべて洗い出し、その塊に含まれる語が該当する欠損キーの集合を返す
+    （複数箇所あれば和集合。媒体語が未取得語より後ろにある場合は数えない
+    ＝「動画は確認済みだが、画像は未取得」で video_content 側が誤って
+    開示扱いにならないようにするため）。
+    """
+    found = set()
+    for m in CLUSTER_RE.finditer(text):
+        cluster_text = m.group(0)
+        if UNGOTTEN_AFTER_RE.match(text, m.end()) is None:
+            continue
+        for key, key_re in KEY_ALT_RE.items():
+            if key_re.search(cluster_text):
+                found.add(key)
+    return found
+
+
+def text_disclosed(text, kind, missing):
+    """.vdesc相当のプレーンテキストを直接判定するコア関数（テストからも
+    HTMLを組み立てずに直接呼べるようにここを正本にする）。
+    """
+    keys = required_missing_keys(kind, missing)
+    if not keys:
+        return False
+    found = _forward_disclosed_keys(text)
+    return all(k in found for k in keys)
+
+
+def card_disclosed(card_raw, kind, missing):
+    return text_disclosed(vdesc_text(card_raw), kind, missing)
 
 
 def load_review_cards(review_path):
-    with open(review_path, encoding="utf-8") as fh:
+    # newline="" で開き、改行コード（CRLF等）を変換せずそのまま保持する。
+    # --fix はここで読んだ raw に挿入するだけなので、変換してしまうと
+    # 挿入位置以外のバイトまで書き換わってしまう。
+    with open(review_path, encoding="utf-8", newline="") as fh:
         raw = fh.read()
     cards, malformed = extract_vcards(raw)
     by_rid = {}
@@ -354,7 +446,7 @@ def build_global_index(reviews_dir):
         if not DATE_RE.match(stem):
             continue
         try:
-            with open(path, encoding="utf-8") as fh:
+            with open(path, encoding="utf-8", newline="") as fh:
                 raw = fh.read()
         except OSError:
             continue
@@ -498,7 +590,10 @@ def process_date(date, facts_dir, reviews_dir, capture_index, rid_origin,
             continue
 
         # 候補カードのうち1枚でも開示なしなら違反（全部開示していて初めて合格）。
-        undisclosed = [c for c in candidates if not card_disclosed(c["raw"])]
+        missing = rec.get("missing")
+        undisclosed = [
+            c for c in candidates if not card_disclosed(c["raw"], kind, missing)
+        ]
         if not undisclosed:
             result.disclosed += 1
             continue
@@ -542,7 +637,13 @@ def _classify_missing_card(date, rid_str, capture_index, rid_origin,
     except ValueError:
         return "no_card", False
 
-    day_rids = capture_index.get(date, set())
+    if date not in capture_index:
+        # 台帳ファイルはあるが当日分のキー自体が無い（その夜の手順1.5が
+        # 走らなかった等）。バックフィルかどうか判定しようがないので、
+        # 安全側で除外は一切許可せず違反にする。
+        return "no_card", False
+
+    day_rids = capture_index[date]
     if rid_int in day_rids:
         # 当日の台帳に載っているのにカードが無い＝正直に違反。
         return "no_card", False
@@ -586,7 +687,10 @@ def _apply_fixes(raw, edits):
 
 # --- 出力 --------------------------------------------------------------
 
-def print_check_line(result, github=False):
+def print_check_line(result, github=False, warn=True):
+    """標準出力の DISCLOSURE_CHECK/ERROR 行は常に出す。::warning は
+    warn=False（--since より前の日付）なら抑止する。
+    """
     if result.status == "no_facts":
         print("DISCLOSURE_CHECK: date=%s status=no_facts" % result.date)
         return
@@ -596,13 +700,13 @@ def print_check_line(result, github=False):
     if result.status == "card_parse_failed":
         line = "DISCLOSURE_ERROR: date=%s card_parse_failed" % result.date
         print(line)
-        if github:
+        if github and warn:
             print("::warning title=disclosure::%s" % line)
         return
     if result.status == "error":
         line = "DISCLOSURE_ERROR: date=%s %s" % (result.date, result.error)
         print(line)
-        if github:
+        if github and warn:
             print("::warning title=disclosure::%s" % line)
         return
     print(
@@ -751,8 +855,8 @@ def _main(argv):
         results.append(r)
 
     for r in results:
-        print_check_line(r, github=args.github)
         enforce = (since is None) or (r.date >= since)
+        print_check_line(r, github=args.github, warn=enforce)
         if r.status == "ok" and enforce:
             print_detail_lines(r, github=args.github)
         elif r.status == "ok" and r.fixed:

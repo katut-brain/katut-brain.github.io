@@ -676,44 +676,447 @@ class DisclosureCheckTest(unittest.TestCase):
         self.assertNotIn("DISCLOSURE_EXCLUDED:", out)
         self.assertNotIn("DISCLOSURE_CHECK: date=2026-09-04 duty=", out)
 
-    # --- C: .vdesc限定＋近接判定・偽陽性除外（CEO差し戻し指示C） -----------
+    # --- C: 当日キーが capture_index に無い夜は除外しない（2周目指示2） ------
 
-    def test_false_positive_mikakunin_jouhou_is_not_disclosure(self):
-        """「未確認情報」は未取得の開示ではない（噂の枕詞）。"""
-        self.assertFalse(cd._disclosed_in_text(
-            "画像は綺麗な仕上がりだが、これはまだ未確認情報として噂されている。"
-        ))
-
-    def test_false_positive_unrelated_media_and_ungotten_word_far_apart(self):
-        """媒体語と未取得語の間に読点があり文意が分かれている場合は開示にしない。"""
-        self.assertFalse(cd._disclosed_in_text(
-            "この投稿は写真映えを狙った構図で、未確認だが人気らしい。"
-        ))
-
-    def test_all_30_real_disclosed_cards_still_pass_with_proximity_rule(self):
-        """labels.tsv で disclosed=yes の実カードの開示文言が、.vdesc限定＋
-        近接判定に変えても引き続き開示ありと判定されることを確認する
-        （実データの代表的な言い回しを列挙）。
+    def test_capture_index_file_exists_but_today_key_missing_is_a_violation(self):
+        """capture_index.json ファイル自体はあるが、対象日 D のキーが
+        存在しない（その夜の手順1.5が走らなかった等）場合、rid が過去日に
+        あってもバックフィル除外を一切許可せず violation(no_card) にする。
         """
-        real_disclosed_texts = [
-            "動画の内容は未取得（Instagram Reelの動画理解は構造的に撤去済み"
-            "のため、キャプションと画像から判断）",
-            "(動画内容は未取得、キャプションのみ)",
-            "動画の中身は未取得（Instagram Reelは動画取得を構造的に断念済み"
-            "のため）で、キャプションと画像から推測。",
-            "動画の内容は未取得。",
-            "（今回は埋め込み動画自体の内容は取得できなかった）",
-            "動画の内容は未取得",
+        self._write_capture_index({
+            "2026-09-11": [1850403031],
+            # 2026-09-14 のキーは存在しない（欠損）。
+        })
+        self._write_facts("2026-09-11", {
+            "https://x.com/masahirochaen/status/2097990179227414850?s=12": {
+                "route": "x", "missing": ["video_content"],
+                "raindrop_id": 1850403031,
+            },
+        })
+        self._write_review("2026-09-11", self._vcard(
+            "https://x.com/masahirochaen/status/2097990179227414850?s=12",
+            "ChatGPTがYouTube再生とリアルタイム同期",
             "今回は動画の中身までは追えていない",
-            "動画部分は今回未確認",
-            "動画は今回見られていない",
-            "動画付きだが今回は動画の内容を取得できなかった",
-            "今回は動画の内容を取得できなかった。",
-            "今回は動画の内容を取得できなかった。",
+            "1850403031",
+        ))
+        self._write_facts("2026-09-14", {
+            "https://x.com/masahirochaen/status/2097990179227414850?s=12": {
+                "route": "x", "missing": ["video_content"],
+                "raindrop_id": 1850403031,
+            },
+        })
+        self._write_review("2026-09-14", self._vcard(
+            "https://x.com/gencoin8/status/2099302097909158238?s=12",
+            "別の当日カード", "今回は動画の内容を取得できなかった。",
+            "1853167142",
+        ))
+        out = self._run(["--date", "2026-09-14"])
+        self.assertIn(
+            "DISCLOSURE_VIOLATION: date=2026-09-14 kind=x_video "
+            "rid=1850403031 url=https://x.com/masahirochaen/"
+            "status/2097990179227414850?s=12 reason=no_card", out)
+        self.assertNotIn("DISCLOSURE_EXCLUDED:", out)
+
+    # --- D: HTMLコメントを構造カウントから無視（2周目指示3） ----------------
+
+    def test_html_comment_inside_vdesc_does_not_break_card_extraction(self):
+        """.vdesc の中に <!-- <div> --> のようなHTMLコメントがあっても、
+        div開閉カウントを乱さず1枚のカードとして正しく抽出でき、開示判定も
+        正しく行える（未取得語が無いので違反のまま）。
+        """
+        self._write_facts("2026-09-04", {
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
+                "route": "instagram", "missing": ["video_content"],
+                "raindrop_id": 1842608050,
+            },
+        })
+        desc = (
+            "進捗を見せながら生成する<!-- 構造メモ: <div>を後で挿入予定 -->。"
+            "開示文言はまだ無い。"
+        )
+        self._write_review("2026-09-04", self._vcard(
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/",
+            "写真1枚をRhinoモデルに変換するAIエージェント「STF Agent」",
+            desc, "1842608050",
+        ))
+        out = self._run(["--date", "2026-09-04"])
+        self.assertIn(
+            "DISCLOSURE_CHECK: date=2026-09-04 duty=1 disclosed=0 "
+            "violation=1 excluded=0 out_of_scope=0", out)
+        self.assertIn(
+            "DISCLOSURE_VIOLATION: date=2026-09-04 kind=reel "
+            "rid=1842608050", out)
+        self.assertNotIn("card_parse_failed", out)
+
+    def test_html_comment_with_disclosure_phrase_after_it_is_disclosed(self):
+        """コメントの後に本物の開示文言が続く場合はちゃんと開示ありになる
+        （コメントに惑わされてカード境界がずれていないことの確認）。
+        """
+        self._write_facts("2026-09-04", {
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
+                "route": "instagram", "missing": ["video_content"],
+                "raindrop_id": 1842608050,
+            },
+        })
+        desc = (
+            "<!-- TODO: <div class=\"note\">後で書く</div> -->"
+            "動画の内容は未取得。"
+        )
+        self._write_review("2026-09-04", self._vcard(
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/",
+            "写真1枚をRhinoモデルに変換するAIエージェント「STF Agent」",
+            desc, "1842608050",
+        ))
+        out = self._run(["--date", "2026-09-04"])
+        self.assertIn(
+            "DISCLOSURE_CHECK: date=2026-09-04 duty=1 disclosed=1 "
+            "violation=0 excluded=0 out_of_scope=0", out)
+
+    # --- E: CRLF保持（2周目指示4） -------------------------------------------
+
+    def test_fix_preserves_crlf_line_endings_outside_the_insertion(self):
+        """reviews が CRLF の場合、--fix で挿入した文字列以外のバイトが
+        LFに化けたりしないことを確認する（読み込みも newline="" にした）。
+        """
+        self._write_facts("2026-09-04", {
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
+                "route": "instagram", "missing": ["video_content"],
+                "raindrop_id": 1842608050,
+            },
+        })
+        card = self._vcard(
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/",
+            "写真1枚をRhinoモデルに変換するAIエージェント「STF Agent」",
+            "キッチン什器の写真を投げると進捗を見せながらRhino上に3Dモデル"
+            "を自動生成する。",
+            "1842608050",
+        )
+        content = (REVIEW_HEAD + card + REVIEW_TAIL).replace("\n", "\r\n")
+        review_path = os.path.join(self.reviews_dir, "2026-09-04.html")
+        with open(review_path, "w", encoding="utf-8", newline="") as fh:
+            fh.write(content)
+        before = self._read_review("2026-09-04")
+        self.assertIn("\r\n", before)
+
+        out = self._run(["--date", "2026-09-04", "--fix"])
+        self.assertIn("DISCLOSURE_FIXED: date=2026-09-04 rid=1842608050", out)
+
+        after = self._read_review("2026-09-04")
+        self.assertNotEqual(before, after)
+        self.assertIn("動画の内容は未取得。", after)
+
+        prefix_len = 0
+        while (prefix_len < len(before) and prefix_len < len(after)
+               and before[prefix_len] == after[prefix_len]):
+            prefix_len += 1
+        suffix_len = 0
+        while (suffix_len < len(before) - prefix_len
+               and suffix_len < len(after) - prefix_len
+               and before[-1 - suffix_len] == after[-1 - suffix_len]):
+            suffix_len += 1
+        inserted = after[prefix_len:len(after) - suffix_len]
+        self.assertIn("動画の内容は未取得。", inserted)
+        # 挿入文字列自体には改行が無いはずなので、CRLFがLFに化けていれば
+        # ここで prefix/suffix の外に取りこぼされたCRLFが現れて長さが
+        # ずれる。挿入部を除いた残り全体が前後で一致することを確認する。
+        self.assertEqual(
+            before[:prefix_len] + before[len(before) - suffix_len:],
+            after[:prefix_len] + after[len(after) - suffix_len:],
+        )
+        # 全体の \r\n の個数（挿入文言を除く）が変わっていないこと。
+        self.assertEqual(
+            before.count("\r\n"),
+            after.replace("動画の内容は未取得。", "").count("\r\n"),
+        )
+
+    # --- F: --since と card_parse_failed/error の::warning抑止（2周目指示5）-
+
+    def test_since_suppresses_warning_for_card_parse_failed_but_keeps_stdout_line(self):
+        """--since より前の日付の card_parse_failed は ::warning を出さない
+        が、DISCLOSURE_ERROR 自体は標準出力に残す。
+        """
+        self._write_facts("2026-09-04", {
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
+                "route": "instagram", "missing": ["video_content"],
+                "raindrop_id": 1842608050,
+            },
+        })
+        self._write_review("2026-09-04", "")  # cardsセクションが空
+        summary = os.path.join(self.tmp, "summary.md")
+        env = dict(os.environ)
+        env["GITHUB_STEP_SUMMARY"] = summary
+        cmd = [sys.executable, str(SCRIPT), "--facts-dir", self.facts_dir,
+               "--reviews-dir", self.reviews_dir,
+               "--capture-index", self.capture_index_path,
+               "--date", "2026-09-04", "--since", "2026-09-15", "--github"]
+        r = subprocess.run(cmd, capture_output=True, text=True,
+                            encoding="utf-8", errors="replace", env=env)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("DISCLOSURE_ERROR: date=2026-09-04 card_parse_failed",
+                       r.stdout)
+        self.assertNotIn("::warning", r.stdout)
+
+    def test_since_does_not_suppress_warning_on_or_after_since_date(self):
+        """--since 以降の日付なら card_parse_failed でも ::warning を出す。"""
+        self._write_facts("2026-09-16", {
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
+                "route": "instagram", "missing": ["video_content"],
+                "raindrop_id": 1842608050,
+            },
+        })
+        self._write_review("2026-09-16", "")
+        summary = os.path.join(self.tmp, "summary.md")
+        env = dict(os.environ)
+        env["GITHUB_STEP_SUMMARY"] = summary
+        cmd = [sys.executable, str(SCRIPT), "--facts-dir", self.facts_dir,
+               "--reviews-dir", self.reviews_dir,
+               "--capture-index", self.capture_index_path,
+               "--date", "2026-09-16", "--since", "2026-09-15", "--github"]
+        r = subprocess.run(cmd, capture_output=True, text=True,
+                            encoding="utf-8", errors="replace", env=env)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("DISCLOSURE_ERROR: date=2026-09-16 card_parse_failed",
+                       r.stdout)
+        self.assertIn("::warning title=disclosure::", r.stdout)
+
+
+class DisclosureTextMatchingTest(unittest.TestCase):
+    """開示判定コア（cd.text_disclosed）のデータ駆動テスト（2周目指示1）。
+    HTMLを組み立てず、.vdesc相当のプレーンテキストに対して直接判定する。
+    """
+
+    # (a) 誤合格してはいけない文。x_video/reel/threads(視覚のみ)/
+    # threads(音声のみ)/threads(両方)のどの kind/missing の組でも
+    # Falseでなければならない（媒体を問わず誤合格しないことを見る文）。
+    FALSE_POSITIVE_TEXTS = [
+        # verifier 2周目 反例7文
+        "この動画は展開が早くまだ誰も未確認のまま拡散している",
+        "画像は鮮明で未確認ながら話題性は高いようだ",
+        "写真集（未取得の新刊）が発表された",
+        "Reelとして人気だが真偽は未確認のまま拡散",
+        "写真（この記事とは別件だが）は未確認のままだ",
+        "動画（前作の話）は今のところ未確認",
+        "画像・文章とも簡潔だが真偽は未確認",
+        # 追加の同型反例（このタスクで作成）
+        "映像は事前に確認済みなのに、音声だけが未取得のままとされている",
+        "写真は良い出来だが、動画のほうは今のところ未確認とのこと",
+        "リールは伸びているらしいが実態は未確認。画像だけ後日追加予定",
+        "音声トラックは収録済みで、動画は未取得情報として社内共有された",
+    ]
+
+    KIND_MISSING_COMBOS = [
+        ("x_video", ["video_content"]),
+        ("reel", ["video_content"]),
+        ("threads", ["visual_content"]),
+        ("threads", ["audio_content"]),
+        ("threads", ["visual_content", "audio_content"]),
+    ]
+
+    def test_a_false_positive_sentences_are_false_for_every_kind(self):
+        for text in self.FALSE_POSITIVE_TEXTS:
+            for kind, missing in self.KIND_MISSING_COMBOS:
+                self.assertFalse(
+                    cd.text_disclosed(text, kind, missing),
+                    "開示なしと判定されるべき（kind=%s missing=%s）: %s"
+                    % (kind, missing, text))
+
+    def test_a_codex_repro_video_swapped_for_image_is_false_for_video_kinds(self):
+        """Codex 1周目P0（CEOが再現）: `動画は確認済みだが、画像は未取得。`
+        が x_video/reel で開示ありと誤判定される問題。video_content が要る
+        kind と、threads で画像語を持たない audio_content 単独では False。
+        （なお threads の visual_content 単独では「画像は未取得」の部分が
+        文字通り画像の開示に該当するため True が正しい。これは誤合格では
+        なく、文中に無関係な話題が混じっていても該当媒体の開示自体は
+        別途成立しているケース。x_videoの video_content がこの文の
+        「画像は未取得」に釣られて誤って開示扱いになっていたのが元のバグ）。
+        """
+        text = "動画は確認済みだが、画像は未取得。"
+        self.assertFalse(cd.text_disclosed(text, "x_video", ["video_content"]))
+        self.assertFalse(cd.text_disclosed(text, "reel", ["video_content"]))
+        self.assertFalse(cd.text_disclosed(text, "threads", ["audio_content"]))
+        # 参考: threads の visual_content 単独では「画像は未取得」により
+        # 正当にTrueになる（誤合格ではない。上のdocstring参照）。
+        self.assertTrue(cd.text_disclosed(text, "threads", ["visual_content"]))
+
+    def test_b_real_disclosed_vdesc_texts_are_true(self):
+        """実データ: fetch_facts/*.json と reviews/*.html を突き合わせて
+        「全候補カードが開示済み」と判定された実際のduty レコードから、
+        .vdesc の中身をそのまま抽出した実文（kind/missing 付き）。
+        手で書いた文例は含めない。30件（reel19件相当＋x_video11件相当、
+        重複rid分含む）。
+        """
+        # (date, kind, missing, rid, text) — text は
+        # check_disclosure.vdesc_text() で実カードから抽出した逐語。
+        real_cases = [
+            ("2026-08-23", "reel", ["video_content"], None,
+             "白背景の即答カードで支払い状況・与信利用率を示しつつ、"
+             "グラデーションのクレジットカード表示でローンごとの識別性を"
+             "確保。動画の内容は未取得（Instagram Reelの動画理解は構造的"
+             "に撤去済みのため、キャプションと画像から判断）"),
+            ("2026-08-28", "reel", ["video_content"], None,
+             "撥水加工・丈夫さを生かし、複数の巾着袋をナップサック代わりに"
+             "使うアイデアを紹介(動画内容は未取得、キャプションのみ)"),
+            ("2026-08-28", "reel", ["video_content"], None,
+             "Tord Björklund設計、2002年発売。各トレイにCD51枚収納可能・"
+             "壁掛けにも対応するヴィンテージIKEA品を4台集めたと紹介"
+             "(動画内容は未取得、キャプションのみ)"),
+            ("2026-08-30", "reel", ["video_content"], None,
+             "「バズったやつ」とのキャプションで、横断歩道を渡るPOV映像が"
+             "話題に。動画の中身は未取得（Instagram Reelは動画取得を構造的"
+             "に断念済みのため）で、キャプションと画像から推測。"),
+            ("2026-08-30", "reel", ["video_content"], None,
+             "FRAGG・VINK・GRUBBE×2・JUTISと廃盤プロダクトを並べた投稿。"
+             "動画の中身は未取得（同上の構造的制約）で、キャプションと画像"
+             "から推測。"),
+            ("2026-09-05", "reel", ["video_content"], "1844474651",
+             "水彩調テクスチャを継ぎ目なくタイル化する塗装法をKrita/"
+             "Blender/UnrealEngineで実演（詳しい手順動画は後日公開予定と"
+             "のこと）。動画の内容は未取得。"),
+            ("2026-09-06", "reel", ["video_content"], "1844650582",
+             "「Claude Codeを毎月16億トークン無料で回すOmniRoute設定書」を"
+             "プロフィールから配布中と告知しつつ、AI×SNS運用のオンライン"
+             "勉強会（無料・約2時間）へも誘導する投稿。動画の内容は未取得。"),
+            ("2026-09-09", "x_video", ["video_content"], "1848175166",
+             "カメラワーク・照明・構図・ジャンル/スタイル別に、映画の撮影・"
+             "演出技法150個をAI動画生成用プロンプトとして整理。サンプル"
+             "映像を選ぶと技法解説とプロンプトがそのまま出てきてコピー"
+             "できる（今回は埋め込み動画自体の内容は取得できなかった）"),
+            ("2026-09-11", "reel", ["video_content"], "1850230050",
+             "RevitモデルをThree.js環境に変換しASTRAが空間構成を読んで"
+             "カメラパスを自動提案、同じジオメトリのカラーマップ動画を"
+             "Higgsfieldのマテリアル指定にも使う二段構え。動画の内容は"
+             "未取得"),
+            ("2026-09-11", "x_video", ["video_content"], "1850403031",
+             "WebMCPでページのツールを自動検出し、YouTube再生と同期して"
+             "一時停止→解説→再生継続。対応はGPT-5.6 SolとTerraのみでLuna"
+             "は非対応、セットアップは10秒と紹介。今回は動画の中身までは"
+             "追えていない"),
+            ("2026-09-11", "x_video", ["video_content"], "1850401311",
+             "Anthropicの最高責任者本人が、自分のClaude Code環境を丸ごと"
+             "公開したと投稿（実態は要検証、上の深掘り参照）。動画部分は"
+             "今回未確認"),
+            ("2026-09-11", "x_video", ["video_content"], "1850309485",
+             "投資歴15年の投稿者が「AI社員を使った株式投資はマジで最強」と"
+             "断言するのみで、具体的な運用実績や再現性の記載は本文には"
+             "無い。動画は今回見られていない"),
+            ("2026-09-12", "reel", ["video_content"], "1850945581",
+             "レイヤー216・オブジェクト30,595・完全重複線13,523という"
+             "DWGを丸ごと読み込み、MIDASの構造モデルから部材1,119点を"
+             "REVITへ自動モデリング。まだパイロット段階と明記。動画の内容"
+             "は未取得"),
+            ("2026-09-12", "x_video", ["video_content"], "1851095582",
+             "開発2ヶ月・元手50万ウォンから、初週で200万ウォンの収益を"
+             "達成したという投稿。動画付きだが今回は動画の内容を取得でき"
+             "なかった"),
+            ("2026-09-13", "reel", ["video_content"], "1852143830",
+             "CADは最初の学習曲線が急だが、練習を重ねて機能に慣れ、実務"
+             "でも毎日使ううちに身についたという経験を紹介し、コメント欄"
+             "で学習リンクを配布。動画の内容は未取得。"),
+            ("2026-09-13", "reel", ["video_content"], "1852142500",
+             "Appleが導入するとみられる新ステータスアイコンのアニメーショ"
+             "ンを1時間半かけて模写し、ゼロから発想するより模写の方が易し"
+             "いと述懐。動画の内容は未取得。"),
+            ("2026-09-13", "reel", ["video_content"], "1852141997",
+             "段ボールなどを使った建築模型制作の裏ワザを紹介する投稿（本文"
+             "はハッシュタグのみ）。動画の内容は未取得。"),
+            ("2026-09-13", "reel", ["video_content"], "1852086012",
+             "同じく建築模型づくりの裏ワザ動画で、何のスプレーを吹きかけて"
+             "いるのか気になるというユーザーコメントが付いた一本。動画の"
+             "内容は未取得。"),
+            ("2026-09-13", "reel", ["video_content"], "1852083950",
+             "プロジェクトの知性は単一ツールに閉じるべきではないとし、複数"
+             "フォーマットをまたいでAIと協働できるエージェント型デスクトッ"
+             "プワークスペースをローンチ。動画の内容は未取得。"),
+            ("2026-09-13", "x_video", ["image_content", "video_content"],
+             "1852040378",
+             "現在価格47円のジャパンディスプレイがフジクラ・村田製作所・"
+             "太陽誘電・キオクシア以上に来るかもしれないとし、空気が変わっ"
+             "た瞬間に一気に飛ぶと予告。今回は動画の内容を取得できなかっ"
+             "た。"),
+            ("2026-09-13", "x_video", ["video_content"], "1852030187",
+             "現在26円のCRAVIAが125円に到達すれば投資額が10倍超になり得る"
+             "としつつ、結果は誰にも分からないと留保を添えて煽る一本。今回"
+             "は動画の内容を取得できなかった。"),
+            ("2026-09-13", "x_video", ["video_content"], "1852030091",
+             "JT・三菱重工・トヨタ自動車・ソフトバンク・NTTなど、300株保有"
+             "を前提にした高配当・国策銘柄7選を順位付きで紹介。今回は動画"
+             "の内容を取得できなかった。"),
+            ("2026-09-13", "x_video", ["video_content"], "1852024519",
+             "声を学習させて動画の音声を646言語に差し替えたり、書き起こし"
+             "・朗読までこなすOSSツール「VoiceStudio」がGitHubで2万star近"
+             "くに到達、搭載エンジンは本家ElevenLabsの32種を上回る14種類だ"
+             "と紹介。今回は動画の内容を取得できなかった。"),
+            ("2026-09-14", "reel", ["video_content"], "1852251457",
+             "厚みは壁の50〜60%、抜き勾配は射出成形0.5〜3°・3Dプリントは"
+             "不要、高さは厚みの約3倍、根元フィレット0.5〜1mm、意匠面裏へ"
+             "のリブ配置はヒケ発生リスクがあるため回避、3Dプリントでは積層"
+             "方向も要考慮というTipsをまとめた投稿（タミル語）。動画の内容"
+             "は未取得。"),
+            ("2026-09-14", "x_video", ["video_content"], "1853167142",
+             "Codex 6 Astraをメインモデルにしているなら、OpenAI公式案内ど"
+             "おりAGENTS.mdやSkillsも合わせて更新しないと本来の性能を半減"
+             "させかねないと注意喚起。今回は動画の内容を取得できなかっ"
+             "た。"),
+            ("2026-09-14", "x_video", ["video_content"], "1853166438",
+             "AIボイスレコーダーが2〜3万円で手が出しにくいことから、"
+             "iPhoneだけで完結する「Recory」を自作。録音・リアルタイム文字"
+             "起こし・議事録・タスク化に加え、MCP経由でGPTやClaudeが議事録"
+             "の文脈を呼び出せる設計。今回は動画の内容を取得できなかっ"
+             "た。"),
+            ("2026-09-14", "x_video", ["video_content"], "1853166384",
+             "ChatGPTとノーコードを組み合わせ、Zoom終了と同時に文字起こし"
+             "→要約→ドキュメント作成→Slack通知まで自動で走るワークフロー"
+             "を構築、非エンジニアでも30分・無料で作れると述べる。今回は"
+             "動画の内容を取得できなかった。"),
+            ("2026-09-14", "x_video", ["video_content"], "1853166010",
+             "動画をAIとリアルタイムに同時視聴する「Watch with Codex」が"
+             "登場、ChatGPT/Codex内蔵ブラウザとWebMCPで再生位置と同期し、"
+             "任意の瞬間で一時停止して解説させられる。今回は動画の内容を"
+             "取得できなかった。"),
+            ("2026-09-14", "x_video", ["video_content"], "1853165924",
+             "ローカルCPUだけで動く多言語リアルタイム文字起こしエンジン"
+             "「早耳 hayamimi」をOSS公開。実放送の日本語でCER 5.8%、発話"
+             "終了から約0.1秒で字幕確定、日英中韓含む約1600言語対応、GPU"
+             "不要・RAM 2GBで動作という仕様をMITライセンスで公開。今回は"
+             "動画の内容を取得できなかった。"),
+            ("2026-09-14", "x_video", ["video_content"], "1852251612",
+             "19歳の日本人学生がClaude Codeで2日で組んだトレードbotが元手"
+             "$68（約1万円）から初日の夜だけで+$6,732（約100万円）稼いだと"
+             "紹介する投稿。今回は動画の内容を取得できなかった。"),
         ]
-        for text in real_disclosed_texts:
+        self.assertEqual(len(real_cases), 30, "実データ抽出件数が変わった")
+        for date, kind, missing, rid, text in real_cases:
             self.assertTrue(
-                cd._disclosed_in_text(text), "開示ありと判定されるべき: %s" % text)
+                cd.text_disclosed(text, kind, missing),
+                "開示ありと判定されるべき（%s kind=%s rid=%s）: %s"
+                % (date, kind, rid, text))
+
+    def test_c_kind_mismatch_x_video_image_only_is_false(self):
+        """x_video (video_content欠損) に「画像は未取得」だけでは開示にならない。"""
+        self.assertFalse(
+            cd.text_disclosed("画像は未取得。", "x_video", ["video_content"]))
+        self.assertFalse(
+            cd.text_disclosed("画像は未取得。", "reel", ["video_content"]))
+
+    def test_c_kind_mismatch_threads_audio_only_image_word_is_false(self):
+        """threads で audio_content のみ欠損のとき「画像は未取得」だけでは
+        音声の開示にならない（画像語は audio_content の語彙に無い）。
+        """
+        self.assertFalse(
+            cd.text_disclosed("画像は未取得。", "threads", ["audio_content"]))
+
+    def test_c_threads_both_missing_requires_both_words(self):
+        """threads で画像・音声両方欠損のとき、画像だけの開示では不十分。
+        両方揃って初めて開示扱いになる。
+        """
+        missing = ["visual_content", "audio_content"]
+        self.assertFalse(cd.text_disclosed("画像は未取得。", "threads", missing))
+        self.assertFalse(cd.text_disclosed("音声は未取得。", "threads", missing))
+        self.assertTrue(
+            cd.text_disclosed("画像・音声は未取得。", "threads", missing))
+        # --fixが実際に挿入する定型文自体も自己整合していることを確認。
+        self.assertTrue(
+            cd.text_disclosed(cd.FIX_PHRASES["threads"], "threads", missing))
 
 
 if __name__ == "__main__":
