@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026-09-15 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-15 の振り返り</h1>
+  <div class="meta">AIで投資・トレードを自動化する言説が急増し、判断基準を先に設計する実務知と混在した一日（20件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日保存された20件のうち過半（11件）が「AIで投資・トレードを自動化する」系のX投稿で占められた。低位株の急騰期待から自動売買ダッシュボード、ChatGPTを株専属にする運用報告まで、AIを「当てさせる」道具として使う言説が集中している。ただしその中でも、leverage_noahの5人のAI社員による多角分析（ニュース・決算・競争力・株価・リスク監査の役割分担と、あえて反対意見を出す監査役の設計）や、smark_xの「捨てる基準を先に書く」プロンプト設計は、AIに答えを出させるのではなく判断の材料と基準を人間側であらかじめ整えるという逆方向の使い方を示していた。この対比が今日を貫く問いになる——AIに何を代行させ、何を自分で決めておくべきか。</p>
+    <p>同じ発想はポイ活・マイル運用（4件）にも波及している。クレカ積立・銀行4行運用・マイル出口戦略はいずれも「あらかじめ決めたルールに沿って自動で回す」仕組み化の実践知だった。建築領域ではnakas_at_のAI敷地図生成が唯一の接続で、座標の読み取りはAIに任せつつ変換・確認は人とツールが担うという役割分担に落ち着いている。ユーザー自身のnoteは今日すべて空欄で、保存の性格は"作りたい"より"知っておきたい"に強く振れた一日だった。普段の建築・アート軸への接続は薄く、金融・家計最適化への関心が場を占めた。</p>
+    <ul class="pts">
+      <li><b>AI×投資言説の急増</b>：20件中11件がAIを使った株・FX・暗号資産トレードの自動化や煽りで、フロリダ大学の研究（個別株価の予測精度は51%）が示す限界とは裏腹に、タイムラインではAI×投資の言説が場を占有していた。</li>
+      <li><b>判断基準を先に渡す設計</b>：smark_xの「捨てる基準の先出し」、leverage_noahの「反対役を含む5分業」など、AIに丸投げせず判断の軸を人間側で先に決めておく工夫が複数投稿で共通していた。</li>
+      <li><b>ポイ活・マイルの自動運用</b>：クレカ積立、銀行4行運用、マイル出口戦略など、決めたルールに沿って自動で回す家計最適化の実践知が4件並んだ。</li>
+      <li><b>建築×AI生成の実務的な壁</b>：座標表からAIで敷地図DXFを生成する試みでは、測量座標とCAD座標の軸の違いを1モデルが誤認識しており、人による確認工程の必要性を再確認させた。</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>「AIに答えを出させる」ことと「AIに渡す前に自分の判断基準を先に決めておく」こと、今日並んだ二つの使い方のうち、実務の精度を上げているのはどちらなのか。なお0xtkgshnのAIペンダント記事は、9/14の「AIボイスレコーダーが欲しいが2〜3万円で手が出ない」という保存から続く関心で、2日連続の登場になる。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">AI×投資分析：予測ではなく検証としての使い方</div>
+    <ul class="ilist">
+      <li><a href="https://www.matrixflow.net/case-study/181/" target="_blank" rel="noopener"><b>デイトレーダーは生成AIをどう使っているのか？ChatGPTで銘柄分析・戦略立案・リスク管理【2026年版】</b></a> <span>→ フロリダ大学の研究では個別株価の予測精度は51%とコイン投げ並みで、AIは「予測」ではなく銘柄スクリーニングや戦略設計・トレード記録の振り返りといった「準備・検証」に使うのが実効的だという指摘は、今日大量に流れてきた「AIで株価が当たる」系の煽り投稿への冷静な補助線になる。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AIで投資・トレードを自動化（11件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/leverage_noah/status/2099619418418667665?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSLnCb6aAAA9hNn?format=webp&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">ChatGPTで雇った5人のAI社員が株を分析</div><div class="vdesc">ChatGPTのWork機能で5人のAI社員（ニュース・決算・競争力・株価・リスク監査）を並列稼働させMicrosoft株を検証。営業利益は伸びる一方でフリーキャッシュフローが前年比6%減っている点をリスク監査役が指摘したという。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/leverage_noah/status/2099619418418667665?s=12" data-title="ChatGPTで雇った5人のAI社員が株を分析" data-rid="1854171492">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/crbpite8/status/2099398924754973088?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2099398073902608384/img/y3G4DNPmiIhIEg5a.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">ChatGPT-6 Astraに「1000倍にしろ」と指令</div><div class="vdesc">35.47ドルを1000倍にしろという指令を出し10時間放置。動画には勝率約70%、残高が3万8千ドル超まで伸びる自動売買ダッシュボードが映っている。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/crbpite8/status/2099398924754973088?s=12" data-title="ChatGPT-6 Astraに「1000倍にしろ」と指令" data-rid="1854157143">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/baby_1129/status/2099699971503325356?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2099690613512048640/img/gvz9PpuK2Ltw91aq.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">ジャパンディスプレイ急騰予感の裏でマーベル株が急騰</div><div class="vdesc">50円台のジャパンディスプレイに注目する投稿だが、添付動画はGoogleとのTPU連動メモリー協議報道を受け半導体大手マーベル・テクノロジー株が7.1%急騰したというニュースを伝える内容だった。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/baby_1129/status/2099699971503325356?s=12" data-title="ジャパンディスプレイ急騰予感の裏でマーベル株が急騰" data-rid="1854173065">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/entry20210104/status/2099462859009003846?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSLKVT5bYAAJIVH.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">自作株価ダッシュボードの前にJPXの無償ツールを見よ</div><div class="vdesc">GPT-6-Astraで自分専用の株価ダッシュボードを作ろうとする前に、JPXが無償公開する「Market Explorer」で割安株・成長株・高配当株のスクリーニングとPER/PBR/ROE等の指標が既に見られると指摘。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/entry20210104/status/2099462859009003846?s=12" data-title="自作株価ダッシュボードの前にJPXの無償ツールを見よ" data-rid="1853407249">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/brdhzqmlmoxwas5/status/2099461921770770476?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fbrdhzqmlmoxwas5%2Fstatus%2F2099461921770770476%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">セクター別・日本株の代表銘柄リスト</div><div class="vdesc">メモリ→キオクシア、半導体製造装置→アドバンテスト・レーザーテック、重電→三菱電機・富士電機など、迷ったら見るべき代表銘柄をセクター別に列挙してみせた。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/brdhzqmlmoxwas5/status/2099461921770770476?s=12" data-title="セクター別・日本株の代表銘柄リスト" data-rid="1854172426">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/hagedesu000/status/2099451574141800685?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fhagedesu000%2Fstatus%2F2099451574141800685%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">EMA20×15分足だけの単純トレード手法</div><div class="vdesc">EMA20と15分足の組み合わせだけで年300万円ペースの含み益が出ているとし、初心者でも再現できる水準だと豪語する。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/hagedesu000/status/2099451574141800685?s=12" data-title="EMA20×15分足だけの単純トレード手法" data-rid="1854026363">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/zarimaney/status/2099602839127388426?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSMHsR1aYAAPL-T.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">無料版ChatGPT×楽天で利益38万円</div><div class="vdesc">無料版ChatGPTと楽天のポイント制度を組み合わせ、9月半ば時点で利益38万円を達成したと報告。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/zarimaney/status/2099602839127388426?s=12" data-title="無料版ChatGPT×楽天で利益38万円" data-rid="1854017244">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/cora64189920179/status/2099335576269021473?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fcora64189920179%2Fstatus%2F2099335576269021473%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">ChatGPTでFX自動化する7つのプロンプト</div><div class="vdesc">ChatGPTはFXの天才だとし、FXの自動化を開放する7つのプロンプトを近く公開すると予告する一本。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/cora64189920179/status/2099335576269021473?s=12" data-title="ChatGPTでFX自動化する7つのプロンプト" data-rid="1853463873">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/neil_glow/status/2099770952989221195?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fneil_glow%2Fstatus%2F2099770952989221195%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">トレード指標を見て即導入を決意</div><div class="vdesc">「インジケーターがあるとは！！」と即断で導入を宣言する高テンションの投稿で、指標そのものの仕組みは本文には出てこない。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/neil_glow/status/2099770952989221195?s=12" data-title="トレード指標を見て即導入を決意" data-rid="1854283058">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/hinaharutrader/status/2099749781233131848?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSPPS9LaQAAibKy.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">ChatGPTを株専属運用に絞り込んだ報告</div><div class="vdesc">ChatGPT（チャッピー）の用途を株関連のみに絞り、24時間トレード漬けの運用に振り切ったと報告。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/hinaharutrader/status/2099749781233131848?s=12" data-title="ChatGPTを株専属運用に絞り込んだ報告" data-rid="1854274466">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/maron080910/status/2099326108286308624?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2099326012345712640/img/EolElr8ODyp0cwkC.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">低位株CRAVIA（6573）の急騰期待</div><div class="vdesc">現在26円のCRAVIAが293円に到達すれば5万円が380万円になる可能性があるという皮算用を紹介。今回は動画の内容を取得できなかった。※動画の内容は未取得</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/maron080910/status/2099326108286308624?s=12" data-title="低位株CRAVIA（6573）の急騰期待" data-rid="1854032700">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🛠️ AI活用の作法・実務（5件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/smark_x/status/2099764073869307990?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSPcS6abgAA78aQ.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">AIへの指示は「捨てる基準」を先に書く</div><div class="vdesc">「良い案の条件」より先に「出さなくていい基準」を1〜2文で先出しすることで、30案生成→90点ジャッジという手戻りの多いAI活用フローを、基準を前倒しした一発勝負に変える設計を提案。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/smark_x/status/2099764073869307990?s=12" data-title="AIへの指示は「捨てる基準」を先に書く" data-rid="1854279661">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/volcano_youtube/status/2099353930677538880?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fvolcano_youtube%2Fstatus%2F2099353930677538880%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">GPT-6向けskill設計の3原則</div><div class="vdesc">skillの説明は簡潔にして具体的な指示を混ぜない、1つのskillに複数ワークフローを詰め込まない、ユースケースを明確にする、という3原則に絞るべきだと説く。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/volcano_youtube/status/2099353930677538880?s=12" data-title="GPT-6向けskill設計の3原則" data-rid="1854171443">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/nakas_at_/status/2099484859169472696?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSLdg8TaEAAZvpf.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">座標表からAIで敷地図DXFを4モデル比較</div><div class="vdesc">座標表の画像を4つのAIモデルに渡し敷地図DXFをポン出し生成して比較したところ、1モデルは測量座標(南北=X)とCAD座標系の軸の違いを誤認識。AIには座標の読み取りまでを任せ、変換・確認・作図は人とツールが担う運用に落ち着いたという。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/nakas_at_/status/2099484859169472696?s=12" data-title="座標表からAIで敷地図DXFを4モデル比較" data-rid="1853998694">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/atsushikoy/status/2099473632523419733?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSLTWqjaoAApMS-.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">ChatGPTが提案した特典航空券自動検索ツール</div><div class="vdesc">特典航空券の検索を繰り返す様子を見たChatGPTが自動検索ツールの制作を提案。生成された「Award Atlas」はHND⇔BCN/AGPの周遊5ルートを比較し、必要マイル数（24.2万〜36万マイル）と開放タイミングまで一画面で算出する。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/atsushikoy/status/2099473632523419733?s=12" data-title="ChatGPTが提案した特典航空券自動検索ツール" data-rid="1854171362">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/0xtkgshn/status/2099366544052781295?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/card_img/2099366544375685120/u8y0R53V?format=webp&name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">AIペンダント5台以上を実測比較しMoriへ着地</div><div class="vdesc">Plaud・Limitless・Omi・Notta・Moriを実測比較し、ハード・ソフトの信頼性でMoriに着地。人間による重み付け（アンカリング）を伴わない全録の自動要約は「AIスロップ」に陥ると論じ、GTDの週次レビューで音声ログの候補と現実を照合する運用に至った経緯を記した長文エッセイ。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/0xtkgshn/status/2099366544052781295?s=12" data-title="AIペンダント5台以上を実測比較しMoriへ着地" data-rid="1853407297">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>💳 ポイ活・マイル最適化（4件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/aurora_tedoriup/status/2099481788787933257?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSLbVqDbEAAz0O3.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">クレカ積立14枚の還元率一覧表</div><div class="vdesc">楽天カード・三井住友カードNL・Olive Infiniteなど14枚のクレジットカードを、投信積立の還元率（みずほ楽天2.00%〜PayPay0.70%）と条件で横並び比較した一覧表。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/aurora_tedoriup/status/2099481788787933257?s=12" data-title="クレカ積立14枚の還元率一覧表" data-rid="1854165480">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/kakei_no_mikata/status/2099423239504294236?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSKmQw4bEAAghfQ.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">銀行系ポイ活は「4行」に絞る提言</div><div class="vdesc">振込をぐるぐる回すポイ活は工数対効果が悪いとし、「三井住友Olive・JRE BANK・JAL NEOBANK＋メインバンク1行」の4行運用に絞るべきと提言。JRE BANKは残高50万円以上とJRE POINTリンク登録で運賃4割引券などが得られる設計。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kakei_no_mikata/status/2099423239504294236?s=12" data-title="銀行系ポイ活は「4行」に絞る提言" data-rid="1854016100">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/roku_mile/status/2099474269243936991?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSLTC_IbEAAOorm.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">旅行用ポイント・マイルの「デッキ」運用</div><div class="vdesc">WESTERポイントやJREのマイルを日常的に貯めておく決済デッキ運用で、思いつきの旅行でも懐を痛めずに動ける状態を作るという考え方を紹介。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/roku_mile/status/2099474269243936991?s=12" data-title="旅行用ポイント・マイルの「デッキ」運用" data-rid="1854029949">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/roku_mile/status/2099346468972990769?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSJgZkGaEAAQqVw.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">アメックスポイントをデルタマイルへ出口戦略</div><div class="vdesc">アメックスポイントをデルタマイル×デルタアメックスゴールドへ流す出口戦略で、上級会員特典を使いながらポイントを消化する具体的な手順を提示。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/roku_mile/status/2099346468972990769?s=12" data-title="アメックスポイントをデルタマイルへ出口戦略" data-rid="1853508520">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
