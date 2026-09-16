@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-09-16 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-16 の振り返り</h1>
+  <div class="meta">iPhone・ウォレットの「アプリ往復を減らす」小技と、Rhino×GPT-6 Astraの3Dモデリング自動化（6件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の保存を貫く問いは「複数のアプリ・操作をまたいでいた作業を、1つの操作やプロンプトに畳み込めないか」。スクリーンショットを撮った瞬間にアプリ別アルバムへ自動振り分けるShortcuts、会員証やチケットをWalletに一本化できるiOS27の「パスを作成」機能、Rhinoでの10工程のモデリングをGPT-6 Astraに任せるミニコースまで、粒度は違えど同じ欲求が根にある。</p>
+    <p>AI活用・iPhone活用・建築（3Dモデリング）の3領域にまたがりつつ、今日は「作る」より「知る・効率化したい」軸が強く活性化した1日。唯一「作る」側に触れたRhino×GPT-6 Astraの保存は、建築学生としての制作欲求と直接つながる。</p>
+    <ul class="pts">
+      <li><b>iOS27ウォレット「パスを作成」</b>：会員証・チケットのQR/バーコードを読み取って自作パス化。スタンダード／メンバーシップ／イベントの3テンプレートで色・画像・テキストをカスタマイズ可能。</li>
+      <li><b>スクショ自動振り分け</b>：Shortcutsで「現在のアプリ取得→最新スクショ取得→アプリ名のアルバムへ格納」を自動化。X・天気・Calendarsなど実例で確認済み。自然言語のショートカット生成では同じものは組めなかったとの言及あり。</li>
+      <li><b>Rhino×GPT-6 Astra</b>：Rhino 8とGPT-6 Astraを組み合わせ10種の課題を通しモデリングを学ぶ有料ミニコース（Skool経由、月$35、講師Dusan Cvetkovic）。</li>
+      <li><b>継続する関心</b>：「GPT-6 Astra／Codex 6 Astra」への言及は9/13・9/14・9/15・9/16と4日連続で保存に登場しており、今週ずっと続いている関心。</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>iOS27の「パスを作成」で読み取れるのはQR/バーコードだが、大学の学生証（磁気・NFC方式でコード非掲載）のようなタッチ式カードもここに載せられるのか、それとも仕組み上ここでは代替できないのか。</div>
+  </section>
+
+  <h2>やりたい・気になったこと</h2>
+  <section class="notes">
+    <div class="ntag">やりたい</div>
+    <ul class="ilist">
+      <li><a href="https://www.instagram.com/reel/DdSqyovh4gm/?stkn=MTU5Zm1heDFnZjRsOQ==" target="_blank" rel="noopener"><b>学生証タッチでの校舎入退室・出席登録をスマホに集約したい</b></a> <span>→ iOS27の「パスを作成」機能で学生証のバーコード/QRを読み取り登録できるか確認する（タッチ式ICのみの学生証だと非対応の可能性あり）</span></li>
+    </ul>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">iOS27 ウォレットのパス作成</div>
+    <ul class="ilist">
+      <li><a href="https://www.applelinkage.com/2026/05/05/apple-to-add-create-a-pass-feature-to-wallet-app-in-ios-27/" target="_blank" rel="noopener"><b>iOS 27のウォレットアプリに「パスを作成」機能が追加</b></a> <span>→ テンプレートはスタンダード／メンバーシップ／イベントの3種のみで、色分け（イベント＝紫、会員権＝青、その他＝橙）まで規定されている。用途がある程度型にはめられている点は、学生証のような特殊なタッチ式カードの取り込みには制約になりそう。</span></li>
+    </ul>
+    <div class="ntag">Rhino×AI 3Dモデリング自動化</div>
+    <ul class="ilist">
+      <li><a href="https://github.com/tanishqbhattad/rhino-mcp" target="_blank" rel="noopener"><b>rhino-mcp（Rhino MCP server）</b></a> <span>→ Claude・ChatGPT・Gemini・ローカルOllamaのいずれからでもRhino 8を操作でき、マッシングから床版・コア配置、ファサードの窓割り、平立断面の自動作図、さらに「有効な幾何学＝正確な幾何学ではない」ことを前提にした意図検証まで踏み込んでいる。今日保存した有料ミニコースは操作を教える側だが、こちらはAIにモデリングそのものを渡す方向で、両者は同じ問題（AIにRhinoの手作業をどこまで委ねるか）への異なる回答。</span></li>
+    </ul>
+  </section>
+
+  <h2>📱 iPhone・ウォレット活用（3件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/iphonekatsuyoo/status/2099969215977648608?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSSW3wqbQAAOCqS.jpg?format=jpg&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">スクショを撮った瞬間にアプリ別アルバムへ自動振り分け</div><div class="vdesc">「現在のアプリを取得→最新スクショを取得→アプリ名のアルバムを作成」というShortcutsを組み、X・天気・Calendarsなど実際にアプリごとの写真アルバムへ自動格納される様子をスクショで公開。自然言語（Apple Intelligenceのショートカット自動生成）では同じものは組めなかったと投稿者が注記している。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/iphonekatsuyoo/status/2099969215977648608?s=12" data-title="スクショを撮った瞬間にアプリ別アルバムへ自動振り分け" data-rid="1855096399">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DdSqyovh4gm/?stkn=MTU5Zm1heDFnZjRsOQ==" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.82787-15/810699928_17990377947051694_6200796058348489127_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=108&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=g-75SiH--nwQ7kNvwGNN1iG&amp;_nc_oc=Ado9T0muvPkGVFZMIUDoxYs4GitEerOwRyQnZWcXOUFuCKoPRcqOGivuAxabFlnMUEI&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-1.cdninstagram.com&amp;_nc_gid=TE4cjDTL5ihHw-472DT-TA&amp;_nc_ss=7ba02&amp;oh=00_AQL53526W9FG5zLw5GnKOq22K9WFpbcUTjALHQNBnsmgSQ&amp;oe=6AAF768C" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">iOS27「パスを作成」で会員証を自作する手順を解説</div><div class="vdesc">会員証のバーコード/QRコードを読み取り、アイコン・会員番号・有効期限をカスタマイズしてWalletに登録、iCloud経由で別端末にも表示できる手順を紹介。マイナンバーカード・Suica・クレカ・搭乗券くらいしか入れられなかったWalletに、自作パスを追加できるようになった点がポイント。※動画の内容は未取得</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DdSqyovh4gm/?stkn=MTU5Zm1heDFnZjRsOQ==" data-title="iOS27「パスを作成」で会員証を自作する手順を解説" data-rid="1854919520">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/55leleleleon/status/2099885445878538395?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSRKrsIa0AAuLZw.jpg?format=jpg&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">iOS27ウォレット新機能でアプリ往復が減ると反応</div><div class="vdesc">会員証・チケットの類をWalletに集約でき、決済のたびに複数アプリを行き来する手間が減ると評価。添付画像ではRevolut・Amex・三井住友・ANA/JALマイル・楽天ポイント・UNIQLO・Priority Passなど10枚超のカード/パスがWalletに積み重なる実例が確認できる。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/55leleleleon/status/2099885445878538395?s=12" data-title="iOS27ウォレット新機能でアプリ往復が減ると反応" data-rid="1855087768">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🤖 AI活用・開発（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DZCuDB8zIoU/?stkn=MTRzMWVod21mbXM0dQ==" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.82787-15/711829282_18096147803060858_7037628749006992608_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=108&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=yQDtBYZTPcoQ7kNvwEWZe-U&amp;_nc_oc=Adou1pqTbjnL7XERnQuG1F8nS8-MUCEmoxP5uFkxPf8YCp0gfTOTY4dL5zh4qO-LLQA&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-1.cdninstagram.com&amp;_nc_gid=6rZ0sJOAb_Wus4J1UMdaVg&amp;_nc_ss=7b60f&amp;oh=00_AQIs4pnC89XQcyfFLPiLtsV1hHwa6-mfhLQz0PtZeUpEbA&amp;oe=6AB0B7F1" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">Claude Codeを音声操作して作業効率化</div><div class="vdesc">Claude Codeに音声で指示を出すことで作業効率が上がる、という切り口の投稿。具体的な操作フローはキャプションからは分からず、詳細は動画本体でのみ解説されている。※動画の内容は未取得</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DZCuDB8zIoU/?stkn=MTRzMWVod21mbXM0dQ==" data-title="Claude Codeを音声操作して作業効率化" data-rid="1854923062">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DdPmfnhAnXQ/?stkn=MW1iYXduenU5dWZzaw==" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra5-2.cdninstagram.com/v/t51.71878-15/794027313_4125758994383490_5886312683352190696_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=106&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=sgajG4w-YvEQ7kNvwFxyidx&amp;_nc_oc=Ado-NHR8ukJokiTMKfz9FEmBmukywyHRqQO9MPRTkoup3DugP2RKmplJlqdqHXIn1Nw&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-2.cdninstagram.com&amp;_nc_gid=0cKOr6nhapARme1G9Khzrw&amp;_nc_ss=7b60f&amp;oh=00_AQKpf2peg5f9ojEnxs5If9HaCtp7xa8DM_nGNTeUQe4aCw&amp;oe=6AAF8583" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">週間GitHubトレンドランキング（9月第2週）</div><div class="vdesc">今週最も注目されたAI関連リポジトリTop5を紹介する動画。カバー画像はコード背景のタイトルカードのみで、個別のリポジトリ名はテキスト情報からは確認できない。※動画の内容は未取得</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DdPmfnhAnXQ/?stkn=MW1iYXduenU5dWZzaw==" data-title="週間GitHubトレンドランキング（9月第2週）" data-rid="1854924104">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🏛 建築・3Dモデリング（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DdTkLUhK2yy/?stkn=cjc1YWpidjVhYXQw" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.71878-15/811792345_1061885330178077_8826693064537411_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=110&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=O2_fOxvOsCMQ7kNvwFxyidx&amp;_nc_oc=Ado-NHR8ukJokiTMKfz9FEmBmukywyHRqQO9MPRTkoup3DugP2RKmplJlqdqHXIn1Nw&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-1.cdninstagram.com&amp;_nc_gid=LUFYCaVYY2ejF6cPEPuRRg&amp;_nc_ss=7b60f&amp;oh=00_AQKyXIV8vgzMnwZZAMitcgVhNGJFIHK5rC4BOMEkyYsg1A&amp;oe=6AAFC238" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">Rhino×GPT-6 Astraで3Dモデリングを自動化するミニコース</div><div class="vdesc">Rhino 8とGPT-6 Astraを組み合わせ、10種の課題を通して3Dモデリングを丸ごと任せる有料ミニコース（Skool経由・月$35、講師Dusan Cvetkovic）。2人紹介で参加無料になる仕組みも併記。動画そのものは仕組み上取得していない。※動画の内容は未取得</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DdTkLUhK2yy/?stkn=cjc1YWpidjVhYXQw" data-title="Rhino×GPT-6 Astraで3Dモデリングを自動化するミニコース" data-rid="1855098488">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
