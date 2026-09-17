@@ -1,0 +1,49 @@
+# Instagram Reel 動画取得（www.kkinstagram.com 経由）の疎通確認を
+# クラウド(GitHub Actions)環境から手動で行うだけのワークフロー。
+#
+# 目的はネットワーク到達性・リダイレクト先の確認のみ。副作用は一切ない:
+#   - シークレット不使用
+#   - permissions は contents: read のみ（書き込み系は付与しない）
+#   - trigger は workflow_dispatch のみ（schedule なし。既存の無人ランと同じ
+#     夜に別の変更を重ねない規約があるため、手動起動限定にする）
+#   - Pages への deploy・main への push など、他ワークフローに波及する操作は行わない
+#
+# HEAD は 405 が返るため使わない。GET のみで確認する
+# （-o /dev/null でボディは捨て、ヘッダとステータスだけを見る）。
+
+name: reel-probe
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 既存の concurrency group（pages / publish-to-main）とは重複しない専用グループ。
+concurrency:
+  group: reel-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe reel URLs via kkinstagram.com
+        run: |
+          set -u
+          codes="DcyDkhsuSOZ DdTkLUhK2yy DdPmfnhAnXQ DZCuDB8zIoU DdSqyovh4gm"
+          for code in $codes; do
+            url="https://www.kkinstagram.com/reel/${code}/"
+            echo "=== ${code} ==="
+            echo "URL: ${url}"
+            headers=$(curl -sS -D - -o /dev/null -A 'Discordbot/2.0' -L "$url")
+            status=$(echo "$headers" | grep -i '^HTTP' | tail -n 1)
+            location=$(echo "$headers" | grep -i '^location:' | tail -n 1)
+            echo "Status: ${status}"
+            if [ -n "$location" ]; then
+              echo "Location (raw): ${location}"
+            else
+              echo "Location: (none)"
+            fi
+            echo ""
+          done
