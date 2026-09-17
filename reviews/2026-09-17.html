@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-09-17 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-17 の振り返り</h1>
+  <div class="meta">お金・マイル最適化の一日（保存8件、すべてX投稿）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の保存を貫くのは「公開されている制度のルールを厳密に読めば、非対称に得ができる」という一点。JALファーストクラス特典のキャンセル待ち枠、JAL Pay経由の多段チャージルート、個人向け国債の利回りは、扱う対象は航空・決済・金融商品とばらばらだが、いずれも「知っている人だけが得を取れる隙間」を突く話として同じ軸に乗る。</p>
+    <p>ここ数日はAI活用・ツール紹介の保存が続いていたのに対し、今日は珍しく完全にお金・マイル系の投稿だけで占められた。ユーザーの興味軸のうち「知る/紹介したい」側が強く出た日で、実際に手を動かして何かを作る「作りたい」軸の保存は今日は無い。</p>
+    <ul class="pts">
+      <li><b>SQファーストクラス</b>：シンガポール→上海線で、キャンセル待ちSaver枠なら61,500マイルと通常枠112,500マイルの約半分で取れる実例が示されている</li>
+      <li><b>JAL Payの多段チャージ</b>：ANA Pay→R Edy→R Cash→R Payのルートで合計3.6%還元、warau等のポイントサイトを経由する上級者ルートなら4.4%まで積める</li>
+      <li><b>個人向け国債</b>：第91回利付国債（30年）は利回り3.980%・単価100.26・年2回利払いで、かつての「ほぼ0%」の商品から様変わりしている</li>
+      <li><b>クレジットカード選び</b>：「万能な1枚」は無く、日常還元は三井住友・楽天、飛行機重視は航空会社系、ホテル重視は旅行系という目的別の整理に落ち着く</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>4.4%と2.6%の差、あるいは61,500マイルと112,500マイルの差を取るために費やす調べもの・待ち時間のコストは、その差額に本当に見合っているのか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">JALファーストクラス特典航空券の裏側</div>
+    <ul class="ilist">
+      <li><a href="https://trico.jal.com/instantarticle/jaltalk/45737/" target="_blank" rel="noopener"><b>JALの特典航空券ファーストクラスは15～10日前に解放される、という利用者の実感</b></a> <span>→ 保存内の「Saver枠が取れた」という報告は運任せではなく、出発15〜20日前の解放タイミングを狙い、2ヶ月前から粘り強くキャンセル待ちを入れ続けるという再現可能な戦略に基づく</span></li>
+    </ul>
+    <div class="ntag">個人向け国債の金利トレンド</div>
+    <ul class="ilist">
+      <li><a href="https://kabukiso.com/bond/japan/kojinmukekokusai_interest_rate_trends.html" target="_blank" rel="noopener"><b>個人向け国債の金利推移（2026年9月最新）</b></a> <span>→ 変動10年1.95%・固定5年2.24%・固定3年1.96%と軒並み前月比上昇しており、2025年1月の0.71%水準からの上昇は一時的な振れではなく2024年のマイナス金利解除以降の構造的トレンドと読める</span></li>
+    </ul>
+  </section>
+
+  <h2>💰 お金・マイル最適化（8件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/atsushikoy/status/2100450401317454277?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSZJKNuacAATdWK.jpg?format=jpg&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">SQファーストクラス特典を2席予約する方法</div><div class="vdesc">検索画面を見ると、シンガポール→上海のSQファーストクラスはキャンセル待ちSaver枠が61,500マイルで確保でき、通常枠112,500マイルの半分程度で済む一例が示されている。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/atsushikoy/status/2100450401317454277?s=12" data-title="SQファーストクラス特典を2席予約する方法" data-rid="1857141541">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/yumeneko_money/status/2100330634660962760?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSV4OSZaoAA9R1I.jpg?format=jpg&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">日本の国債、100万円で120万円の利息が返ってくる計算</div><div class="vdesc">第91回利付国債（30年）は利回り3.980%・単価100.26・年2回利払いで、100万円を買えば単利計算で満期までに約120万円の利息が積み上がる。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/yumeneko_money/status/2100330634660962760?s=12" data-title="日本の国債、100万円で120万円の利息が返ってくる計算" data-rid="1857138556">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/kakei_no_mikata/status/2098686400543776987?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSAH_EbaAAAR6HT.jpg?format=jpg&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">最新チャージルート（2026年9月）まとめ</div><div class="vdesc">JAL Pay経由のチャージを4段階まで組むと還元率が最大4.4%に達し、そのままAmazon等で使うだけの2.6%ルートとは2ポイント近い差が出る。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kakei_no_mikata/status/2098686400543776987?s=12" data-title="最新チャージルート（2026年9月）まとめ" data-rid="1856994160">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/shiromaru_site/status/2100328879055376536?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSV2JYYaYAA5Iq5.jpg?format=jpg&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">JAL経済圏で持つべきクレジットカード</div><div class="vdesc">JR東日本・東急・小田急などとの提携カードが選択肢に挙がり、プラチナProも検討候補という整理。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/shiromaru_site/status/2100328879055376536?s=12" data-title="JAL経済圏で持つべきクレジットカード" data-rid="1856916756">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/shiromaru_site/status/2096704998834860379?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HRiZbjNa8AANsg9.jpg?format=jpg&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">旅行系クレカ、アメックスよりヒルトン系が有利という見立て</div><div class="vdesc">マリオットやANA系は年会費が上がって手が出しにくくなった一方、ヒルトン系アメックスの方がコスパで優位という逆説。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/shiromaru_site/status/2096704998834860379?s=12" data-title="旅行系クレカ、アメックスよりヒルトン系が有利という見立て" data-rid="1856916729">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/shiromaru_site/status/2096342612655411346?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">どのクレジットカードがおすすめか</div><div class="vdesc">「万能な1枚」は無く、日常還元なら三井住友・楽天、飛行機重視なら航空会社系、ホテル重視なら旅行系というニーズ別の整理に落ち着く。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/shiromaru_site/status/2096342612655411346?s=12" data-title="どのクレジットカードがおすすめか" data-rid="1856916701">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/shiromaru_site/status/2092718732061597849?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HQpgeHHbUAAn6hR.jpg?format=jpg&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Oliveと三井住友カードNL、どちらを選ぶか</div><div class="vdesc">三井住友銀行の紐付けが必須なOliveに抵抗があるなら、三井住友カードNL単体でも対象店舗7〜10%還元は確保できるという代替案が示される。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/shiromaru_site/status/2092718732061597849?s=12" data-title="Oliveと三井住友カードNL、どちらを選ぶか" data-rid="1856916662">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/shiromaru_site/status/2089457238163247540?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HP61ccobgAA7FD7.jpg?format=jpg&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">SBI経済圏はイオン系との組み合わせで勢いが増す</div><div class="vdesc">相性の良いイオン系カードと組み合わせることで還元効果がさらに伸びるという評価。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/shiromaru_site/status/2089457238163247540?s=12" data-title="SBI経済圏はイオン系との組み合わせで勢いが増す" data-rid="1856916487">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=incomplete target=2026-09-17 run_id=5cfbafd2 saves=8 reason=missing-step4_5 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
