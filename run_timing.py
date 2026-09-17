@@ -401,6 +401,19 @@ def build_comment(state, target, saves, expected_run_id=None, end_at=None):
     return "<!-- run-timing %s -->" % " ".join("%s=%s" % kv for kv in sanitized)
 
 
+# 末尾の空白のみの行（コメントとコメントの間・コメントとfooterの間の見た目上の
+# 区切り）を剥がすための正規表現。本文（非空白を含む行）には決してマッチしない。
+_TRAILING_BLANK_LINES_RE = re.compile(r"(?:[ \t]*\r?\n)+\Z")
+
+
+def _strip_trailing_blank_lines(s):
+    """末尾の空白のみの行を取り除いた文字列を返す。マッチが無ければ s をそのまま返す。"""
+    m = _TRAILING_BLANK_LINES_RE.search(s)
+    if not m:
+        return s
+    return s[:m.start()]
+
+
 def insert_comment(html, comment):
     """最後の `</footer>` 直前に run-timing コメントをちょうど1件だけ置く。
 
@@ -408,23 +421,30 @@ def insert_comment(html, comment):
     置換すると、本文の `<script>`/`<pre>` にたまたま同形の文字列があるとき、それを
     消してJSを壊せる。壊れた（閉じていない）コメントが footer より前にあるときは
     **書き込み自体を諦める**（新しい行も `</footer>` もその内側に入って無効化されるため）。
+    `</footer>` が文書中にちょうど1個でない場合も同様に諦める（`rfind` は最後の1個しか
+    見ないため、2個以上あると `</footer>` の場所を一意に特定できず誤挿入しうる）。
     改行コードは元のHTMLに合わせる（CRLF の reviews を LF に書き換えない）。
     戻り値は (新HTML or None, 消した既存件数)。
     """
-    idx = html.rfind("</footer>")
-    if idx < 0:
+    if html.count("</footer>") != 1:
         return None, 0
+    idx = html.find("</footer>")
     if UNCLOSED_RE.search(html[:idx]):
         return None, 0
     head, tail = html[:idx], html[idx:]
     existing = 0
     while True:
-        matches = list(COMMENT_RE.finditer(head))
+        # コメント間・コメントとfooterの間に空白のみの行（空行）が挟まっていても
+        # 剥がせるように、末尾の空白のみの行をいったん取り除いてから判定する。
+        # 非空白の本文行はこの関数では取り除かれないので、正規形コメントが直前に
+        # 無ければ何も変わらずループを抜ける（本文を誤って消さない）。
+        candidate = _strip_trailing_blank_lines(head)
+        matches = list(COMMENT_RE.finditer(candidate))
         # search() だと本文の <script> 等にある同形の文字列を先に拾ってしまうので、
         # 常に**最後の**マッチを見て、それが末尾に接しているときだけ剥がす。
-        if not matches or matches[-1].end() != len(head):
+        if not matches or matches[-1].end() != len(candidate):
             break
-        head = head[:matches[-1].start()]
+        head = candidate[:matches[-1].start()]
         existing += 1
     eol = "\r\n" if "\r\n" in html else "\n"
     return head + comment + eol + tail, existing
@@ -470,8 +490,8 @@ def cmd_finish(target, reviews_path, expected_run_id=None):
         return
     new_html, existing = insert_comment(html, comment)
     if new_html is None:
-        print("RUN_TIMING: WRITE_FAILED no </footer> or unclosed run-timing comment in %s"
-              % reviews_path)
+        print("RUN_TIMING: WRITE_FAILED no unique </footer> or unclosed run-timing "
+              "comment in %s" % reviews_path)
         return
     # ⚠️ **書く直前に読み直し、読んだときから変わっていないことを確かめる。**
     # これが無いと、A が古い本文を読んで止まっている間に B が新しい reviews を書き、
@@ -479,6 +499,11 @@ def cmd_finish(target, reviews_path, expected_run_id=None):
     # （2026-09-08 Codex 7周目 P0）。計測の遅れが振り返り本体へ波及する経路なので、
     # 変化を見つけたら書かずに諦める。厳密な原子性ではないが、競合窓は
     # 「読んでからコメントを組み立てるまで」から「読み直してから replace まで」へ縮む。
+    # 残存窓: 読み直し〜os.replace の間に別の書き手が割り込む余地は、依然として
+    # 厳密には排除できていない（Codex 敵対的レビュー指摘）。厳密な排他には reviews
+    # への全書き手（check_disclosure.py 等）で共有するロックが要るが、それは本変更の
+    # スコープ外とする。夜間Routineは単一プロセスが逐次実行する前提であり、
+    # 同一 reviews ファイルへの並行書き込みは実運用では想定していない。
     try:
         with open(reviews_path, "r", encoding="utf-8", newline="") as f:
             if f.read() != html:

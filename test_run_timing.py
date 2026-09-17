@@ -315,6 +315,30 @@ class InsertCommentTest(unittest.TestCase):
         out, _ = run_timing.insert_comment("<html><body>x</body></html>", self.C1)
         self.assertIsNone(out)
 
+    def test_two_footers_means_no_write(self):
+        """`</footer>` が文書中に2個あると、`rfind` では場所を一意に特定できない
+        ので書かずに諦める（誤挿入防止。手順書の <script> の openChat() 文字列に
+        `</footer>` は含まれないが、他の理由で複数化した場合の安全側フォールバック）。"""
+        dirty = FOOTER_HTML.replace(
+            "</html>", "<script>var s = \"</footer>\";</script>\n</html>")
+        out, existing = run_timing.insert_comment(dirty, self.C1)
+        self.assertEqual(existing, 0)
+        self.assertIsNone(out)
+
+    def test_blank_lines_between_existing_comments_and_footer_still_collapse(self):
+        """コメント同士・コメントとfooterの間に空行が挟まっていても、
+        再実行で正規形コメントを剥がして1本に差し替えられること（本文は消さない）。"""
+        dirty = FOOTER_HTML.replace(
+            "</footer>",
+            self.C1 + "\n\n" + self.C2 + "\n   \n</footer>",
+        )
+        out, existing = run_timing.insert_comment(dirty, "<!-- run-timing schema=v2 a=3 -->")
+        self.assertEqual(existing, 2)
+        self.assertEqual(out.count("run-timing"), 1)
+        self.assertIn("a=3", out)
+        # 本文（テーマの div）は空行剥がしの影響を受けず残っていること。
+        self.assertIn('<div class="meta">テーマ</div>', out)
+
     def test_real_review_html_is_preserved(self):
         """合成HTMLだけで緑にしない。本番の reviews 全件で往復させる。"""
         reviews_dir = os.path.join(HERE, "reviews")
