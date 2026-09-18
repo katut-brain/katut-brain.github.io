@@ -54,7 +54,7 @@
 #   （--max-total SEC で総時間予算。既定 limit×timeout＋30秒・0で無効化。外側シェルの
 #     `timeout` が親だけを殺して子を孤児化させる前に、自分で止まるための内部予算）
 
-import sys, os, argparse, datetime, json, io, re, subprocess, traceback, time
+import sys, os, argparse, datetime, json, io, re, subprocess, traceback, time, uuid
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -290,6 +290,14 @@ def _improved(prev_rec, new_rec):
 # 読まない（サブディレクトリは glob に掛からない）ので、台帳の集計は汚さない。
 RUNS_DIRNAME = "runs"
 _RUN_TARGET_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+# 1ファイルに残す実行の上限。同日再実行を積んでも肥大させない（古いものから捨てる）。
+MAX_RUNS_PER_DAY = 20
+
+# このプロセス固有のID。**手順書から run_id を貰わずに自分で作る**（2026-09-18 Codex
+# 4周目 P1）。日付は「日」には一意でも「実行」には一意ではないので、同日再実行を
+# 上書きすると「1回目は完了したが2回目が中断した」と「1回目だけが中断した」が
+# 同じ姿になる。各実行を1エントリとして積み、自分のエントリだけを書き換える。
+_RUN_TOKEN = uuid.uuid4().hex[:8]
 
 
 def _utcnow():
@@ -297,20 +305,49 @@ def _utcnow():
     return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def _write_run_evidence(target, **fields):
-    """証跡を1件書く。**どんな失敗でも例外を投げない**（計測は本体より優先度が低い）。
+def _runs_path(target):
+    return os.path.join(_facts_dir(), RUNS_DIRNAME, "%s.json" % target)
 
-    一時ファイル＋os.replace で原子的に置き換える。途中停止で中身が空・途中までに
-    なると「起動したのに証跡が壊れている」という最悪の観測になるため。
+
+def _write_run_evidence(target, **fields):
+    """このプロセスの実行エントリを1件、証跡ファイルへ置く（無ければ追加・あれば更新）。
+
+    **どんな失敗でも例外を投げない**（証跡は振り返り本体より優先度が低い。ここで
+    落とすと、計測のために夜間ランを止めることになる）。ただし**黙って消えない**:
+    書けなかったときは stderr に `BACKFILL_EVIDENCE: write_failed` を出す。
+    「証跡が無い＝実行していない」と読めるのは、この行がログに無いときだけ。
+
+    一時ファイル＋os.replace で原子的に置き換える。途中停止で中身が空・途中まで
+    になると「起動したのに証跡が壊れている」という最悪の観測になるため。
     """
     try:
         if not (isinstance(target, str) and _RUN_TARGET_RE.match(target)):
             return
-        d = os.path.join(_facts_dir(), RUNS_DIRNAME)
-        os.makedirs(d, exist_ok=True)
-        path = os.path.join(d, "%s.json" % target)
-        payload = {"schema": "v1", "target": target}
-        payload.update(fields)
+        path = _runs_path(target)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+
+        runs = []
+        if os.path.exists(path):
+            try:
+                with io.open(path, encoding="utf-8") as f:
+                    old = json.load(f)
+                if isinstance(old, dict) and isinstance(old.get("runs"), list):
+                    runs = [r for r in old["runs"] if isinstance(r, dict)]
+            except Exception:
+                # 壊れていたら読めた分だけ諦める。今回の実行は必ず残す。
+                runs = []
+
+        entry = {"run": _RUN_TOKEN}
+        for r in runs:
+            if r.get("run") == _RUN_TOKEN:
+                entry = r
+                break
+        else:
+            runs.append(entry)
+        entry.update(fields)
+        runs = runs[-MAX_RUNS_PER_DAY:]
+
+        payload = {"schema": "v2", "target": target, "runs": runs}
         tmp = path + ".tmp"
         with open(tmp, "w", encoding="utf-8", newline="") as f:
             json.dump(payload, f, ensure_ascii=False, sort_keys=True)
@@ -318,8 +355,13 @@ def _write_run_evidence(target, **fields):
             f.flush()
             os.fsync(f.fileno())
         os.replace(tmp, path)
-    except Exception:
-        pass
+    except Exception as e:
+        # 握りつぶすが黙らない。手順書の「証跡が無い＝未実行」はこの行が無いことが前提。
+        try:
+            sys.stderr.write("BACKFILL_EVIDENCE: write_failed target=%s error=%s%s"
+                             % (target, type(e).__name__, "\n"))
+        except Exception:
+            pass
 
 
 def run(target, limit, max_attempts, dry_run, timeout, max_total=None):

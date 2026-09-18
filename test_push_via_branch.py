@@ -112,6 +112,26 @@ class PushViaBranchTest(unittest.TestCase):
         self.assertIn("reason=path_not_allowed", r.stdout)
         self.assertEqual(self.remote_branches(), [])
 
+    def test_allows_backfill_run_evidence(self):
+        """手順2.5 の証跡 fetch_facts/runs/<日付>.json は送れる（2026-09-18 追加）。"""
+        self.write("fetch_facts/runs/2026-09-13.json", '{"schema": "v2", "runs": []}\n')
+        r = self.script("evidence", "fetch_facts/runs/2026-09-13.json")
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertIn("WRITE_PATH: fetch_facts/runs/2026-09-13.json", r.stdout)
+
+    def test_rejects_other_paths_under_runs(self):
+        """許可を広げたのは runs/<日付>.json だけ。拡張子違い・入れ子・.. は通さない。"""
+        for path, body in (
+            ("fetch_facts/runs/2026-09-13.txt", "x\n"),
+            ("fetch_facts/runs/notadate.json", "{}\n"),
+            ("fetch_facts/runs/sub/2026-09-13.json", "{}\n"),
+        ):
+            self.write(path, body)
+            r = self.script("bad", path)
+            self.assertEqual(r.returncode, 2, path)
+            self.assertIn("reason=path_not_allowed", r.stdout)
+        self.assertEqual(self.remote_branches(), [])
+
     def test_rejects_missing_file(self):
         r = self.script("bad", "reviews/2026-09-13.html")
         self.assertEqual(r.returncode, 2)

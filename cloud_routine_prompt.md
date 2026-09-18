@@ -81,7 +81,8 @@
      起動直後に `status:"started"`、正常終了で `status:"completed"` ＋ `BACKFILL_STATUS` と同じ数字、
      例外終了で `status:"crashed"` に置き換わる（原子的置換）。**あなたがこのファイルを作ったり書き換えたりしない。**
      これは「このステップを実行したか」を成果物側から確かめるための唯一の材料で、
-     **ファイルが無い＝このコマンドを実行していない**という意味になる（2026-09-15〜17 の3夜、
+     **ログに `BACKFILL_EVIDENCE: write_failed` が出ていない限り、ファイルが無い＝このコマンドを実行していない**という意味になる
+     （証跡の書き込み自体が失敗した場合は実行済みでもファイルが残らないので、その1行を必ずログに残す。2026-09-15〜17 の3夜、
      候補が9件あるのに痕跡が1件も無く、未実行と実行後の無記録を区別できなかったため入れた）。
      `--dry-run` のときは書かれない。
    - バックフィル結果の内訳は `BACKFILL_STATUS:` 行で確認する（candidates/attempted/improved/failed/stub_written等）。
@@ -407,9 +408,18 @@
    **(a) reviews あり（手順5で `reviews/<TARGET>.html` を作った場合）**：
    - 押すファイルは **`reviews/<TARGET>.html`・`fetch_facts/<TARGET>.json`・`fetch_facts/runs/<TARGET>.json` の3つ**（それぞれ手順5・手順4.2・手順2.5 が作る。**無いものは外す**。`reviews` だけの日もある）。次の1コマンドで送る：
      ```bash
-     bash push_via_branch.sh "update: <TARGET>" fetch_facts/<TARGET>.json fetch_facts/runs/<TARGET>.json reviews/<TARGET>.html
+     FILES=""
+     for f in fetch_facts/$TARGET.json fetch_facts/runs/$TARGET.json reviews/$TARGET.html; do
+       [ -f "$f" ] && FILES="$FILES $f"
+     done
+     bash push_via_branch.sh "update: $TARGET" $FILES
      ```
-     （`fetch_facts` が無い日はそれを外す。何個渡しても1コミットにまとまる）
+     ⚠️ **存在するものだけを渡す**（`push_via_branch.sh` は存在しないパスを渡されると何も送らず exit 2 で終わる）。
+     3つのうちどれが在るかは夜によって違う——手順2.5 を実行すれば `fetch_facts/runs/` は必ず在り、
+     当日保存が0件なら `reviews/` は無く、取得が1件も無ければ `fetch_facts/<TARGET>.json` も無い。
+     **ファイル名を直書きして固定の3つを渡さないこと**（2026-09-18 Codex 4周目 P0。
+     証跡だけの夜がまさにこれで exit 2 になり、今回直したい「新規cloneで証跡が消える」経路に戻る）。
+     （何個渡しても1コミットにまとまる。渡す順は問わない）
    - `capture_index.json` はここでは押さない（手順2.1 で押し終えている）。
    - 送る前に、**ファイルが本物であることだけ**確認する（中身を書き写すのではなく、ファイルに対して確認する）：`head -c 20 reviews/<TARGET>.html` が `<!doctype html>` で始まり、`tail -c 20` が `</html>` で終わり、`grep -c PLACEHOLDER reviews/<TARGET>.html` が 0 であること。
    - **照合は Actions が main に載せる前にやる**（manifest の SHA-256 と実ファイルの完全一致）。`WRITE_COMMIT: <sha> ... branch=...` が出ていればブランチまで届いており、`PUBLISHED: yes` なら公開まで完了。`note=main_untouched` が出ていたら**何も届いていない**ので、**もう一度同じコマンドを実行する**。**2回目も駄目なら、その夜は押さずに終える。フォールバックはしない**（手順8には `push_files` へ落ちる経路は存在しない。下の手順8.5に出てくるフォールバックは Vaultリポ専用であって、ここには適用しない）。
@@ -423,12 +433,20 @@
      （＝exhaustedに到達しない＝stub/backfill_rid導入の目的が機能しない）。
      `git status --porcelain` による実差分判定なら、`attempted`/`stub_written`/`rid_mismatch` のどれで生じた差分でも正しく拾える。
      新規cloneに同日の既存 `fetch_facts/<TARGET>.json` が既に含まれている再実行でも、今回のランで差分が無ければこの条件で自動的に弾かれる（誤push防止）。
-   - `fetch_facts/` 配下の**実在するものだけ**を送る（`reviews/<TARGET>.html` は存在しないので対象に含めない。存在しないファイルを送ろうとしない）：
+   - **(a) と同じループで送る**（実在するものだけが `$FILES` に入る。この分岐では `reviews/<TARGET>.html` が無いので自動的に外れる＝存在しないファイルを送ろうとしない）：
      ```bash
-     bash push_via_branch.sh "update: <TARGET> (backfill only)" fetch_facts/<TARGET>.json fetch_facts/runs/<TARGET>.json
+     FILES=""
+     for f in fetch_facts/$TARGET.json fetch_facts/runs/$TARGET.json reviews/$TARGET.html; do
+       [ -f "$f" ] && FILES="$FILES $f"
+     done
+     bash push_via_branch.sh "update: $TARGET (backfill only)" $FILES
      ```
-     （当日ファイルが無い夜は `fetch_facts/runs/<TARGET>.json` だけを渡す。証跡だけの夜もこの分岐で push する）
-   - 送る前に、ファイルが本物のJSONであることを確認する：`python3 -c "import json; json.load(open('fetch_facts/<TARGET>.json', encoding='utf-8'))"` がエラー無く通ること。
+     ⚠️ **存在するものだけを渡す**（`push_via_branch.sh` は存在しないパスを渡されると何も送らず exit 2 で終わる）。
+     3つのうちどれが在るかは夜によって違う——手順2.5 を実行すれば `fetch_facts/runs/` は必ず在り、
+     当日保存が0件なら `reviews/` は無く、取得が1件も無ければ `fetch_facts/<TARGET>.json` も無い。
+     **ファイル名を直書きして固定の3つを渡さないこと**（2026-09-18 Codex 4周目 P0。
+     証跡だけの夜がまさにこれで exit 2 になり、今回直したい「新規cloneで証跡が消える」経路に戻る）。
+   - 送る前に、**渡す JSON それぞれ**が本物のJSONであることを確認する：`for f in $FILES; do case "$f" in *.json) python3 -c "import json,sys; json.load(open(sys.argv[1],encoding='utf-8'))" "$f" || echo "BAD_JSON: $f";; esac; done` が何も出さないこと（存在しないファイルを開こうとしない）。
    - 照合は Actions が main に載せる前に SHA-256 でやる。`WRITE_COMMIT: <sha> ... branch=...` ならブランチまで完了。失敗したときは上の「失敗したときにやること」の①〜③に従う（**フォールバックはしない**）。
 
    **(c) reviews 無し・`fetch_facts/` にも差分が無い（`git status --porcelain -- fetch_facts/` が空＝今回のランで変更が無い）**：
@@ -474,6 +492,6 @@
 
 ## 成功条件（手順8の3分岐に対応）
 - (a) `date==TARGET` が1件以上 → `reviews/<TARGET>.html` を生成し、`fetch_facts/<TARGET>.json` とあわせて `main` に push。**`index.html` は push しない**（GitHub Actions が自動再生成する・手順6）。
-- (b) `date==TARGET` が0件（新規保存が無い日）だが、手順2.5のバックフィルが**今回のランで** `fetch_facts/<TARGET>.json` に実際に変更を生じさせた（`git status --porcelain -- fetch_facts/<TARGET>.json` で差分あり。改善(attempted)・スタブ書き込み(stub_written)・backfill_ridタグ付け(rid_mismatch)のいずれでも差分は生じる） → reviews は作らず、`fetch_facts/<TARGET>.json` だけを push する（コミットメッセージ `update: <TARGET> (backfill only)`）。
-- (c) `date==TARGET` が0件かつ、今回のランでのバックフィルによる `fetch_facts/<TARGET>.json` への変更も無い（ファイル自体が存在しない、または `git status --porcelain` が空で既存ファイルに差分が生じていない） → 何も push せず正常終了する。
+- (b) `date==TARGET` が0件（新規保存が無い日）だが、**今回のランで `fetch_facts/` 配下に変更が生じた**（`git status --porcelain -- fetch_facts/` で差分あり。改善(attempted)・スタブ書き込み(stub_written)・backfill_ridタグ付け(rid_mismatch)のほか、**手順2.5 の証跡 `fetch_facts/runs/<TARGET>.json` だけが増えた夜も含む**） → reviews は作らず、`fetch_facts/` 配下の実在するものを push する（コミットメッセージ `update: <TARGET> (backfill only)`）。
+- (c) `date==TARGET` が0件かつ、今回のランでの `fetch_facts/` 配下への変更も無い（`git status --porcelain -- fetch_facts/` が空） → 何も push せず正常終了する。**手順2.5 を実行していれば証跡が必ず増えるので、通常この分岐には入らない**（入ったなら手順2.5 を飛ばした疑いがある）。
 - `date==TARGET` が1件以上あった日は、重複チェックでスキップされなかった各レコードについて、スキーマ検証に合格したノートが Vaultリポ `Explore/bookmarks/` に作成され `main` へ push される（1件も新規作成対象が無ければ手順8.5のpushは行わない＝これも正常終了）。
