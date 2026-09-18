@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-09-18 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-18 の振り返り</h1>
+  <div class="meta">お金と学生身分の「抜け道」を探る一日（保存4件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日の4件を貫くのは「制度やルールを正確に読み切れば、非対称に得ができる」という一点。放送大学に54,000円で10年間在籍しApple学割を使い倒す方法、みずほ楽天カードの新規特典で最大16,000ポイントを取るキャンペーン、10%・20%下落ごとに買い増すという機械的な株式売買ルールは、対象こそ教育制度・クレジットカード・株式市場とばらばらだが、いずれも「知っていれば得を取れる隙間」を突く発想で揃っている。</p>
+    <p>お金・ポイント・マイル最適化への関心は、9/11・9/13・9/15・9/17と直近1週間ほぼ隔日で保存が続いており、今日で少なくとも5日目。単発の流行ではなく、日常的に育っている関心と見てよい。一方でユーザーが普段強く反応する建築・アート・写真の保存は今日は無く、「作りたい」軸より「知る/紹介したい」軸、それも実利に直結する情報収集が支配的な一日だった。</p>
+    <ul class="pts">
+      <li><b>放送大学ハック</b>：全科履修生として入学料24,000円＋1単位6,000円の計30,000円で入学し、10年間の理論上最低学費は54,000円（月450円換算）。Apple学生ストアの対象は全科履修生のみという条件が鍵になる</li>
+      <li><b>みずほ楽天カード</b>：2枚目作成＆条件達成で楽天ポイント6,000＋みずほポイント10,000の合計最大16,000ポイントが9/18〜28限定で還元される。年会費は永年無料</li>
+      <li><b>ルールベース株式投資</b>：10%下落で買い、20%下落でさらに10%買い増しという機械的なナンピン戦略。月収1500万円という実績の裏付けは投稿内には示されていない</li>
+      <li><b>AIチートコード</b>：capafyというAIツールを「なんで合法なのかわからん」と紹介するリール。動画の中身までは確認できていない</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>放送大学の学割ハックのように条件を厳密に満たせば誰でも再現できる「制度の抜け道」と、10%/20%ルールの株式投稿のように再現性の検証が難しい「必勝法」を、保存した瞬間の自分はどこで区別しているのか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">放送大学ハックの実際</div>
+    <ul class="ilist">
+      <li><a href="https://note.com/hovinci/n/nf54a8b0ac747" target="_blank" rel="noopener"><b>大人でも「14年間の学割」を、5万7000円でゲット!? 放送大学ライフハック</b></a> <span>→ 全科履修生入学後は2年ごとに5,500円を納めるだけで、休学制度を併用すれば最長14年間の学生身分を維持でき総額5万7000円で済む。ただしApple・Adobe等の学割をどれだけ使うかで元が取れるかが決まる、費用対効果の見極めが要る話だとわかる</span></li>
+    </ul>
+    <div class="ntag">みずほ楽天カードの実態</div>
+    <ul class="ilist">
+      <li><a href="https://variety.hatenablog.com/entry/2026/09/07/193106" target="_blank" rel="noopener"><b>【2026年9月】みずほ楽天カードの審査・キャンペーン・申し込み｜年会費無料で最大2万円相当もらえる完全ガイド</b></a> <span>→ ポイント還元だけでなく、月1回以上の利用でみずほ銀行のATM時間外手数料・振込手数料が実質無料になる点が本当の価値で、みずほ銀行をメインバンクにしている人ほど恩恵が大きい</span></li>
+    </ul>
+  </section>
+
+  <h2>💰 マネー・制度ハック（3件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/822wds/status/2100427080861426078?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2F822wds%2Fstatus%2F2100427080861426078%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">月収1500万円？下落ルールの株式投稿</div><div class="vdesc">①10%下落で買い、②20%下落でさらに10%買い増しという機械的な逆張りルールを提示。58歳・投資歴20年、月収1500万円という触れ込みだが、根拠となる実績の裏付けは示されていない。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/822wds/status/2100427080861426078?s=12" data-title="月収1500万円？下落ルールの株式投稿" data-rid="1858113200">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/rabbidayonn/status/2100771148132933800?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSdwOYTawAAHHLr.jpg?format=jpg&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">みずほ楽天カード、最大16,000ポイント還元</div><div class="vdesc">2枚目として作成＆条件達成で、楽天ポイント6,000＋みずほポイント10,000の合計最大16,000ポイントが9/18〜28のエントリー期間限定で還元される。年会費は永年無料、通常還元率も最大2%。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/rabbidayonn/status/2100771148132933800?s=12" data-title="みずほ楽天カード、最大16,000ポイント還元" data-rid="1858110268">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/yukichina7/status/2100705681712271559?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/card_img/2100705665887186944/YmylK-VD?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">放送大学ハックで54,000円/10年「学生」に</div><div class="vdesc">全科履修生として入学料24,000円＋1単位6,000円の計30,000円で入学し、10年間の理論上最低学費は54,000円（月450円換算）。Apple学生・教職員ストアの対象は全科履修生のみで、Mac・iPadが学割価格で買える。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/yukichina7/status/2100705681712271559?s=12" data-title="放送大学ハックで54,000円/10年「学生」に" data-rid="1858070392">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🤖 AIツール（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DdYm5P9J0VT/?stkn=MTJxMHl5dTdzaG5rMw==" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-1.cdninstagram.com/v/t51.82787-15/813344876_18096805826243853_103273422524692815_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=111&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=DEccwmUa39UQ7kNvwENKAdA&amp;_nc_oc=Adr2b9vBLfpzyAgorUdyQK45oSg5OkdDxzQG5okUbi90G3Gm8B6pgkxgIEQJ4HKgIw0&amp;_nc_zt=23&amp;_nc_ht=scontent-ord5-1.cdninstagram.com&amp;_nc_gid=riPfmXyc6uaRmHbYY1ZYyw&amp;_nc_ss=7b60f&amp;oh=00_AQLN9fkxOagzWa_jcGOVy844wRuDG9bZCZ0QNQxC2nC0zg&amp;oe=6AB37473" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">AIツールcapafyの「合法チートコード」</div><div class="vdesc">「なんで合法なのかわからんチートコード」というキャッチコピーでcapafyというAIツールを紹介するリール。動画の中身は構造的に取得できないため、キャプションと画像のみでの紹介にとどまる。※動画の内容は未取得</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DdYm5P9J0VT/?stkn=MTJxMHl5dTdzaG5rMw==" data-title="AIツールcapafyの「合法チートコード」" data-rid="1857564165">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-09-18 run_id=3b462ccb saves=4 step1_s=13 step2_s=23 step2_5_s=22 step3_s=5 step4_s=62 step4_5_s=227 step5_s=5 step7_s=14 total_s=371 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
