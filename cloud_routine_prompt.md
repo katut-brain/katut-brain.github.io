@@ -90,7 +90,12 @@
        3. 実行して到達したが書き込み自体に失敗した（この場合だけ
           `BACKFILL_EVIDENCE: write_failed` がログに出る）
      **ファイルが無いことだけで「実行していない」と断定しない。** 判定にはランのログを併せて見ること。
-     逆に、**ファイルが在れば「実行した」ことは確実**（この向きの断定だけが成立する）。
+     逆向きの断定も**そのままでは成立しない**。新規cloneでも、同じ `<TARGET>` の証跡が
+     過去のランで push されていれば main から降ってくるので、**今夜実行しなくてもファイルは在りうる**
+     （2026-09-18 Codex 8周目 P1）。ファイルの存在が示すのは「**過去のどこかで**その TARGET の
+     非 dry-run が最初の書き込みまで到達した」ことだけ。**今夜の実行と結び付けたいときは、
+     `runs` 配列に今夜の新しいエントリ（未知の `run` トークン）が増えているかを見る**
+     （ランのログの `BACKFILL_STATUS:` と併せて判断する）。
      `--dry-run` のときは書かれない。
    - バックフィル結果の内訳は `BACKFILL_STATUS:` 行で確認する（candidates/attempted/improved/failed/stub_written等）。
      push の分岐は手順8(b)の `git status` だけで判定する（`BACKFILL_STATUS:` の内訳では判定しない）。
@@ -438,7 +443,7 @@
    - **照合は Actions が main に載せる前にやる**（manifest の SHA-256 と実ファイルの完全一致）。`WRITE_COMMIT: <sha> ... branch=...` が出ていればブランチまで届いており、`PUBLISHED: yes` なら公開まで完了。`note=main_untouched` が出ていたら**何も届いていない**ので、**もう一度同じコマンドを実行する**。**2回目も駄目なら、その夜は押さずに終える。フォールバックはしない**（手順8には `push_files` へ落ちる経路は存在しない。下の手順8.5に出てくるフォールバックは Vaultリポ専用であって、ここには適用しない）。
 
    **(b) reviews 無し・今回のランで `fetch_facts/` に差分が生じた場合（手順2.5のバックフィルだけが書いた日）**：
-   - ⚠️ **(b) に入る判定条件は `git status --porcelain -- fetch_facts/` の出力が空でないこと、これ1つだけ**にする（2026-09-18 に対象を `fetch_facts/<TARGET>.json` 単体から `fetch_facts/` 配下全体へ広げた。手順2.5 の証跡 `fetch_facts/runs/<TARGET>.json` は、当日ファイルに差分が無い夜でも必ず作られるため。ここを広げないと**証跡だけの夜が push されず、実行したこと自体が翌晩の新規cloneで消える**）。
+   - ⚠️ **(b) に入る判定条件は `git status --porcelain -- fetch_facts/` の出力が空でないこと、これ1つだけ**にする（2026-09-18 に対象を `fetch_facts/<TARGET>.json` 単体から `fetch_facts/` 配下全体へ広げた。手順2.5 の証跡 `fetch_facts/runs/<TARGET>.json` は、当日ファイルに差分が無い夜でも**通常は**増えるため（初期化前の停止・証跡書込み失敗では増えない。手順2.5 の注記を見ること）。ここを広げないと**証跡だけの夜が push されず、実行したこと自体が翌晩の新規cloneで消える**）。
      `BACKFILL_STATUS:` の内訳（`attempted`/`stub_written`/`rid_mismatch`等）は「今夜バックフィルが何をしたかを読むための情報」であり、(b)へ分岐するかどうかの判定条件には使わない。
      ⚠️ **`attempted` だけを条件にしてはいけない**（2026-09-04 output-verifier指摘で撤回）: stub書き込みだけの夜（`attempted=0 stub_written=1`）や
      `backfill_rid` タグ付けだけの夜（`rid_mismatch=1`）は `attempted=0` のままだが、どちらも `fetch_facts/<TARGET>.json` に実ファイル差分を生じさせている。
@@ -512,5 +517,5 @@
 ## 成功条件（手順8の3分岐に対応）
 - (a) `date==TARGET` が1件以上 → `reviews/<TARGET>.html` を生成し、`fetch_facts/<TARGET>.json` とあわせて `main` に push。**`index.html` は push しない**（GitHub Actions が自動再生成する・手順6）。
 - (b) `date==TARGET` が0件（新規保存が無い日）だが、**今回のランで `fetch_facts/` 配下に変更が生じた**（`git status --porcelain -- fetch_facts/` で差分あり。改善(attempted)・スタブ書き込み(stub_written)・backfill_ridタグ付け(rid_mismatch)のほか、**手順2.5 の証跡 `fetch_facts/runs/<TARGET>.json` だけが増えた夜も含む**） → reviews は作らず、`fetch_facts/` 配下の実在するものを push する（コミットメッセージ `update: <TARGET> (backfill only)`）。
-- (c) `date==TARGET` が0件かつ、今回のランでの `fetch_facts/` 配下への変更も無い（`git status --porcelain -- fetch_facts/` が空） → 何も push せず正常終了する。**手順2.5 を実行していれば証跡が必ず増えるので、通常この分岐には入らない**（入ったなら手順2.5 を飛ばした疑いがある）。
+- (c) `date==TARGET` が0件かつ、今回のランでの `fetch_facts/` 配下への変更も無い（`git status --porcelain -- fetch_facts/` が空） → 何も push せず正常終了する。**手順2.5 が最後まで走れば証跡が増えるので、通常この分岐には入らない**。入った場合は「手順2.5 を飛ばした」「最初の書き込みに到達する前に止まった」「証跡の書き込みに失敗した（`BACKFILL_EVIDENCE: write_failed`）」のどれかなので、**ランのログと併せて判定する**（分岐そのものは (c) で正しい＝押すものが無いなら押さない）。
 - `date==TARGET` が1件以上あった日は、重複チェックでスキップされなかった各レコードについて、スキーマ検証に合格したノートが Vaultリポ `Explore/bookmarks/` に作成され `main` へ push される（1件も新規作成対象が無ければ手順8.5のpushは行わない＝これも正常終了）。

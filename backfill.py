@@ -312,6 +312,9 @@ _RUN_TOKEN = uuid.uuid4().hex   # 切り詰めない（32bitだと同日ファ�
 # リポジトリからも運用者の記憶からも確証が取れなかった**（Codex 6周目 P1）。確証の取れない
 # 前提の上に「実行を積む」という中心機能を置くより、前提そのものを要らなくするほうが安い。
 LOCK_WAIT_SEC = 10
+# テスト用継ぎ目 BACKFILL_EVIDENCE_DELAY_SEC の上限（秒）。本番で誤って設定されても
+# 夜間ランへの影響をこの範囲に閉じ込める（2026-09-18 Codex 8周目 P2）。
+MAX_EVIDENCE_DELAY_SEC = 5.0
 
 try:
     import fcntl as _fcntl
@@ -457,12 +460,17 @@ def _write_run_evidence(target, **fields):
         # **必ず**消失更新が起きる状態を作る（2026-09-18 Codex 7周目 P2。バリアと
         # 併用して「ロックを外せば落ちる」ことを機械的に保証するため）。本番では
         # 環境変数が無いので 0 秒＝何もしない。RUN_ONE と同じく継ぎ目は1点だけ。
+        # ⚠️ 上限を設ける。環境変数の残留や誤設定で夜間ランを遅らせたり、極端な値で
+        # 証跡書込みを write_failed に追い込めたりしないため（2026-09-18 Codex 8周目 P2）。
+        # ロックを保持したまま眠る区間なので、上限は短くする。
         _delay = os.environ.get("BACKFILL_EVIDENCE_DELAY_SEC")
         if _delay:
             try:
-                time.sleep(float(_delay))
+                _sec = float(_delay)
             except (TypeError, ValueError):
-                pass
+                _sec = 0.0
+            if _sec > 0:
+                time.sleep(min(_sec, MAX_EVIDENCE_DELAY_SEC))
 
         entry = {"run": _RUN_TOKEN}
         for r in runs:

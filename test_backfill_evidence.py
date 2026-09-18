@@ -366,3 +366,27 @@ backfill._write_run_evidence('2026-09-18', status='completed')
         """ロックファイルは .gitignore 済み＝成果物ではない（手順8(b) の判定を汚さない）。"""
         with io.open(os.path.join(HERE, ".gitignore"), encoding="utf-8") as f:
             self.assertIn("fetch_facts/runs/*.lock", f.read())
+
+
+    def test_delay_seam_is_capped(self):
+        """本番で誤設定されても影響を上限内に閉じ込める（Codex 8周目 P2）。"""
+        import time as _time
+        tmp = tempfile.mkdtemp(prefix="bf-cap-")
+        old_env = os.environ.get("BACKFILL_EVIDENCE_DELAY_SEC")
+        old_dir = os.environ.get("FETCH_FACTS_DIR")
+        old_cap = backfill.MAX_EVIDENCE_DELAY_SEC
+        try:
+            os.environ["FETCH_FACTS_DIR"] = tmp
+            os.environ["BACKFILL_EVIDENCE_DELAY_SEC"] = "600"
+            backfill.MAX_EVIDENCE_DELAY_SEC = 0.05
+            t0 = _time.monotonic()
+            backfill._write_run_evidence("2026-09-18", status="started")
+            self.assertLess(_time.monotonic() - t0, 5.0)
+        finally:
+            backfill.MAX_EVIDENCE_DELAY_SEC = old_cap
+            for k, v in (("BACKFILL_EVIDENCE_DELAY_SEC", old_env),
+                         ("FETCH_FACTS_DIR", old_dir)):
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
