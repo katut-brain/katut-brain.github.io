@@ -221,6 +221,63 @@ class PartialSuppressedTest(unittest.TestCase):
         self.assertIn("reason=", c)
 
 
+class ReasonGateTest(unittest.TestCase):
+    """秒数の公開可否は reason が出揃ってから決まること（2026-09-18 Codex 2周目 P1）。
+
+    `saves_unknown` / `suspicious_zero` は `_validate()` の外で足されるので、
+    `_validate()` の中だけで判定していると、これらが付いた状態で全区間値と
+    `total_s` が公開される抜け道が残っていた。
+    """
+
+    def _no_intervals(self, c, why):
+        for name in run_timing.MARKS:
+            self.assertNotIn("%s_s=" % name, c, "%s: %s" % (why, name))
+        self.assertNotIn("total_s=", c, why)
+
+    def test_suspicious_zero_suppresses_all_values(self):
+        """全区間0秒＝後追い mark の疑い。理由だけ残して秒数は出さない。"""
+        steps = [(s2, 0) for s2 in run_timing.MARKS]
+        c = bc(state(steps), "2026-09-07", 3, end_at=1000)
+        self.assertIn("suspicious_zero", c)
+        self.assertIn("status=incomplete", c)
+        self._no_intervals(c, "suspicious_zero")
+
+    def test_saves_unknown_keeps_values(self):
+        """保存件数が数えられないことは時刻の信頼性と無関係なので秒数は残す。"""
+        c = bc(state(marks()), "2026-09-07", None)
+        self.assertIn("saves=unknown", c)
+        self.assertIn("status=incomplete", c)
+        self.assertIn("step2_5_s=10", c)
+        self.assertIn("total_s=", c)
+
+    def test_bad_run_id_suppresses_all_values(self):
+        c = bc(state(marks(), run_id="zzz"), "2026-09-07", 3, rid=RID)
+        self._no_intervals(c, "bad_run_id")
+
+    def test_run_id_missing_suppresses_all_values(self):
+        c = run_timing.build_comment(state(marks()), "2026-09-07", 3, None,
+                                     1000 + 10 * len(run_timing.MARKS))
+        self._no_intervals(c, "run_id_missing")
+
+    def test_bad_step_time_suppresses_all_values(self):
+        st = state(marks())
+        st["steps"][3]["at"] = "nope"
+        c = bc(st, "2026-09-07", 3)
+        self._no_intervals(c, "bad_step_time")
+
+    def test_wrong_order_suppresses_all_values(self):
+        names = list(run_timing.MARKS)
+        names[2], names[3] = names[3], names[2]
+        steps = [(n, i * 10) for i, n in enumerate(names)]
+        c = bc(state(steps), "2026-09-07", 3)
+        self.assertIn("status=incomplete", c)
+        self._no_intervals(c, "wrong_order")
+
+    def test_bad_target_suppresses_all_values(self):
+        c = bc(state(marks(), target="2026-02-30"), "2026-02-30", 3)
+        self._no_intervals(c, "bad_target")
+
+
 class BuildCommentTest(unittest.TestCase):
     def test_complete_when_ordered_and_monotonic(self):
         c = bc(state(marks()), "2026-09-07", 3)

@@ -410,6 +410,17 @@ def build_comment(state, target, saves, expected_run_id=None, end_at=None):
         # 全区間0秒＝実作業のあとに mark をまとめて打った疑い。
         reasons.append("suspicious_zero")
 
+    # ⚠️ **秒数を出すかどうかは、reason が出揃ってから最終判定する。**
+    # `_validate()` の中だけで決めていたときは、あとから build_comment 側で足される
+    # `saves_unknown` / `suspicious_zero` が durations を落とせず、`suspicious_zero`
+    # （全区間0秒＝後追い mark の疑い）が付いた状態で全区間値と total_s が公開された
+    # （2026-09-18 Codex 2周目 P1）。
+    # 秒数を落とさない reason は `saves_unknown` だけ——これは保存件数が数えられなかった
+    # という意味で、時刻そのものの信頼性には関係しないため。
+    if any(r != "saves_unknown" and not r.startswith("missing:")
+           and not r.startswith("duplicated:") for r in reasons):
+        durations = {}
+
     ok = not reasons
     fields = [("schema", "v2"), ("status", "complete" if ok else "incomplete"),
               ("target", target if isinstance(target, str) and target else "unknown"),
