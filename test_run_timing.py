@@ -109,6 +109,60 @@ class DurationTest(unittest.TestCase):
         self.assertNotIn("step8", c)
 
 
+class PartialDurationTest(unittest.TestCase):
+    """欠測1つで実測値が全滅しないこと（2026-09-18 追加）。
+
+    きっかけは 2026-09-17 の初回実測。`missing-step4_5` だけで全区間が捨てられ、
+    枠（`--limit`）を決めるための `step2_5_s` まで消えた。
+    """
+
+    def _steps_missing(self, drop, gap=10):
+        at, steps = 0, []
+        for name in run_timing.MARKS:
+            if name != drop:
+                steps.append((name, at))
+            at += gap
+        return steps, at
+
+    def test_step2_5_survives_a_missing_later_mark(self):
+        """09-17 の再現。step4_5 を落としても step2_5_s は出る。"""
+        steps, end = self._steps_missing("step4_5")
+        c = bc(state(steps), "2026-09-07", 8, end_at=1000 + end)
+        self.assertIn("status=incomplete", c)
+        self.assertIn("missing-step4_5", c)
+        self.assertIn("step2_5_s=10", c)
+
+    def test_no_synthetic_interval_across_the_gap(self):
+        """欠測を跨いだ合成値は出さない（step4→step5 の差を step4_s にしない）。"""
+        steps, end = self._steps_missing("step4_5")
+        c = bc(state(steps), "2026-09-07", 8, end_at=1000 + end)
+        self.assertNotIn("step4_s=", c)
+        self.assertNotIn("step4_5_s=", c)
+
+    def test_no_total_when_incomplete(self):
+        """total_s は「手順1〜7の合計」。欠測があるときは出さない。"""
+        steps, end = self._steps_missing("step4_5")
+        c = bc(state(steps), "2026-09-07", 8, end_at=1000 + end)
+        self.assertNotIn("total_s=", c)
+
+    def test_duplicated_name_yields_no_interval_for_it(self):
+        """重複があると「どの出現の差か」が決まらないので、その区間は出さない。"""
+        steps = [(s, i * 10) for i, s in enumerate(run_timing.MARKS)]
+        steps.insert(3, ("step2_5", 25))   # step2_5 が2回
+        c = bc(state(steps), "2026-09-07", 3, end_at=1000 + 10 * len(run_timing.MARKS))
+        self.assertIn("status=incomplete", c)
+        self.assertNotIn("step2_5_s=", c)
+        self.assertNotIn("step2_s=", c)     # step2→step2_5 も一意に決まらない
+
+    def test_missing_end_still_reports_measured_intervals(self):
+        """finish が end を打てなくても、手前の区間は測れている。"""
+        c = run_timing.build_comment(state(marks()), "2026-09-07", 1, RID, "nope")
+        self.assertIn("status=incomplete", c)
+        self.assertIn("missing-end", c)
+        self.assertIn("step2_5_s=10", c)
+        self.assertNotIn("step7_s=", c)     # end が無いので手順7の区間は測れない
+
+
 class BuildCommentTest(unittest.TestCase):
     def test_complete_when_ordered_and_monotonic(self):
         c = bc(state(marks()), "2026-09-07", 3)
@@ -351,14 +405,24 @@ class InsertCommentTest(unittest.TestCase):
             if "</footer>" not in original:
                 continue
             out, existing = run_timing.insert_comment(original, self.C1)
-            self.assertEqual(existing, 0, name)
             self.assertIsNotNone(out, name)
             eol = "\r\n" if "\r\n" in original else "\n"
-            self.assertEqual(out.replace(self.C1 + eol, ""), original, name)
+            if existing == 0:
+                # まだ計測を通っていない過去ぶん。本文は1バイトも変わらない。
+                self.assertEqual(out.replace(self.C1 + eol, ""), original, name)
+            else:
+                # 本番ランで既に計測コメントが入ったファイル（2026-09-17 以降）。
+                # 旧版はここを existing == 0 と決め打ちしていたので、装置が動き出した
+                # 時点で main の CI が落ちた（2026-09-18 に発見）。コメント行を両側から
+                # 同じ規則で取り除いて、本文が変わっていないことを見る。
+                self.assertEqual(run_timing.COMMENT_RE.sub("", out),
+                                 run_timing.COMMENT_RE.sub("", original), name)
+            self.assertEqual(out.count("<!-- run-timing"), 1, name)
+            base = out.replace(self.C1 + eol, "")
             again, existing2 = run_timing.insert_comment(out, self.C2)
             self.assertEqual(existing2, 1, name)
             self.assertEqual(again.count("run-timing"), 1, name)
-            self.assertEqual(again.replace(self.C2 + eol, ""), original, name)
+            self.assertEqual(again.replace(self.C2 + eol, ""), base, name)
             checked += 1
         self.assertGreater(checked, 0)
 

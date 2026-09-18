@@ -10,6 +10,7 @@
 
 出すもの（schema=v2）:
   各手順の**所要時間そのもの**（`<step>_s`）と `total_s`。累積秒ではない。
+  `status=incomplete` のときも、測れている区間の `<step>_s` は出る（`total_s` は出ない）。
   v1 は `t0` からの累積を `stepN=` として出していたが、それは「各手順の所要時間」
   ではなく、差を取る規約も成果物に書かれていなかった（2026-09-08 Codex 5周目 P0）。
   区間の対応は下記のとおりで、**mark を打っていない手順は隣の区間に含まれる**:
@@ -33,6 +34,11 @@
      `status=incomplete reason=...` のコメントへ置換する。
   3. **疑わしきは incomplete。** 順序不一致・重複・欠測・不正なtarget・別ランの記録は、
      もっともらしい数字を出さずに incomplete と理由を残す。
+     ただし **両端が実在する mark で挟まれた区間だけは incomplete でも出す**
+     （2026-09-18 追加。条件は `_validate` の該当コメント）。`status` は incomplete のまま、
+     `reason=` も消さない。欠測を跨いだ合成値と `total_s` は出さない。
+     きっかけ: 2026-09-17 の初回実測が `missing-step4_5` の1件で全区間を失い、
+     枠を決めたい `step2_5_s` まで消えた（全か無かでは目的を達成できない）。
   4. **手順を止めない。** どんな例外でも exit 0。計測は振り返り本体より優先度が低い。
   5. **成果物を壊さない。** reviews への書き込みは一時ファイル＋os.replace で原子的に。
      既存コメントの削除は「最後の `</footer>` の直前に連なる正規形」だけに限る。
@@ -347,11 +353,35 @@ def _validate(state, target, expected_run_id, end_at):
         reasons.append("nonmonotonic")
 
     # 所要時間＝隣接する mark の差。累積ではない。
+    #
+    # 揃っていないラン（`status=incomplete`）でも、**両端が実在する mark で挟まれた区間
+    # だけ**は出す（2026-09-18 追加）。理由: 2026-09-17 の初回実測は `step4_5` の mark が
+    # 1つ欠けただけで全区間が捨てられ、枠（`--limit`）を決めたい `step2_5_s` まで消えた。
+    # 欠測1つで実測値が全滅する形だと、目的（手順2.5 に何秒割けるかを決める）が達成できない。
+    # 出す条件は次の全てで、1つでも欠ければその区間は黙って出さない（推定はしない）:
+    #   - 記録順で隣り合っている（間に他の mark が挟まっていない）
+    #   - その2つが REQUIRED_STEPS でも隣り合っている（欠測を跨いで区間を合成しない。
+    #     例: step4_5 が無いとき step4→step5 の差を `step4_s` として出さない）
+    #   - どちらの名前もこのランに1回しか現れない（重複があると、どの出現の差か決まらない）
+    #   - 差が負でない
+    # `total_s` は従来どおり**全部揃ったときだけ**出す（欠測を含む合計は「1〜7の所要」ではない）。
     durations = {}
     if names == REQUIRED_STEPS:
         for (name, a), (_, b) in zip(seq, seq[1:]):
             durations[name] = b - a
         durations["total"] = seq[-1][1] - seq[0][1]
+    else:
+        order = {n: i for i, n in enumerate(REQUIRED_STEPS)}
+        for (name, a), (nxt, b) in zip(seq, seq[1:]):
+            if names.count(name) != 1 or names.count(nxt) != 1:
+                continue
+            if name not in order or nxt not in order:
+                continue
+            if order[nxt] - order[name] != 1:
+                continue
+            if b < a:
+                continue
+            durations[name] = b - a
     return durations, reasons
 
 
