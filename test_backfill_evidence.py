@@ -214,3 +214,61 @@ class CliEvidenceTest(unittest.TestCase):
         with contextlib.redirect_stderr(err):
             backfill._write_run_evidence("2026-09-18", status="started")
         self.assertIn("BACKFILL_EVIDENCE: write_failed", err.getvalue())
+
+
+class TrimPolicyTest(unittest.TestCase):
+    """上限で切り詰めるとき、未完了（started）の証跡を先に捨てないこと。
+
+    外側 timeout に殺されて started のまま残った実行は、その夜に何が起きたかを
+    示す唯一の材料。単純に古い順で切ると、その後の再実行20回で落ちる
+    （2026-09-18 Codex 5周目 P2）。
+    """
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="bf-trim-")
+        self._old = os.environ.get("FETCH_FACTS_DIR")
+        os.environ["FETCH_FACTS_DIR"] = self.tmp
+
+    def tearDown(self):
+        if self._old is None:
+            os.environ.pop("FETCH_FACTS_DIR", None)
+        else:
+            os.environ["FETCH_FACTS_DIR"] = self._old
+
+    def _runs(self, day="2026-09-18"):
+        with io.open(os.path.join(self.tmp, "runs", "%s.json" % day), encoding="utf-8") as f:
+            return json.load(f)["runs"]
+
+    def _write_as(self, token, **fields):
+        old = backfill._RUN_TOKEN
+        try:
+            backfill._RUN_TOKEN = token
+            backfill._write_run_evidence("2026-09-18", **fields)
+        finally:
+            backfill._RUN_TOKEN = old
+
+    def test_unfinished_entry_survives_many_later_runs(self):
+        self._write_as("aborted-one", status="started")
+        for i in range(backfill.MAX_RUNS_PER_DAY + 5):
+            self._write_as("done%02d" % i, status="completed")
+        runs = self._runs()
+        self.assertEqual(len(runs), backfill.MAX_RUNS_PER_DAY)
+        self.assertIn("aborted-one", [r.get("run") for r in runs])
+        # 直近の完了も残っている（古い完了だけが落ちる）
+        self.assertEqual(runs[-1]["run"], "done%02d" % (backfill.MAX_RUNS_PER_DAY + 4))
+
+    def test_current_run_always_survives(self):
+        """未完了だけで上限を超えても、今回の実行は必ず残る。"""
+        for i in range(backfill.MAX_RUNS_PER_DAY + 3):
+            self._write_as("st%02d" % i, status="started")
+        runs = self._runs()
+        self.assertEqual(len(runs), backfill.MAX_RUNS_PER_DAY)
+        self.assertEqual(runs[-1]["run"], "st%02d" % (backfill.MAX_RUNS_PER_DAY + 2))
+
+    def test_tmp_file_name_is_process_specific(self):
+        """固定の .tmp だと2プロセスが相互に壊す（Codex 5周目 P1）。"""
+        self._write_as("tok-a", status="started")
+        leftovers = [n for n in os.listdir(os.path.join(self.tmp, "runs"))
+                     if n.endswith(".tmp")]
+        self.assertEqual(leftovers, [])
+        self.assertEqual(len(backfill._RUN_TOKEN), 32)

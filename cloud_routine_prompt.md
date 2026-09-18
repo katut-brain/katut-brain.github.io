@@ -412,11 +412,17 @@
      for f in fetch_facts/$TARGET.json fetch_facts/runs/$TARGET.json reviews/$TARGET.html; do
        [ -f "$f" ] && FILES="$FILES $f"
      done
-     bash push_via_branch.sh "update: $TARGET" $FILES
+     if [ -z "$FILES" ]; then echo "PUSH_SKIPPED: no files"; else
+       bash push_via_branch.sh "update: $TARGET" $FILES
+     fi
      ```
      ⚠️ **存在するものだけを渡す**（`push_via_branch.sh` は存在しないパスを渡されると何も送らず exit 2 で終わる）。
      3つのうちどれが在るかは夜によって違う——手順2.5 を実行すれば `fetch_facts/runs/` は必ず在り、
      当日保存が0件なら `reviews/` は無く、取得が1件も無ければ `fetch_facts/<TARGET>.json` も無い。
+     **`$FILES` が空なら呼ばない**（`push_via_branch.sh` は引数なしだと exit 2 になる。
+     (b) の判定は `fetch_facts/` 配下の差分全体を見るので、**別日付の差分だけがある夜**は
+     (b) に入りつつ当日3ファイルが1つも無い、という組み合わせがありうる。その夜は
+     `PUSH_SKIPPED: no files` を出して (c) と同じく何もせず終える＝2026-09-18 Codex 5周目 P1）。
      **ファイル名を直書きして固定の3つを渡さないこと**（2026-09-18 Codex 4周目 P0。
      証跡だけの夜がまさにこれで exit 2 になり、今回直したい「新規cloneで証跡が消える」経路に戻る）。
      （何個渡しても1コミットにまとまる。渡す順は問わない）
@@ -439,11 +445,17 @@
      for f in fetch_facts/$TARGET.json fetch_facts/runs/$TARGET.json reviews/$TARGET.html; do
        [ -f "$f" ] && FILES="$FILES $f"
      done
-     bash push_via_branch.sh "update: $TARGET (backfill only)" $FILES
+     if [ -z "$FILES" ]; then echo "PUSH_SKIPPED: no files"; else
+       bash push_via_branch.sh "update: $TARGET (backfill only)" $FILES
+     fi
      ```
      ⚠️ **存在するものだけを渡す**（`push_via_branch.sh` は存在しないパスを渡されると何も送らず exit 2 で終わる）。
      3つのうちどれが在るかは夜によって違う——手順2.5 を実行すれば `fetch_facts/runs/` は必ず在り、
      当日保存が0件なら `reviews/` は無く、取得が1件も無ければ `fetch_facts/<TARGET>.json` も無い。
+     **`$FILES` が空なら呼ばない**（`push_via_branch.sh` は引数なしだと exit 2 になる。
+     (b) の判定は `fetch_facts/` 配下の差分全体を見るので、**別日付の差分だけがある夜**は
+     (b) に入りつつ当日3ファイルが1つも無い、という組み合わせがありうる。その夜は
+     `PUSH_SKIPPED: no files` を出して (c) と同じく何もせず終える＝2026-09-18 Codex 5周目 P1）。
      **ファイル名を直書きして固定の3つを渡さないこと**（2026-09-18 Codex 4周目 P0。
      証跡だけの夜がまさにこれで exit 2 になり、今回直したい「新規cloneで証跡が消える」経路に戻る）。
    - 送る前に、**渡す JSON それぞれ**が本物のJSONであることを確認する：`for f in $FILES; do case "$f" in *.json) python3 -c "import json,sys; json.load(open(sys.argv[1],encoding='utf-8'))" "$f" || echo "BAD_JSON: $f";; esac; done` が何も出さないこと（存在しないファイルを開こうとしない）。

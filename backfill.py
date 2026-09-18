@@ -297,7 +297,7 @@ MAX_RUNS_PER_DAY = 20
 # 4周目 P1）。日付は「日」には一意でも「実行」には一意ではないので、同日再実行を
 # 上書きすると「1回目は完了したが2回目が中断した」と「1回目だけが中断した」が
 # 同じ姿になる。各実行を1エントリとして積み、自分のエントリだけを書き換える。
-_RUN_TOKEN = uuid.uuid4().hex[:8]
+_RUN_TOKEN = uuid.uuid4().hex   # 切り詰めない（32bitだと同日ファイル内で衝突し、別実行を同一実行として更新しうる。2026-09-18 Codex 5周目 P2）
 
 
 def _utcnow():
@@ -316,6 +316,13 @@ def _write_run_evidence(target, **fields):
     落とすと、計測のために夜間ランを止めることになる）。ただし**黙って消えない**:
     書けなかったときは stderr に `BACKFILL_EVIDENCE: write_failed` を出す。
     「証跡が無い＝実行していない」と読めるのは、この行がログに無いときだけ。
+
+    ⚠️ **既知の限界（直さない・明記する）**: read-modify-write を排他ロック無しで行う。
+    同じ TARGET で2プロセスが同時に走ると、片方の追記がもう片方の書き戻しで消えうる。
+    夜間ランは単一プロセスが逐次実行する前提であり（同時起動する経路はリポジトリ内に無い）、
+    ロックを持ち込まない判断は Task G-1（累積台帳を作らない・ロックで無人ジョブを止めない）
+    を踏襲している。`run_timing.py` の finish も同じ残存窓を明記して受け入れている。
+    一時ファイル名をプロセス固有にしたので、少なくとも tmp の相互破壊は起きない。
 
     一時ファイル＋os.replace で原子的に置き換える。途中停止で中身が空・途中まで
     になると「起動したのに証跡が壊れている」という最悪の観測になるため。
@@ -345,10 +352,25 @@ def _write_run_evidence(target, **fields):
         else:
             runs.append(entry)
         entry.update(fields)
-        runs = runs[-MAX_RUNS_PER_DAY:]
+        # 切り詰めは**完了したものから**捨てる。単純に古い順で切ると、外側 timeout に
+        # 殺されて status="started" のまま残った唯一の証跡が、その後の再実行20回で
+        # 落ちる（2026-09-18 Codex 5周目 P2。「中断が残る」という運用説明の例外になる）。
+        if len(runs) > MAX_RUNS_PER_DAY:
+            keep = [r for r in runs if r.get("status") != "completed"]
+            done = [r for r in runs if r.get("status") == "completed"]
+            room = MAX_RUNS_PER_DAY - len(keep)
+            if room > 0:
+                keep = keep + done[-room:]
+            # 未完了だけで上限を超える場合は、最後に古い順で落とす（必ず今回の実行は残る）。
+            order = {id(r): i for i, r in enumerate(runs)}
+            keep.sort(key=lambda r: order[id(r)])
+            runs = keep[-MAX_RUNS_PER_DAY:]
 
         payload = {"schema": "v2", "target": target, "runs": runs}
-        tmp = path + ".tmp"
+        # 一時ファイル名はプロセス固有にする。固定名だと、同じ TARGET で2プロセスが
+        # 動いたとき片方の tmp をもう片方が上書きし、os.replace が競合する
+        # （2026-09-18 Codex 5周目 P1）。
+        tmp = "%s.%s.tmp" % (path, _RUN_TOKEN)
         with open(tmp, "w", encoding="utf-8", newline="") as f:
             json.dump(payload, f, ensure_ascii=False, sort_keys=True)
             f.write("\n")
