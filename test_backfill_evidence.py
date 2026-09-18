@@ -307,31 +307,61 @@ class EvidenceLockTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp(prefix="bf-lock-")
 
-    def test_parallel_processes_do_not_lose_entries(self):
+    CHILD = """
+import os, sys, time
+sys.path.insert(0, sys.argv[2])
+os.environ['FETCH_FACTS_DIR'] = sys.argv[3]
+os.environ['BACKFILL_EVIDENCE_DELAY_SEC'] = '0.4'
+import backfill
+if sys.argv[5] == 'nolock':
+    backfill._acquire_evidence_lock = lambda path: None
+    backfill._release_evidence_lock = lambda fd: None
+backfill._RUN_TOKEN = sys.argv[1]
+# 開始バリア: 親が go ファイルを置くまで全員待つ（同時に読ませる）
+while not os.path.exists(sys.argv[4]):
+    time.sleep(0.01)
+backfill._write_run_evidence('2026-09-18', status='completed')
+"""
+
+    def _race(self, mode, n=5):
         import subprocess
         import sys as _sys
-        code = ("""
-import os, sys, time
-sys.path.insert(0, %r)
-os.environ['FETCH_FACTS_DIR'] = %r
-import backfill
-backfill._RUN_TOKEN = sys.argv[1]
-backfill._write_run_evidence('2026-09-18', status='started')
-time.sleep(0.2)
-backfill._write_run_evidence('2026-09-18', status='completed')
-""" % (HERE, self.tmp))
-        procs = [subprocess.Popen([_sys.executable, "-c", code, "tok%02d" % i])
-                 for i in range(6)]
+        import time as _time
+        d = tempfile.mkdtemp(prefix="bf-race-")
+        go = os.path.join(d, "go")
+        script = os.path.join(d, "child.py")
+        with io.open(script, "w", encoding="utf-8") as f:
+            f.write(self.CHILD)
+        procs = [subprocess.Popen([_sys.executable, script, "tok%02d" % i,
+                                   HERE, d, go, mode])
+                 for i in range(n)]
+        _time.sleep(1.0)          # 全員がバリアに到達するのを待つ
+        with io.open(go, "w", encoding="utf-8") as f:
+            f.write("go")
         for pr in procs:
-            pr.wait(timeout=60)
-        with io.open(os.path.join(self.tmp, "runs", "2026-09-18.json"),
-                     encoding="utf-8") as f:
-            runs = json.load(f)["runs"]
-        tokens = sorted(r.get("run") for r in runs)
-        self.assertEqual(tokens, sorted("tok%02d" % i for i in range(6)),
-                         "並走した実行のエントリが失われている")
-        self.assertTrue(all(r.get("status") == "completed" for r in runs))
+            pr.wait(timeout=120)
+        path = os.path.join(d, "runs", "2026-09-18.json")
+        if not os.path.exists(path):
+            return []
+        with io.open(path, encoding="utf-8") as f:
+            return sorted(r.get("run") for r in json.load(f)["runs"])
 
+    def test_parallel_processes_do_not_lose_entries(self):
+        """ロック有り: 並走した5実行のエントリが1つも失われない。"""
+        self.assertEqual(self._race("lock"),
+                         sorted("tok%02d" % i for i in range(5)))
+
+    def test_without_the_lock_entries_are_actually_lost(self):
+        """ロックを外すと**必ず**落ちること＝上のテストが本当に効いている証拠。
+
+        開始バリアで全員を同時にスタートさせ、read と write の間を
+        `BACKFILL_EVIDENCE_DELAY_SEC` で広げているので、ロックが無ければ全員が
+        同じ状態を読んで書き戻す＝消失更新が確定的に起きる
+        （2026-09-18 Codex 7周目 P2。低負荷CIで偶然通る余地を潰すため）。
+        """
+        survivors = self._race("nolock")
+        self.assertLess(len(survivors), 5,
+                        "ロック無しでも全件残った＝この並走テストは競合を検出できていない")
     def test_lock_file_is_not_a_published_artifact(self):
         """ロックファイルは .gitignore 済み＝成果物ではない（手順8(b) の判定を汚さない）。"""
         with io.open(os.path.join(HERE, ".gitignore"), encoding="utf-8") as f:

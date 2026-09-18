@@ -377,6 +377,19 @@ def _runs_path(target):
     return os.path.join(_facts_dir(), RUNS_DIRNAME, "%s.json" % target)
 
 
+def _announce_evidence_lock_unavailable(target):
+    """ロックを取れないまま書いたことを知らせる。**失敗ではない**（書きはする）。
+
+    この行が出た夜の証跡は、同じファイルへ別プロセスが同時に書いていれば
+    エントリが落ちている可能性がある＝完全性を保証できない、という意味。
+    """
+    try:
+        sys.stderr.write("BACKFILL_EVIDENCE: lock_unavailable target=%s%s"
+                         % (target, "\n"))
+    except Exception:
+        pass
+
+
 def _announce_evidence_failure(target, exc):
     """握りつぶすが黙らない。手順書の「証跡が無い＝未実行」はこの行が無いことが前提。"""
     try:
@@ -420,6 +433,10 @@ def _write_run_evidence(target, **fields):
         path = _runs_path(target)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         lock_fd = _acquire_evidence_lock(path)
+        if lock_fd is None:
+            # 無ロックで書く経路に入ったことを必ず残す。ここを黙ると、あとから
+            # 「この証跡は完全か」を判断できない（2026-09-18 Codex 7周目 P2）。
+            _announce_evidence_lock_unavailable(target)
     except Exception as e:
         _announce_evidence_failure(target, e)
         return
@@ -435,6 +452,17 @@ def _write_run_evidence(target, **fields):
             except Exception:
                 # 壊れていたら読めた分だけ諦める。今回の実行は必ず残す。
                 runs = []
+
+        # テスト用の継ぎ目。read と write の間を人工的に広げ、ロックが無ければ
+        # **必ず**消失更新が起きる状態を作る（2026-09-18 Codex 7周目 P2。バリアと
+        # 併用して「ロックを外せば落ちる」ことを機械的に保証するため）。本番では
+        # 環境変数が無いので 0 秒＝何もしない。RUN_ONE と同じく継ぎ目は1点だけ。
+        _delay = os.environ.get("BACKFILL_EVIDENCE_DELAY_SEC")
+        if _delay:
+            try:
+                time.sleep(float(_delay))
+            except (TypeError, ValueError):
+                pass
 
         entry = {"run": _RUN_TOKEN}
         for r in runs:
