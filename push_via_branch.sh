@@ -15,7 +15,7 @@
 #   検証してから main に取り込み、Pages を更新する」二段にした。
 #
 # ■ 何をするか
-#   1. 送れるパスは reviews/<日付>.html・fetch_facts/<日付>.json・capture_index.json だけ。
+#   1. 送れるパスは reviews/<日付>.html・fetch_facts/<日付>.json・fetch_facts/runs/<日付>.json・capture_index.json だけ。
 #      それ以外が混じっていたら何もせず exit 2。
 #   2. origin/main を土台に、作業ツリーと index には一切触らず（一時 index を使う）、
 #      渡されたファイルと .publish/manifest.json（各ファイルの SHA-256 と git blob）だけを
@@ -51,7 +51,7 @@ MESSAGE="$1"; shift
 REMOTE="${PUSH_VIA_BRANCH_REMOTE:-origin}"
 BASE_BRANCH="${PUSH_VIA_BRANCH_BASE:-main}"
 WAIT="${PUSH_VIA_BRANCH_WAIT:-300}"
-ALLOW_RE='^(reviews/[0-9]{4}-[0-9]{2}-[0-9]{2}\.html|fetch_facts/[0-9]{4}-[0-9]{2}-[0-9]{2}\.json|capture_index\.json)$'
+ALLOW_RE='^(reviews/[0-9]{4}-[0-9]{2}-[0-9]{2}\.html|fetch_facts/[0-9]{4}-[0-9]{2}-[0-9]{2}\.json|fetch_facts/runs/[0-9]{4}-[0-9]{2}-[0-9]{2}\.json|capture_index\.json)$'
 
 for p in "$@"; do
   if ! printf '%s\n' "$p" | grep -Eq "$ALLOW_RE"; then

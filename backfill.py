@@ -54,7 +54,7 @@
 #   （--max-total SEC で総時間予算。既定 limit×timeout＋30秒・0で無効化。外側シェルの
 #     `timeout` が親だけを殺して子を孤児化させる前に、自分で止まるための内部予算）
 
-import sys, os, argparse, datetime, json, io, subprocess, traceback, time
+import sys, os, argparse, datetime, json, io, re, subprocess, traceback, time
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -280,6 +280,48 @@ def _improved(prev_rec, new_rec):
     return False
 
 
+# --- 手順2.5 が起動したこと自体の証跡（2026-09-18 追加） -------------------
+# なぜ要るか: 候補が9件ある夜が3晩続いても `fetch_facts` に痕跡が1つも増えず、
+# 「手順2.5 が実行されていない」と「実行したが何も書かなかった」を成果物から
+# 区別できなかった。無人LLMが打つ `run_timing` の mark は実行証跡ではなく
+# （mark だけ打ってコマンドを飛ばせる）、`BACKFILL_STATUS` はログにしか出ない。
+# そこで **backfill 自身が**「起動した / どう終わったか」を成果物へ原子的に残す。
+# 置き場所は fetch_facts/runs/<日付>.json。ledger は fetch_facts/*.json しか
+# 読まない（サブディレクトリは glob に掛からない）ので、台帳の集計は汚さない。
+RUNS_DIRNAME = "runs"
+_RUN_TARGET_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def _utcnow():
+    """fetch_facts のレコードと同じ表記（UTC・秒まで・末尾Z）に揃える。"""
+    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _write_run_evidence(target, **fields):
+    """証跡を1件書く。**どんな失敗でも例外を投げない**（計測は本体より優先度が低い）。
+
+    一時ファイル＋os.replace で原子的に置き換える。途中停止で中身が空・途中までに
+    なると「起動したのに証跡が壊れている」という最悪の観測になるため。
+    """
+    try:
+        if not (isinstance(target, str) and _RUN_TARGET_RE.match(target)):
+            return
+        d = os.path.join(_facts_dir(), RUNS_DIRNAME)
+        os.makedirs(d, exist_ok=True)
+        path = os.path.join(d, "%s.json" % target)
+        payload = {"schema": "v1", "target": target}
+        payload.update(fields)
+        tmp = path + ".tmp"
+        with open(tmp, "w", encoding="utf-8", newline="") as f:
+            json.dump(payload, f, ensure_ascii=False, sort_keys=True)
+            f.write("\n")
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
+    except Exception:
+        pass
+
+
 def run(target, limit, max_attempts, dry_run, timeout, max_total=None):
     import ledger
 
@@ -335,6 +377,14 @@ def run(target, limit, max_attempts, dry_run, timeout, max_total=None):
               "failed=0 exhausted_skipped=%d rid_mismatch=0 rid_changed_skipped=%d stub_written=0 "
               "unreadable_day_file=0 budget_stopped=0"
               % (target, total_candidates, exhausted_skipped, rid_changed_skipped))
+        if not dry_run:
+            _write_run_evidence(
+                target, status="completed", finished_at=_utcnow(),
+                limit=limit, timeout=timeout, max_total=max_total,
+                candidates=total_candidates, attempted=0, improved=0, unchanged=0,
+                failed=0, exhausted_skipped=exhausted_skipped, rid_mismatch=0,
+                rid_changed_skipped=rid_changed_skipped, stub_written=0,
+                unreadable_day_file=0, budget_stopped=0)
         return 0
 
     run_one_fn = _get_run_one()
@@ -467,6 +517,17 @@ def run(target, limit, max_attempts, dry_run, timeout, max_total=None):
           % (target, total_candidates, attempted, improved, unchanged, failed,
              exhausted_skipped, rid_mismatch, rid_changed_skipped, stub_written,
              unreadable_day_file, budget_stopped))
+    if not dry_run:
+        # 完了時に status=started を上書きする。BACKFILL_STATUS と同じ数字を
+        # 成果物側にも残すので、ログが読めなくても「その夜に何をしたか」が追える。
+        _write_run_evidence(
+            target, status="completed", finished_at=_utcnow(),
+            limit=limit, timeout=timeout, max_total=max_total,
+            candidates=total_candidates, attempted=attempted, improved=improved,
+            unchanged=unchanged, failed=failed, exhausted_skipped=exhausted_skipped,
+            rid_mismatch=rid_mismatch, rid_changed_skipped=rid_changed_skipped,
+            stub_written=stub_written, unreadable_day_file=unreadable_day_file,
+            budget_stopped=budget_stopped)
     return 0
 
 
@@ -484,6 +545,15 @@ def main(argv):
     target = args.target or _default_target()
     os.environ["FACTS_DATE"] = target
 
+    # ⚠️ **証跡は「何かをする前」に書く。** 候補抽出やledgerのimportで落ちても
+    # 「起動はした」ことだけは残るようにする。ここが status=started のまま残って
+    # いたら、起動後・完了前に落ちたという意味になる（未実行とは区別できる）。
+    # --dry-run では書かない（点検用の実行が成果物を動かさないため）。
+    if not args.dry_run:
+        _write_run_evidence(
+            target, status="started", invoked_at=_utcnow(),
+            limit=args.limit, timeout=args.timeout, max_total=args.max_total)
+
     try:
         import ledger
         max_attempts = args.max_attempts if args.max_attempts is not None else ledger.DEFAULT_MAX_ATTEMPTS
@@ -498,6 +568,10 @@ def main(argv):
         print("BACKFILL_STATUS: target=%s candidates=0 attempted=0 improved=0 unchanged=0 "
               "failed=0 exhausted_skipped=0 rid_mismatch=0 rid_changed_skipped=0 stub_written=0 "
               "unreadable_day_file=0 budget_stopped=0 error=%s" % (target, type(e).__name__))
+        if not args.dry_run:
+            _write_run_evidence(target, status="crashed", finished_at=_utcnow(),
+                                limit=args.limit, timeout=args.timeout,
+                                max_total=args.max_total, error=type(e).__name__)
         return 0
 
 

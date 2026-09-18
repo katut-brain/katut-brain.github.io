@@ -6,7 +6,7 @@
 # そこで Routine は push_via_branch.sh で claude/publish-* に送り、main への取り込みはここで行う。
 #
 # 守ること:
-#   - 取り込んでよいのは reviews/<日付>.html・fetch_facts/<日付>.json・capture_index.json だけ。
+#   - 取り込んでよいのは reviews/<日付>.html・fetch_facts/<日付>.json・fetch_facts/runs/<日付>.json・capture_index.json だけ。
 #     ブランチに他の変更が1つでも混じっていたら何も取り込まず失敗する。
 #   - .publish/manifest.json の SHA-256 と実ファイルが1つでも違えば失敗する（伝送中の破損を検出）。
 #   - 失敗したら main は動かさず、ブランチは調査用に残す。ワークフローの失敗は GitHub から
@@ -47,7 +47,7 @@ jobs:
           import hashlib, html.parser, json, os, re, subprocess, sys
 
           sha = os.environ["GITHUB_SHA"]
-          ALLOW = re.compile(r"^(reviews/\d{4}-\d\d-\d\d\.html|fetch_facts/\d{4}-\d\d-\d\d\.json|capture_index\.json)$")
+          ALLOW = re.compile(r"^(reviews/\d{4}-\d\d-\d\d\.html|fetch_facts/\d{4}-\d\d-\d\d\.json|fetch_facts/runs/\d{4}-\d\d-\d\d\.json|capture_index\.json)$")
           MANIFEST = ".publish/manifest.json"
 
           def git(*a):
