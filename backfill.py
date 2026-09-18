@@ -300,6 +300,74 @@ MAX_RUNS_PER_DAY = 20
 _RUN_TOKEN = uuid.uuid4().hex   # 切り詰めない（32bitだと同日ファイル内で衝突し、別実行を同一実行として更新しうる。2026-09-18 Codex 5周目 P2）
 
 
+# 証跡ファイルの read-modify-write を直列化する。方式は `run_timing.py` と同じ
+# **OS の advisory lock**（Linux: fcntl.flock / Windows: msvcrt.locking）。
+# 自前のロックファイル管理（作成・削除で所有権を持つ方式）は採らない——2026-09-08 に
+# run_timing.py 側で Codex に P0 を出された経路で、compare-and-delete が原子的でない
+# ため他プロセスのロックを消せる・Windows で共有違反による孤児化が起きる、という
+# 実害があった。advisory lock なら異常終了時も OS が解放するので stale の回収も要らない。
+#
+# なぜ入れたか（2026-09-18）: 「クラウドの Routine は毎回あたらしい clone で動くから
+# 同一ファイルを2プロセスが開くことは無い」という前提でロックを省いていたが、**その前提は
+# リポジトリからも運用者の記憶からも確証が取れなかった**（Codex 6周目 P1）。確証の取れない
+# 前提の上に「実行を積む」という中心機能を置くより、前提そのものを要らなくするほうが安い。
+LOCK_WAIT_SEC = 10
+
+try:
+    import fcntl as _fcntl
+
+    def _lock_op(fd, acquire):
+        if acquire:
+            _fcntl.flock(fd, _fcntl.LOCK_EX | _fcntl.LOCK_NB)
+        else:
+            _fcntl.flock(fd, _fcntl.LOCK_UN)
+except ImportError:
+    try:
+        import msvcrt as _msvcrt
+
+        def _lock_op(fd, acquire):
+            os.lseek(fd, 0, os.SEEK_SET)
+            _msvcrt.locking(fd, _msvcrt.LK_NBLCK if acquire else _msvcrt.LK_UNLCK, 1)
+    except ImportError:
+        _lock_op = None
+
+
+def _acquire_evidence_lock(path):
+    """取れたら fd、取れなければ None。**取れなくても書く**（後述）。"""
+    if _lock_op is None:
+        return None
+    try:
+        fd = os.open(path + ".lock", os.O_CREAT | os.O_RDWR, 0o644)
+    except OSError:
+        return None
+    deadline = time.monotonic() + LOCK_WAIT_SEC
+    while True:
+        try:
+            _lock_op(fd, True)
+            return fd
+        except OSError:
+            if time.monotonic() > deadline:
+                try:
+                    os.close(fd)
+                except OSError:
+                    pass
+                return None
+            time.sleep(0.05)
+
+
+def _release_evidence_lock(fd):
+    if fd is None:
+        return
+    try:
+        _lock_op(fd, False)
+    except OSError:
+        pass
+    try:
+        os.close(fd)
+    except OSError:
+        pass
+
+
 def _utcnow():
     """fetch_facts のレコードと同じ表記（UTC・秒まで・末尾Z）に揃える。"""
     return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -307,6 +375,15 @@ def _utcnow():
 
 def _runs_path(target):
     return os.path.join(_facts_dir(), RUNS_DIRNAME, "%s.json" % target)
+
+
+def _announce_evidence_failure(target, exc):
+    """握りつぶすが黙らない。手順書の「証跡が無い＝未実行」はこの行が無いことが前提。"""
+    try:
+        sys.stderr.write("BACKFILL_EVIDENCE: write_failed target=%s error=%s%s"
+                         % (target, type(exc).__name__, "\n"))
+    except Exception:
+        pass
 
 
 def _write_run_evidence(target, **fields):
@@ -317,23 +394,21 @@ def _write_run_evidence(target, **fields):
     書けなかったときは stderr に `BACKFILL_EVIDENCE: write_failed` を出す。
     「証跡が無い＝実行していない」と読めるのは、この行がログに無いときだけ。
 
-    **排他ロックは入れない**（2026-09-18 ユーザー裁定）。根拠:
-      - 1つの clone の中で `backfill.py` が走るのは手順2.5 の1回だけ。**同じ作業ツリーで
-        2つ走る経路がリポジトリ内に無い**ので、通常運用では競合しない
-      - ⚠️ **「Routine は毎回あたらしい clone で動く」かどうかは、このリポジトリからは
-        裏が取れない**（2026-09-18 Codex 6周目 P1 の指摘。前提節17行は「clone 済みの
-        リポジトリで作業」としか書いておらず、手順7.5 の「次回ランは新規clone」は
-        Vault 側のローカル残骸についての記述）。**同一 clone で2ランが重なる配置なら
-        read→modify→os.replace で片方の実行が消えうる**。外部の Routine 設定で毎回
-        新規 clone が保証されるなら、それを手順書の前提節に明文化すること（未了）
-      - 1つの clone の中で `backfill.py` が走るのは手順2.5 の1回だけ。リポジトリ内に
-        並走させる呼び出し口は無い（ワークフローからも起動しない）
-      - ファイルロックが守れるのは「同じディレクトリで2プロセスが同時に書く」場面だけで、
-        それがこの配置には存在しない。手元で backfill を2つ並走させたときにしか効かない
+    **read-modify-write は OS の advisory lock で直列化する**（2026-09-18 に方針変更）。
+    当初はロックを省き「クラウドの Routine は毎回あたらしい clone で動くので、同じ
+    `runs/<日付>.json` を2プロセスが開くことは無い」を根拠にしていたが、**その前提は
+    リポジトリの記述からも運用者の記憶からも確証が取れなかった**（Codex 6周目 P1）。
+    確証の無い前提の上に「各実行を積む」という中心機能を置くより、前提そのものを
+    要らなくするほうが安い。ロックの方式は `run_timing.py` と同じで、同リポジトリで
+    Linux/Windows とも動いている実績がある。
+    ロックが取れない環境（`fcntl`/`msvcrt` がない）や待ち時間超過のときは、**取れないまま
+    書く**。証跡を残さないより、まれに競合するほうがましだから（この装置の目的は
+    「実行したかどうかを残す」ことで、失われると目的そのものが達成できない）。
+
     **残る競合は公開時の後勝ち**——2つのランが同じ日付で push すると、後の clone の
     `runs/<日付>.json` が先の分を含まないまま main を上書きする。これは
-    `fetch_facts/<日付>.json` が既に持っている性質と同じ（手順書に「後勝ちで上書き」と明記）で、
-    ファイルロックでは解決しない（マージ側の話）。**この1点は既知の限界として受け入れる**。
+    `fetch_facts/<日付>.json` が既に持っている性質と同じ（手順書に「後勝ちで上書き」と
+    明記）で、ファイルロックでは解決しない（マージ側の話）。**この1点は既知の限界**。
     一時ファイル名はプロセス固有にしてあるので、手元での並走でも tmp の相互破壊は起きない。
 
     一時ファイル＋os.replace で原子的に置き換える。途中停止で中身が空・途中まで
@@ -344,7 +419,12 @@ def _write_run_evidence(target, **fields):
             return
         path = _runs_path(target)
         os.makedirs(os.path.dirname(path), exist_ok=True)
+        lock_fd = _acquire_evidence_lock(path)
+    except Exception as e:
+        _announce_evidence_failure(target, e)
+        return
 
+    try:
         runs = []
         if os.path.exists(path):
             try:
@@ -398,12 +478,9 @@ def _write_run_evidence(target, **fields):
             os.fsync(f.fileno())
         os.replace(tmp, path)
     except Exception as e:
-        # 握りつぶすが黙らない。手順書の「証跡が無い＝未実行」はこの行が無いことが前提。
-        try:
-            sys.stderr.write("BACKFILL_EVIDENCE: write_failed target=%s error=%s%s"
-                             % (target, type(e).__name__, "\n"))
-        except Exception:
-            pass
+        _announce_evidence_failure(target, e)
+    finally:
+        _release_evidence_lock(lock_fd)
 
 
 def run(target, limit, max_attempts, dry_run, timeout, max_total=None):

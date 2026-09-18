@@ -25,3 +25,8 @@ index.html
 # 夜間Routineの所要時間計測の作業ファイル（run_timing.py が作る・成果物ではない）
 .run_timing.json
 .run_timing.lock
+
+# 証跡ファイルの排他ロック（backfill.py が作る・成果物ではない）。
+# ⚠️ これを追跡対象に残すと、手順8(b) の `git status --porcelain -- fetch_facts/` が
+# ロックファイルだけで差分ありと判定し、押すものが無い夜に push 分岐へ入る。
+fetch_facts/runs/*.lock

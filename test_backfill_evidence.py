@@ -293,3 +293,46 @@ class TrimPolicyTest(unittest.TestCase):
         self.assertEqual(len(runs), backfill.MAX_RUNS_PER_DAY)
         self.assertIn("mine", [r.get("run") for r in runs])
         self.assertEqual(runs[-1]["run"], "mine")
+
+
+
+class EvidenceLockTest(unittest.TestCase):
+    """証跡の read-modify-write が本当に直列化されること。
+
+    「毎回あたらしい clone だから競合しない」という前提の確証が取れなかったので、
+    前提を要らなくするためにロックを入れた（2026-09-18 Codex 6周目 P1）。
+    **実際に別プロセスを並走させて**、片方の追記がもう片方に消されないことを見る。
+    """
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="bf-lock-")
+
+    def test_parallel_processes_do_not_lose_entries(self):
+        import subprocess
+        import sys as _sys
+        code = ("""
+import os, sys, time
+sys.path.insert(0, %r)
+os.environ['FETCH_FACTS_DIR'] = %r
+import backfill
+backfill._RUN_TOKEN = sys.argv[1]
+backfill._write_run_evidence('2026-09-18', status='started')
+time.sleep(0.2)
+backfill._write_run_evidence('2026-09-18', status='completed')
+""" % (HERE, self.tmp))
+        procs = [subprocess.Popen([_sys.executable, "-c", code, "tok%02d" % i])
+                 for i in range(6)]
+        for pr in procs:
+            pr.wait(timeout=60)
+        with io.open(os.path.join(self.tmp, "runs", "2026-09-18.json"),
+                     encoding="utf-8") as f:
+            runs = json.load(f)["runs"]
+        tokens = sorted(r.get("run") for r in runs)
+        self.assertEqual(tokens, sorted("tok%02d" % i for i in range(6)),
+                         "並走した実行のエントリが失われている")
+        self.assertTrue(all(r.get("status") == "completed" for r in runs))
+
+    def test_lock_file_is_not_a_published_artifact(self):
+        """ロックファイルは .gitignore 済み＝成果物ではない（手順8(b) の判定を汚さない）。"""
+        with io.open(os.path.join(HERE, ".gitignore"), encoding="utf-8") as f:
+            self.assertIn("fetch_facts/runs/*.lock", f.read())
