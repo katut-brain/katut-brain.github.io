@@ -80,9 +80,15 @@ class RunEvidenceTest(unittest.TestCase):
         self.assertEqual(len(self._read()["runs"]), backfill.MAX_RUNS_PER_DAY)
 
     def test_no_tmp_file_left_behind(self):
-        """一時ファイル＋os.replace の原子的置換。.tmp を残さない。"""
+        """一時ファイル＋os.replace の原子的置換。.tmp を1つも残さない。
+
+        実装の一時名は `<path>.<RUN_TOKEN>.tmp` なので、`<path>.tmp` だけを見ても
+        残骸検出にならない（2026-09-18 Codex 6周目 P2）。ディレクトリを走査する。
+        """
         backfill._write_run_evidence("2026-09-18", status="started")
-        self.assertFalse(os.path.exists(self._path() + ".tmp"))
+        leftovers = [n for n in os.listdir(os.path.dirname(self._path()))
+                     if n.endswith(".tmp")]
+        self.assertEqual(leftovers, [])
 
     def test_bad_target_writes_nothing(self):
         """日付として妥当でない target ではファイル名を作らない（パス汚染よけ）。"""
@@ -272,3 +278,18 @@ class TrimPolicyTest(unittest.TestCase):
                      if n.endswith(".tmp")]
         self.assertEqual(leftovers, [])
         self.assertEqual(len(backfill._RUN_TOKEN), 32)
+
+
+    def test_current_run_survives_even_when_unfinished_fill_the_cap(self):
+        """未完了で上限が埋まっていても、今回の実行（completed）は落ちない。
+
+        起動時の証跡書込みに失敗し、完了時だけ成功した場合に踏む経路
+        （2026-09-18 Codex 6周目 P2）。
+        """
+        for i in range(backfill.MAX_RUNS_PER_DAY + 2):
+            self._write_as("old%02d" % i, status="started")
+        self._write_as("mine", status="completed", attempted=1)
+        runs = self._runs()
+        self.assertEqual(len(runs), backfill.MAX_RUNS_PER_DAY)
+        self.assertIn("mine", [r.get("run") for r in runs])
+        self.assertEqual(runs[-1]["run"], "mine")

@@ -317,11 +317,15 @@ def _write_run_evidence(target, **fields):
     書けなかったときは stderr に `BACKFILL_EVIDENCE: write_failed` を出す。
     「証跡が無い＝実行していない」と読めるのは、この行がログに無いときだけ。
 
-    **排他ロックは入れない。プロセス間競合が本番の配置では起きないため**（2026-09-18）:
-      - クラウドの Routine は**毎回あたらしい clone で動く**（`cloud_routine_prompt.md` の
-        前提節と手順7.5 の「次回ランは新規cloneのため無害」）。夜間ランと `TARGET_OVERRIDE`
-        の作り直しランが同じ TARGET で重なっても**別の作業ツリー**なので、同じ
-        `runs/<日付>.json` を2プロセスが同時に開くことは起きない
+    **排他ロックは入れない**（2026-09-18 ユーザー裁定）。根拠:
+      - 1つの clone の中で `backfill.py` が走るのは手順2.5 の1回だけ。**同じ作業ツリーで
+        2つ走る経路がリポジトリ内に無い**ので、通常運用では競合しない
+      - ⚠️ **「Routine は毎回あたらしい clone で動く」かどうかは、このリポジトリからは
+        裏が取れない**（2026-09-18 Codex 6周目 P1 の指摘。前提節17行は「clone 済みの
+        リポジトリで作業」としか書いておらず、手順7.5 の「次回ランは新規clone」は
+        Vault 側のローカル残骸についての記述）。**同一 clone で2ランが重なる配置なら
+        read→modify→os.replace で片方の実行が消えうる**。外部の Routine 設定で毎回
+        新規 clone が保証されるなら、それを手順書の前提節に明文化すること（未了）
       - 1つの clone の中で `backfill.py` が走るのは手順2.5 の1回だけ。リポジトリ内に
         並走させる呼び出し口は無い（ワークフローからも起動しない）
       - ファイルロックが守れるのは「同じディレクトリで2プロセスが同時に書く」場面だけで、
@@ -364,12 +368,20 @@ def _write_run_evidence(target, **fields):
         # 殺されて status="started" のまま残った唯一の証跡が、その後の再実行20回で
         # 落ちる（2026-09-18 Codex 5周目 P2。「中断が残る」という運用説明の例外になる）。
         if len(runs) > MAX_RUNS_PER_DAY:
-            keep = [r for r in runs if r.get("status") != "completed"]
-            done = [r for r in runs if r.get("status") == "completed"]
-            room = MAX_RUNS_PER_DAY - len(keep)
+            # ⚠️ **今回の実行は何があっても残す。** 未完了が既に上限を超えている状態で
+            # 今回が completed として書かれると、単純な「未完了優先」では room<0 となり
+            # 今回の実行が落ちうる（2026-09-18 Codex 6周目 P2。起動時の証跡書込みに
+            # 失敗し、完了時だけ成功した場合などに観測できる）。
+            mine = [r for r in runs if r.get("run") == _RUN_TOKEN]
+            rest = [r for r in runs if r.get("run") != _RUN_TOKEN]
+            unfinished = [r for r in rest if r.get("status") != "completed"]
+            done = [r for r in rest if r.get("status") == "completed"]
+            room = MAX_RUNS_PER_DAY - len(mine)
+            keep = mine + unfinished[-room:] if room > 0 else list(mine)
+            room -= len(keep) - len(mine)
             if room > 0:
                 keep = keep + done[-room:]
-            # 未完了だけで上限を超える場合は、最後に古い順で落とす（必ず今回の実行は残る）。
+            # 記録順に戻す（表示順＝実行順を保つ）。
             order = {id(r): i for i, r in enumerate(runs)}
             keep.sort(key=lambda r: order[id(r)])
             runs = keep[-MAX_RUNS_PER_DAY:]

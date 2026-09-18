@@ -54,3 +54,10 @@ jobs:
       # 手順ごとの所要時間計測（run_timing.py）の回帰テスト。
       - name: Run run-timing tests
         run: python -m unittest -v test_run_timing.py
+
+      # 手順2.5（バックフィル）の実行証跡の回帰テスト。
+      # ⚠️ **テストファイルを足したら必ずここにも足す。** この workflow は
+      # ファイルを列挙して実行する方式なので、足し忘れると「手元では緑・CIでは
+      # 一度も走らない」という状態になる（2026-09-18 Codex 6周目 P1 で実際に指摘された）。
+      - name: Run backfill-evidence tests
+        run: python -m unittest -v test_backfill_evidence.py
