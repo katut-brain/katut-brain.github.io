@@ -366,11 +366,18 @@ def _validate(state, target, expected_run_id, end_at):
     #   - 差が負でない
     # `total_s` は従来どおり**全部揃ったときだけ**出す（欠測を含む合計は「1〜7の所要」ではない）。
     durations = {}
-    if names == REQUIRED_STEPS:
+    local_only = all(r.startswith("missing:") or r.startswith("duplicated:")
+                     for r in reasons)
+    if names == REQUIRED_STEPS and not reasons:
         for (name, a), (_, b) in zip(seq, seq[1:]):
             durations[name] = b - a
         durations["total"] = seq[-1][1] - seq[0][1]
-    else:
+    elif local_only:
+        # 部分値を出してよいのは**欠測・重複という局所的な理由だけ**のとき。
+        # run_id_mismatch / target_mismatch / bad_t0 / step_before_t0 / nonmonotonic /
+        # time_in_future / implausible_span / bad_step_record / bad_schema などは
+        # 「その値がこのランのものである」ことすら怪しい＝全区間を出さない
+        # （2026-09-18 Codex レビュー P1。局所欠測だけを許容する）。
         order = {n: i for i, n in enumerate(REQUIRED_STEPS)}
         for (name, a), (nxt, b) in zip(seq, seq[1:]):
             if names.count(name) != 1 or names.count(nxt) != 1:

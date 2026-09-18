@@ -163,6 +163,64 @@ class PartialDurationTest(unittest.TestCase):
         self.assertNotIn("step7_s=", c)     # end が無いので手順7の区間は測れない
 
 
+class PartialSuppressedTest(unittest.TestCase):
+    """局所欠測以外の理由が1つでもあれば、部分値も一切出さない（2026-09-18 Codex P1）。
+
+    「このランの値である」ことが疑わしい種類の不整合では、もっともらしい数字を
+    1つも出さない。出せば incomplete を見落とした人・抽出が根拠に使える。
+    """
+
+    def _assert_no_intervals(self, c, why):
+        self.assertIn("status=incomplete", c, why)
+        for name in run_timing.MARKS:
+            self.assertNotIn("%s_s=" % name, c, "%s: %s" % (why, name))
+        self.assertNotIn("total_s=", c, why)
+
+    def test_run_id_mismatch_suppresses_everything(self):
+        st = state(marks(), run_id="deadbeef")
+        c = bc(st, "2026-09-07", 3, rid=RID)
+        self._assert_no_intervals(c, "run_id_mismatch")
+
+    def test_target_mismatch_suppresses_everything(self):
+        st = state(marks(), target="2026-09-06")
+        c = bc(st, "2026-09-07", 3)
+        self._assert_no_intervals(c, "target_mismatch")
+
+    def test_bad_t0_suppresses_everything(self):
+        st = state(marks())
+        st["t0"] = 0
+        c = bc(st, "2026-09-07", 3)
+        self._assert_no_intervals(c, "bad_t0")
+
+    def test_nonmonotonic_suppresses_everything(self):
+        steps = [(s2, i * 10) for i, s2 in enumerate(run_timing.MARKS)]
+        steps[4] = (steps[4][0], 5)   # 時刻が逆行
+        c = bc(state(steps), "2026-09-07", 3)
+        self._assert_no_intervals(c, "nonmonotonic")
+
+    def test_time_in_future_suppresses_everything(self):
+        c = bc(state(marks()), "2026-09-07", 3, end_at=1000)   # end が mark より前
+        self._assert_no_intervals(c, "time_in_future")
+
+    def test_implausible_span_suppresses_everything(self):
+        st = state(marks(), t0=1)
+        c = bc(st, "2026-09-07", 3, end_at=1 + 10 * len(run_timing.MARKS) + run_timing.MAX_RUN_SEC)
+        self._assert_no_intervals(c, "implausible_span")
+
+    def test_mixed_zero_is_not_silently_trusted(self):
+        """後追い mark の疑い: step2_5 が0秒で他が非ゼロ。値は出るが必ず incomplete と
+        reason が付いた形でしか出ないことを固定する（採用判断は complete に限る）。"""
+        at, steps = 0, []
+        for name in run_timing.MARKS:
+            if name != "step4_5":
+                steps.append((name, at))
+            at += 0 if name == "step2_5" else 30
+        c = bc(state(steps), "2026-09-07", 3, end_at=1000 + at)
+        self.assertIn("step2_5_s=0", c)
+        self.assertIn("status=incomplete", c)
+        self.assertIn("reason=", c)
+
+
 class BuildCommentTest(unittest.TestCase):
     def test_complete_when_ordered_and_monotonic(self):
         c = bc(state(marks()), "2026-09-07", 3)
