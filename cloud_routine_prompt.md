@@ -77,7 +77,7 @@
      「残り < `--timeout`」なら起動せず打ち切り、残件数を `budget_stopped` に記録する）。外側のシェル `timeout` は
      `--max-total` に60秒の余裕を足した値を下回らないこと（親が外側より先に自分で終わらないと、子が孤児化して
      排他ロックの無い `fetch_facts/<日付>.json` に競合書込みする）。
-   - **`backfill.py` は起動しただけで `fetch_facts/runs/<TARGET>.json` に証跡を書く**（2026-09-18 追加）。
+   - **`backfill.py` は候補抽出より前に `fetch_facts/runs/<TARGET>.json` へ証跡を書きにいく**（2026-09-18 追加。「起動すれば必ず書かれる」ではない——到達前に止まれば残らない。下の注記を読むこと）。
      起動直後に `status:"started"`、正常終了で `status:"completed"` ＋ `BACKFILL_STATUS` と同じ数字、
      例外終了で `status:"crashed"` に置き換わる（原子的置換）。**あなたがこのファイルを作ったり書き換えたりしない。**
      これは「このステップを実行したか」を成果物側から確かめるための材料（2026-09-15〜17 の3夜、
@@ -517,5 +517,5 @@
 ## 成功条件（手順8の3分岐に対応）
 - (a) `date==TARGET` が1件以上 → `reviews/<TARGET>.html` を生成し、`fetch_facts/<TARGET>.json` とあわせて `main` に push。**`index.html` は push しない**（GitHub Actions が自動再生成する・手順6）。
 - (b) `date==TARGET` が0件（新規保存が無い日）だが、**今回のランで `fetch_facts/` 配下に変更が生じた**（`git status --porcelain -- fetch_facts/` で差分あり。改善(attempted)・スタブ書き込み(stub_written)・backfill_ridタグ付け(rid_mismatch)のほか、**手順2.5 の証跡 `fetch_facts/runs/<TARGET>.json` だけが増えた夜も含む**） → reviews は作らず、`fetch_facts/` 配下の実在するものを push する（コミットメッセージ `update: <TARGET> (backfill only)`）。
-- (c) `date==TARGET` が0件かつ、今回のランでの `fetch_facts/` 配下への変更も無い（`git status --porcelain -- fetch_facts/` が空） → 何も push せず正常終了する。**手順2.5 が最後まで走れば証跡が増えるので、通常この分岐には入らない**。入った場合は「手順2.5 を飛ばした」「最初の書き込みに到達する前に止まった」「証跡の書き込みに失敗した（`BACKFILL_EVIDENCE: write_failed`）」のどれかなので、**ランのログと併せて判定する**（分岐そのものは (c) で正しい＝押すものが無いなら押さない）。
+- (c) `date==TARGET` が0件かつ、今回のランでの `fetch_facts/` 配下への変更も無い（`git status --porcelain -- fetch_facts/` が空） → 何も push せず正常終了する。**手順2.5 が最初の証跡書き込みに成功していれば証跡が増えるので、通常この分岐には入らない**。入った場合は「手順2.5 を飛ばした」「最初の書き込みに到達する前に止まった」「証跡の書き込みに失敗した（`BACKFILL_EVIDENCE: write_failed`）」のどれかなので、**ランのログと併せて判定する**（分岐そのものは (c) で正しい＝押すものが無いなら押さない）。
 - `date==TARGET` が1件以上あった日は、重複チェックでスキップされなかった各レコードについて、スキーマ検証に合格したノートが Vaultリポ `Explore/bookmarks/` に作成され `main` へ push される（1件も新規作成対象が無ければ手順8.5のpushは行わない＝これも正常終了）。
