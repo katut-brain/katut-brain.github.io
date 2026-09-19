@@ -1,0 +1,27 @@
+{
+ "https://x.com/sokichi_hoshino/status/2098193107628290238?s=12": {
+  "fetched_at": "2026-09-19T19:06:38Z",
+  "elapsed_ms": 12394,
+  "fetcher_version": "2026-09-03.1",
+  "url": "https://x.com/sokichi_hoshino/status/2098193107628290238?s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "full",
+  "missing": [],
+  "raindrop_id": 1850309485,
+  "rid_source": "exact",
+  "text_chars": 1021,
+  "text_sha1": "a490953efc04bf404657efcf62daf5c975bd0e5d",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": true,
+  "video_understood": true,
+  "video_reason": "",
+  "reason": "",
+  "fail_reason": "",
+  "attempt_seq": 1
+ }
+}
