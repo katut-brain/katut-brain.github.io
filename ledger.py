@@ -140,7 +140,13 @@ def _rid_source_of(rec):
 # gemini_unavailable(APIキー未設定)は設定を直せば解決するが、直すまでは何度取り直しても
 # 同じなので permanent 側に置く。分類は毎回「最新レコード」から導出し直すので固定化しない。
 _VIDEO_REASON_KIND = {
-    "instagram_reel_abandoned": "permanent",   # 2026-08-23 の構造的断念（設計値）
+    "instagram_reel_abandoned": "permanent",   # 2026-08-23 の構造的断念（設計値）。
+    # 2026-09-20 以降は新規発行されない歴史的コード。既存レコードが持つ歴史的コードで、
+    # ユーザー裁定により既存レコードは据え置き（再取得対象に復活させない）。
+    "instagram_relay_unavailable": "transient",  # 中継(kkinstagram.com)がmp4 URLを返さ
+    # なかった(HTTPエラー・タイムアウト・Location無し・例外)。中継の一時的な不調の可能性がある。
+    "instagram_relay_not_video":   "transient",  # 中継は応答したが転送先がfbcdn系のmp4
+    # でない(本家instagram.comへ送り返された等)。そのときの応答であって動画そのものではない。
     "host_not_allowed":         "permanent",   # SSRF対策で意図的に拒否
     "too_large":                "permanent",   # 上限超過。同じ動画なら次回も超える
     "no_mp4_variant":           "permanent",   # mp4実体が無い（HLSのみ等）
@@ -245,6 +251,12 @@ def _reason_kind(rec):
 
     if route == "instagram" and "/reel/" in url and "video_content" in missing:
         # 2026-08-23の構造的断念による設計値。Brain/decisions/2026-08-23-instagram-reel-video-give-up.md
+        # ⚠️ 2026-09-20 Reel動画取得復活後もこの分岐は残す（消さないこと）。ここに到達するのは
+        # _video_reason_kind() が None を返した場合＝**理由コードを持たない2026-09-02以前の
+        # レガシーレコード専用**。新コード(instagram_relay_unavailable/not_video等)を持つ
+        # レコードは上の `if "video_content" in missing: kind = _video_reason_kind(rec)` で
+        # 先に transient に分類されるため、ここには到達しない。ユーザー裁定「既存は据え置き」を
+        # 満たすのはこの分岐なので、「緩め忘れ」と誤解して削除しないこと。
         return "permanent"
     if rec.get("ok") and missing and set(missing) <= _STRUCTURAL_MISSING:
         # 構造的な穴だけが欠けている。再取得しても同じ結果になる
