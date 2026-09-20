@@ -205,6 +205,14 @@ class _AllowlistRedirectHandler(urllib.request.HTTPRedirectHandler):
         self._allowed_hosts = allowed_hosts
 
     def redirect_request(self, req, fp, code, msg, headers, newurl):
+        # ⚠️ スキームも見る（2026-09-20 Codex敵対的レビュー3周目指摘・SSRF）。ホスト名だけの
+        # 照合だと、許可済みホスト自身が http:// へ3xxを返した場合に追従してしまい、
+        # 動画本体を平文で取得することになる（入口=中継のLocationは既にhttps限定済みだが、
+        # ここ=許可ホストからの後続リダイレクトには及んでいなかった）。
+        scheme = urllib.parse.urlsplit(newurl).scheme.lower()
+        if scheme != "https":
+            raise urllib.error.URLError(
+                "redirect to disallowed scheme: %s (%s)" % (scheme or "(empty)", newurl))
         host = _host_of(newurl)
         if not any(_host_matches(host, h) for h in self._allowed_hosts):
             raise urllib.error.URLError("redirect to disallowed host: %s" % host)
@@ -231,11 +239,16 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
     """
     if not _GEMINI_AVAILABLE or not _GEMINI_API_KEY:
         return "", "gemini_unavailable"
-    if allowed_hosts is not None and not any(
-        _host_matches(_host_of(video_url), h) for h in allowed_hosts
-    ):
-        # 開始URL自体が想定外のホスト。安全側に倒して理解を諦める
-        return "", "host_not_allowed"
+    if allowed_hosts is not None:
+        # ⚠️ スキームも見る（2026-09-20 Codex敵対的レビュー3周目指摘・SSRF）。開始URLが
+        # 許可済みホストの http:// だった場合、ホスト照合だけでは通ってしまい平文で
+        # 動画本体を取得することになる。理由コードは新設せず、host_not_allowed を流用する
+        # （「想定外」という意味では同じ範疇であり、新規コードは増やさない方針）。
+        if urllib.parse.urlsplit(video_url).scheme.lower() != "https":
+            return "", "host_not_allowed"
+        if not any(_host_matches(_host_of(video_url), h) for h in allowed_hosts):
+            # 開始URL自体が想定外のホスト。安全側に倒して理解を諦める
+            return "", "host_not_allowed"
     tmp_path = None
     try:
         req = urllib.request.Request(video_url, headers={"User-Agent": BROWSER_UA})
@@ -510,11 +523,99 @@ def fetch_x(url, follow_links=True, understand_video=True):
             "depth": depth, "missing": missing}
 
 
-# --- 撤去済み（2026-08-23）: Instagram Reel の動画実体URL取得 -------------------
-# vxinstagram.com 経由の取得関数はここにあったが、依存先の /reel/ が全面404になり
-# 代替候補も実測で全滅したため撤去した。復活させる前に、その中継が本当に生きているか
-# 実際のshortcodeで og:video が返ることを確認すること（過去に「動くはず」で3回書き換えている）。
+# ---------- Instagram Reel 動画URL取得（中継: kkinstagram.com） ----------
+# 2026-08-23 に非公式中継 vxinstagram.com の /reel/ が全面404になり、代替候補も同日の
+# 実測で全滅したため一度撤去した（撤去当時の注意書き:「復活させる前に、その中継が本当に
+# 生きているか実際のshortcodeでog:videoが返ることを確認すること」）。2026-09-18 の
+# ユーザー裁定で復活が決定し、新しい中継 www.kkinstagram.com を採用。2026-09-20 に
+# ローカル・クラウド(GitHub Actions)両方で 5/5 成功を実測した上でこの復活を書く
+# （撤去時の注意書きはこの実測をもって満たした）。
+#
+# 中継への依存はこれで4回目（vxinstagram 2026-07-28採用→08-01追従→08-23撤去→
+# 今回kkinstagram）。**壊れる前提**で設計する。壊れたらvideo_reasonに
+# "instagram_relay_unavailable" が積み上がるので `python ledger.py --summary` で検知できる。
 # 経緯: Vault Brain/decisions/2026-08-23-instagram-reel-video-give-up.md
+
+_INSTAGRAM_VIDEO_ALLOWED_HOSTS = ("fbcdn.net", "cdninstagram.com")
+# 署名付きURLのホスト名は取得のたびに変わる(実測: instagram.fisb6-2.fna.fbcdn.net /
+# instagram.frdp5-1.fna.fbcdn.net / instagram.fscl20-1.fna.fbcdn.net /
+# instagram.fgyd9-1.fna.fbcdn.net / instagram.faep34-1.fna.fbcdn.net)。_host_matches()が
+# サブドメインを正しく拾うので "fbcdn.net" 単体で足りる。kkinstagram.com自体はここに
+# 含めない（中継自身への到達はこの下の専用関数で行い、Geminiに渡す実体URLの許可リストは
+# CDNだけに絞る）。
+
+_REEL_RELAY_UA = "Discordbot/2.0"
+# この UA でないと中継が動画への302を返さない(実測)。ブラウザUAだとHTML殻が返るだけで
+# Location ヘッダが付かない。Discordのリンクプレビュー生成bot向け応答経路を借用している。
+
+_REEL_SHORTCODE_RE = re.compile(r"/reel/([A-Za-z0-9_-]+)")
+
+
+class _NoFollowRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """3xxのリダイレクトを追従せず、HTTPErrorとして呼び出し元に返すためのハンドラ。
+    欲しいのは Location ヘッダの値だけで、転送先(署名付きmp4 URL)の本文をここで
+    ダウンロードする必要は無い(Geminiに渡す前提のURLを、ここで一度取得してしまうと
+    ネットワーク往復・データ転送量が二重になる)。redirect_request() が None を返すと
+    urllib はリダイレクトを処理せず、最終的に HTTPError として呼び出し元まで上がってくる。
+    """
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+def _fetch_instagram_reel_video_url(url, timeout=12, retry_delay=2):
+    """Instagram Reel の実体mp4 URLを中継(kkinstagram.com)経由で取得する。
+    戻り値: (video_url_or_None, reason_code)。成功時の reason_code は ""。
+
+    2026-09-18 ユーザー裁定で復活。中継への依存はこれで4回目（vxinstagram
+    07-28採用→08-01追従→08-23撤去→今回kkinstagram）で、**壊れる前提**。壊れたら
+    "instagram_relay_unavailable" が積み上がるので `ledger.py --summary` で検知できる。
+
+    リトライは1回だけ(合計2回の試行、間隔2秒)。Day1に観測した504のような一過性の
+    揺らぎを拾うのが目的で、無限に粘って毎晩の所要時間を膨らませない。
+    """
+    m = _REEL_SHORTCODE_RE.search(url)
+    if not m:
+        return None, "instagram_relay_not_video"
+    relay_url = "https://www.kkinstagram.com/reel/%s/" % m.group(1)
+    opener = urllib.request.build_opener(_NoFollowRedirectHandler())
+
+    for attempt in range(2):
+        location = None
+        req = urllib.request.Request(relay_url, headers={"User-Agent": _REEL_RELAY_UA})
+        try:
+            # 本文はダウンロードしない(3xx以外が返ってLocationが無ければ諦める用途なので
+            # レスポンスボディを読む必要が無い)。
+            with opener.open(req, timeout=timeout):
+                pass
+        except urllib.error.HTTPError as e:
+            location = e.headers.get("Location") if e.headers is not None else None
+        except Exception:
+            location = None
+
+        if location:
+            # ⚠️ スキームを先に検証する（2026-09-20 Codex敵対的レビュー指摘・SSRF）。
+            # ホスト名だけ見ていると、中継が平文HTTPの Location（経路上で差し替え可能）や
+            # 相対/プロトコル相対URL（"//instagram.x.fbcdn.net/a.mp4" のようにホストだけ
+            # 持ちスキームを持たない形）を返した場合にホスト照合だけを通過してしまう。
+            # https 以外は無条件で拒否する。
+            scheme = urllib.parse.urlsplit(location).scheme.lower()
+            if scheme != "https":
+                return None, "instagram_relay_not_video"
+            host = _host_of(location)
+            if any(_host_matches(host, h) for h in _INSTAGRAM_VIDEO_ALLOWED_HOSTS):
+                return location, ""
+            # 中継は応答したが転送先がfbcdn系のmp4でない(本家instagram.comへ
+            # 送り返された等)。恒久的な失敗ではなく「その中継応答が動画でなかった」事実。
+            return None, "instagram_relay_not_video"
+
+        if attempt == 0:
+            time.sleep(retry_delay)
+
+    # HTTPエラー(Location無し)・タイムアウト・例外のいずれか。1回リトライしても
+    # 変わらなかった＝一過性の失敗として記録する。
+    return None, "instagram_relay_unavailable"
+
+
 def fetch_instagram(url):
     st, txt = _get(url, CRAWLER_UA)
     # ⚠️ HTTPステータスの判定は本文・og:meta の解析より **前**（2026-09-05 Codex 5周目
@@ -564,37 +665,39 @@ def fetch_instagram(url):
         mc2 = re.search(r':\s*"(.*)"', og_desc, re.S)
         cap = mc2.group(1) if mc2 else og_desc
 
-    # Reels動画理解(vxinstagram.com経由でmp4 URL取得→Gemini API)。失敗/対象外ならmissingに正直に記録。
+    # Reels動画理解: 中継(kkinstagram.com)経由でmp4 URLを取得→Gemini APIへ渡す。
+    # 失敗/対象外ならmissingに正直に記録する(caption-only フォールバックが緩和策の本体。
+    # 動画側が何で失敗してもここから先は必ずok:Trueでキャプション・og:imageを返し、
+    # 夜間Routineを止めない)。
     text = cap
     is_reel = "/reel/" in url
+    video_understanding = ""
+    video_reason = ""
     if is_reel:
-        # Reelと分かっているのに動画URL取得やGemini理解が失敗した場合は、通常投稿(画像等)と
-        # 区別できるようdepth: partial + missing: video_content で記録する(単なる shallow だと
-        # 「動画として一度も試みていない」場合と見分けが付かず、後からの再取得対象を絞り込めない。
-        # Codex敵対的レビューで指摘)。
-        depth = "partial"
-        missing = ["video_content"]
+        mp4_url, reason = _fetch_instagram_reel_video_url(url)
+        if mp4_url:
+            video_understanding, video_reason = _gemini_video_understanding(
+                mp4_url, allowed_hosts=_INSTAGRAM_VIDEO_ALLOWED_HOSTS)
+        else:
+            video_understanding, video_reason = "", reason
+        # video_reasonが空文字のままmissing:["video_content"]になる経路を作らない
+        # (理解に失敗したら必ず上の理由コードのいずれかが入っている契約のガード)。
+        if not video_understanding and not video_reason:
+            video_reason = "instagram_relay_unavailable"
+        if video_understanding:
+            text = cap + "\n\n動画の内容: " + video_understanding
+            depth = "full"
+            missing = []
+        else:
+            # Reelと分かっているのに動画URL取得やGemini理解が失敗した場合は、通常投稿(画像等)と
+            # 区別できるようdepth: partial + missing: video_content で記録する(単なる shallow だと
+            # 「動画として一度も試みていない」場合と見分けが付かず、後からの再取得対象を絞り込めない。
+            # Codex敵対的レビューで指摘)。
+            depth = "partial"
+            missing = ["video_content"]
     else:
         depth = "shallow"
         missing = ["visual_content", "audio_content"]
-    # Reels の動画理解は 2026-08-23 に断念した。キャプション＋og:image で運用する。
-    #
-    # 依存していた非公式中継 vxinstagram.com の `/reel/` が全面404になり（実測 13/13）、
-    # 代替候補も同日の実測で全滅した:
-    #   d.ddinstagram.com / g.ddinstagram.com … DNS が解決しない（ドメインごと消滅）
-    #   www.instagram7.com                     … 200 は返すが og:video も .mp4 も 0件
-    # yt-dlp は cookie（＝ログイン権限そのもの）を無人ジョブに置くことになるため採らない。
-    # 公式の oEmbed / Graph API は表示用または自アカウント向けで、この用途に適合しない。
-    #
-    # 非公式中継を別の非公式中継に乗り換えても、壊れ続ける依存が入れ替わるだけ。
-    # Instagram の規約はログインの有無を問わず無許可の自動収集を禁じてもいる。
-    # よって caption-only は「諦め」ではなく、この用途で最も低保守・低リスクな設計判断。
-    # 動画の中身が要るブックマークは手で深掘りする（Routine には戻さない）。
-    # 経緯: Vault Brain/decisions/2026-08-23-instagram-reel-video-give-up.md
-    video_understanding = ""
-    # 上の構造的断念を、URL形から推測させずデータとして残す。これがあると照会側は
-    # 「/reel/ を含むか」で恒久性を当てにいく必要がなくなる。
-    video_reason = "instagram_reel_abandoned" if is_reel else ""
 
     return {"ok": True, "type": "instagram", "url": url,
             # キャプションが空だと text が理解結果そのものになり「動画の内容:」が
@@ -1011,7 +1114,7 @@ def fetch_web(url):
 # ---------- ディスパッチャ ----------
 # 取得ロジックを変えたら上げる。過去の取得結果が「どの版で取られたか」を
 # 後から判別できるようにするための版番号。
-FETCHER_VERSION = "2026-09-03.1"
+FETCHER_VERSION = "2026-09-20.1"
 
 
 # ---------- rid解決（captures.json との逆引き） ----------

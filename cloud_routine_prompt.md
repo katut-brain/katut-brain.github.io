@@ -17,7 +17,7 @@
 - リポジトリ `katut-brain/katut-brain.github.io` が clone 済み（default branch = `main`）。作業はこのリポ直下。
 - 環境変数 `RAINDROP_TOKEN`（Raindrop API トークン）が設定済み。
 - 環境変数 `TZ=Asia/Tokyo`（日付は日本時間で計算）。
-- 環境変数 `GEMINI_API_KEY`（Gemini API無料枠キー、X動画の音声+映像理解用）が設定されていれば使う。**未設定でも全体は止まらない**（`fetch_content.py`が自動でタイトルのみにフォールバックする graceful degradation設計）。
+- 環境変数 `GEMINI_API_KEY`（Gemini API無料枠キー、X動画・Instagram Reel動画の音声+映像理解用）が設定されていれば使う。**未設定でも全体は止まらない**（`fetch_content.py`が自動でタイトルのみにフォールバックする graceful degradation設計）。
 - リポ直下に `_build_graph.py` / `_build_feed.py` / `fetch_content.py` / `requirements.txt` / `captures.json` / `reviews/` がある。
 - ネットワークは Raindrop API・X・Instagram・YouTube・各ニュースサイトへ到達できる。
 - リポジトリ `katut-brain/obsidian-vault`（個人Vault、private）も同じワークスペースに clone 済みの前提（Routine設定でのリポジトリ追加はユーザー側で別途実施済み）。ディレクトリ名がワークスペース内で異なる場合は `Explore/bookmarks/` を含むリポをVaultリポとして特定する。以下「Vaultリポ」はこのリポを指し、常に上記 `katut-brain/katut-brain.github.io` とは別リポとして扱う（作業ディレクトリ・push先を混同しない）。
@@ -38,7 +38,7 @@
      コマンド行へ毎回書き下すものは従来どおりでよい。
    - **計測が失敗しても手順は止めない**。`run_timing.py` はどんな例外でも exit 0 で終わる設計なので、
      このコマンドがエラーを出しても次へ進んでよい（振り返り本体には影響しない）。
-1.5. **依存インストール**：`pip install --quiet -r requirements.txt`（YouTube字幕取得用 `youtube-transcript-api`、X動画理解用 `google-genai`）。失敗しても止めない（`fetch_content.py` はこれらのパッケージが無くても他の取得は正常動作する graceful degradation設計。ただしYouTube動画は字幕なし・X動画は音声/映像理解なしのタイトルのみに落ちる）。
+1.5. **依存インストール**：`pip install --quiet -r requirements.txt`（YouTube字幕取得用 `youtube-transcript-api`、X動画・Instagram Reel動画理解用 `google-genai`）。失敗しても止めない（`fetch_content.py` はこれらのパッケージが無くても他の取得は正常動作する graceful degradation設計。ただしYouTube動画は字幕なし・X動画/Instagram Reel動画は音声/映像理解なしのタイトルのみに落ちる）。
 2. （先に `python3 run_timing.py mark step2 --run-id <8桁>`）`python3 _build_graph.py` を実行。Raindrop の新規を `captures.json` に取り込み、既存レコードも冪等に更新する（失敗してもログして続行）。
    - **出力の `IMPORT_STATUS:` 行を必ず読む**。`INCOMPLETE` だった場合は Raindrop を全件取得できておらず、**その日の振り返りが欠損しうる**。この場合は手順5の `reviews/<TARGET>.html` の `</footer>` 直前に `<p class="notegen-warn">⚠️ 取り込み不完全: Raindrop取得エラー N件。欠けている保存がある可能性あり</p>` を1行足して、欠損の可能性を残す（黙って完走しない）。import は冪等なので翌ランで自動的に回復する。
    - この行を見落として「正常に完走した」と扱わないこと。無人運用ではログを誰も読まないため、**成果物側に痕跡を残すことが唯一の検知手段**になる。
@@ -151,8 +151,8 @@
    - **YouTube動画**：`text` にタイトルだけでなく字幕（transcript、`has_transcript: true` なら最大50,000字＝claudetube準拠。ほとんどの動画は全篇カバーされる）が入る。カード生成時（手順5の`.vdesc`）はタイトルの言い換えでなく、**この字幕内容を読んだ上で動画が何を伝えているか**を一言にする。字幕が取れなかった場合（`has_transcript: false` / `missing: ["transcript"]`）はタイトルのみで一言を作る。
    - **X動画**：`GEMINI_API_KEY`が設定されていれば、`text`に「動画の内容: ...」として映像+音声の理解結果が自動で埋め込まれる（Pythonスクリプト側で完結、追加のエージェント側操作は不要）。カード生成時はこの内容を読んだ上で一言にする。理解できなかった場合（`video_understood: false`。`missing`に`"video_content"`が入る）は、動画を見たかのような一言を書かないこと（見ていないので書けない）。ツイート本文（`text`）自体は取れていることが多いので、その中身は普通に`.vdesc`に反映してよいが、**`.vdesc`の末尾に固定マーカー文「※動画の内容は未取得」を必ず書く**（手順7の機械判定はこのマーカー文字列の有無だけを見る。自由な言い回しでは判定されない）。これは一過性の失敗（Gemini枠切れ・タイムアウト・syndication瞬断）であり構造的な取得不可ではないので、マーカーの前に添える地の文は「今回は動画の内容を取得できなかった」のように一過性であることが伝わる書き方にする（マーカー自体の文言はどちらの原因でも共通で変えない）。
    - **X画像・Instagram画像**：レスポンスの`photos`配列に高解像度URLが入る（X: `?format=jpg&name=large`付き、Instagram: og:imageの署名URLそのまま=既に実質フル解像度）。**特にスクリーンショット・図解・インフォグラフィックなど文字/情報量が多そうな画像**は、そのURLを`curl -sL -A "Mozilla/5.0" -o /tmp/img_<N>.jpg "<URL>"`等でダウンロードし、**Readツールで直接見て内容を読み取ってから**`.vdesc`に反映する（WebFetchで画像URLを直接見せる経路は内容を誤認識するリスクがあるため使わない）。1件あたり画像は先頭1〜2枚まで（処理コスト抑制のため）。単なる人物写真・風景等で読み取る情報が乏しいと判断した場合はダウンロードをスキップしてよい（完走優先）。
-   - **Instagram Reels動画**：**動画の中身は取得しない**（2026-08-23に断念）。依存していた非公式中継サービスが全滅し、代替も実測で全て使えなかったため、`fetch_content.py` から取得処理を撤去した。Reel は**キャプション＋og:image のみ**が返り、`depth: "partial"` / `missing: ["video_content"]` が最初から入っている。**`.vdesc` はキャプションと画像から作る**。動画を見たかのような一言を書かないこと（見ていないので書けない）。**`.vdesc`の末尾に固定マーカー文「※動画の内容は未取得」を必ず書く**（手順7の機械判定はこのマーカー文字列の有無だけを見る）。これは一過性の失敗ではなく構造的な制約なので、マーカーの前に添える地の文は「今回は取得できなかった」ではなく構造的な制約であることが伝わる書き方にする。経緯: Vault `Brain/decisions/2026-08-23-instagram-reel-video-give-up.md`
-   - **X動画は従来どおり継続**（syndication API 経由で動いている）。上の断念は Instagram に限る。
+   - **Instagram Reels動画**：2026-08-23に一度断念したが、2026-09-18のユーザー裁定で撤回し、2026-09-20に取得を復活させた（経緯: Vault `Brain/decisions/2026-08-23-instagram-reel-video-give-up.md` → `Brain/decisions/2026-09-18-instagram-reel-video-revival.md`）。**今後は毎回「動画理解が取れる場合」と「取れない場合」の両方が起こりうる前提で書く。** `GEMINI_API_KEY`が設定されていれば、`text`に「動画の内容: ...」として映像+音声の理解結果が自動で埋め込まれる（Pythonスクリプト側で完結、追加のエージェント側操作は不要）。**理解が取れた場合**（`video_understood: true`。`missing`に`"video_content"`が無い）は、この内容を読んだ上で一言にする。「未取得」とは書かないこと（取得できているのに未取得と書くのは下記の禁止事項と同じ違反）。**理解が取れなかった場合**（動画URL自体が取れずキャプション＋og:imageのみにフォールバックした場合を含め、`video_understood: false` または `missing`に`"video_content"`が入る場合）は、動画を見たかのような一言を書かないこと（見ていないので書けない）。キャプション（`text`のうち投稿本文相当部分）自体は取れていることが多いので、その中身は普通に`.vdesc`に反映してよいが、**`.vdesc`の末尾に固定マーカー文「※動画の内容は未取得」を必ず書く**（手順7の機械判定はこのマーカー文字列の有無だけを見る。自由な言い回しでは判定されない）。これはX動画と同じく**一過性の失敗**（動画URL取得の瞬断・Gemini枠切れ・タイムアウト等）として扱う。**禁止しているのは、マーカーの前に添える「地の文」の言い回しだけ**——固定マーカー文字列「※動画の内容は未取得」自体は例外で、必ずそのまま書く（手順7の機械判定がこの文字列の有無だけを見るため、ここだけは変えられない）。地の文の側で「動画の内容は未取得」のような**構造的断念を示す言い回しは使わず**、X動画（下記）と同様「今回は動画の内容を取得できなかった」のように一過性であることが伝わる書き方にする。
+   - **X動画・Instagram Reelとも同じ枠組み（グループA）で動く**：どちらも `GEMINI_API_KEY` による動画理解の成否が一過性の失敗として発生しうる点は同じであり、上記の書き分けもX動画と共通の考え方に揃えてある。
    - 🚫 **取得できているのに「未取得」と書くことを禁止する**（2026-08-23の監査で実害を確認）。`.vdesc` に「本文未取得」「詳細不明」「取得できず」と書いてよいのは、**その回の `fetch_content.py` の戻り値が実際に `ok: false`、または `text` が実質空だった場合に限る**。実例：rid=1828807146 は原文1,059字（「96日で14,282回・勝率52%・1日約$1,310」まで含む）が完全に取得できていたのに `.vdesc` は「詳細本文は未取得」と書き、rid=1828798202 も109字（「毎月13億トークン」「Free Claude Code というリポジトリ」）が取れていたのに「本文未取得のため詳細不明」と書いた。**ユーザーから見ればシステムが嘘の報告をしていることになり、実際には取れている中身を読むために元リンクを踏む羽目になる。** 書く前に必ず `text` の中身を確認する。
    - **「今回取得できず」と「構造的に取得不可」を書き分ける**：前者は一過性（タイムアウト・レート制限・瞬断）で、翌晩には取れる可能性がある。後者は仕様上取れない（Threadsの画像内容、字幕の無いYouTube、凍結アカウントなど）。この2つを同じ文言で書くと、**一過性の失敗が恒久的な取得不可としてノートに焼き付く**（実測: 「本文・画像とも取得できず」と書かれた2件を後日再取得したら両方とも取れた）。一過性側は「今回は取得できなかった」と書く。
    - **Threads**：`missing` に `"visual_content"` または `"audio_content"` が入る場合（Threadsは画像・動画・音声の中身を取得しない構造的な制約）、**`.vdesc` の末尾に、`missing` に入っている欠損キーそれぞれの固定マーカー文を必ず書く**（`visual_content` → 「※画像の内容は未取得」、`audio_content` → 「※音声の内容は未取得」。両方欠損していれば両方書く）。本文（テキスト）の取得限界（「本文の続きは取得できていない」等）だけを書いて済ませないこと——それは視覚/音声コンテンツの開示にはならない（2026-09-08 に開示ゼロの実例あり）。手順7の機械判定はこのマーカー文字列の有無だけを見る。自由な言い回し（「画像・動画・音声の内容は未取得」等）では判定されない。
@@ -348,6 +348,19 @@
      3. `reason=no_card` の違反が残っている場合は、対応するカード自体が `reviews/<TARGET>.html` に無い（抜け落ち）ということなので、`--fix` では直らない。手順5に戻ってそのブックマークのカードを書き足してから、この手順7をやり直す。
      4. `DISCLOSURE_ERROR: ... card_parse_failed` が出た場合は `reviews/<TARGET>.html` のカード構造そのものが壊れている疑いがあるので、手順5からやり直す。
      5. どの場合も、ここで手順を止めずに手順7.5へ進む。`DISCLOSURE_EXCLUDED:` 行はバックフィル（過去日のカードを再取得しただけ）の正常な結果なので無視してよい。**この仕組みは手順7の実行自体を強制しない。公開ゲートでマーカー欠落を警告することで、手順7を飛ばした夜も検知できる**（`reviews/<TARGET>.html` 自体が無い＝手順7未実行の夜は、公開ゲート側が `status=no_review` かつ duty>0 のときに `::warning` を出す）。
+   - **Reel動画取得の全滅検知（機械判定・2026-09-20 追加、同日ユーザー裁定でスクリプト化）**：Instagram Reel動画取得の中継（kkinstagram.com）への依存は4回目で、過去3回とも数週間〜数ヶ月で死んでいる。中継が死んでも `fetch_instagram()` はcaption-onlyで `ok:true` のまま完走するため、**黙って毎晩公開され続け誰も気づかない**リスクがある。`python3 ledger.py --summary` は誰も無人で実行しないコマンドなので（本手順書内で「これは無人ランの実行指示ではない」と明記済み）、上の開示チェックと同じく**成果物側（reviews）に痕跡を残す**方式で検知する。**判定ロジック（母数フィルタ・警告条件）は `reel_health.py` 側だけが持ち、この手順書には書き写さない**（二重管理を避ける。ロジックを直したくなったら `reel_health.py` と `test_reel_health.py` を見る）。
+     1. `reel_health.py` を実行する。**対象日は明示的に渡す**（手順ごとに別のシェル呼び出しになり、手順1で代入した `TARGET` はここには届かない。手順2.5の `backfill.py --target $TARGET` と同じ形にする＝この場で手順1・26行目と同じ式で `TARGET` を再導出してから `--target` で渡す）：
+        ```bash
+        TARGET=${TARGET_OVERRIDE:-$(TZ=Asia/Tokyo date -d yesterday +%F)}
+        python3 reel_health.py --target "$TARGET"
+        ```
+        出力は `REEL_VIDEO_STATUS: total=<N> ok=<N> reasons=<内訳> warn=yes|no` の1行。`fetch_facts/<TARGET>.json` が無い夜は `warn=no` に `(facts file not found)` が添えられて正常終了する（traceback は出ない）。⚠️ `--target` を渡し忘れても `reel_health.py` 自身が `TARGET_OVERRIDE`（`YYYY-MM-DD` 形式のときのみ）→ JSTの昨日、の順で自己解決する保険を持つが、**明示的に渡すのが本則**（作り直しラン等で対象日を取り違えないため）。
+     2. **`warn=yes` のときだけ**、`reviews/<TARGET>.html` の `</footer>` 直前に、既存の `notegen-warn` と同じ書式で理由コードの内訳を入れた1行を追記する：
+        ```html
+        <p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（N件中0件成功・内訳: instagram_relay_unavailable N件, ...）。中継サービスの死亡を疑うこと</p>
+        ```
+        `N` と内訳の部分は上の `REEL_VIDEO_STATUS:` の実測値（`total=` と `reasons=`）をそのまま使う（捏造しない）。内訳の理由コードで `instagram_relay_unavailable` が支配的なら中継自体の死亡、`gemini_*` 系が支配的ならGemini側の問題、と切り分けられる。
+     3. `warn=no` なら、この警告は追記しない。
    - **所要時間の記録を reviews に焼き込む**（手順1で始めた計測の締め。上の開示チェックまで終えてから行う。`mark step7` は既にこの手順7の冒頭で打っている）。次の1つを実行するだけでよい：
      ```
      python3 run_timing.py finish --target $TARGET --run-id <8桁> --reviews reviews/$TARGET.html

@@ -61,3 +61,16 @@ jobs:
       # 一度も走らない」という状態になる（2026-09-18 Codex 6周目 P1 で実際に指摘された）。
       - name: Run backfill-evidence tests
         run: python -m unittest -v test_backfill_evidence.py
+
+      # Instagram Reel 動画取得の復活（2026-09-20）の回帰テスト。
+      # 中継(kkinstagram)のHTTP応答だけをダブルにし、理由コードの導出・分類は
+      # 本物の関数に通す。ネットワークには出ない。
+      - name: Run reel-video tests
+        run: python -m unittest -v test_reel_video.py
+
+      # Reel動画取得の全滅検知（reel_health.py。手順7から呼ばれる）の回帰テスト。
+      # fetch_content._facts()/record_facts()という本物の永続化経路を一時ディレクトリに
+      # 通してから reel_health.py に読ませる（Codex敵対的レビュー最終ラウンド指摘：
+      # fetch_instagram()の戻り値だけを検証しても_facts()側の保存漏れを検出できない）。
+      - name: Run reel-health tests
+        run: python -m unittest -v test_reel_health.py
