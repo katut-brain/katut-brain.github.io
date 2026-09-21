@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-09-21 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-21 の振り返り</h1>
+  <div class="meta">投資系X投稿2件、「型」を求めるデイトレ手法への関心</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の2件はどちらもデイトレード関連のX投稿で、共通するのは「勘や経験ではなく、再現可能な手順に落とし込みたい」という欲求だ。1件はEMA20と15分足だけに絞った単純トレード論、もう1件は株探の無料ツールを使い出来高急増×日足上昇トレンドで銘柄を機械的に絞り込む4ステップの手順。どちらも「これだけやればいい」という形で複雑な判断をチェックリスト化しようとしている。</p>
+    <p>ユーザーの通常の興味軸（建築・アート・デザイン・写真・AI活用）からは外れる保存だが、「複雑な営みを再現可能な手順・型に還元する」という関心自体は、設計やプロセス志向と地続きとも読める。今回は「やりたい」よりも、他人の型を観察して真偽を確かめたいという知る/検証の軸が強い。</p>
+    <ul class="pts">
+      <li><b>EMA20×15分足</b>：月30万円ペースを目標に単一指標・単一時間足へ極限まで単純化。「①EMA20を入れる」で本文が途切れ、続きの手順は本文だけでは分からない</li>
+      <li><b>出来高急増スクリーニング</b>：株探「銘柄探検→出来高急増銘柄」で日足上昇トレンド×出来高100万超の銘柄を抽出する4ステップ。朝の気配・寄り付きの飛びつき回避まで含めた運用ルール</li>
+      <li><b>継続する関心</b>：デイトレ・EMA関連の保存は今週すでに09-14・09-15・09-18にも現れており、今週4日目の再登場。特に09-15の「EMA20×15分足だけの単純トレード手法」とほぼ同一の主張が、今回は別アカウントから流れてきている</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>「EMA20×15分足だけで月30万円」という同型の主張が、09-15と今回とで別アカウントから同じ言い回しで繰り返し流れてくるのは、本当に独立に発見された再現性のある手法なのか、それとも同じテンプレートを使い回すコピペ商法の型なのか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">出来高急増スクリーニングの落とし穴</div>
+    <ul class="ilist">
+      <li><a href="https://fitness098.com/daytrading-stock-selection/" target="_blank" rel="noopener"><b>デイトレ銘柄の選び方｜ボラティリティと出来高で「動く株」を見抜く極意</b></a> <span>→ 単なる出来高でなく売買代金（株価×出来高）の急増に注目し、日足で「上値が軽い」銘柄へさらに絞り込むのが確度を上げる鍵だという。今日の投稿の「出来高100万超」だけの基準より一段踏み込んだ視点を示す</span></li>
+    </ul>
+  </section>
+
+  <h2>📈 投資・トレード（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/cora64189920179/status/2101528825377243440?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fcora64189920179%2Fstatus%2F2101528825377243440%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">EMA20×15分足に絞った月30万円ペースの単純トレード論</div><div class="vdesc">月100万は無理でも月30万ならEMA20と15分足だけで狙えるとし、何時間もチャートに張り付く必要も「聖杯探し」も不要と説く。ロードマップの第一歩は「EMA20を入れる」で、続きの手順は本文に含まれていない。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/cora64189920179/status/2101528825377243440?s=12" data-title="EMA20×15分足に絞った月30万円ペースの単純トレード論" data-rid="1860651258">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/tousikainobusin/status/2101588995616715198?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSpYDQZaMAAcvUe.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">株探ツールで出来高急増銘柄をスクリーニングする4ステップ</div><div class="vdesc">株探「銘柄探検→デイトレ向き→出来高急増銘柄」で、日足上昇トレンドかつ出来高100万株超の日本株に絞る手順。添付画像は実際のツール画面と、9/17時点で出来高が前日比+4,823%のレオパレスや+9.96%のヒーバイストが並ぶランキング例。朝の気配を見て寄りで飛びつかないことも運用ルールに含める。</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/tousikainobusin/status/2101588995616715198?s=12" data-title="株探ツールで出来高急増銘柄をスクリーニングする4ステップ" data-rid="1860650945">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=incomplete target=2026-09-21 run_id=e2ab7639 saves=2 step1_s=42 step2_s=21 step2_5_s=26 step3_s=4 step4_s=35 step7_s=0 reason=missing-step5 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
