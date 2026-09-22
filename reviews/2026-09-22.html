@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-09-22 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-22 の振り返り</h1>
+  <div class="meta">新型モデル「Jev」が検索・スプレッドシート・報道要約・トレーディングまで飲み込んだ日（10件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存10件のうち6件が、TypeSafe社が新しく出した「Jev」という意思決定特化モデルの実験報告で占められている。Jevは文章を生成するLLMではなく、非構造化データを受け取って較正済みの確率的判断を一瞬で返す設計で、画像検索の一語化、スプレッドシート内でのアンケート仕分け、朝刊384本を24.9秒・約30円で読み切るニュース選別、BTC5分足の予測売買ボットまで、ジャンルを問わず「とりあえず繋いでみた」という個人発の実験が並ぶ。同じ日に、TOC（制約理論）の名著「ザ・ゴール」の発想をAIとの執筆ワークフローに転用する試みや、OpenAIの新モデル「Astra」とClaudeを組み合わせてテンバガー候補株を発掘する記事も保存されており、専用の高速判断モデルが仮説や候補を出し、汎用LLMがそれを解釈・戦略化するという役割分担が、投資・執筆・検索という別々の文脈で独立に立ち上がっている点が興味深い。</p>
+    <ul class="pts">
+      <li><b>Jevラッシュ</b>：6件が同一の新型モデルを異なる用途でそれぞれ試す実験報告</li>
+      <li><b>役割分担の輪郭</b>：専用モデルが判断・候補を出し、Claude側が意味づけ・戦略化するという構図が投資記事にも執筆記事にも共通して現れる</li>
+      <li><b>速さへの懐疑も同居</b>：24.9秒でニュース384本、という体感速度の裏で「Jevで超高速取引なんて多くの人には不要」という皮肉も同じ日に保存されている</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>学習ゼロでもAUC0.88台まで届く専用判断モデル（Jev）が普及すると、汎用LLMの出番は「判断そのもの」から「判断の意味づけ」側へどこまで押し出されるのか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">Jev（TypeSafeの新型モデル）</div>
+    <ul class="ilist">
+      <li><a href="https://techcrunch.com/2026/09/18/a-new-kind-of-ai-model-from-a-chatgpt-inventor-is-thrilling-developers/" target="_blank" rel="noopener"><b>A new kind of AI model from a ChatGPT inventor is thrilling developers（TechCrunch）</b></a> <span>→ 創業者はChatGPTの共同開発者・RLHF発明者のDiogo Almeida。JevはLLMではなく較正済み確率と判断だけを返すため原理的に幻覚を起こせない設計で、Vercelの実測ではChatGPT系モデル比5〜18倍速く、Bryo AIはメール分類でGeminiより10〜20倍安く済んだと報告されている。今日の保存に並ぶ個人発の実験ラッシュは、こうした実務導入の広がりと地続きにある。</span></li>
+    </ul>
+    <div class="ntag">Astra（OpenAIの新モデル）</div>
+    <ul class="ilist">
+      <li><a href="https://www.ai-souken.com/article/what-is-openai-astra" target="_blank" rel="noopener"><b>OpenAI Astraとは？次期主要モデルの特徴や性能、公開時期を解説（AI総合研究所）</b></a> <span>→ Astraは数学の未解決問題を解いて見せる形で発表された次世代モデルで、複数エージェントが数時間〜数日単位で協調するアーキテクチャが売り（正式にGPT-6を指すかは記事内でも未確定）。テンバガー分析記事が描いた「Astraが横断分析し、Claudeが意味づけする」という役割分担は、この長時間協調型の設計と符合する。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 Jevの実運用ラッシュ（6件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/ai_300/status/2102171011797975309?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2102039399236304896/img/pmgSiklT43vsXIcn.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Jevで「画像検索」を1単語検索に</div><div class="vdesc">Pinterestや素材サイトを延々漁る作業が要らなくなり、検索語1つだけで「探す」から「選ぶ」に変わったと報告。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/22 15:38</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ai_300/status/2102171011797975309?s=12" data-title="Jevで「画像検索」を1単語検索に" data-rid="1862268600">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/kinari_kuramoto/status/2101937847674835406?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2101936852605571073/img/MU9IDAbDE7oNXAik.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Jevをスプレッドシート内で走らせる</div><div class="vdesc">Googleフォームのアンケート回答をJevで分析・仕分けすると、Geminiを都度呼ぶより速く処理できたと報告（サンプルデータのため精度は未検証と本人も明記）。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/22 15:43</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kinari_kuramoto/status/2101937847674835406?s=12" data-title="Jevをスプレッドシート内で走らせる" data-rid="1862270768">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/xjuntaro/status/2101989210362454268?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSvEC5qa8AAHqx3.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Jevの精度をKaggleで実測、BERTにわずかに劣後</div><div class="vdesc">添付ベンチマークでは、学習なしのJev 128-shotがAUC0.8810・F1 0.7847で、学習ありBERT（AUC0.8957）にわずかに届かないが、同じ0-shot勢のFable・Astraは上回り、学習ゼロでも実用水準の精度が出ると結論づけている。</div><div class="vsaved">保存 9/22 15:44</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/xjuntaro/status/2101989210362454268?s=12" data-title="Jevの精度をKaggleで実測、BERTにわずかに劣後" data-rid="1862270894">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/goldouji/status/2102204800054296577?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Astra×Claudeでテンバガー候補株を自動発掘</div><div class="vdesc">時価総額5〜30億ドル・粗利率40%以上で改善傾向・ROICが資本コスト超・負債はEBITDAの3倍以下・経営陣持株10%以上という学術的な5条件を、SEC EDGARのXBRLや決算トランスクリプトを横断読解するAstraで自動スクリーニングし、Claudeが予兆を投資ストーリーへ整理する二段構えのフローを紹介。コングロマリット解析や一過性の粗利率改善の誤認、噂レベル情報の扱いは弱点として明記されている。</div><div class="vsaved">保存 9/23 03:11</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/goldouji/status/2102204800054296577?s=12" data-title="Astra×Claudeでテンバガー候補株を自動発掘" data-rid="1862808044">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/ai_300/status/2102291814686593035?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2102042283470458881/img/uSmGIYrM2L_oqzJc.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Jevが朝刊384本を24.9秒・約30円で選別</div><div class="vdesc">朝のニュース384本をJevに読ませたところ24.9秒・コスト約30円で完了し、15ブランドそれぞれに「今日乗るべきニュース」まで選定できたと報告。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/23 03:11</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ai_300/status/2102291814686593035?s=12" data-title="Jevが朝刊384本を24.9秒・約30円で選別" data-rid="1862808200">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/frankda18249347/status/2102197241331290121?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2102196000005963776/img/J_7eFuDjznhJL_6l.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">JevでBTC5分足の予測売買ボットを試作</div><div class="vdesc">Binanceの板データからJevの低遅延性を使って公正価格を算出し、Polymarketの気配と比較して売買する検証ボットを1,000ドルのペーパートレードで稼働開始と報告。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/23 03:12</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/frankda18249347/status/2102197241331290121?s=12" data-title="JevでBTC5分足の予測売買ボットを試作" data-rid="1862808245">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🔍 その他の気づき（4件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/momgigworker/status/2102184880604074282?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSx2Acea0AAFKJ6.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Mercorが日本在住ChatGPTヘビーユーザーを募集</div><div class="vdesc">時給50ドルで、日本在住・ChatGPT利用歴3ヶ月以上かつ直近9ヶ月で40会話以上などの条件を満たす人に、モデル研究向けに個人のチャット履歴共有を求める案件。応募には全会話履歴のリンク共有と本人確認が必須と判明した。</div><div class="vsaved">保存 9/22 15:41</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/momgigworker/status/2102184880604074282?s=12" data-title="Mercorが日本在住ChatGPTヘビーユーザーを募集" data-rid="1862270085">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/smark_x/status/2101841277092585925?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSs9WgZbwAARROs.png" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">「ザ・ゴール」の制約理論をAI文章術に転用</div><div class="vdesc">添付画像の骨子では、自己採点の基準をmdファイルへ先出しして出力そのものを制限する、骨子だけ先に作らせ本文を段階的にしか書かせない、「理由が言えた直し」だけを資産として残す、といった「ボトルネックを手前に置く」というTOC由来の発想を、AIとの執筆ワークフロー設計に応用する具体的な手順が並ぶ。</div><div class="vsaved">保存 9/22 15:43</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/smark_x/status/2101841277092585925?s=12" data-title="「ザ・ゴール」の制約理論をAI文章術に転用" data-rid="1862270722">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/s0n_ia/status/2102004924410200237?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2101879819659055104/img/TtSnnebisENFqelt.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Jack Dorseyが「buzz」をOSS公開、GitHub3.26万スター</div><div class="vdesc">一人で事業を回すための無料ツール「buzz」をJack Dorseyがオープンソース化し、自前サーバーでチャット・検索・gitなどを一括運用できると紹介、公開済みリポジトリのGitHubスターは既に3.26万に到達している。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/22 15:44</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/s0n_ia/status/2102004924410200237?s=12" data-title="Jack Dorseyが「buzz」をOSS公開、GitHub3.26万スター" data-rid="1862271092">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/entry20210104/status/2102402808284934291?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">「Jevで超高速取引」への皮肉めいた警句</div><div class="vdesc">1秒を削り判断を削り人間より先に注文を滑り込ませる超高速取引を「多くの人には不要なもの」と切り捨て、速さそのものを追い求める衝動への警句として短く綴っている。</div><div class="vsaved">保存 9/23 03:12</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/entry20210104/status/2102402808284934291?s=12" data-title="「Jevで超高速取引」への皮肉めいた警句" data-rid="1862828455">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-09-22 run_id=1e0e07c5 saves=10 step1_s=15 step2_s=19 step2_5_s=18 step3_s=8 step4_s=388 step4_5_s=0 step5_s=7 step7_s=15 total_s=470 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
