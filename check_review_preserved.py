@@ -47,6 +47,25 @@ push を見逃す問題がそもそも起きない（1ブランチ=1コミット
 重複判定と同じ関数を共有する——別rid・同じ強いIDキーのカードを、別物と
 誤認して「消えた」と過検知しない）。
 
+## カード枚数の単調性チェック（2026-09-22 Codexレビュー5周目 指摘対応）
+
+上記のキー単位のOR判定だけでは、次の2種類の消失を見逃す:
+  ① 1枚の新カードが、旧カード2枚ぶんの識別キーを同時に満たす場合
+     （例: 誤統合で href は旧カードAのもの・data-rid は旧カードBのものに
+     なった1枚のカードができると、キー単位ではAもBも「保持されている」
+     ように見えるが、実際には2枚あったカードが1枚に潰れている）。
+  ② 識別子を持たない `.vcard`（rid無し・href無し/キー抽出不能）は
+     `card_identity_keys()` が空集合を返すため、そもそもキー単位の比較
+     対象に入らない。そのカードが消えても検知できない。
+どちらも「**カードの総枚数**が減っていないか」を見れば検知できるので、
+キー単位のOR判定に**加えて**、`.vcard` の総枚数が減っていないかを
+別途チェックする（両方の判定の**論理和**で shrunk を決める。枚数が
+足りていてもキーが消えていれば shrunk、キーが揃っていても枚数が
+減っていれば shrunk）。`--old-ref` は旧版と新版の枚数を比較し、
+`--history` はそのファイルの履歴上の最大枚数と現在版の枚数を比較する
+（枚数を減らしたコミットのメッセージに `[allow-review-shrink]` が
+あれば、キー単位の判定と同じ流儀で許可する）。
+
 ## 使い方
 
   # history モード（build-feed.yml）
@@ -193,21 +212,38 @@ def check_path_history(path, allow_marker=ALLOW_MARKER):
     ことのあるキー同士」を1つのクラスタにまとめ、**クラスタ単位**で
     「現在版のどれかのキーと重なるか」を判定する。
 
+    枚数チェック（2026-09-22 Codexレビュー5周目 指摘対応）: 上記のキー単位
+    のOR判定だけでは、①1枚の新カードが旧カード2枚の識別子を同時に満たす
+    ケース、②識別子を持たないカードの消失、のどちらも検知できない。
+    そこで**現在版の `.vcard` 総枚数**を、そのファイルの履歴上の**最大
+    枚数**と比較する。現在が最大枚数を下回っていれば、そのぶんは
+    「最後に最大枚数だったコミットの次のコミット」が減らしたとみなし、
+    そのコミットのメッセージに `[allow-review-shrink]` があれば許可する
+    （キー単位の判定と同じ流儀）。この枚数チェックとキー単位のOR判定は
+    **論理和**で shrunk を決める（どちらか一方でも引っかかれば shrunk）。
+
     戻り値: {"path", "status": "ok"|"shrunk"|"no_history",
-             "missing": [str,...], "allowed_missing": [str,...]}
+             "missing": [str,...], "allowed_missing": [str,...],
+             "count_max": int, "count_current": int,
+             "count_shrunk": bool, "count_allowed": bool}
     """
     commits = _git_log_commits(path)
     if not commits:
         return {"path": path, "status": "no_history", "missing": [],
-                "allowed_missing": []}
+                "allowed_missing": [], "count_max": 0, "count_current": 0,
+                "count_shrunk": False, "count_allowed": False}
 
     uf = _UnionFind()
     per_commit_card_keysets = []  # [(commit, [frozenset(keys), ...])]
+    per_commit_counts = []  # [int, ...]（commits と同じ並び）
     for commit in commits:
         text = _git_show(commit, path)
         card_keysets = []
+        count = 0
         if text is not None:
-            for raw in _extract_card_raws(text):
+            raws = _extract_card_raws(text)
+            count = len(raws)
+            for raw in raws:
                 keys = select_targets.card_identity_keys(raw)
                 if not keys:
                     continue
@@ -216,6 +252,7 @@ def check_path_history(path, allow_marker=ALLOW_MARKER):
                     uf.union(keys_list[0], k)
                 card_keysets.append(frozenset(keys))
         per_commit_card_keysets.append((commit, card_keysets))
+        per_commit_counts.append(count)
 
     try:
         with open(path, encoding="utf-8") as fh:
@@ -238,9 +275,6 @@ def check_path_history(path, allow_marker=ALLOW_MARKER):
     missing_clusters = [
         keys for keys in clusters.values() if not (keys & current_all_keys)
     ]
-    if not missing_clusters:
-        return {"path": path, "status": "ok", "missing": [],
-                "allowed_missing": []}
 
     missing_report = []
     allowed = []
@@ -262,31 +296,68 @@ def check_path_history(path, allow_marker=ALLOW_MARKER):
             continue
         missing_report.append(label)
 
-    if missing_report:
-        return {"path": path, "status": "shrunk",
-                "missing": sorted(missing_report),
-                "allowed_missing": sorted(allowed)}
-    return {"path": path, "status": "ok", "missing": [],
-            "allowed_missing": sorted(allowed)}
+    # --- 枚数チェック ---
+    count_max = max(per_commit_counts)
+    count_current = len(current_cards)
+    count_shrunk = count_current < count_max
+    count_allowed = False
+    if count_shrunk:
+        last_max_idx = None
+        for i, c in enumerate(per_commit_counts):
+            if c == count_max:
+                last_max_idx = i
+        count_removing_commit = None
+        if last_max_idx is not None and last_max_idx + 1 < len(commits):
+            count_removing_commit = commits[last_max_idx + 1]
+        if count_removing_commit is not None and allow_marker in _commit_message(count_removing_commit):
+            count_allowed = True
+
+    result = {
+        "path": path,
+        "missing": sorted(missing_report),
+        "allowed_missing": sorted(allowed),
+        "count_max": count_max,
+        "count_current": count_current,
+        "count_shrunk": count_shrunk,
+        "count_allowed": count_allowed,
+    }
+    if missing_report or (count_shrunk and not count_allowed):
+        result["status"] = "shrunk"
+    else:
+        result["status"] = "ok"
+    return result
 
 
 def check_path(old_ref, path):
     """1ファイル分のチェック結果を dict で返す（--old-ref モード）。
-    {"path", "status": "new"|"ok"|"shrunk"|"missing_now", "missing": [str,...]}
+    {"path", "status": "new"|"ok"|"shrunk"|"missing_now", "missing": [str,...],
+     "count_old", "count_new"}
+
+    枚数チェック（2026-09-22 Codexレビュー5周目 指摘対応）: 新版の `.vcard`
+    枚数が旧版より**少なければ**、キー単位のOR判定が missing=0 でも
+    shrunk とする（① 1枚の新カードが旧カード2枚の識別子を同時に満たす
+    ケース、② 識別子を持たないカードの消失、のどちらもキー単位の判定
+    だけでは検知できないため）。
     """
     old_text = _git_show(old_ref, path)
     if old_text is None:
-        return {"path": path, "status": "new", "missing": []}
+        return {"path": path, "status": "new", "missing": [],
+                "count_old": None, "count_new": None}
     try:
         with open(path, encoding="utf-8") as fh:
             new_text = fh.read()
     except OSError:
-        return {"path": path, "status": "missing_now", "missing": []}
+        return {"path": path, "status": "missing_now", "missing": [],
+                "count_old": None, "count_new": None}
     missing = missing_cards(old_text, new_text)
-    if missing:
+    count_old = len(_extract_card_raws(old_text))
+    count_new = len(_extract_card_raws(new_text))
+    if missing or count_new < count_old:
         return {"path": path, "status": "shrunk",
-                "missing": sorted("%s:%s" % (k, v) for k, v in missing)}
-    return {"path": path, "status": "ok", "missing": []}
+                "missing": sorted("%s:%s" % (k, v) for k, v in missing),
+                "count_old": count_old, "count_new": count_new}
+    return {"path": path, "status": "ok", "missing": [],
+            "count_old": count_old, "count_new": count_new}
 
 
 def main(argv):
@@ -343,34 +414,41 @@ def main(argv):
     if args.history:
         for path in paths:
             result = check_path_history(path)
+            count_note = " count_max=%d count_current=%d" % (
+                result["count_max"], result["count_current"])
             if result["status"] == "shrunk":
                 any_missing = True
+                allow_note = (" count_allowed=1" if result["count_allowed"] else "")
                 print("CHECK_REVIEW_PRESERVED: path=%s status=shrunk missing=%d "
-                      "ids=%s allowed=%d"
+                      "ids=%s allowed=%d%s%s"
                       % (result["path"], len(result["missing"]),
-                         result["missing"], len(result["allowed_missing"])))
+                         result["missing"], len(result["allowed_missing"]),
+                         count_note, allow_note))
             elif result["status"] == "no_history":
                 print("CHECK_REVIEW_PRESERVED: path=%s status=no_history"
                       % result["path"])
             else:
                 allowed_note = (" allowed=%d" % len(result["allowed_missing"])
                                  if result["allowed_missing"] else "")
-                print("CHECK_REVIEW_PRESERVED: path=%s status=ok%s"
-                      % (result["path"], allowed_note))
+                print("CHECK_REVIEW_PRESERVED: path=%s status=ok%s%s"
+                      % (result["path"], allowed_note, count_note))
     else:
         for path in paths:
             result = check_path(args.old_ref, path)
+            count_note = (" count_old=%s count_new=%s"
+                          % (result["count_old"], result["count_new"]))
             if result["status"] == "shrunk":
                 any_missing = True
-                print("CHECK_REVIEW_PRESERVED: path=%s status=shrunk missing=%d ids=%s"
-                      % (result["path"], len(result["missing"]), result["missing"]))
+                print("CHECK_REVIEW_PRESERVED: path=%s status=shrunk missing=%d ids=%s%s"
+                      % (result["path"], len(result["missing"]), result["missing"],
+                         count_note))
             elif result["status"] == "missing_now":
                 any_missing = True
                 print("CHECK_REVIEW_PRESERVED: path=%s status=missing_now "
                       "(existed before, file not found now)" % result["path"])
             else:
-                print("CHECK_REVIEW_PRESERVED: path=%s status=%s"
-                      % (result["path"], result["status"]))
+                print("CHECK_REVIEW_PRESERVED: path=%s status=%s%s"
+                      % (result["path"], result["status"], count_note))
 
     if any_missing:
         if args.allow:

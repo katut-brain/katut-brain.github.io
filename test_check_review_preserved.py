@@ -75,7 +75,14 @@ class TestMissingCards(unittest.TestCase):
         # 両方 missing に含まれる。
         self.assertEqual(missing, {("rid", 1), ("post_id", ("x", "111"))})
 
-    def test_unidentified_cards_do_not_count_as_missing(self):
+    def test_unidentified_cards_do_not_count_as_missing_at_key_level(self):
+        """missing_cards()（キー単位の判定関数そのもの）は、識別子を
+        持たないカードの消失を検知しない——これは仕様どおり（キーが無い
+        ものは比較対象にしない）。ゲート全体としての検知は枚数チェックが
+        別途担う（TestGitIntegration.
+        test_history_count_check_catches_unidentified_card_loss 等を参照。
+        2026-09-22 Codexレビュー5周目 指摘対応でこの安全網を追加した）。
+        """
         no_rid_no_href = '<div class="vcard"><span>no link</span></div>'
         old = _doc(no_rid_no_href)
         new = _doc("")
@@ -142,6 +149,83 @@ class TestGitIntegration(unittest.TestCase):
         )
         self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
         self.assertIn("status=shrunk", r.stdout)
+
+    def test_old_ref_count_check_catches_unidentified_card_loss(self):
+        """2026-09-22 Codexレビュー5周目 指摘②: 識別子を持たない `.vcard`
+        （rid無し・href無し）が消えても、キー単位のOR判定だけでは検知
+        できない。枚数チェックで検知されることを確認する。
+        """
+        unidentified = '<div class="vcard"><span>no link, no rid</span></div>'
+        self._write("reviews/2026-09-21.html", _doc(CARD_A + unidentified))
+        self._commit("first")
+        old_ref = self._run_git(["rev-parse", "HEAD"]).strip()
+        self._write("reviews/2026-09-21.html", _doc(CARD_A))
+        self._commit("second (dropped the unidentified card)")
+
+        r = subprocess.run(
+            [sys.executable, SCRIPT, "--old-ref", old_ref,
+             "--path", "reviews/2026-09-21.html"],
+            cwd=self.tmp, capture_output=True, text=True, encoding="utf-8",
+        )
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("status=shrunk", r.stdout)
+        self.assertIn("count_old=2 count_new=1", r.stdout)
+
+    def test_old_ref_count_check_catches_two_cards_collapsed_into_one(self):
+        """2026-09-22 Codexレビュー5周目 指摘①: 1枚の新カードが旧カード
+        2枚ぶんの識別子（Aのrid・Bの強いIDキー）を同時に満たすと、キー
+        単位のOR判定だけでは両方とも『保持されている』ように見えてしまう
+        （実際には2枚が1枚に潰れている）。枚数チェックで検知することを
+        確認する。
+        """
+        card_a = ('<div class="vcard"><a class="vlink" '
+                  'href="https://x.com/a/status/111"></a>'
+                  '<button data-rid="1"></button></div>')
+        card_b = ('<div class="vcard"><a class="vlink" '
+                  'href="https://x.com/b/status/222"></a>'
+                  '<button data-rid="2"></button></div>')
+        # rid=1（Aのキー）と href=222（Bのキー）を両方持つ、1枚だけの
+        # 「合成」カード。
+        merged_card = ('<div class="vcard"><a class="vlink" '
+                       'href="https://x.com/b/status/222"></a>'
+                       '<button data-rid="1"></button></div>')
+        self._write("reviews/2026-09-21.html", _doc(card_a + card_b))
+        self._commit("first")
+        old_ref = self._run_git(["rev-parse", "HEAD"]).strip()
+        self._write("reviews/2026-09-21.html", _doc(merged_card))
+        self._commit("second (A and B collapsed into one card)")
+
+        r = subprocess.run(
+            [sys.executable, SCRIPT, "--old-ref", old_ref,
+             "--path", "reviews/2026-09-21.html"],
+            cwd=self.tmp, capture_output=True, text=True, encoding="utf-8",
+        )
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("status=shrunk", r.stdout)
+        self.assertIn("count_old=2 count_new=1", r.stdout)
+
+    def test_history_count_check_catches_unidentified_card_loss(self):
+        unidentified = '<div class="vcard"><span>no link, no rid</span></div>'
+        self._write("reviews/2026-09-21.html", _doc(CARD_A + unidentified))
+        self._commit("first")
+        self._write("reviews/2026-09-21.html", _doc(CARD_A))
+        self._commit("second (dropped the unidentified card, no marker)")
+
+        r = self._run_history()
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("status=shrunk", r.stdout)
+        self.assertIn("count_max=2 count_current=1", r.stdout)
+
+    def test_history_count_check_allowed_via_marker(self):
+        unidentified = '<div class="vcard"><span>no link, no rid</span></div>'
+        self._write("reviews/2026-09-21.html", _doc(CARD_A + unidentified))
+        self._commit("first")
+        self._write("reviews/2026-09-21.html", _doc(CARD_A))
+        self._commit("second (intentionally drop it) [allow-review-shrink]")
+
+        r = self._run_history()
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("status=ok", r.stdout)
 
     def test_allow_flag_permits_shrink(self):
         self._write("reviews/2026-09-21.html", _doc(CARD_A + CARD_B))
