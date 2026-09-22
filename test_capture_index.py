@@ -198,6 +198,25 @@ class CaptureIndexTest(unittest.TestCase):
         self.assertIn("UNPUBLISHED:", out)
         self.assertIn(self.yesterday.isoformat(), out)
 
+    def test_strong_id_key_published_even_with_different_data_rid_card(self):
+        """2026-09-22 ユーザー裁定: 同じ投稿の再保存は重複とみなす。強い
+        IDキー（X status ID等）が一致すれば、別rid・別日のカードであっても
+        published とみなす（build_capture_index.py 側でも
+        select_targets.classify_reviewed 経由で同じ判定を使う確認）。
+        """
+        rid = 1757864748
+        self._write("captures.json", json.dumps([
+            {"rid": rid, "date": self.yesterday.isoformat(),
+             "source": "https://x.com/user/status/%d" % rid},
+        ]))
+        # 別日・別rid(999)のカードだが、同じ強いIDキー(X status id)を指す。
+        self._write(os.path.join("reviews", self._d(2).isoformat() + ".html"),
+                    '<!doctype html><body><div class="vcard">'
+                    '<a class="vlink" href="https://x.com/user/status/%d">'
+                    '</a><button data-rid="999"></button></div></body></html>'
+                    % rid)
+        self.assertIn("UNPUBLISHED: none", self._run())
+
     def test_rid_not_found_anywhere_stays_unpublished_even_when_day_has_other_matches(self):
         """同じ日に複数の rid があるとき、一部だけしか reviews に載っていない
         なら、その日はまだ UNPUBLISHED のまま（1件でも未掲載が残っていれば

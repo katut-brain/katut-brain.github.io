@@ -161,13 +161,14 @@ def unpublished_days(index: dict, url_by_rid: dict, since: str, yesterday: str) 
     前提で `day not in published_days()` を見ていたが、その前提は
     select_targets.py 導入後は成り立たない（過去日の保存が別日のreviewsへ
     まとめて載るため）。ここでは reviews の実掲載（select_targets.py の
-    reviewed_index・url_key を再利用）を直接見る。
-    reviewed_index() の url_keys は **data-rid を持たないカードの href だけ**
-    から作られる（2026-09-22 Codexレビュー P1-a 対応。data-rid を持つカードの
-    href まで URL照合に混ぜると、別rid同士がたまたま同じURLを指すだけで
-    誤って掲載済みにしてしまうため）。
+    reviewed_index・classify_reviewed を再利用）を直接見る。「掲載済み」の
+    定義はすべて select_targets.classify_reviewed() に一本化してある
+    （2026-09-22 ユーザー裁定: 同じ投稿の再保存は重複扱い。rid一致 →
+    強いIDキー(post_id。data-rid有無・日付を問わない)一致 → generic種別
+    URLキー(ridless・URL_FALLBACK_BEFORE より前限定)一致、の順）。
     """
-    reviewed_rids, reviewed_urls, _unreadable = select_targets.reviewed_index(REVIEWS_DIR)
+    reviewed_rids, reviewed_urls, reviewed_post_ids, _unreadable = \
+        select_targets.reviewed_index(REVIEWS_DIR)
 
     out = []
     for day, rids in sorted(index.items()):
@@ -177,11 +178,10 @@ def unpublished_days(index: dict, url_by_rid: dict, since: str, yesterday: str) 
             continue
         missing = False
         for rid in rids:
-            if rid in reviewed_rids:
-                continue
             src = url_by_rid.get(rid)
-            key = select_targets.url_key(src) if src else None
-            if key is not None and key in reviewed_urls:
+            match = select_targets.classify_reviewed(
+                rid, src, reviewed_rids, reviewed_urls, reviewed_post_ids)
+            if match is not None:
                 continue
             missing = True
             break

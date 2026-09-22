@@ -66,14 +66,17 @@ jobs:
           # 2026-09-22: 「reviews/<その日>.html がある＝その日の保存が公開済み」の前提は
           # 崩れた（振り返りは前回ラン以降の未掲載分を載せるので、深夜の保存は前日付の
           # reviews に載り、その日の reviews が作られないことがある）。
-          # そこで「その日の rid が全部どこかの reviews の data-rid、または URL照合で
-          # 載っているか」で見る（select_targets.py の card_index/reviewed_index/url_key
-          # を正本として re-use する。2026-09-22 Codexレビュー指摘: rid のみの判定だと、
-          # data-rid 後付けの retrofit 漏れ（rid未確定のまま掲載されたカード）を
-          # 誤って「未公開」と報告してしまう）。
+          # そこで「その日の rid が全部どこかの reviews に掲載されているか」を
+          # select_targets.classify_reviewed() （掲載済み判定の正本。rid一致→
+          # 強いIDキー(post_id。data-rid有無・日付を問わない。2026-09-22 ユーザー
+          # 裁定：同じ投稿の再保存は重複扱い)一致→generic種別URLキー(ridless・
+          # URL_FALLBACK_BEFORE より前限定)一致の順）で見る。2026-09-22 Codex
+          # レビュー指摘: rid のみの判定だと、data-rid 後付けの retrofit 漏れ
+          # （rid未確定のまま掲載されたカード）を誤って「未公開」と報告してしまう。
           sys.path.insert(0, os.getcwd())
           import select_targets
-          reviewed_rids, reviewed_urls, _unreadable = select_targets.reviewed_index("reviews")
+          reviewed_rids, reviewed_urls, reviewed_post_ids, _unreadable = \
+              select_targets.reviewed_index("reviews")
 
           # captures.json があれば rid -> source URL を引けるので、URL照合の
           # フォールバックに使う。無ければ rid のみで判定する（安全側）。
@@ -94,13 +97,10 @@ jobs:
               pass
 
           def _rid_published(rid):
-              if rid in reviewed_rids:
-                  return True
               src = url_by_rid.get(rid)
-              if not src:
-                  return False
-              key = select_targets.url_key(src)
-              return key is not None and key in reviewed_urls
+              match = select_targets.classify_reviewed(
+                  rid, src, reviewed_rids, reviewed_urls, reviewed_post_ids)
+              return match is not None
 
           published = {d for d in saved
                        if all(_rid_published(r) for r in days[d].get("rids", []))}

@@ -332,18 +332,23 @@ class DisclosureCheckTest(unittest.TestCase):
         self.assertNotIn("DISCLOSURE_VIOLATION: date=2026-09-14", out)
 
     def test_url_key_match_after_fallback_cutoff_is_not_excluded(self):
-        """ridless カードの reviews ファイル名が URL_FALLBACK_BEFORE
-        （2026-08-04）以降だと、URLが一致していてもバックフィル除外されず
-        違反(no_card)のまま。
+        """generic種別のURL照合フォールバックは、ridless カードの reviews
+        ファイル名が URL_FALLBACK_BEFORE（2026-08-04）以降だと使われず、
+        違反(no_card)のまま。⚠️ 強いIDキー（X status ID / Instagram
+        shortcode / Threads post ID）はこの制限を受けないため（2026-09-22
+        ユーザー裁定）、URLの host はあえて generic 判定になるものを使う
+        （route/path はduty分類上 "reel" のまま。classify_record は route
+        フィールドとpath中の"/reel/"だけを見るため、hostがinstagramで
+        なくても "reel" kind として分類される）。
         """
         self._write_facts("2026-09-14", {
-            "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
+            "https://example.com/reel/Dcy4SIYiD7U/": {
                 "route": "instagram", "missing": ["video_content"],
                 "raindrop_id": 1842608050,
             },
         })
         self._write_review("2026-09-11", self._vcard(
-            "https://www.instagram.com/reel/Dcy4SIYiD7U/",
+            "https://example.com/reel/Dcy4SIYiD7U/",
             "写真1枚をRhinoモデルに変換するAIエージェント「STF Agent」",
             V_MARKER + "。", "",
         ))
@@ -355,25 +360,27 @@ class DisclosureCheckTest(unittest.TestCase):
         out = self._run(["--date", "2026-09-14"])
         self.assertIn(
             "DISCLOSURE_VIOLATION: date=2026-09-14 kind=reel rid=1842608050 "
-            "url=https://www.instagram.com/reel/Dcy4SIYiD7U/ reason=no_card",
+            "url=https://example.com/reel/Dcy4SIYiD7U/ reason=no_card",
             out)
         self.assertNotIn("DISCLOSURE_EXCLUDED:", out)
 
-    def test_url_shared_with_a_different_data_rid_card_is_not_excluded(self):
-        """別の data-rid を持つカードが、たまたま同じ URL を href に持つ
-        だけでは掲載済みにならない（2026-09-22 Codexレビュー P1-a 対応）。
-        data-rid を持つカードの href は URL照合に混ぜてはいけない。
+    def test_generic_url_shared_with_a_different_data_rid_card_is_not_excluded(self):
+        """別の data-rid を持つカードが、たまたま同じ generic URL を href
+        に持つだけでは掲載済みにならない（2026-09-22 Codexレビュー P1-a
+        対応。generic種別には引き続き適用する）。data-rid を持つカードの
+        generic href は URL照合に混ぜてはいけない。
         """
         self._write_facts("2026-09-14", {
-            "https://x.com/example/status/999": {
-                "route": "x", "missing": ["video_content"], "raindrop_id": 999,
+            "https://example.com/reel/999": {
+                "route": "instagram", "missing": ["video_content"],
+                "raindrop_id": 999,
             },
         })
         # 09-11 の review には別rid(111)を持つカードがあり、href だけが
         # たまたま対象URLと同じ（実運用では起きないはずの取り違えだが、
         # 誤ってURL照合が効かないことを確認するため意図的に作る）。
         self._write_review("2026-09-11", self._vcard(
-            "https://x.com/example/status/999",
+            "https://example.com/reel/999",
             "別の投稿（rid違い）", V_MARKER + "。", "111",
         ))
         self._write_review("2026-09-14", self._vcard(
@@ -381,9 +388,36 @@ class DisclosureCheckTest(unittest.TestCase):
         ))
         out = self._run(["--date", "2026-09-14"])
         self.assertIn(
-            "DISCLOSURE_VIOLATION: date=2026-09-14 kind=x_video rid=999 "
-            "url=https://x.com/example/status/999 reason=no_card", out)
+            "DISCLOSURE_VIOLATION: date=2026-09-14 kind=reel rid=999 "
+            "url=https://example.com/reel/999 reason=no_card", out)
         self.assertNotIn("DISCLOSURE_EXCLUDED:", out)
+
+    def test_strong_id_key_excludes_even_with_a_different_data_rid_card(self):
+        """2026-09-22 ユーザー裁定: 同じ投稿の再保存は重複とみなす。強い
+        IDキー（X status ID）を持つカードが**別のrid**でも、一致すれば
+        バックフィル除外される（旧テスト
+        test_url_shared_with_a_different_data_rid_card_is_not_excluded を
+        新しい裁定に合わせて書き換えたもの）。
+        """
+        self._write_facts("2026-09-14", {
+            "https://x.com/example/status/999": {
+                "route": "x", "missing": ["video_content"], "raindrop_id": 999,
+            },
+        })
+        # 09-11 の review には別rid(111)を持つカードがあり、href が対象と
+        # 同じ強いIDキー(x status id)を指す。
+        self._write_review("2026-09-11", self._vcard(
+            "https://x.com/example/status/999",
+            "同じ投稿（rid違い）", V_MARKER + "。", "111",
+        ))
+        self._write_review("2026-09-14", self._vcard(
+            "https://x.com/other/status/1", "無関係カード", "本文のみ。", "1",
+        ))
+        out = self._run(["--date", "2026-09-14"])
+        self.assertIn(
+            "DISCLOSURE_EXCLUDED: date=2026-09-14 rid=999 "
+            "reason=backfill(2026-09-11,card=yes)", out)
+        self.assertNotIn("DISCLOSURE_VIOLATION: date=2026-09-14", out)
 
     # --- 実データ: 2026-09-08 Threads 開示ゼロ ------------------------------
 

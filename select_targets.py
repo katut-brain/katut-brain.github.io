@@ -42,6 +42,8 @@
 #   - synthetic_rid() は date+source のハッシュなので、理論上は衝突しうる
 #     （実データはcaptures.json全件が実rid持ちで発生しないが、rid無し
 #     レコードが増えた場合に確率的な衝突リスクが残る）。
+#   - 同じ投稿を後日もう一度保存しても、（新しいコメントが付いていても）
+#     振り返りには出さない＝重複とみなす（2026-09-22 ユーザー裁定）。
 
 import sys
 import os
@@ -431,25 +433,37 @@ def card_index(reviews_dir=REVIEWS_DIR):
     （正本はここ1か所。check_disclosure.py / build_capture_index.py /
     stale-check.yml はここを import して使う）。
 
-    戻り値: (rid_dates, url_dates, unreadable)
+    戻り値: (rid_dates, url_dates, post_id_dates, unreadable)
       - rid_dates: {rid(int): set(date_str)} — data-rid を持つカードのみ。
         全期間の reviews が対象（日付の制限なし）。
-      - url_dates: {url_key: set(date_str)} — **data-rid を持たないカードの
-        うち、ファイル名の日付が URL_FALLBACK_BEFORE より前のものだけ**
-        （P1-a: rid を持つカードの href を URL照合に混ぜると、別rid同士が
-        たまたま同じURLを指すだけで誤って掲載済みにしてしまう。加えて
-        2026-09-22 Codexレビュー2周目 指摘: 2026-08-04 の data-rid retrofit
-        以降に生成された reviews は全カードに data-rid が付く前提なので、
-        それ以降の日付で data-rid が無いカードをURL照合の材料にしてよい
-        根拠が無い。ファイル名が YYYY-MM-DD 形式でない場合もURL照合には
-        使わない＝安全側）。
+      - url_dates: {url_key: set(date_str)} — **generic種別のキーのみ**、
+        かつ **data-rid を持たないカードのうち、ファイル名の日付が
+        URL_FALLBACK_BEFORE より前のものだけ**（P1-a: rid を持つカードの
+        href を URL照合に混ぜると、別rid同士がたまたま同じURLを指すだけで
+        誤って掲載済みにしてしまう。加えて2026-09-22 Codexレビュー2周目
+        指摘: 2026-08-04 の data-rid retrofit 以降に生成された reviews は
+        全カードに data-rid が付く前提なので、それ以降の日付で data-rid が
+        無いカードをURL照合の材料にしてよい根拠が無い。ファイル名が
+        YYYY-MM-DD 形式でない場合もURL照合には使わない＝安全側）。
+      - post_id_dates: {url_key: set(date_str)} — **generic以外（X の
+        status ID / Instagram の shortcode / Threads の post ID）のキーのみ**。
+        こちらは data-rid の有無・ファイル名の日付を問わず、**全カードの
+        href** から集める（2026-09-22 ユーザー裁定: 同じ投稿を後日もう一度
+        保存しても振り返りには出さない＝重複とみなす。強いIDキーが一致する
+        ということは「同じ投稿」であることがほぼ確実なので、そのカードに
+        data-rid が付いているか・いつ掲載されたかを問わず掲載済みとみなして
+        よい。generic種別は逆にIDとしての強さが無い（scheme+host+pathの
+        一致に過ぎず、クエリ違いの同名ページ等で誤爆しうる）ため、この
+        無条件マッチには含めない＝P1-a/Codex1周目の懸念はgeneric側の
+        制限（ridless限定・cutoff限定）で引き続き防ぐ）。
       - unreadable: 読めなかったファイル名のリスト
     """
     rid_dates = {}
     url_dates = {}
+    post_id_dates = {}
     unreadable = []
     if not os.path.isdir(reviews_dir):
-        return rid_dates, url_dates, unreadable
+        return rid_dates, url_dates, post_id_dates, unreadable
     for path in sorted(glob.glob(os.path.join(reviews_dir, "*.html"))):
         stem = os.path.splitext(os.path.basename(path))[0]
         try:
@@ -458,40 +472,75 @@ def card_index(reviews_dir=REVIEWS_DIR):
         except (OSError, UnicodeDecodeError, ValueError):
             unreadable.append(os.path.basename(path))
             continue
-        url_fallback_ok = bool(DATE_RE.match(stem)) and stem < URL_FALLBACK_BEFORE
+        stem_is_date = bool(DATE_RE.match(stem))
+        url_fallback_ok = stem_is_date and stem < URL_FALLBACK_BEFORE
         cards, _malformed = extract_vcards(raw)
         for c in cards:
             rid_str = card_rid(c["raw"])
-            if rid_str is not None:
+            has_rid = rid_str is not None
+            if has_rid:
                 try:
                     rid_int = int(rid_str)
                 except ValueError:
                     rid_int = None
                 if rid_int is not None:
                     rid_dates.setdefault(rid_int, set()).add(stem)
-                # data-rid を持つカードの href は URL照合に使わない（P1-a）。
-                continue
-            if not url_fallback_ok:
-                continue
             href = card_href(c["raw"])
             if href is None:
                 continue
             key = url_key(href)
-            if key is not None:
-                url_dates.setdefault(key, set()).add(stem)
-    return rid_dates, url_dates, unreadable
+            if key is None:
+                continue
+            if key[0] != "generic":
+                # 強いIDキー: data-rid の有無・日付を問わず無条件で集める。
+                if stem_is_date:
+                    post_id_dates.setdefault(key, set()).add(stem)
+                continue
+            # generic種別: data-rid を持つカードの href は使わない（P1-a）。
+            if has_rid or not url_fallback_ok:
+                continue
+            url_dates.setdefault(key, set()).add(stem)
+    return rid_dates, url_dates, post_id_dates, unreadable
 
 
 def reviewed_index(reviews_dir=REVIEWS_DIR):
     """card_index() を日付情報を捨てて集合へ平らにしたもの。
 
-    戻り値: (rids: set[int], url_keys_of_ridless_cards: set[url_key], unreadable)
+    戻り値: (rids: set[int], url_keys_of_ridless_cards: set[url_key],
+             post_id_keys: set[url_key], unreadable)
     「掲載済みかどうか」の判定だけが要る呼び出し元（select() 等）はこちらを使う。
     「どの日に掲載されているか」まで要る呼び出し元（check_disclosure.py の
     バックフィル理由表示など）は card_index() を直接使う。
     """
-    rid_dates, url_dates, unreadable = card_index(reviews_dir)
-    return set(rid_dates.keys()), set(url_dates.keys()), unreadable
+    rid_dates, url_dates, post_id_dates, unreadable = card_index(reviews_dir)
+    return (set(rid_dates.keys()), set(url_dates.keys()),
+            set(post_id_dates.keys()), unreadable)
+
+
+def classify_reviewed(rid, source_url, reviewed_rids, reviewed_url_keys,
+                       reviewed_post_id_keys):
+    """掲載済み判定の正本（1か所にまとめる。2026-09-22 ユーザー裁定対応）。
+
+    select() / check_disclosure.py / build_capture_index.py / stale-check.yml
+    は全てこの関数（または reviewed_index()/card_index() の同じ戻り値）を
+    通して「掲載済みかどうか」を判定する。判定順序:
+      1. rid が reviewed_rids に含まれる → "rid"
+      2. source_url の url_key() が strong種別（generic以外）で
+         reviewed_post_id_keys に含まれる → "post_id"
+         （data-ridの有無・掲載日を問わない。同じ投稿の再保存は重複扱い）
+      3. url_key() が generic種別で reviewed_url_keys に含まれる → "url"
+         （ridless カード・URL_FALLBACK_BEFORE より前限定。P1-a対応の制限）
+      4. どれにも一致しなければ None
+    戻り値は一致した種別の文字列（"rid"/"post_id"/"url"）、不一致なら None。
+    """
+    if isinstance(rid, int) and rid in reviewed_rids:
+        return "rid"
+    key = url_key(source_url) if isinstance(source_url, str) else None
+    if key is None:
+        return None
+    if key[0] != "generic":
+        return "post_id" if key in reviewed_post_id_keys else None
+    return "url" if key in reviewed_url_keys else None
 
 
 def index_only_rids(captures_records, capture_index_path=CAPTURE_INDEX):
@@ -531,7 +580,8 @@ def select(target, captures_path=CAPTURES, reviews_dir=REVIEWS_DIR,
         since = _resolve_since()
 
     captures_records, synth_count = load_captures(captures_path)
-    reviewed, reviewed_urls_set, unreadable = reviewed_index(reviews_dir)
+    reviewed, reviewed_urls_set, reviewed_post_id_keys, unreadable = \
+        reviewed_index(reviews_dir)
     idx_only = index_only_rids(captures_records, capture_index_path)
 
     selected = []
@@ -539,14 +589,19 @@ def select(target, captures_path=CAPTURES, reviews_dir=REVIEWS_DIR,
     past = 0
     before_since = 0
     reviewed_by_url = 0
+    reviewed_by_post_id = 0
     for rid, date, rec in captures_records:
         if date < since:
             before_since += 1
             continue
-        if rid in reviewed:
+        match = classify_reviewed(rid, rec.get("source"), reviewed,
+                                   reviewed_urls_set, reviewed_post_id_keys)
+        if match == "rid":
             continue
-        key = url_key(rec.get("source"))
-        if key is not None and key in reviewed_urls_set:
+        if match == "post_id":
+            reviewed_by_post_id += 1
+            continue
+        if match == "url":
             reviewed_by_url += 1
             continue
         selected.append((rid, date, rec))
@@ -571,6 +626,7 @@ def select(target, captures_path=CAPTURES, reviews_dir=REVIEWS_DIR,
         "_unreadable_reviews": unreadable,
         "_before_since_count": before_since,
         "_reviewed_by_url_count": reviewed_by_url,
+        "_reviewed_by_post_id_count": reviewed_by_post_id,
         "_since": since,
     }
 
@@ -608,18 +664,19 @@ def main(argv):
         warn = ",warn=unreadable" if result["_unreadable_reviews"] else ""
         print("SELECT_STATUS: target=%s selected=%d past=%d reviewed_rids=%d "
               "captures=%d index_only=%d unreadable_reviews=%d before_since=%d "
-              "reviewed_by_url=%d synthetic_rid=%d%s"
+              "reviewed_by_url=%d reviewed_by_post_id=%d synthetic_rid=%d%s"
               % (target, result["_selected_count"], result["_past_count"],
                  result["_reviewed_count"], result["_captures_count"],
                  result["_index_only_count"], len(result["_unreadable_reviews"]),
                  result["_before_since_count"], result["_reviewed_by_url_count"],
+                 result["_reviewed_by_post_id_count"],
                  result["_synthetic_rid_count"], warn))
         return 0
     except Exception as e:
         traceback.print_exc(file=sys.stderr)
         print("SELECT_STATUS: target=%s selected=0 past=0 reviewed_rids=0 "
               "captures=0 index_only=0 unreadable_reviews=0 before_since=0 "
-              "reviewed_by_url=0 synthetic_rid=0 error=%s"
+              "reviewed_by_url=0 reviewed_by_post_id=0 synthetic_rid=0 error=%s"
               % (target, type(e).__name__))
         return 0
 
@@ -632,7 +689,8 @@ if __name__ == "__main__":
         traceback.print_exc(file=sys.stderr)
         print("SELECT_STATUS: target=unknown selected=0 past=0 reviewed_rids=0 "
               "captures=0 index_only=0 unreadable_reviews=0 before_since=0 "
-              "reviewed_by_url=0 synthetic_rid=0 error=%s" % type(e).__name__)
+              "reviewed_by_url=0 reviewed_by_post_id=0 synthetic_rid=0 error=%s"
+              % type(e).__name__)
         rc = 0
     sys.stdout.flush()
     sys.exit(rc if isinstance(rc, int) else 0)

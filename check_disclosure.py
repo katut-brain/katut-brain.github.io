@@ -400,20 +400,35 @@ def build_global_index(reviews_dir):
     を正本にして re-use する（2026-09-22 Codexレビュー P1-a 対応。同じロジックを
     複数箇所に書くと「data-rid を持つカードの href まで URL照合に混ぜてしまう」
     ような食い違いが再発しうるため、ここでは自前でカードを回さない）。
-    select_targets.card_index() の url_dates は **data-rid を持たないカードの
-    href だけ**から作られる（別rid同士が同じURLを指すだけの誤爆を防ぐ）。
-    rid のキー型だけ、このファイルの既存呼び出し規約（rid_str）に合わせて
-    文字列へ変換する。
+
+    select_targets.card_index() は url_key の種別で挙動が分かれる
+    （2026-09-22 ユーザー裁定「同じ投稿の再保存は重複とみなす」対応）:
+      - url_dates（generic種別のみ）: data-rid を持たないカードの href だけ、
+        かつ URL_FALLBACK_BEFORE より前の日付限定（別rid同士が同じURLを
+        指すだけの誤爆を防ぐP1-a対応をそのまま維持）。
+      - post_id_dates（X status ID / Instagram shortcode / Threads post ID
+        などの強いIDキー）: data-rid の有無・日付を問わず全カードから収集
+        （強いIDキーが一致するなら「同じ投稿」とほぼ確実に言えるため）。
+    この2つをここでは1つの key_to_dates に合流させる（キー自体が種別
+    タプル込みなので衝突しない）。rid のキー型だけ、このファイルの既存
+    呼び出し規約（rid_str）に合わせて文字列へ変換する。
     """
-    rid_dates_int, key_to_dates, _unreadable = select_targets.card_index(reviews_dir)
+    rid_dates_int, url_dates, post_id_dates, _unreadable = \
+        select_targets.card_index(reviews_dir)
     rid_to_dates = {}
     for rid_int, dates in rid_dates_int.items():
         filtered = {d for d in dates if DATE_RE.match(d)}
         if filtered:
             rid_to_dates[str(rid_int)] = filtered
-    key_to_dates = {k: {d for d in dates if DATE_RE.match(d)}
-                     for k, dates in key_to_dates.items()}
-    key_to_dates = {k: dates for k, dates in key_to_dates.items() if dates}
+
+    def _clean(d):
+        out = {k: {dd for dd in dates if DATE_RE.match(dd)}
+               for k, dates in d.items()}
+        return {k: dates for k, dates in out.items() if dates}
+
+    key_to_dates = _clean(url_dates)
+    for k, dates in _clean(post_id_dates).items():
+        key_to_dates.setdefault(k, set()).update(dates)
     return rid_to_dates, key_to_dates
 
 

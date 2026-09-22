@@ -89,9 +89,11 @@ class TestReviewedIndex(unittest.TestCase):
                 <div class="vcard"><button data-rid='222'>b</button></div>
                 <div class="vcard"><button data-rid="-333">c</button></div>
             """)
-            rids, url_keys, unreadable = select_targets.reviewed_index(reviews)
+            rids, url_keys, post_id_keys, unreadable = \
+                select_targets.reviewed_index(reviews)
             self.assertEqual(rids, {111, 222, -333})
             self.assertEqual(url_keys, set())
+            self.assertEqual(post_id_keys, set())
             self.assertEqual(unreadable, [])
 
     def test_unreadable_file_is_reported_not_raised(self):
@@ -102,32 +104,74 @@ class TestReviewedIndex(unittest.TestCase):
             # 壊れたUTF-8バイト列を書く（UnicodeDecodeErrorを起こす）。
             with open(path, "wb") as f:
                 f.write(b"<div data-rid=\"1\">\xff\xfe broken</div>")
-            rids, url_keys, unreadable = select_targets.reviewed_index(reviews)
+            rids, url_keys, post_id_keys, unreadable = \
+                select_targets.reviewed_index(reviews)
             self.assertEqual(rids, set())
             self.assertEqual(url_keys, set())
+            self.assertEqual(post_id_keys, set())
             self.assertEqual(unreadable, ["2026-06-02.html"])
 
     def test_missing_reviews_dir(self):
-        rids, url_keys, unreadable = select_targets.reviewed_index("/no/such/dir/xyz")
+        rids, url_keys, post_id_keys, unreadable = \
+            select_targets.reviewed_index("/no/such/dir/xyz")
         self.assertEqual(rids, set())
         self.assertEqual(url_keys, set())
+        self.assertEqual(post_id_keys, set())
         self.assertEqual(unreadable, [])
 
-    def test_ridless_card_href_becomes_url_key(self):
+    def test_ridless_generic_card_href_becomes_url_key(self):
+        with tempfile.TemporaryDirectory() as d:
+            reviews = os.path.join(d, "reviews")
+            os.makedirs(reviews)
+            _write(os.path.join(reviews, "2026-06-01.html"),
+                   '<div class="vcard"><a class="vlink" '
+                   'href="https://example.com/foo/bar"></a></div>')
+            rids, url_keys, post_id_keys, _unreadable = \
+                select_targets.reviewed_index(reviews)
+            self.assertEqual(rids, set())
+            self.assertEqual(url_keys, {("generic", "https://example.com/foo/bar")})
+            self.assertEqual(post_id_keys, set())
+
+    def test_ridless_card_href_becomes_post_id_key(self):
+        """強いIDキー（X等）を持つ href は post_id_keys に入る
+        （url_keys には入らない。generic種別のみ url_keys）。
+        """
         with tempfile.TemporaryDirectory() as d:
             reviews = os.path.join(d, "reviews")
             os.makedirs(reviews)
             _write(os.path.join(reviews, "2026-06-01.html"),
                    '<div class="vcard"><a class="vlink" '
                    'href="https://x.com/user/status/1757864748"></a></div>')
-            rids, url_keys, _unreadable = select_targets.reviewed_index(reviews)
+            rids, url_keys, post_id_keys, _unreadable = \
+                select_targets.reviewed_index(reviews)
             self.assertEqual(rids, set())
-            self.assertEqual(url_keys, {("x", "1757864748")})
+            self.assertEqual(url_keys, set())
+            self.assertEqual(post_id_keys, {("x", "1757864748")})
 
-    def test_p1a_card_with_data_rid_href_is_not_added_to_url_keys(self):
-        """P1-a: data-rid を持つカードの href は URL照合に混ぜない。
-        別の rid を持つカードが同じ URL を指しているだけで
-        「そのURLは掲載済み」と誤判定してはいけない。
+    def test_p1a_generic_card_with_data_rid_href_is_not_added_to_url_keys(self):
+        """P1-a（generic種別に引き続き適用）: data-rid を持つカードの
+        generic種別 href は URL照合に混ぜない。別の rid を持つカードが
+        同じ generic URL を指しているだけで「掲載済み」と誤判定しては
+        いけない（強いIDキーはこの制限を受けない。別テストを参照）。
+        """
+        with tempfile.TemporaryDirectory() as d:
+            reviews = os.path.join(d, "reviews")
+            os.makedirs(reviews)
+            _write(os.path.join(reviews, "2026-06-01.html"),
+                   '<div class="vcard"><a class="vlink" '
+                   'href="https://example.com/foo/bar"></a>'
+                   '<button data-rid="999"></button></div>')
+            rids, url_keys, post_id_keys, _unreadable = \
+                select_targets.reviewed_index(reviews)
+            self.assertEqual(rids, {999})
+            self.assertEqual(url_keys, set(),
+                              "data-ridを持つカードのgeneric hrefはURLキー集合に入れない")
+            self.assertEqual(post_id_keys, set())
+
+    def test_strong_id_key_from_card_with_data_rid_is_added_to_post_id_keys(self):
+        """強いIDキーは data-rid を持つカードの href からも集める
+        （2026-09-22 ユーザー裁定: 同じ投稿の再保存は重複とみなす。
+        別rid同士でも強いIDキーが一致すれば「同じ投稿」とみなしてよい）。
         """
         with tempfile.TemporaryDirectory() as d:
             reviews = os.path.join(d, "reviews")
@@ -136,10 +180,10 @@ class TestReviewedIndex(unittest.TestCase):
                    '<div class="vcard"><a class="vlink" '
                    'href="https://x.com/user/status/1757864748"></a>'
                    '<button data-rid="999"></button></div>')
-            rids, url_keys, _unreadable = select_targets.reviewed_index(reviews)
+            rids, url_keys, post_id_keys, _unreadable = \
+                select_targets.reviewed_index(reviews)
             self.assertEqual(rids, {999})
-            self.assertEqual(url_keys, set(),
-                              "data-ridを持つカードのhrefはURLキー集合に入れない")
+            self.assertEqual(post_id_keys, {("x", "1757864748")})
 
     def test_card_index_preserves_per_date_info(self):
         with tempfile.TemporaryDirectory() as d:
@@ -149,16 +193,21 @@ class TestReviewedIndex(unittest.TestCase):
                    '<div class="vcard"><button data-rid="111"></button></div>')
             _write(os.path.join(reviews, "2026-06-02.html"),
                    '<div class="vcard"><a class="vlink" '
-                   'href="https://x.com/user/status/1757864748"></a></div>')
-            rid_dates, url_dates, _unreadable = select_targets.card_index(reviews)
+                   'href="https://example.com/foo/bar"></a></div>')
+            rid_dates, url_dates, post_id_dates, _unreadable = \
+                select_targets.card_index(reviews)
             self.assertEqual(rid_dates, {111: {"2026-06-01"}})
-            self.assertEqual(url_dates, {("x", "1757864748"): {"2026-06-02"}})
+            self.assertEqual(url_dates,
+                              {("generic", "https://example.com/foo/bar"):
+                               {"2026-06-02"}})
+            self.assertEqual(post_id_dates, {})
 
-    def test_ridless_card_on_or_after_fallback_cutoff_is_not_used_for_url_match(self):
-        """2026-09-22 Codexレビュー2周目 指摘: URL照合フォールバックは
-        URL_FALLBACK_BEFORE（2026-08-04）より前の reviews の、data-rid
-        無しカードだけが対象。8/4のretrofit以降はカードに必ずdata-ridが
-        付く前提なので、それ以降の日付のridless cardをURL照合に使わない。
+    def test_ridless_generic_url_on_or_after_fallback_cutoff_is_not_used(self):
+        """2026-09-22 Codexレビュー2周目 指摘: generic種別のURL照合
+        フォールバックは URL_FALLBACK_BEFORE（2026-08-04）より前の reviews
+        の、data-rid 無しカードだけが対象。8/4のretrofit以降はカードに必ず
+        data-ridが付く前提なので、それ以降の日付のridless cardをURL照合に
+        使わない（この制限は generic種別のみ。強いIDキーには適用しない）。
         """
         with tempfile.TemporaryDirectory() as d:
             reviews = os.path.join(d, "reviews")
@@ -166,23 +215,47 @@ class TestReviewedIndex(unittest.TestCase):
             # ちょうど cutoff 当日と、それ以降の日付。どちらも対象外。
             _write(os.path.join(reviews, "2026-08-04.html"),
                    '<div class="vcard"><a class="vlink" '
-                   'href="https://x.com/user/status/1757864748"></a></div>')
+                   'href="https://example.com/foo/bar"></a></div>')
             _write(os.path.join(reviews, "2026-09-14.html"),
                    '<div class="vcard"><a class="vlink" '
-                   'href="https://x.com/user/status/1757864938"></a></div>')
-            rid_dates, url_dates, _unreadable = select_targets.card_index(reviews)
+                   'href="https://example.com/baz/qux"></a></div>')
+            rid_dates, url_dates, _post_id_dates, _unreadable = \
+                select_targets.card_index(reviews)
             self.assertEqual(rid_dates, {})
             self.assertEqual(url_dates, {})
 
-    def test_ridless_card_before_fallback_cutoff_is_used(self):
+    def test_ridless_generic_url_before_fallback_cutoff_is_used(self):
         with tempfile.TemporaryDirectory() as d:
             reviews = os.path.join(d, "reviews")
             os.makedirs(reviews)
             _write(os.path.join(reviews, "2026-08-03.html"),
                    '<div class="vcard"><a class="vlink" '
-                   'href="https://x.com/user/status/1757864748"></a></div>')
-            rid_dates, url_dates, _unreadable = select_targets.card_index(reviews)
-            self.assertEqual(url_dates, {("x", "1757864748"): {"2026-08-03"}})
+                   'href="https://example.com/foo/bar"></a></div>')
+            rid_dates, url_dates, _post_id_dates, _unreadable = \
+                select_targets.card_index(reviews)
+            self.assertEqual(url_dates,
+                              {("generic", "https://example.com/foo/bar"):
+                               {"2026-08-03"}})
+
+    def test_strong_id_key_is_collected_regardless_of_data_rid_or_date(self):
+        """2026-09-22 ユーザー裁定: 同じ投稿の再保存は重複とみなす。強い
+        IDキー（X status ID等）は data-rid の有無・日付を問わず全カードの
+        hrefから集める（post_id_dates）。
+        """
+        with tempfile.TemporaryDirectory() as d:
+            reviews = os.path.join(d, "reviews")
+            os.makedirs(reviews)
+            # data-rid ありのカード。日付は cutoff より後。
+            _write(os.path.join(reviews, "2026-09-14.html"),
+                   '<div class="vcard"><a class="vlink" '
+                   'href="https://x.com/user/status/1757864748"></a>'
+                   '<button data-rid="999"></button></div>')
+            rid_dates, url_dates, post_id_dates, _unreadable = \
+                select_targets.card_index(reviews)
+            self.assertEqual(rid_dates, {999: {"2026-09-14"}})
+            self.assertEqual(url_dates, {})
+            self.assertEqual(post_id_dates,
+                              {("x", "1757864748"): {"2026-09-14"}})
 
 
 class TestSelect(unittest.TestCase):
@@ -397,6 +470,9 @@ class TestSelectUrlMatch(unittest.TestCase):
         return captures_path, reviews_dir
 
     def test_x_status_match_excludes_without_data_rid(self):
+        """強いIDキー(X status ID)の一致は reviewed_by_post_id に数える
+        （generic種別の reviewed_by_url とは別枠）。
+        """
         with tempfile.TemporaryDirectory() as d:
             captures_path, reviews_dir = self._setup(
                 d,
@@ -414,11 +490,17 @@ class TestSelectUrlMatch(unittest.TestCase):
                 reviews_dir=reviews_dir,
                 capture_index_path=os.path.join(d, "capture_index.json"))
             self.assertEqual(result["rids"], [])
-            self.assertEqual(result["_reviewed_by_url_count"], 1)
+            self.assertEqual(result["_reviewed_by_post_id_count"], 1)
+            self.assertEqual(result["_reviewed_by_url_count"], 0)
 
-    def test_url_shared_with_different_data_rid_card_does_not_exclude(self):
-        """P1-a: 別の data-rid を持つカードが偶然同じ URL を指しているだけでは
-        掲載済みにならない（そのカードは rid でのみ掲載判定される）。
+    def test_strong_id_match_excludes_even_with_different_data_rid_card(self):
+        """2026-09-22 ユーザー裁定: 同じ投稿の再保存は重複とみなす。強い
+        IDキー（X status ID等）は、それを持つカードが**別のrid**を持って
+        いても一致すれば掲載済みとして除外する（Codex 1周目の懸念「別の
+        記事なのに一致してしまう」は generic 側の制限で引き続き防ぐので、
+        強いIDキーには適用しない。旧テスト
+        test_url_shared_with_different_data_rid_card_does_not_exclude を
+        新しい裁定に合わせて書き換えたもの）。
         """
         with tempfile.TemporaryDirectory() as d:
             captures_path, reviews_dir = self._setup(
@@ -437,8 +519,35 @@ class TestSelectUrlMatch(unittest.TestCase):
                 "2026-06-15", captures_path=captures_path,
                 reviews_dir=reviews_dir,
                 capture_index_path=os.path.join(d, "capture_index.json"))
-            self.assertEqual(result["rids"], [1757864748])
+            self.assertEqual(result["rids"], [])
+            self.assertEqual(result["_reviewed_by_post_id_count"], 1)
+
+    def test_generic_url_shared_with_different_data_rid_card_does_not_exclude(self):
+        """generic種別（P1-a）: 別の data-rid を持つカードが偶然同じ
+        generic URL を指しているだけでは掲載済みにならない（そのカードは
+        rid でのみ掲載判定される）。Codex 1周目の懸念「別の記事なのに一致
+        してしまう」は generic 側でこのとおり引き続き防ぐ。
+        """
+        with tempfile.TemporaryDirectory() as d:
+            captures_path, reviews_dir = self._setup(
+                d,
+                records=[{"rid": 1, "date": "2026-06-14",
+                          "source": "https://example.com/foo/bar"}],
+                review_files={
+                    "2026-06-13.html": (
+                        '<div class="vcard"><a class="vlink" '
+                        'href="https://example.com/foo/bar">t</a>'
+                        '<button data-rid="999"></button></div>'
+                    ),
+                },
+            )
+            result = select_targets.select(
+                "2026-06-15", captures_path=captures_path,
+                reviews_dir=reviews_dir,
+                capture_index_path=os.path.join(d, "capture_index.json"))
+            self.assertEqual(result["rids"], [1])
             self.assertEqual(result["_reviewed_by_url_count"], 0)
+            self.assertEqual(result["_reviewed_by_post_id_count"], 0)
 
     def test_instagram_shortcode_match_ignores_query_diff(self):
         with tempfile.TemporaryDirectory() as d:
@@ -458,7 +567,7 @@ class TestSelectUrlMatch(unittest.TestCase):
                 reviews_dir=reviews_dir,
                 capture_index_path=os.path.join(d, "capture_index.json"))
             self.assertEqual(result["rids"], [])
-            self.assertEqual(result["_reviewed_by_url_count"], 1)
+            self.assertEqual(result["_reviewed_by_post_id_count"], 1)
 
     def test_different_host_does_not_match(self):
         with tempfile.TemporaryDirectory() as d:
@@ -498,7 +607,35 @@ class TestSelectUrlMatch(unittest.TestCase):
                 reviews_dir=reviews_dir,
                 capture_index_path=os.path.join(d, "capture_index.json"))
             self.assertEqual(result["rids"], [1])
-            self.assertEqual(result["_reviewed_by_url_count"], 0)
+            self.assertEqual(result["_reviewed_by_post_id_count"], 0)
+
+    def test_1758030878_style_rid_drift_now_excluded_by_strong_id(self):
+        """実データで見つかった rid ずれ（captures.json側1758030878、
+        カード側data-rid=1758030881）の再現テスト。2026-09-22 ユーザー
+        裁定後は、強いIDキー（Instagram shortcode）が一致するので
+        「別rid」であっても掲載済みとして除外される。
+        """
+        with tempfile.TemporaryDirectory() as d:
+            captures_path, reviews_dir = self._setup(
+                d,
+                records=[{"rid": 1758030878, "date": "2026-06-14",
+                          "source": "https://www.instagram.com/p/DY5p4UKkuQc/"
+                                    "?igsh=ZGQzMGo1ajJ4eHh4"}],
+                review_files={
+                    "2026-06-14.html": (
+                        '<div class="vcard"><a class="vlink" '
+                        'href="https://www.instagram.com/p/DY5p4UKkuQc/'
+                        '?igsh=ZGQzMGo1ajJ4eHh4">t</a>'
+                        '<button data-rid="1758030881"></button></div>'
+                    ),
+                },
+            )
+            result = select_targets.select(
+                "2026-06-15", captures_path=captures_path,
+                reviews_dir=reviews_dir,
+                capture_index_path=os.path.join(d, "capture_index.json"))
+            self.assertEqual(result["rids"], [])
+            self.assertEqual(result["_reviewed_by_post_id_count"], 1)
 
 
 class TestMain(unittest.TestCase):
