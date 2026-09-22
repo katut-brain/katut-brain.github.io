@@ -12,6 +12,7 @@ import os
 import sys
 import tempfile
 import unittest
+import unittest.mock
 from contextlib import redirect_stdout
 
 REPO_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -106,7 +107,8 @@ class TestSelect(unittest.TestCase):
             result = select_targets.select(
                 "2026-09-21", captures_path=captures_path,
                 reviews_dir=reviews_dir,
-                capture_index_path=os.path.join(d, "capture_index.json"))
+                capture_index_path=os.path.join(d, "capture_index.json"),
+                since="2020-01-01")
             self.assertEqual(result["rids"], [1, 2, 3])
             self.assertEqual(result["_selected_count"], 3)
             self.assertEqual(result["_past_count"], 1)
@@ -127,7 +129,8 @@ class TestSelect(unittest.TestCase):
             result = select_targets.select(
                 "2026-06-02", captures_path=captures_path,
                 reviews_dir=reviews_dir,
-                capture_index_path=os.path.join(d, "capture_index.json"))
+                capture_index_path=os.path.join(d, "capture_index.json"),
+                since="2020-01-01")
             self.assertEqual(result["rids"], [5, 10, 30])
 
     def test_index_only_reported(self):
@@ -139,7 +142,8 @@ class TestSelect(unittest.TestCase):
                 {"days": {"2026-06-01": {"rids": [1, 999]}}}))
             result = select_targets.select(
                 "2026-06-02", captures_path=captures_path,
-                reviews_dir=reviews_dir, capture_index_path=index_path)
+                reviews_dir=reviews_dir, capture_index_path=index_path,
+                since="2020-01-01")
             self.assertEqual(result["_index_only_count"], 1)
 
     def test_unreadable_review_file_surfaces_in_result(self):
@@ -152,29 +156,211 @@ class TestSelect(unittest.TestCase):
             result = select_targets.select(
                 "2026-06-03", captures_path=captures_path,
                 reviews_dir=reviews_dir,
-                capture_index_path=os.path.join(d, "capture_index.json"))
+                capture_index_path=os.path.join(d, "capture_index.json"),
+                since="2020-01-01")
             self.assertEqual(result["_unreadable_reviews"], ["2026-06-02.html"])
+
+
+class TestSinceFilter(unittest.TestCase):
+    def _setup(self, d, records, review_files=None):
+        captures_path = os.path.join(d, "captures.json")
+        _write_captures(captures_path, records)
+        reviews_dir = os.path.join(d, "reviews")
+        os.makedirs(reviews_dir, exist_ok=True)
+        for name, content in (review_files or {}).items():
+            _write(os.path.join(reviews_dir, name), content)
+        return captures_path, reviews_dir
+
+    def test_records_before_default_since_are_excluded(self):
+        with tempfile.TemporaryDirectory() as d:
+            captures_path, reviews_dir = self._setup(d, records=[
+                {"rid": 1, "date": "2026-06-13"},  # before default SINCE
+                {"rid": 2, "date": "2026-06-14"},  # on SINCE, included
+            ])
+            result = select_targets.select(
+                "2026-06-15", captures_path=captures_path,
+                reviews_dir=reviews_dir,
+                capture_index_path=os.path.join(d, "capture_index.json"))
+            self.assertEqual(result["rids"], [2])
+            self.assertEqual(result["_before_since_count"], 1)
+
+    def test_select_since_env_override(self):
+        with tempfile.TemporaryDirectory() as d:
+            captures_path, reviews_dir = self._setup(d, records=[
+                {"rid": 1, "date": "2026-06-13"},
+                {"rid": 2, "date": "2026-06-14"},
+            ])
+            with unittest.mock.patch.dict(os.environ, {"SELECT_SINCE": "2026-06-13"}):
+                result = select_targets.select(
+                    "2026-06-15", captures_path=captures_path,
+                    reviews_dir=reviews_dir,
+                    capture_index_path=os.path.join(d, "capture_index.json"))
+            self.assertEqual(result["rids"], [1, 2])
+            self.assertEqual(result["_before_since_count"], 0)
+
+    def test_select_since_env_invalid_falls_back_to_default(self):
+        with tempfile.TemporaryDirectory() as d:
+            captures_path, reviews_dir = self._setup(d, records=[
+                {"rid": 1, "date": "2026-06-13"},
+                {"rid": 2, "date": "2026-06-14"},
+            ])
+            with unittest.mock.patch.dict(os.environ, {"SELECT_SINCE": "not-a-date"}):
+                result = select_targets.select(
+                    "2026-06-15", captures_path=captures_path,
+                    reviews_dir=reviews_dir,
+                    capture_index_path=os.path.join(d, "capture_index.json"))
+            self.assertEqual(result["rids"], [2])
+            self.assertEqual(result["_before_since_count"], 1)
+
+
+class TestUrlKey(unittest.TestCase):
+    def test_x_status_id(self):
+        self.assertEqual(
+            select_targets.url_key("https://x.com/user/status/1757864748"),
+            ("x", "1757864748"))
+        self.assertEqual(
+            select_targets.url_key("https://twitter.com/user/status/1757864748?s=12"),
+            ("x", "1757864748"))
+
+    def test_x_without_status_returns_none(self):
+        self.assertIsNone(select_targets.url_key("https://x.com/someuser"))
+
+    def test_instagram_shortcode(self):
+        self.assertEqual(
+            select_targets.url_key("https://www.instagram.com/reel/AbC123xy/"),
+            ("instagram", "AbC123xy"))
+        self.assertEqual(
+            select_targets.url_key("https://instagram.com/p/AbC123xy/?utm=1"),
+            ("instagram", "AbC123xy"))
+
+    def test_threads_post_id(self):
+        self.assertEqual(
+            select_targets.url_key("https://www.threads.net/@user/post/DEF456"),
+            ("threads", "DEF456"))
+
+    def test_generic_scheme_host_path(self):
+        self.assertEqual(
+            select_targets.url_key("https://Example.com/foo/bar/?q=1#frag"),
+            ("generic", "https://example.com/foo/bar"))
+
+    def test_generic_root_path_returns_none(self):
+        self.assertIsNone(select_targets.url_key("https://example.com/"))
+
+    def test_none_and_empty(self):
+        self.assertIsNone(select_targets.url_key(None))
+        self.assertIsNone(select_targets.url_key(""))
+
+
+class TestSelectUrlMatch(unittest.TestCase):
+    def _setup(self, d, records, review_files):
+        captures_path = os.path.join(d, "captures.json")
+        _write_captures(captures_path, records)
+        reviews_dir = os.path.join(d, "reviews")
+        os.makedirs(reviews_dir, exist_ok=True)
+        for name, content in review_files.items():
+            _write(os.path.join(reviews_dir, name), content)
+        return captures_path, reviews_dir
+
+    def test_x_status_match_excludes_without_data_rid(self):
+        with tempfile.TemporaryDirectory() as d:
+            captures_path, reviews_dir = self._setup(
+                d,
+                records=[{"rid": 1757864748, "date": "2026-06-14",
+                          "source": "https://x.com/user/status/1757864748?s=12"}],
+                review_files={
+                    "2026-06-13.html": (
+                        '<div class="vcard"><a class="vlink" '
+                        'href="https://x.com/user/status/1757864748">t</a></div>'
+                    ),
+                },
+            )
+            result = select_targets.select(
+                "2026-06-15", captures_path=captures_path,
+                reviews_dir=reviews_dir,
+                capture_index_path=os.path.join(d, "capture_index.json"))
+            self.assertEqual(result["rids"], [])
+            self.assertEqual(result["_reviewed_by_url_count"], 1)
+
+    def test_instagram_shortcode_match_ignores_query_diff(self):
+        with tempfile.TemporaryDirectory() as d:
+            captures_path, reviews_dir = self._setup(
+                d,
+                records=[{"rid": 1758030878, "date": "2026-06-14",
+                          "source": "https://www.instagram.com/reel/AbC123xy/?igshid=xyz"}],
+                review_files={
+                    "2026-06-14.html": (
+                        '<div class="vcard"><a class="vlink" '
+                        'href="https://instagram.com/reel/AbC123xy/">t</a></div>'
+                    ),
+                },
+            )
+            result = select_targets.select(
+                "2026-06-15", captures_path=captures_path,
+                reviews_dir=reviews_dir,
+                capture_index_path=os.path.join(d, "capture_index.json"))
+            self.assertEqual(result["rids"], [])
+            self.assertEqual(result["_reviewed_by_url_count"], 1)
+
+    def test_different_host_does_not_match(self):
+        with tempfile.TemporaryDirectory() as d:
+            captures_path, reviews_dir = self._setup(
+                d,
+                records=[{"rid": 1, "date": "2026-06-14",
+                          "source": "https://example.com/foo/bar"}],
+                review_files={
+                    "2026-06-14.html": (
+                        '<div class="vcard"><a class="vlink" '
+                        'href="https://other.com/foo/bar">t</a></div>'
+                    ),
+                },
+            )
+            result = select_targets.select(
+                "2026-06-15", captures_path=captures_path,
+                reviews_dir=reviews_dir,
+                capture_index_path=os.path.join(d, "capture_index.json"))
+            self.assertEqual(result["rids"], [1])
+            self.assertEqual(result["_reviewed_by_url_count"], 0)
+
+    def test_different_instagram_shortcode_does_not_match(self):
+        with tempfile.TemporaryDirectory() as d:
+            captures_path, reviews_dir = self._setup(
+                d,
+                records=[{"rid": 1, "date": "2026-06-14",
+                          "source": "https://instagram.com/p/AAAA111/"}],
+                review_files={
+                    "2026-06-14.html": (
+                        '<div class="vcard"><a class="vlink" '
+                        'href="https://instagram.com/p/BBBB222/">t</a></div>'
+                    ),
+                },
+            )
+            result = select_targets.select(
+                "2026-06-15", captures_path=captures_path,
+                reviews_dir=reviews_dir,
+                capture_index_path=os.path.join(d, "capture_index.json"))
+            self.assertEqual(result["rids"], [1])
+            self.assertEqual(result["_reviewed_by_url_count"], 0)
 
 
 class TestMain(unittest.TestCase):
     def test_status_line_emitted_and_exit_zero(self):
         with tempfile.TemporaryDirectory() as d:
             captures_path = os.path.join(d, "captures.json")
-            _write_captures(captures_path, [{"rid": 1, "date": "2026-06-01"}])
+            _write_captures(captures_path, [{"rid": 1, "date": "2026-06-14"}])
             reviews_dir = os.path.join(d, "reviews")
             os.makedirs(reviews_dir)
             index_path = os.path.join(d, "capture_index.json")
             buf = io.StringIO()
             with redirect_stdout(buf):
                 rc = select_targets.main([
-                    "--target", "2026-06-02",
+                    "--target", "2026-06-15",
                     "--captures", captures_path,
                     "--reviews-dir", reviews_dir,
                     "--capture-index", index_path,
                 ])
             self.assertEqual(rc, 0)
             out = buf.getvalue()
-            self.assertIn("SELECT_STATUS: target=2026-06-02", out)
+            self.assertIn("SELECT_STATUS: target=2026-06-15", out)
             self.assertIn("selected=1", out)
 
     def test_warn_unreadable_flag_in_status(self):
