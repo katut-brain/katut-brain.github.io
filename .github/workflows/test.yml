@@ -74,3 +74,9 @@ jobs:
       # fetch_instagram()の戻り値だけを検証しても_facts()側の保存漏れを検出できない）。
       - name: Run reel-health tests
         run: python -m unittest -v test_reel_health.py
+
+      # 手順3の振り返り対象選定（select_targets.py）の回帰テスト。
+      # reviews/*.html の data-rid 抽出が壊れたら赤になる（掲載済み除外・
+      # 引用符違い・複数カード・負のrid・読めないファイルのwarn等）。
+      - name: Run select-targets tests
+        run: python -m unittest -v test_select_targets.py
