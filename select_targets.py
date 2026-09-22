@@ -33,6 +33,15 @@
 # capture_index.json にはある rid」を数える（index_only）。これは過去に captures.json
 # から消えた（Raindrop側で削除等）が一度は観測された rid で、本文材料が無いので
 # 選定はしない。
+#
+# 既知の限界（2026-09-22 Codexレビュー2周目 指摘。対応不要と判断し、コードは
+# 変えずここに明記するに留める）:
+#   - 永続作業ツリーでの再実行は考慮していない（クラウドRoutineは毎晩新規
+#     clone で動く前提。ローカルで同じ作業ツリーを使い回して繰り返し実行する
+#     運用には別途の考慮が要る）。
+#   - synthetic_rid() は date+source のハッシュなので、理論上は衝突しうる
+#     （実データはcaptures.json全件が実rid持ちで発生しないが、rid無し
+#     レコードが増えた場合に確率的な衝突リスクが残る）。
 
 import sys
 import os
@@ -45,7 +54,7 @@ import html as html_module
 import argparse
 import datetime
 import traceback
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, parse_qsl, urlencode
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -135,12 +144,12 @@ def load_captures(path=CAPTURES):
     for rec in records:
         if not isinstance(rec, dict):
             continue
+        # rid は captures.json の "rid" フィールドのみを見る（2026-09-22
+        # Codexレビュー2周目 指摘: build_capture_index.py / stale-check.yml の
+        # 台帳系は "rid" だけを正としており、ここだけ "raindrop_id" への
+        # フォールバックを持つと規則が食い違う。"raindrop_id" しか無い
+        # レコードは rid 無しとして扱い、synthetic_rid の経路に合流させる）。
         rid = rec.get("rid")
-        if not isinstance(rid, int):
-            # raindrop_id をフォールバックで見る（captures.json の実測フィールド名は
-            # "rid" だが、他スクリプト（backfill等）は "raindrop_id" も見ているため
-            # 念のため両対応）。それも無ければ synthetic_rid を振る。
-            rid = rec.get("raindrop_id")
         if not isinstance(rid, int):
             date_for_synth = rec.get("date")
             if not isinstance(date_for_synth, str) or len(date_for_synth) < 10:
@@ -319,6 +328,34 @@ _THREADS_POST_RE = re.compile(r"/post/([A-Za-z0-9_-]+)")
 
 _MIN_KEY_LEN = 3
 
+# generic（X/Instagram/Threads 以外）ホストのクエリから取り除く「追跡用」
+# パラメータ名（2026-09-22 Codexレビュー2周目 指摘対応）。当初はクエリを
+# 全部落としていたが、それだと `?id=1` と `?id=2` のような**本当に別物を指す
+# クエリ**まで同一視してしまう。既知の追跡用パラメータだけを落とし、
+# それ以外はクエリごと残す（後述のとおりソートして正規化する）。
+# ここに挙げるのは「複数ホストにまたがって実際に観測される追跡用パラメータ」
+# のみ。未知のパラメータを推測で追加しない。
+_TRACKING_PARAM_NAMES = {
+    "fbclid", "gclid", "igsh", "img_index", "s", "t", "ref", "xmt",
+}
+
+
+def _is_tracking_param(name):
+    if name in _TRACKING_PARAM_NAMES:
+        return True
+    return name.startswith("utm_")
+
+
+# URL照合フォールバックを許可する上限日（この日付**より前**の reviews ファイル
+# の、data-rid を持たないカードだけが対象。2026-09-22 Codexレビュー2周目
+# 指摘対応）。2026-08-04 に data-rid の後付け（retrofit）作業が行われ、
+# それ以降に生成された reviews のカードには全て data-rid が付いている
+# （＝以降の日付で data-rid が無いカードがあるとすれば、それはretrofit漏れ
+# ではなく別の異常であり、URL照合で「掲載済み」と推測してよい根拠が無い）。
+# 8/4より前の古いreviewsだけが、retrofit対象そのものとして本来 data-rid が
+# 付くべきだったのに付いていない、という前提が成り立つ期間。
+URL_FALLBACK_BEFORE = "2026-08-04"
+
 
 def _strip_www(host):
     host = (host or "").lower()
@@ -368,14 +405,25 @@ def url_key(url):
             return None
         return ("threads", pid)
 
-    # それ以外: scheme+host(小文字)+path。クエリ・フラグメントは除去し、
-    # 末尾スラッシュは正規化する。path が空/ルートのみは汎用すぎて誤一致の
-    # リスクが高いため照合しない。
+    # それ以外: scheme+host(小文字)+path。フラグメントは除去し、末尾スラッシュ
+    # は正規化する。path が空/ルートのみは汎用すぎて誤一致のリスクが高いため
+    # 照合しない。
+    # クエリは**追跡用パラメータだけ**を落とし、それ以外は残す（2026-09-22
+    # Codexレビュー2周目 指摘対応。クエリを全部消すと `?id=1` と `?id=2` の
+    # ような別物まで同一視してしまう）。残ったパラメータはキーの並び順に
+    # 依存しないよう名前でソートしてから連結する。
     if path in ("", "/"):
         return None
     norm_path = path.rstrip("/") if path != "/" else path
     scheme = (parts.scheme or "https").lower()
-    return ("generic", "%s://%s%s" % (scheme, host, norm_path))
+    kept = sorted(
+        (k, v) for k, v in parse_qsl(parts.query, keep_blank_values=True)
+        if not _is_tracking_param(k)
+    )
+    base = "%s://%s%s" % (scheme, host, norm_path)
+    if kept:
+        base += "?" + urlencode(kept)
+    return ("generic", base)
 
 
 def card_index(reviews_dir=REVIEWS_DIR):
@@ -384,10 +432,17 @@ def card_index(reviews_dir=REVIEWS_DIR):
     stale-check.yml はここを import して使う）。
 
     戻り値: (rid_dates, url_dates, unreadable)
-      - rid_dates: {rid(int): set(date_str)} — data-rid を持つカードのみ
-      - url_dates: {url_key: set(date_str)} — **data-rid を持たないカードのみ**
+      - rid_dates: {rid(int): set(date_str)} — data-rid を持つカードのみ。
+        全期間の reviews が対象（日付の制限なし）。
+      - url_dates: {url_key: set(date_str)} — **data-rid を持たないカードの
+        うち、ファイル名の日付が URL_FALLBACK_BEFORE より前のものだけ**
         （P1-a: rid を持つカードの href を URL照合に混ぜると、別rid同士が
-        たまたま同じURLを指すだけで誤って掲載済みにしてしまう）
+        たまたま同じURLを指すだけで誤って掲載済みにしてしまう。加えて
+        2026-09-22 Codexレビュー2周目 指摘: 2026-08-04 の data-rid retrofit
+        以降に生成された reviews は全カードに data-rid が付く前提なので、
+        それ以降の日付で data-rid が無いカードをURL照合の材料にしてよい
+        根拠が無い。ファイル名が YYYY-MM-DD 形式でない場合もURL照合には
+        使わない＝安全側）。
       - unreadable: 読めなかったファイル名のリスト
     """
     rid_dates = {}
@@ -403,6 +458,7 @@ def card_index(reviews_dir=REVIEWS_DIR):
         except (OSError, UnicodeDecodeError, ValueError):
             unreadable.append(os.path.basename(path))
             continue
+        url_fallback_ok = bool(DATE_RE.match(stem)) and stem < URL_FALLBACK_BEFORE
         cards, _malformed = extract_vcards(raw)
         for c in cards:
             rid_str = card_rid(c["raw"])
@@ -414,6 +470,8 @@ def card_index(reviews_dir=REVIEWS_DIR):
                 if rid_int is not None:
                     rid_dates.setdefault(rid_int, set()).add(stem)
                 # data-rid を持つカードの href は URL照合に使わない（P1-a）。
+                continue
+            if not url_fallback_ok:
                 continue
             href = card_href(c["raw"])
             if href is None:

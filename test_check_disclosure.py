@@ -301,6 +301,11 @@ class DisclosureCheckTest(unittest.TestCase):
         """data-rid が付いていない（2026-08-04の retrofit漏れのような）別日の
         カードでも、URL(select_targets.url_key)が一致すれば掲載済みとして
         バックフィル除外される。
+
+        ⚠️ 2026-09-22 Codexレビュー2周目 対応: URL照合フォールバックは
+        select_targets.URL_FALLBACK_BEFORE（2026-08-04）より前の reviews
+        ファイルの ridless カードだけが対象になったため、ridless カードを
+        置く review ファイルの日付は cutoff より前（2026-06-01）にする。
         """
         self._write_facts("2026-09-14", {
             "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
@@ -308,8 +313,9 @@ class DisclosureCheckTest(unittest.TestCase):
                 "raindrop_id": 1842608050,
             },
         })
-        # 09-11 の review には同じURLのカードがあるが data-rid が空（後付け漏れ）。
-        self._write_review("2026-09-11", self._vcard(
+        # cutoffより前の review には同じURLのカードがあるが data-rid が空
+        # （後付け漏れ相当）。
+        self._write_review("2026-06-01", self._vcard(
             "https://www.instagram.com/reel/Dcy4SIYiD7U/",
             "写真1枚をRhinoモデルに変換するAIエージェント「STF Agent」",
             V_MARKER + "。", "",
@@ -322,8 +328,36 @@ class DisclosureCheckTest(unittest.TestCase):
         out = self._run(["--date", "2026-09-14"])
         self.assertIn(
             "DISCLOSURE_EXCLUDED: date=2026-09-14 rid=1842608050 "
-            "reason=backfill(2026-09-11,card=yes)", out)
+            "reason=backfill(2026-06-01,card=yes)", out)
         self.assertNotIn("DISCLOSURE_VIOLATION: date=2026-09-14", out)
+
+    def test_url_key_match_after_fallback_cutoff_is_not_excluded(self):
+        """ridless カードの reviews ファイル名が URL_FALLBACK_BEFORE
+        （2026-08-04）以降だと、URLが一致していてもバックフィル除外されず
+        違反(no_card)のまま。
+        """
+        self._write_facts("2026-09-14", {
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
+                "route": "instagram", "missing": ["video_content"],
+                "raindrop_id": 1842608050,
+            },
+        })
+        self._write_review("2026-09-11", self._vcard(
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/",
+            "写真1枚をRhinoモデルに変換するAIエージェント「STF Agent」",
+            V_MARKER + "。", "",
+        ))
+        # 09-14 の review 自体は存在させる（無関係カードのみ）。無いと
+        # status=no_review の別経路に入り、この検証の対象外になる。
+        self._write_review("2026-09-14", self._vcard(
+            "https://x.com/other/status/1", "無関係カード", "本文のみ。", "1",
+        ))
+        out = self._run(["--date", "2026-09-14"])
+        self.assertIn(
+            "DISCLOSURE_VIOLATION: date=2026-09-14 kind=reel rid=1842608050 "
+            "url=https://www.instagram.com/reel/Dcy4SIYiD7U/ reason=no_card",
+            out)
+        self.assertNotIn("DISCLOSURE_EXCLUDED:", out)
 
     def test_url_shared_with_a_different_data_rid_card_is_not_excluded(self):
         """別の data-rid を持つカードが、たまたま同じ URL を href に持つ
@@ -589,6 +623,46 @@ class DisclosureCheckTest(unittest.TestCase):
         })
         out = self._run(["--date", "2026-09-04"], expect=0)
         self.assertIn("DISCLOSURE_CHECK: date=2026-09-04 status=no_review", out)
+
+    def test_missing_review_file_but_published_elsewhere_is_excluded_not_duty(self):
+        """2026-09-22 Codexレビュー2周目: 対象日の reviews ファイルが無くても、
+        そのレコードが別日の reviews に既に掲載済み（data-rid一致）なら
+        duty に数えず excluded にする。reviews が無いからといって無条件に
+        duty へ計上するのはバグだった。
+        """
+        self._write_facts("2026-09-14", {
+            "https://x.com/masahirochaen/status/1": {
+                "route": "x", "missing": ["video_content"], "raindrop_id": 111,
+            },
+        })
+        # 09-14 の reviews は作らない（無い状態）。09-11 に同ridのカードが
+        # 既に掲載されている。
+        self._write_review("2026-09-11", self._vcard(
+            "https://x.com/masahirochaen/status/1",
+            "タイトル", V_MARKER + "。", "111",
+        ))
+        out = self._run(["--date", "2026-09-14"])
+        self.assertIn(
+            "DISCLOSURE_CHECK: date=2026-09-14 status=no_review duty=0 excluded=1",
+            out)
+        self.assertIn(
+            "DISCLOSURE_EXCLUDED: date=2026-09-14 rid=111 "
+            "reason=backfill(2026-09-11,card=yes)", out)
+
+    def test_missing_review_file_with_no_backfill_elsewhere_stays_duty(self):
+        """対象日の reviews が無く、他日にも掲載が無い場合は従来どおり
+        duty として数える（無条件除外にはしない）。
+        """
+        self._write_facts("2026-09-14", {
+            "https://x.com/nowhere/status/2": {
+                "route": "x", "missing": ["video_content"], "raindrop_id": 222,
+            },
+        })
+        out = self._run(["--date", "2026-09-14"])
+        self.assertIn(
+            "DISCLOSURE_CHECK: date=2026-09-14 status=no_review duty=1 excluded=0",
+            out)
+        self.assertNotIn("DISCLOSURE_EXCLUDED:", out)
 
     def test_broken_facts_json_exits_zero(self):
         path = os.path.join(self.facts_dir, "2026-09-05.json")

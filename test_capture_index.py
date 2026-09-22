@@ -153,13 +153,34 @@ class CaptureIndexTest(unittest.TestCase):
     def test_published_via_url_match_even_without_matching_data_rid(self):
         """data-rid が付いていない（後付け漏れ等の）カードでも、URL
         （select_targets.url_key 経由）が一致すれば published とみなす。
+
+        ⚠️ 2026-09-22 Codexレビュー2周目 対応: URL照合フォールバックは
+        select_targets.URL_FALLBACK_BEFORE（2026-08-04）より前の reviews
+        ファイルの ridless カードだけが対象になった。このテストの
+        reviews ファイル名は cutoff より前の日付に固定する
+        （captures.json 側のレコード自体の date はいつでもよい——URL照合は
+        reviews ファイル名の日付だけで判定される）。
         """
         self._captures({self.yesterday: [9]})
         # data-rid を持たないカードだが href は captures.json の source と一致。
-        self._write(os.path.join("reviews", self.yesterday.isoformat() + ".html"),
+        # ファイル名は cutoff より前（URL照合フォールバックの対象期間）。
+        self._write(os.path.join("reviews", "2026-06-01.html"),
                     '<!doctype html><body><div class="vcard">'
                     '<a class="vlink" href="https://x/9"></a></div></body></html>')
         self.assertIn("UNPUBLISHED: none", self._run())
+
+    def test_url_match_after_fallback_cutoff_does_not_count_as_published(self):
+        """URL_FALLBACK_BEFORE（2026-08-04）以降の日付名のreviewsファイルに
+        ある ridless カードは、URLが一致していても published とみなさない
+        （2026-08-04のretrofit以降は全カードにdata-ridが付く前提のため）。
+        """
+        self._captures({self.yesterday: [9]})
+        self._write(os.path.join("reviews", "2026-09-01.html"),
+                    '<!doctype html><body><div class="vcard">'
+                    '<a class="vlink" href="https://x/9"></a></div></body></html>')
+        out = self._run()
+        self.assertIn("UNPUBLISHED:", out)
+        self.assertIn(self.yesterday.isoformat(), out)
 
     def test_different_data_rid_card_sharing_url_does_not_count_as_published(self):
         """別の data-rid を持つカードが、たまたま同じ URL を href に持つ

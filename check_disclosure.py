@@ -491,8 +491,31 @@ def process_date(date, facts_dir, reviews_dir,
 
     review_path = os.path.join(reviews_dir, "%s.html" % date)
     if not os.path.isfile(review_path):
+        # 2026-09-22 Codexレビュー2周目 P指摘: reviews ファイルそのものが
+        # 無い日でも、facts の各レコードを無条件に「未開示の可能性がある duty」
+        # として数えていたのはバグ。すでに別日の reviews に掲載済み（バックフィル
+        # で救われた）レコードは、対象日の reviews が無くても除外すべき——対象日の
+        # reviews が有る場合と同じく、まず global index（aux_rid_dates/
+        # aux_url_dates）で分類してから残りだけを no_review の duty として数える。
         result.status = "no_review"
-        result.duty = duty_count
+        for url, rec, kind in duty_records:
+            if kind is None:
+                continue
+            if kind == "out_of_scope":
+                result.out_of_scope += 1
+                continue
+            rid = rec.get("raindrop_id")
+            rid_str = str(rid) if rid is not None else None
+            reason, is_backfill = _classify_missing_card(
+                date, rid_str, url, aux_rid_dates, aux_url_dates,
+            )
+            if is_backfill:
+                result.excluded += 1
+                result.excluded_records.append(
+                    {"rid": rid_str, "url": url, "reason": reason}
+                )
+            else:
+                result.duty += 1
         return result
 
     raw, cards, by_rid, by_url, malformed = load_review_cards(review_path)
@@ -653,7 +676,8 @@ def print_check_line(result, github=False, warn=True):
         print("DISCLOSURE_CHECK: date=%s status=no_facts" % result.date)
         return
     if result.status == "no_review":
-        print("DISCLOSURE_CHECK: date=%s status=no_review" % result.date)
+        print("DISCLOSURE_CHECK: date=%s status=no_review duty=%d excluded=%d"
+              % (result.date, result.duty, result.excluded))
         if github and warn and result.duty > 0:
             print(
                 "::warning title=disclosure::DISCLOSURE_CHECK: date=%s "
@@ -817,7 +841,7 @@ def _main(argv):
     for r in results:
         enforce = (since is None) or (r.date >= since)
         print_check_line(r, github=args.github, warn=enforce)
-        if r.status == "ok" and enforce:
+        if r.status in ("ok", "no_review") and enforce:
             print_detail_lines(r, github=args.github)
         elif r.status == "ok" and r.fixed:
             # --fix はsince以前でも適用結果自体は報告する

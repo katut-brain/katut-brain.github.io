@@ -33,6 +33,24 @@ def _write_captures(path, records):
 
 
 class TestLoadCaptures(unittest.TestCase):
+    def test_raindrop_id_only_is_treated_as_rid_missing(self):
+        """2026-09-22 Codexレビュー2周目 指摘: "rid" フィールドのみを正として
+        扱い、"raindrop_id" へはフォールバックしない（build_capture_index.py /
+        stale-check.yml の台帳系と規則を揃える）。"raindrop_id" しか無い
+        レコードは rid 無しとして synthetic_rid の経路へ入る。
+        """
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "captures.json")
+            _write_captures(path, [
+                {"raindrop_id": 12345, "date": "2026-06-01",
+                 "source": "https://x/12345"},
+            ])
+            records, synth_count = select_targets.load_captures(path)
+            self.assertEqual(synth_count, 1)
+            rid = records[0][0]
+            self.assertLess(rid, 0)
+            self.assertNotEqual(rid, 12345)
+
     def test_rid_missing_gets_synthetic_negative_rid(self):
         """rid の無いレコードは synthetic_rid() の負整数を振って選定対象に
         含める（2026-09-22 CEO裁定: 永久除外しない）。
@@ -135,6 +153,36 @@ class TestReviewedIndex(unittest.TestCase):
             rid_dates, url_dates, _unreadable = select_targets.card_index(reviews)
             self.assertEqual(rid_dates, {111: {"2026-06-01"}})
             self.assertEqual(url_dates, {("x", "1757864748"): {"2026-06-02"}})
+
+    def test_ridless_card_on_or_after_fallback_cutoff_is_not_used_for_url_match(self):
+        """2026-09-22 Codexレビュー2周目 指摘: URL照合フォールバックは
+        URL_FALLBACK_BEFORE（2026-08-04）より前の reviews の、data-rid
+        無しカードだけが対象。8/4のretrofit以降はカードに必ずdata-ridが
+        付く前提なので、それ以降の日付のridless cardをURL照合に使わない。
+        """
+        with tempfile.TemporaryDirectory() as d:
+            reviews = os.path.join(d, "reviews")
+            os.makedirs(reviews)
+            # ちょうど cutoff 当日と、それ以降の日付。どちらも対象外。
+            _write(os.path.join(reviews, "2026-08-04.html"),
+                   '<div class="vcard"><a class="vlink" '
+                   'href="https://x.com/user/status/1757864748"></a></div>')
+            _write(os.path.join(reviews, "2026-09-14.html"),
+                   '<div class="vcard"><a class="vlink" '
+                   'href="https://x.com/user/status/1757864938"></a></div>')
+            rid_dates, url_dates, _unreadable = select_targets.card_index(reviews)
+            self.assertEqual(rid_dates, {})
+            self.assertEqual(url_dates, {})
+
+    def test_ridless_card_before_fallback_cutoff_is_used(self):
+        with tempfile.TemporaryDirectory() as d:
+            reviews = os.path.join(d, "reviews")
+            os.makedirs(reviews)
+            _write(os.path.join(reviews, "2026-08-03.html"),
+                   '<div class="vcard"><a class="vlink" '
+                   'href="https://x.com/user/status/1757864748"></a></div>')
+            rid_dates, url_dates, _unreadable = select_targets.card_index(reviews)
+            self.assertEqual(url_dates, {("x", "1757864748"): {"2026-08-03"}})
 
 
 class TestSelect(unittest.TestCase):
@@ -295,10 +343,40 @@ class TestUrlKey(unittest.TestCase):
             select_targets.url_key("https://www.threads.net/@user/post/DEF456"),
             ("threads", "DEF456"))
 
-    def test_generic_scheme_host_path(self):
+    def test_generic_scheme_host_path_drops_only_tracking_query(self):
+        """フラグメントは除去し、追跡用でないクエリ(q=1)は残す
+        （2026-09-22 Codexレビュー2周目 指摘対応）。
+        """
         self.assertEqual(
             select_targets.url_key("https://Example.com/foo/bar/?q=1#frag"),
-            ("generic", "https://example.com/foo/bar"))
+            ("generic", "https://example.com/foo/bar?q=1"))
+
+    def test_generic_query_id_1_and_id_2_do_not_match(self):
+        """`?id=1` と `?id=2` は別物としてキーが分かれる（クエリを全部
+        落としていた旧実装のリグレッション防止）。
+        """
+        k1 = select_targets.url_key("https://example.com/foo/bar?id=1")
+        k2 = select_targets.url_key("https://example.com/foo/bar?id=2")
+        self.assertIsNotNone(k1)
+        self.assertIsNotNone(k2)
+        self.assertNotEqual(k1, k2)
+
+    def test_generic_tracking_params_are_stripped(self):
+        """utm_*・fbclid・gclid・igsh・img_index・s・t・ref・xmt は
+        追跡用として落とされ、同じページを指すURLは一致する。
+        """
+        k1 = select_targets.url_key(
+            "https://example.com/foo/bar?utm_source=x&fbclid=abc")
+        k2 = select_targets.url_key("https://example.com/foo/bar")
+        self.assertEqual(k1, k2)
+
+    def test_generic_tracking_and_real_query_mixed(self):
+        """追跡用パラメータと実質的なクエリが混在する場合、追跡用だけを
+        落として実質的な方は残す。
+        """
+        k = select_targets.url_key(
+            "https://example.com/foo/bar?id=1&utm_source=x")
+        self.assertEqual(k, ("generic", "https://example.com/foo/bar?id=1"))
 
     def test_generic_root_path_returns_none(self):
         self.assertIsNone(select_targets.url_key("https://example.com/"))
