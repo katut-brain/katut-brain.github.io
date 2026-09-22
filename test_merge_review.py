@@ -117,7 +117,8 @@ class TestMerge(unittest.TestCase):
         existing = _doc(meta="テーマA・テーマB")
         new = _doc(meta="テーマB・テーマC")
         merged, _stats = merge_review.merge(existing, new, NOW)
-        meta_block = merge_review.extract_blocks(merged, "div", "meta")[0]["raw"]
+        meta_blocks, _m = merge_review.extract_blocks(merged, "div", "meta")
+        meta_block = meta_blocks[0]["raw"]
         self.assertIn("テーマA", meta_block)
         self.assertIn("テーマB", meta_block)
         self.assertIn("テーマC", meta_block)
@@ -205,6 +206,49 @@ class TestMerge(unittest.TestCase):
             merge_review.merge(broken2, new, NOW)
 
 
+class TestValidateStructure(unittest.TestCase):
+    """2026-09-22 Codexレビュー3周目 指摘対応: 統合前の構造検証。"""
+
+    def test_valid_document_has_no_errors(self):
+        self.assertEqual(merge_review.validate_structure(_doc()), [])
+
+    def test_missing_doctype_is_an_error(self):
+        broken = "<html><body>" + _doc()[len('<!doctype html><html><body>'):]
+        errs = merge_review.validate_structure(broken)
+        self.assertTrue(any("doctype" in e for e in errs))
+
+    def test_missing_closing_html_is_an_error(self):
+        broken = _doc().rsplit("</html>", 1)[0] + "<!-- truncated -->"
+        errs = merge_review.validate_structure(broken)
+        self.assertTrue(any("</html>" in e for e in errs))
+
+    def test_unclosed_vcard_is_an_error(self):
+        # 開いた <div class="vcard"> に対応する </div> が1つも無い
+        # （depth-counting が閉じタグを見つけられず malformed になる）。
+        broken = ('<!doctype html><html><body>'
+                  '<div class="vcard">'
+                  '<a class="vlink" href="https://x.com/a/status/1"></a>'
+                  '</html>')
+        errs = merge_review.validate_structure(broken)
+        self.assertTrue(any("vcard" in e for e in errs))
+
+    def test_unclosed_summary_section_is_an_error(self):
+        broken = ('<!doctype html><html><body><div class="wrap">'
+                  '<section class="summary"><h2>まとめ</h2><p>本文'
+                  '<footer>f</footer></div></body></html>')
+        errs = merge_review.validate_structure(broken)
+        self.assertTrue(any("summary" in e for e in errs))
+
+    def test_merge_rejects_when_new_html_is_malformed(self):
+        """既存は正常でも、新規側が壊れていれば統合しない（既存を無傷で
+        残すため、呼び出し側はここで例外を捕捉して mode=error にする）。
+        """
+        existing = _doc()
+        broken_new = "<html><body>not even doctype</body></html>"
+        with self.assertRaises(ValueError):
+            merge_review.merge(existing, broken_new, NOW)
+
+
 class TestMainCLI(unittest.TestCase):
     def _run(self, args, expect=0):
         cmd = [sys.executable, SCRIPT] + args
@@ -226,6 +270,22 @@ class TestMainCLI(unittest.TestCase):
             dest = os.path.join(reviews_dir, "2026-09-21.html")
             self.assertTrue(os.path.exists(dest))
             self.assertIn('data-rid="1"', _read(dest))
+
+    def test_malformed_new_file_is_rejected_without_creating_dest(self):
+        """dest が無い（mode=new のはず）状態でも、新規HTMLの構造が壊れて
+        いれば統合前検証で弾き、dest を作らない。
+        """
+        with tempfile.TemporaryDirectory() as d:
+            reviews_dir = os.path.join(d, "reviews")
+            os.makedirs(reviews_dir)
+            new_path = os.path.join(d, "new.html")
+            _write(new_path, "<html><body>not even doctype</body></html>")
+            out = self._run(["--target", "2026-09-21", "--new", new_path,
+                              "--reviews-dir", reviews_dir], expect=1)
+            self.assertIn("mode=error", out)
+            self.assertIn("invalid_structure", out)
+            dest = os.path.join(reviews_dir, "2026-09-21.html")
+            self.assertFalse(os.path.exists(dest))
 
     def test_merge_existing_and_new_via_cli(self):
         with tempfile.TemporaryDirectory() as d:

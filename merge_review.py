@@ -112,10 +112,14 @@ def _find_next_open(html_str, tag, pos):
 def extract_blocks(html_text, tag, cls=None):
     """class トークンに cls を含む `<tag>...</tag>` ブロックを深さカウントで
     切り出す（cls=None ならクラス属性を問わず、そのタグの出現ごとに切り出す）。
-    返り値は [{"start", "end", "raw"}, ...]（select_targets.extract_vcards
-    と同じ形）。
+    返り値は (blocks, malformed) のタプル（select_targets.extract_vcards と
+    同じ形）。blocks は [{"start", "end", "raw"}, ...]。malformed は、
+    閉じタグが足りずに最後まで閉じられなかったブロックが1件でもあれば True
+    （2026-09-22 Codexレビュー3周目 指摘対応で追加。merge_review.py の
+    validate_structure() がこれを見て、壊れた入力での統合を拒否する）。
     """
     blocks = []
+    malformed = False
     idx = 0
     n = len(html_text)
     structural = select_targets._blank_comments(html_text)
@@ -136,6 +140,7 @@ def extract_blocks(html_text, tag, cls=None):
             next_close = structural.find(close_tag, pos)
             if next_close == -1:
                 pos = n
+                malformed = True
                 break
             if next_open != -1 and next_open < next_close:
                 depth += 1
@@ -146,7 +151,7 @@ def extract_blocks(html_text, tag, cls=None):
         end = pos
         blocks.append({"start": start, "end": end, "raw": html_text[start:end]})
         idx = end
-    return blocks
+    return blocks, malformed
 
 
 def _strip_tag(raw, tag):
@@ -221,13 +226,13 @@ def _notes_list_patches(existing_block, new_block_raw):
     """
     patches = []
     for list_cls in ("ilist", "qlist"):
-        new_uls = extract_blocks(new_block_raw, "ul", list_cls)
+        new_uls, _m_new_ul = extract_blocks(new_block_raw, "ul", list_cls)
         if not new_uls:
             continue
         new_lis = _LI_RE.findall(new_uls[0]["raw"])
         if not new_lis:
             continue
-        existing_uls = extract_blocks(existing_block["raw"], "ul", list_cls)
+        existing_uls, _m_existing_ul = extract_blocks(existing_block["raw"], "ul", list_cls)
         if existing_uls:
             existing_lis_norm = {
                 _normalize(li) for li in _LI_RE.findall(existing_uls[0]["raw"])
@@ -250,6 +255,55 @@ def _notes_list_patches(existing_block, new_block_raw):
     return patches
 
 
+def validate_structure(html_text):
+    """統合前に新規/既存いずれのHTMLも通す構造検証（2026-09-22 Codexレビュー
+    3周目 指摘対応）。統合はテキストの切り貼りで行うため、入力そのものが
+    壊れていると統合結果も壊れる。ここで壊れていることを検出し、呼び出し側
+    （merge()）に例外を投げさせて mode=error にする——統合方式では壊れた
+    既存カードを直せないので、壊れたまま統合を続けない。
+
+    戻り値は問題点の説明文リスト（空リストなら問題なし）。確認する項目:
+      - `<!doctype html>` で始まる
+      - `</html>` で終わる
+      - `.vcard`（select_targets.extract_vcards）が閉じている
+        （malformed=True でない）
+      - `.summary`・`.notes` セクション（extract_blocks）が閉じている
+      - 上記いずれのブロックも、終端が文書の `</html>` 終端をまたいでいない
+        （親コンテナや文書末尾を越えて切り出されていないか）
+    """
+    errors = []
+    stripped_head = html_text.lstrip()
+    if not stripped_head.lower().startswith("<!doctype html>"):
+        errors.append("<!doctype html> で始まっていない")
+    stripped_tail = html_text.rstrip()
+    if not stripped_tail.lower().endswith("</html>"):
+        errors.append("</html> で終わっていない")
+    doc_end = len(stripped_tail)
+
+    cards, cards_malformed = select_targets.extract_vcards(html_text)
+    if cards_malformed:
+        errors.append(".vcard に閉じていないブロックがある")
+    for c in cards:
+        if c["end"] > doc_end:
+            errors.append(".vcard がドキュメント終端(</html>)をまたいでいる")
+            break
+
+    for tag, cls in (("section", "summary"), ("section", "notes")):
+        blocks, block_malformed = extract_blocks(html_text, tag, cls)
+        if block_malformed:
+            errors.append('<%s class="%s"> に閉じていないブロックがある'
+                          % (tag, cls))
+        for b in blocks:
+            if b["end"] > doc_end:
+                errors.append(
+                    '<%s class="%s"> がドキュメント終端(</html>)をまたいでいる'
+                    % (tag, cls)
+                )
+                break
+
+    return errors
+
+
 def merge(existing_html, new_html, now_jst):
     """統合後のHTML文字列と統計dict（kept/added/skipped_dup）を返す。
 
@@ -257,6 +311,14 @@ def merge(existing_html, new_html, now_jst):
     する。この関数が例外を投げた場合、呼び出し側は既存ファイルへの書き込み
     を一切行わない）。
     """
+    for label, html_text in (("既存", existing_html), ("新規", new_html)):
+        errs = validate_structure(html_text)
+        if errs:
+            raise ValueError(
+                "%sファイルの構造検証に失敗したため統合を中止する: %s"
+                % (label, "; ".join(errs))
+            )
+
     stats = {"kept": 0, "added": 0, "skipped_dup": 0}
     ts = now_jst.strftime("%m/%d %H:%M")
 
@@ -271,57 +333,35 @@ def merge(existing_html, new_html, now_jst):
     patches = []  # (abs_pos, text) の直接挿入パッチ（既存ブロックの中身へ）
 
     # --- 1. .vcard ---
-    # 重複判定は rid・強いIDキー(post_id)・generic種別URLキーの3種類を
-    # それぞれ独立な集合として持ち、いずれか1つでも一致すれば重複とする
-    # （select_targets.card_identity() のような単一優先順位の識別子には
-    # しない——別rid同士でも強いIDキーが一致すれば「同じ投稿」なので、
-    # rid不一致だけを理由に見逃してはいけない）。
+    # 重複判定は select_targets.card_matches_any() を正本にする（2026-09-22
+    # Codexレビュー3周目 指摘対応: 以前はここに同じロジックをローカル関数で
+    # 複製していたが、check_review_preserved.py 側の保持判定と食い違う
+    # リスクがあるため select_targets.py に1つだけ置いて両方から使う）。
+    # rid・強いIDキー(post_id)・generic種別URLキーの3種類をそれぞれ独立な
+    # 集合として持ち、いずれか1つでも一致すれば重複とする——別rid同士でも
+    # 強いIDキーが一致すれば「同じ投稿」なので、rid不一致だけを理由に
+    # 見逃してはいけない。
     existing_cards, _m1 = select_targets.extract_vcards(existing_html)
     new_cards, _m2 = select_targets.extract_vcards(new_html)
-    existing_rids = set()
-    existing_post_ids = set()
-    existing_generic = set()
-
-    def _collect(card_raw, rids, post_ids, generic):
-        rid_str = select_targets.card_rid(card_raw)
-        if rid_str is not None:
-            try:
-                rids.add(int(rid_str))
-            except ValueError:
-                pass
-        href = select_targets.card_href(card_raw)
-        if href:
-            key = select_targets.url_key(href)
-            if key is not None:
-                (post_ids if key[0] != "generic" else generic).add(key)
-
-    def _is_dup(card_raw, rids, post_ids, generic):
-        rid_str = select_targets.card_rid(card_raw)
-        if rid_str is not None:
-            try:
-                if int(rid_str) in rids:
-                    return True
-            except ValueError:
-                pass
-        href = select_targets.card_href(card_raw)
-        if href:
-            key = select_targets.url_key(href)
-            if key is not None:
-                return key in (post_ids if key[0] != "generic" else generic)
-        return False
-
-    for c in existing_cards:
-        _collect(c["raw"], existing_rids, existing_post_ids, existing_generic)
+    existing_rids, existing_post_ids, existing_generic = \
+        select_targets.card_key_sets(c["raw"] for c in existing_cards)
     stats["kept"] = len(existing_cards)
 
     add_cards = []
     for c in new_cards:
-        if _is_dup(c["raw"], existing_rids, existing_post_ids, existing_generic):
+        if select_targets.card_matches_any(
+                c["raw"], existing_rids, existing_post_ids, existing_generic):
             stats["skipped_dup"] += 1
             continue
         add_cards.append(c["raw"])
         # 新規側内部の重複も後続で弾くために、追加した分も取り込んでおく。
-        _collect(c["raw"], existing_rids, existing_post_ids, existing_generic)
+        for kind, val in select_targets.card_identity_keys(c["raw"]):
+            if kind == "rid":
+                existing_rids.add(val)
+            elif kind == "post_id":
+                existing_post_ids.add(val)
+            else:
+                existing_generic.add(val)
     stats["added"] = len(add_cards)
     if add_cards:
         to_insert_chunks.append(
@@ -330,8 +370,8 @@ def merge(existing_html, new_html, now_jst):
         )
 
     # --- 2. .summary p ---
-    new_summary_blocks = extract_blocks(new_html, "section", "summary")
-    existing_summary_blocks = extract_blocks(existing_html, "section", "summary")
+    new_summary_blocks, _m_new_summary = extract_blocks(new_html, "section", "summary")
+    existing_summary_blocks, _m_existing_summary = extract_blocks(existing_html, "section", "summary")
     if new_summary_blocks:
         new_ps = _P_RE.findall(new_summary_blocks[0]["raw"])
         if new_ps:
@@ -348,8 +388,8 @@ def merge(existing_html, new_html, now_jst):
                 to_insert_chunks.append(new_summary_blocks[0]["raw"])
 
     # --- 3. .meta（テーマ行） ---
-    new_meta_blocks = extract_blocks(new_html, "div", "meta")
-    existing_meta_blocks = extract_blocks(existing_html, "div", "meta")
+    new_meta_blocks, _m_new_meta = extract_blocks(new_html, "div", "meta")
+    existing_meta_blocks, _m_existing_meta = extract_blocks(existing_html, "div", "meta")
     if new_meta_blocks and existing_meta_blocks:
         block = existing_meta_blocks[0]
         existing_text = _strip_tag(block["raw"], "div")
@@ -368,8 +408,8 @@ def merge(existing_html, new_html, now_jst):
         to_insert_chunks.append(new_meta_blocks[0]["raw"])
 
     # --- 4. <h2> + <section class="notes"> の組（やりたい/気になった・深掘り） ---
-    existing_notes = extract_blocks(existing_html, "section", "notes")
-    new_notes = extract_blocks(new_html, "section", "notes")
+    existing_notes, _m_existing_notes = extract_blocks(existing_html, "section", "notes")
+    new_notes, _m_new_notes = extract_blocks(new_html, "section", "notes")
     existing_by_h2 = {}
     for b in existing_notes:
         h2 = _h2_text_before(existing_html, b["start"])
@@ -441,6 +481,11 @@ def main(argv):
 
     try:
         if not os.path.exists(dest):
+            errs = validate_structure(new_html)
+            if errs:
+                print("MERGE_STATUS: target=%s mode=error error=invalid_structure (%s)"
+                      % (args.target, "; ".join(errs)))
+                return 1
             _atomic_write(dest, new_html)
             cards, _malformed = select_targets.extract_vcards(new_html)
             print("MERGE_STATUS: target=%s mode=new kept=0 added=%d skipped_dup=0"

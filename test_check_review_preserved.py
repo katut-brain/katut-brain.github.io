@@ -44,13 +44,15 @@ class TestMissingCards(unittest.TestCase):
         old = _doc(CARD_A + CARD_B)
         new = _doc(CARD_A)
         missing = crp.missing_cards(old, new)
-        self.assertEqual(missing, {("rid", 2)})
+        self.assertEqual(missing, {("rid", 2), ("post_id", ("x", "222"))})
 
     def test_strong_id_key_counts_as_preserved_even_with_different_rid(self):
-        """rid が変わっても、強いIDキー(post_id)が一致していれば別カードの
-        識別子としては同一に見えないが、card_identity() は rid を優先する
-        ため rid が変わると別物扱いになる——これは安全側（縮小を過検知して
-        止める）であることを確認する。
+        """2026-09-22 Codexレビュー3周目 指摘対応: 保持判定は「rid・強いID
+        キー(post_id)・genericキーのいずれか1つでも一致すれば保持」という
+        OR判定にする（select_targets.card_matches_any() を正本にする）。
+        rid が変わっても、href の強いIDキー(Instagram shortcode)が一致
+        していれば「同じ投稿」とみなし、保持されているとする（別rid同士を
+        別物と誤認して縮小を過検知しない）。
         """
         old = _doc('<div class="vcard"><a class="vlink" '
                    'href="https://www.instagram.com/p/DY5p4UKkuQc/"></a>'
@@ -59,7 +61,19 @@ class TestMissingCards(unittest.TestCase):
                    'href="https://www.instagram.com/p/DY5p4UKkuQc/"></a>'
                    '<button data-rid="1758030878"></button></div>')
         missing = crp.missing_cards(old, new)
-        self.assertEqual(missing, {("rid", 1758030881)})
+        self.assertEqual(missing, set())
+
+    def test_rid_only_change_with_no_shared_key_is_missing(self):
+        """rid も href の強いIDキーも一致しない（別々のURLかつ別rid）場合は
+        正しく missing として検出する（OR判定が過剰に緩くなっていない
+        ことの確認）。
+        """
+        old = _doc(CARD_A)
+        new = _doc(CARD_B)
+        missing = crp.missing_cards(old, new)
+        # CARD_A の rid=1・post_id=("x","111") はどちらも CARD_B に無いので
+        # 両方 missing に含まれる。
+        self.assertEqual(missing, {("rid", 1), ("post_id", ("x", "111"))})
 
     def test_unidentified_cards_do_not_count_as_missing(self):
         no_rid_no_href = '<div class="vcard"><span>no link</span></div>'
@@ -172,6 +186,98 @@ class TestGitIntegration(unittest.TestCase):
             cwd=self.tmp, capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+    # --- --history モード（2026-09-22 Codexレビュー3周目 指摘対応） -------
+
+    def _run_history(self, extra_args=()):
+        return subprocess.run(
+            [sys.executable, SCRIPT, "--history",
+             "--path", "reviews/2026-09-21.html", *extra_args],
+            cwd=self.tmp, capture_output=True, text=True, encoding="utf-8",
+        )
+
+    def test_history_detects_loss_hidden_by_a_middle_commit(self):
+        """2026-09-08裁定と同じ理由: 差分ベース(HEAD^..HEAD)では、複数
+        コミットのpushで『途中のコミット』が落としたカードを見逃す。
+        commit1: A+B → commit2(途中でBを消す): A → commit3: A+C。
+        HEAD^..HEAD (commit2..commit3) の差分は「Cが増えた」しか見えず
+        Bの消失を検知できないが、--history は commit1〜3 全履歴を見るので
+        Bの消失を検知できる。
+        """
+        self._write("reviews/2026-09-21.html", _doc(CARD_A + CARD_B))
+        self._commit("commit1: A+B")
+        self._write("reviews/2026-09-21.html", _doc(CARD_A))
+        self._commit("commit2: drop B")
+        card_c = ('<div class="vcard"><a class="vlink" '
+                   'href="https://x.com/c/status/333"></a>'
+                   '<button data-rid="3"></button></div>')
+        self._write("reviews/2026-09-21.html", _doc(CARD_A + card_c))
+        self._commit("commit3: add C")
+
+        r = self._run_history()
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("status=shrunk", r.stdout)
+        self.assertIn("rid:2", r.stdout)
+
+    def test_history_removing_commit_with_allow_marker_is_permitted(self):
+        self._write("reviews/2026-09-21.html", _doc(CARD_A + CARD_B))
+        self._commit("commit1: A+B")
+        self._write("reviews/2026-09-21.html", _doc(CARD_A))
+        self._commit("commit2: intentionally drop B [allow-review-shrink]")
+
+        r = self._run_history()
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("status=ok", r.stdout)
+        self.assertIn("allowed=1", r.stdout)
+
+    def test_history_strong_id_match_across_different_rid_is_preserved(self):
+        """2026-09-22 Codexレビュー3周目 指摘対応: 別rid・同じ強いIDキー
+        (Instagram shortcode)のカードは「保持されている」とみなし、
+        誤って shrunk 扱いにしない。
+        """
+        card_v1 = ('<div class="vcard"><a class="vlink" '
+                   'href="https://www.instagram.com/p/DY5p4UKkuQc/"></a>'
+                   '<button data-rid="1758030881"></button></div>')
+        card_v2 = ('<div class="vcard"><a class="vlink" '
+                   'href="https://www.instagram.com/p/DY5p4UKkuQc/"></a>'
+                   '<button data-rid="1758030878"></button></div>')
+        self._write("reviews/2026-09-21.html", _doc(card_v1))
+        self._commit("commit1")
+        self._write("reviews/2026-09-21.html", _doc(card_v2))
+        self._commit("commit2: rid corrected, same post")
+
+        r = self._run_history()
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("status=ok", r.stdout)
+
+    def test_history_no_history_for_untracked_file(self):
+        self._write("reviews/2026-09-21.html", _doc(CARD_A))
+        # コミットしない（履歴ゼロ）。
+        r = self._run_history()
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("status=no_history", r.stdout)
+
+    def test_history_and_old_ref_together_is_an_error(self):
+        r = subprocess.run(
+            [sys.executable, SCRIPT, "--history", "--old-ref", "HEAD",
+             "--path", "reviews/2026-09-21.html"],
+            cwd=self.tmp, capture_output=True, text=True, encoding="utf-8",
+        )
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+
+    def test_history_all_flag_globs_reviews_dir(self):
+        self._write("reviews/2026-09-21.html", _doc(CARD_A + CARD_B))
+        self._commit("commit1: A+B")
+        self._write("reviews/2026-09-21.html", _doc(CARD_A))
+        self._commit("commit2: drop B (no marker)")
+
+        r = subprocess.run(
+            [sys.executable, SCRIPT, "--history", "--all"],
+            cwd=self.tmp, capture_output=True, text=True, encoding="utf-8",
+        )
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("reviews/2026-09-21.html", r.stdout)
+        self.assertIn("status=shrunk", r.stdout)
 
 
 if __name__ == "__main__":

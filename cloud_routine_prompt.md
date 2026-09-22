@@ -200,7 +200,9 @@
      - **なぜ**: select_targets.py 導入後は reviews/*.html 自体が「掲載済み」の記録を兼ねる。同じ TARGET でランが2回走る（手動実行・`TARGET_OVERRIDE`・同日の再実行）と、`reviews/<TARGET>.html` を新規生成でそのまま上書きしてしまうと既存のカードが消える。一度消えると select_targets.py はそのURL/ridをもう「未掲載」と見なさない＝**復元できない**。`merge_review.py` は `reviews/<TARGET>.html` が無ければ一時ファイルをそのまま置くだけ（`mode=new`）、既存があれば既存カードを残したまま新規カード・まとめの追記・テーマ・気づき/深掘りの新規節・notegen-warn を安全に統合する（`mode=merged`）。
      - 出力の `MERGE_STATUS: target=<TARGET> mode=new|merged kept=N added=N skipped_dup=N` を読む。`mode=merged` で `skipped_dup>0` なら、その件数ぶんは既に掲載済みとして統合時に弾かれている（正常。エラーではない）。
      - **以降（手順7・7.5・8）で「reviews/<TARGET>.html」と書いてあるものは、このコマンド実行後の `reviews/<TARGET>.html`（統合済みの実ファイル）を指す。** `/tmp/review_new.html` 自体はもう参照しない。
-     - このコマンドが非ゼロで終わった場合（`MERGE_STATUS: ... mode=error`）、`reviews/<TARGET>.html` は**一切変更されていない**（`merge_review.py` は失敗時に既存ファイルへ書き込まない設計）。この場合は手順を止めず、`/tmp/review_new.html` の内容が失われたことをログに残した上で手順6以降へ進む（`reviews/<TARGET>.html` 自体は既存のまま残っているので、mode=error の夜は「今夜ぶんの追記だけ」が失われる。恒久的な破損ではない）。
+     - このコマンドが非ゼロで終わった場合（`MERGE_STATUS: ... mode=error`）、`reviews/<TARGET>.html` は**一切変更されていない**（`merge_review.py` は失敗時に既存ファイルへ書き込まない設計）。手順を止めず、`/tmp/review_new.html` の内容が失われたことをログに残した上で手順6以降へ進む。**この夜 `reviews/<TARGET>.html` が実行前の時点でどうだったかで、この後の分岐が変わる**（手順7 の `card_parse_failed` 対応・手順8の(a)(b)(c)分岐と矛盾しないよう、ここで明示する）：
+       - **実行前に `reviews/<TARGET>.html` が既に存在していた**（＝この夜は追記のはずだった。統合前検証で既存側が壊れていると判明した等）場合: 既存ファイルはそのまま残る。手順6以降は「`reviews/<TARGET>.html` が存在する」前提で通常どおり進む（手順7の `card_parse_failed` 対応を参照。今夜の新規分は反映されないだけで、ファイル自体は消えない）。手順8は (a) 相当（`reviews/<TARGET>.html` を含めて push）になる。
+       - **実行前に `reviews/<TARGET>.html` が存在しなかった**（＝この夜が初回のはずだった。新規HTML自体の構造検証で弾かれた等）場合: `reviews/<TARGET>.html` は作られないまま。手順3の選定が1件以上でもこの夜は reviews を作れなかったことになるので、手順7・7.5は「手順5で reviews を作った場合」に該当せずスキップし、手順8は (b) または (c) 相当（`fetch_facts/` 配下の変更有無で判定。手順3の選定が1件以上あった扱いは変えないが、reviews が無いのでpush対象にreviews/<TARGET>.htmlは含まれない）として扱う。翌晩以降、同じ選定内容が select_targets.py によって再度候補に上がるので取りこぼしではない。
    - **スタイル**：以下の `<style>` ブロックをそのまま使う（CSS変数・ダーク対応込み）。`<title><TARGET> の振り返り</title>`。
      ```html
      <style>
@@ -375,7 +377,14 @@
      1. `python3 check_disclosure.py --date $TARGET --fix` を実行する（スクリプトが不足しているマーカーだけを該当カードの `.vdesc` 末尾に自動追記する。マーカーはスクリプト側の固定定数から確定的に決まるため、LLMによる文面の書き直しは不要）。
      2. 同じコマンドを `--fix` なしで再実行し、`violation=0` であることを確認する。
      3. `reason=no_card` の違反が残っている場合は、対応するカード自体が `reviews/<TARGET>.html` に無い（抜け落ち）ということなので、`--fix` では直らない。手順5に戻ってそのブックマークのカードを書き足してから、この手順7をやり直す。
-     4. `DISCLOSURE_ERROR: ... card_parse_failed` が出た場合は `reviews/<TARGET>.html` のカード構造そのものが壊れている疑いがあるので、手順5からやり直す。
+     4. `DISCLOSURE_ERROR: ... card_parse_failed` が出た場合は `reviews/<TARGET>.html` のカード構造そのものが壊れている疑いがある。**2026-09-22 変更**: 統合方式（`merge_review.py`）導入後は「手順5からやり直す」だけでは直らない——`reviews/<TARGET>.html` は既存カードとの統合結果であり、壊れているのが既存側のカードなら、手順5をやり直して新しい `/tmp/review_new.html` を作っても、次の `merge_review.py` 呼び出しが**既存側の構造検証で弾かれて mode=error になる**（統合方式は壊れた既存カードを直せない設計）。そこで次の順で対応する：
+        a. まず `/tmp/review_new.html` を作り直し、`python3 merge_review.py --target $TARGET --new /tmp/review_new.html` を**もう1回だけ**再試行する（一時的な生成ミスの可能性を先に消す）。`MERGE_STATUS: ... mode=merged` になれば、そのまま `check_disclosure.py --date $TARGET --fix` からやり直す。
+        b. 再試行しても `mode=error` のままなら（＝壊れているのは既存の `reviews/<TARGET>.html` 側）、直そうとせずに先へ進む。ただし `reviews/<TARGET>.html` の `</footer>` 直前に、既存の `notegen-warn` と同じ書式で1行だけ追記する：
+           ```html
+           <p class="notegen-warn">⚠️ reviews構造検証エラーのため今回の統合をスキップ（既存カードは保持済み・新規分は未反映の可能性あり）</p>
+           ```
+           （`</footer>` が一意に見つからない等でこの追記自体も失敗する場合は、追記せずログにその旨だけ残して先へ進む。無人ランを止めない）。
+        c. どちらの場合も、これで手順7を続行する（`--fix` 以降の開示チェックは、bの場合は既存カードのみを対象に行われる。新規分がその夜の開示チェック対象から漏れるのは仕様——構造が壊れた既存ファイルを無理に直そうとしない、というこの節全体の方針と一致する）。
      5. どの場合も、ここで手順を止めずに手順7.5へ進む。`DISCLOSURE_EXCLUDED:` 行はバックフィル（過去日のカードを再取得しただけ）の正常な結果なので無視してよい。**この仕組みは手順7の実行自体を強制しない。公開ゲートでマーカー欠落を警告することで、手順7を飛ばした夜も検知できる**（`reviews/<TARGET>.html` 自体が無い＝手順7未実行の夜は、公開ゲート側が `status=no_review` かつ duty>0 のときに `::warning` を出す）。
    - **Reel動画取得の全滅検知（機械判定・2026-09-20 追加、同日ユーザー裁定でスクリプト化）**：Instagram Reel動画取得の中継（kkinstagram.com）への依存は4回目で、過去3回とも数週間〜数ヶ月で死んでいる。中継が死んでも `fetch_instagram()` はcaption-onlyで `ok:true` のまま完走するため、**黙って毎晩公開され続け誰も気づかない**リスクがある。`python3 ledger.py --summary` は誰も無人で実行しないコマンドなので（本手順書内で「これは無人ランの実行指示ではない」と明記済み）、上の開示チェックと同じく**成果物側（reviews）に痕跡を残す**方式で検知する。**判定ロジック（母数フィルタ・警告条件）は `reel_health.py` 側だけが持ち、この手順書には書き写さない**（二重管理を避ける。ロジックを直したくなったら `reel_health.py` と `test_reel_health.py` を見る）。
      1. `reel_health.py` を実行する。**対象日は明示的に渡す**（手順ごとに別のシェル呼び出しになり、手順1で代入した `TARGET` はここには届かない。手順2.5の `backfill.py --target $TARGET` と同じ形にする＝この場で手順1・26行目と同じ式で `TARGET` を再導出してから `--target` で渡す）：
@@ -563,3 +572,4 @@
 - (b) 手順3の選定が0件（対象が無い日）だが、**今回のランで `fetch_facts/` 配下に変更が生じた**（`git status --porcelain -- fetch_facts/` で差分あり。改善(attempted)・スタブ書き込み(stub_written)・backfill_ridタグ付け(rid_mismatch)のほか、**手順2.5 の証跡 `fetch_facts/runs/<TARGET>.json` だけが増えた夜も含む**） → reviews は作らず、`fetch_facts/` 配下の実在するものを push する（コミットメッセージ `update: <TARGET> (backfill only)`）。
 - (c) 手順3の選定が0件かつ、今回のランでの `fetch_facts/` 配下への変更も無い（`git status --porcelain -- fetch_facts/` が空） → 何も push せず正常終了する。**手順2.5 が最初の証跡書き込みに成功していれば証跡が増えるので、通常この分岐には入らない**。入った場合は「手順2.5 を飛ばした」「最初の書き込みに到達する前に止まった」「証跡の書き込みに失敗した（`BACKFILL_EVIDENCE: write_failed`）」のどれかなので、**ランのログと併せて判定する**（分岐そのものは (c) で正しい＝押すものが無いなら押さない）。
 - 手順3の選定が1件以上あった日は、重複チェックでスキップされなかった各レコードについて、スキーマ検証に合格したノートが Vaultリポ `Explore/bookmarks/` に作成され `main` へ push される（1件も新規作成対象が無ければ手順8.5のpushは行わない＝これも正常終了）。
+- ⚠️ **例外**: 手順3の選定が1件以上でも、手順5の `merge_review.py` が `mode=error`（かつ実行前に `reviews/<TARGET>.html` が存在しなかった＝新規HTML自体の構造検証で弾かれた）だった夜は、`reviews/<TARGET>.html` が作られない。この夜は「選定1件以上」であっても (a) ではなく、`fetch_facts/` 配下の変更有無で (b)/(c) と同じ基準を適用する（reviews が無いので push 対象に含めようがないため）。選定内容は捨てられたわけではなく、翌晩以降 select_targets.py が同じレコードを再度候補にする。

@@ -543,23 +543,30 @@ def classify_reviewed(rid, source_url, reviewed_rids, reviewed_url_keys,
     return "url" if key in reviewed_url_keys else None
 
 
-def card_identity(card_raw):
-    """1枚の `.vcard` 生HTMLから、その掲載カードを一意に識別するキーを返す
-    （正本はここ1か所。merge_review.py / check_review_preserved.py はここを
-    import して使う。同じロジックを複数箇所に書かない — 2026-09-22追加）。
+def card_identity_keys(card_raw):
+    """1枚の `.vcard` 生HTMLから、そのカードを指しうる識別キーの**集合**を
+    返す（正本はここ1か所。merge_review.py / check_review_preserved.py は
+    ここを import して使う。同じロジックを複数箇所に書かない）。
 
-    classify_reviewed() と同じ優先順位で判定する:
-      1. data-rid があれば ("rid", int値)
-      2. href の url_key() が強い種別（generic以外）なら ("post_id", key)
-      3. href の url_key() が generic種別なら ("url", key)
-      4. どれも取れなければ None（rid無し・href無し・キーを抽出できない
-         カード。呼び出し側は「識別できないので比較対象にしない」扱いにする
-         こと＝安全側。誤って別物同士を同一視しない）
+    2026-09-22 Codexレビュー3周目 指摘対応: 当初は優先順位付きの単一
+    識別子（rid優先、無ければhref由来のキー）を1つだけ返す card_identity()
+    だったが、それだと「別rid・同じ強いIDキー」のカード同士を同一視できず、
+    merge の重複判定（rid・強いID・genericキーをそれぞれ独立にOR判定する）
+    と食い違っていた。ここでは1枚のカードが持ちうる識別キーを**全部**
+    集合として返し、呼び出し側（card_key_sets/card_matches_any）で
+    OR判定する。
+      - data-rid があれば ("rid", int値) を含める
+      - href の url_key() が取れれば、強い種別（generic以外）なら
+        ("post_id", key)、generic種別なら ("url", key) を含める
+      - rid と href の両方があれば最大2件（両方とも独立にキーとして残す）
+      - どちらも無ければ空集合（識別できないカードは比較対象にしない
+        ＝安全側。誤って別物同士を同一視しない）
     """
+    keys = set()
     rid_str = card_rid(card_raw)
     if rid_str is not None:
         try:
-            return ("rid", int(rid_str))
+            keys.add(("rid", int(rid_str)))
         except ValueError:
             pass
     href = card_href(card_raw)
@@ -567,9 +574,44 @@ def card_identity(card_raw):
         key = url_key(href)
         if key is not None:
             if key[0] != "generic":
-                return ("post_id", key)
-            return ("url", key)
-    return None
+                keys.add(("post_id", key))
+            else:
+                keys.add(("url", key))
+    return keys
+
+
+def card_key_sets(cards_raw):
+    """複数カードの生HTMLの並びから (rid集合, post_id集合, url集合) を作る
+    （正本はここ1か所。merge_review.py の重複判定・check_review_preserved.py
+    の保持判定、両方がこれを使う）。
+    """
+    rids, post_ids, urls = set(), set(), set()
+    for raw in cards_raw:
+        for kind, val in card_identity_keys(raw):
+            if kind == "rid":
+                rids.add(val)
+            elif kind == "post_id":
+                post_ids.add(val)
+            else:
+                urls.add(val)
+    return rids, post_ids, urls
+
+
+def card_matches_any(card_raw, rids, post_ids, urls):
+    """1枚のカードが、既知の rid集合・post_id集合・url集合の**いずれか1つ
+    でも**一致すれば True（正本はここ1か所。merge_review.py の重複判定・
+    check_review_preserved.py の保持判定、両方がこれを使う。2026-09-22
+    ユーザー裁定「同じ投稿の再保存は重複とみなす」と揃える：別rid同士でも
+    強いIDキーが一致すれば「同じ投稿」として扱う）。
+    """
+    for kind, val in card_identity_keys(card_raw):
+        if kind == "rid" and val in rids:
+            return True
+        if kind == "post_id" and val in post_ids:
+            return True
+        if kind == "url" and val in urls:
+            return True
+    return False
 
 
 def index_only_rids(captures_records, capture_index_path=CAPTURE_INDEX):
