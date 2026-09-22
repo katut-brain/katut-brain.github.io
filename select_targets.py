@@ -17,17 +17,17 @@
 #   - JSON読み込みは open(..., encoding="utf-8") + 失敗を許容するヘルパー
 #     （build_capture_index.py の _load_json と同じ書き方）。
 #
-# rid が無いレコードの扱い（判断・コメントとして残す）:
-#   build_capture_index.py の synthetic_rid() は「rid の無いレコードだけの日が
-#   台帳から消える」事故を防ぐための合成負整数だが、このスクリプトの目的は
-#   「本文材料のある未掲載レコードを拾って reviews へ書く」ことであり、
-#   reviews のカードの data-rid は常に captures.json 由来の実 rid（正の整数、
-#   手順5 のテンプレートで `data-rid="RAINDROP_ID"` として逐語コピーされる）しか
-#   持ち得ない。rid の無いレコードを合成IDで選定対象に混ぜると、実際には
-#   reviews 側で data-rid を書きようがないため「選ばれたのに永久に掲載済み
-#   判定へ辿り着けない」レコードを量産する。よってここでは **rid の無いレコードは
-#   選定対象から除外し、件数だけ captures_no_rid として報告する**（synthetic_rid
-#   は使わない）。
+# rid が無いレコードの扱い（2026-09-22 CEO裁定で変更）:
+#   当初は rid の無いレコードを選定対象から除外していたが、それでは rid が
+#   永久に無いままのレコードが未来永劫「取りこぼし」に留まる。
+#   build_capture_index.py の synthetic_rid()（rid を持たないレコードに
+#   date+source から作る安定した負整数を振る規則）をこのモジュールへ移し
+#   （正本は1か所・import で共有。build_capture_index.py 側は
+#   `select_targets.synthetic_rid` を使う）、rid の無いレコードも
+#   synthetic_rid で選定対象に含める。`data-rid` は選定JSONの `rid` を
+#   そのまま書けばよく（手順書 cloud_routine_prompt.md に明記）、負数の
+#   data-rid も reviewed_index() のカード抽出（RID_ATTR_RE は符号付き数値に
+#   対応済み）で正しく「掲載済み」判定できる。
 #
 # capture_index.json との関係: 参考情報として「captures.json には無いが
 # capture_index.json にはある rid」を数える（index_only）。これは過去に captures.json
@@ -40,6 +40,8 @@ import io
 import json
 import re
 import glob
+import hashlib
+import html as html_module
 import argparse
 import datetime
 import traceback
@@ -60,10 +62,6 @@ REVIEWS_DIR = os.path.join(REPO_DIR, "reviews")
 # リグレッションテスト — 引用符の種類違い・負数・複数カード — に対して
 # 頑健であることを別途テストするため、正規表現自体は負号も許容しておく）。
 RID_ATTR_RE = re.compile(r"""data-rid\s*=\s*["'](-?\d+)["']""")
-
-# reviews/*.html の <a ...href="...">。data-rid 抽出とは別に、
-# 掲載済み判定の URL 照合（下記 url_key）で使う href 集合を作るために使う。
-HREF_ATTR_RE = re.compile(r"""<a\b[^>]*?\bhref\s*=\s*["']([^"']+)["']""", re.IGNORECASE)
 
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -103,18 +101,37 @@ def _default_target():
     return yesterday.isoformat()
 
 
+def synthetic_rid(rec):
+    """`rid` を持たないレコードに、安定した識別子を振る。
+
+    build_capture_index.py と同じ規則（正本はここ1か所）。Raindrop の rid は
+    常に正の整数なので、**負数**にして合成だと見て分かるようにする。
+    date と source から決定的に作るので、同じレコードなら毎回同じ値になる
+    （captures.json は毎晩作り直されるが、date/source が変わらなければ
+    synthetic_rid も変わらない＝再実行しても同じレコードとして掲載済み判定が
+    効く）。
+    """
+    parts = [str(rec.get("date") or "")[:10], str(rec.get("source") or "")]
+    key = chr(31).join(parts)   # 日付にも URL にも現れない区切り
+    return -int(hashlib.sha1(key.encode("utf-8")).hexdigest()[:12], 16)
+
+
 def load_captures(path=CAPTURES):
-    """captures.json を読み、(records, no_rid_count) を返す。
+    """captures.json を読み、(records, synthetic_rid_count) を返す。
 
     トップレベルは list（実測）または {"captures": [...]} のどちらでも許容する
     （build_capture_index.py の captures_by_day() と同じ寛容さ）。
+
+    rid が無いレコードは synthetic_rid() で安定した負整数を振って選定対象に
+    含める（2026-09-22 CEO裁定。rid が付かないまま永久に取りこぼされるのを
+    防ぐ）。synthetic_rid_count はそのうち何件が合成rid経由だったかの参考値。
     """
     data = _load_json(path)
     records = data if isinstance(data, list) else (data or {}).get("captures", [])
     if not isinstance(records, list):
         records = []
     out = []
-    no_rid = 0
+    synth_count = 0
     for rec in records:
         if not isinstance(rec, dict):
             continue
@@ -122,11 +139,16 @@ def load_captures(path=CAPTURES):
         if not isinstance(rid, int):
             # raindrop_id をフォールバックで見る（captures.json の実測フィールド名は
             # "rid" だが、他スクリプト（backfill等）は "raindrop_id" も見ているため
-            # 念のため両対応。両方無ければ rid 無しとして除外する。
+            # 念のため両対応）。それも無ければ synthetic_rid を振る。
             rid = rec.get("raindrop_id")
         if not isinstance(rid, int):
-            no_rid += 1
-            continue
+            date_for_synth = rec.get("date")
+            if not isinstance(date_for_synth, str) or len(date_for_synth) < 10:
+                # 合成キーの一部である date すら無い/不正なレコードは、
+                # 日付でソート・SINCE判定もできないので選定対象にしない。
+                continue
+            rid = synthetic_rid(rec)
+            synth_count += 1
         date = rec.get("date")
         if not isinstance(date, str) or len(date) < 10:
             continue
@@ -135,43 +157,152 @@ def load_captures(path=CAPTURES):
         except ValueError:
             continue
         out.append((rid, date[:10], rec))
-    return out, no_rid
+    return out, synth_count
 
 
-def reviewed_rids(reviews_dir=REVIEWS_DIR):
-    """全 reviews/*.html から data-rid の集合を作る。
+# --- カード単位の HTML 解析（掲載済み判定の土台。正本はここ1か所） -----------
+#
+# 2026-09-22 Codex敵対的レビュー P1-a 指摘への対応: URL照合を単純に
+# 「reviews 全体の href 集合」対 「レコードの source」でやると、**別の rid を
+# 持つカードのURLとたまたま一致**しただけで誤って掲載済み扱いにしてしまう
+# （data-rid を持つカードは rid だけで既に掲載判定できているので、そのカードの
+# href を URL照合の対象に混ぜる意味がない上に、誤爆の温床になる）。
+# そこで reviews を **カード単位**（`.vcard` ブロック）で解析し、
+#   - data-rid を持つカード → rid 集合にのみ算入（URLキー集合には入れない）
+#   - data-rid を持たないカード → そのカードの href の url_key() を
+#     URLキー集合に算入（rid が無いので URL照合でしか掲載済みと確認できない）
+# という分離を行う。check_disclosure.py / build_capture_index.py /
+# .github/workflows/stale-check.yml はすべてこの canonical な実装
+# （card_index / reviewed_index）を import して使う（同じロジックを複数箇所に
+# 書かない）。
 
-    戻り値: (rids: set[int], unreadable_count: int, unreadable_files: list[str])
-    読めないファイル（存在確認後の OSError・UnicodeDecodeError 等）は
-    unreadable として数え、rid 抽出をスキップする（そのファイルに載っていた
-    可能性がある rid を誤って「未掲載」にしてしまう危険が残るため、呼び出し側の
-    STATUS 行で warn を出す）。
+_DIV_OPEN_RE = re.compile(r"<div\b[^>]*>")
+_ANCHOR_OPEN_RE = re.compile(r"<a\b[^>]*>")
+_ATTR_RE = re.compile(
+    r"""([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:"([^"]*)"|'([^']*)')"""
+)
+_COMMENT_RE = re.compile(r"<!--.*?-->", re.S)
+
+
+def _get_attr(tag, name):
+    """<div class="a b" href='...'> のようなタグ文字列から属性値を取る。
+    属性の並び順・引用符の種類（"/'）の揺れに対応する。
     """
-    rids = set()
-    unreadable = []
-    if not os.path.isdir(reviews_dir):
-        return rids, unreadable
-    for path in sorted(glob.glob(os.path.join(reviews_dir, "*.html"))):
-        try:
-            with io.open(path, encoding="utf-8", newline="") as fh:
-                raw = fh.read()
-        except (OSError, UnicodeDecodeError, ValueError):
-            unreadable.append(os.path.basename(path))
+    for m in _ATTR_RE.finditer(tag):
+        attr_name = m.group(1)
+        if attr_name.lower() != name:
             continue
-        for m in RID_ATTR_RE.finditer(raw):
-            try:
-                rids.add(int(m.group(1)))
-            except ValueError:
-                continue
-    return rids, unreadable
+        return m.group(2) if m.group(2) is not None else m.group(3)
+    return None
+
+
+def _has_class_token(class_value, token):
+    if not class_value:
+        return False
+    return token in class_value.split()
+
+
+def _blank_comments(html_str):
+    """`<!-- ... -->` の中身をオフセット長を保ったまま無害化したコピーを返す
+    （改行はそのまま残し、他は空白に置換）。div の開閉カウントなど「構造」を
+    数えるときだけこれを使う。
+    """
+    def repl(m):
+        s = m.group(0)
+        return "".join(ch if ch == "\n" else " " for ch in s)
+    return _COMMENT_RE.sub(repl, html_str)
+
+
+def _find_next_div_open(html_str, pos):
+    """`<div` の直後が空白・`>`・`/` のときだけ開きタグとみなす
+    （`<divider>` のような別要素を誤ってdivとして数えない）。
+    """
+    n = len(html_str)
+    while True:
+        i = html_str.find("<div", pos)
+        if i == -1:
+            return -1
+        after = i + 4
+        if after < n and (html_str[after].isspace() or html_str[after] in ">/"):
+            return i
+        pos = i + 4
+
+
+def extract_vcards(review_html):
+    """class トークンに "vcard" を含む `<div>` ブロックを、開閉の深さを数えて
+    切り出す（check_disclosure.py の同名関数と同じアルゴリズム。正本はここ）。
+    返り値は (cards, malformed) のタプル。
+    cards は [{"start", "end", "raw"}, ...]。malformed は、閉じタグが
+    足りずに最後まで閉じられなかったカードが1件でもあれば True。
+    """
+    cards = []
+    malformed = False
+    idx = 0
+    n = len(review_html)
+    structural = _blank_comments(review_html)
+    for m in _DIV_OPEN_RE.finditer(structural):
+        start = m.start()
+        if start < idx:
+            continue  # 既に前のカードの範囲に含まれている
+        tag = m.group(0)
+        cls = _get_attr(tag, "class")
+        if not _has_class_token(cls, "vcard"):
+            continue
+        pos = m.end()
+        depth = 1
+        while depth > 0:
+            next_open = _find_next_div_open(structural, pos)
+            next_close = structural.find("</div>", pos)
+            if next_close == -1:
+                pos = n
+                malformed = True
+                break
+            if next_open != -1 and next_open < next_close:
+                depth += 1
+                pos = next_open + 4
+            else:
+                depth -= 1
+                pos = next_close + len("</div>")
+        end = pos
+        cards.append({"start": start, "end": end, "raw": review_html[start:end]})
+        idx = end
+    return cards, malformed
+
+
+def card_rid(card_raw):
+    """カード内の data-rid を文字列で返す（無ければ None）。"""
+    m = RID_ATTR_RE.search(card_raw)
+    return m.group(1) if m else None
+
+
+def card_href(card_raw):
+    """class トークンに "vlink" を含む最初の `<a>` タグの href を返す。"""
+    for m in _ANCHOR_OPEN_RE.finditer(card_raw):
+        tag = m.group(0)
+        cls = _get_attr(tag, "class")
+        if _has_class_token(cls, "vlink"):
+            href = _get_attr(tag, "href")
+            return html_module.unescape(href) if href is not None else None
+    return None
 
 
 # --- URL照合による掲載済み判定（data-rid 後付けの retrofit 漏れ対策） ---------
 #
-# 実データで、reviews に元URLで載っているのに data-rid が付いていないカードが
-# 3件見つかった（2026-08-04 の data-rid 後付け作業の retrofit 漏れ）。data-rid
-# 集合だけでは掲載済みと判定できないため、そのレコードの source が reviews の
-# いずれかの href と一致すれば掲載済みとして扱う。
+# data-rid が後付けで付与されなかったカード（2026-08-04 のretrofit漏れ等）は
+# data-rid 集合だけでは掲載済みと判定できない。そのレコードの source が
+# reviews の **data-rid を持たないカード**（`.vcard` の href。P1-a: data-rid
+# を持つカードの href は対象にしない）のいずれかと一致すれば掲載済みとして扱う。
+#
+# ⚠️ 2026-09-22 Codexレビュー P1-a 対応で card_index()/reviewed_index() を
+# カード単位（`.vcard` ブロック）の解析に作り替えた結果、当初「data-rid無しの
+# retrofit漏れ3件」だと思っていた実データ（rid=1757864748/1757864938/
+# 1758030878）は、実際には (a) `.vcard` の外（「🔎 深掘り」節の `<li><a>`）に
+# あるだけで `.vcard` ですらない、または (b) `.vcard` ではあるが**別のrid**
+# （1758030881。captures.json側は1758030878で3ずれている）を持つカードだった
+# と判明した。どちらも「掲載済み」と断定してよい根拠にはならない
+# （前者はそもそもカードとして掲載されていない、後者はまさにP1-aが防ごうと
+# した「別ridのカードとURLが一致しただけ」の実例）ため、この3件は
+# reviewed_by_url に数えなくなった（selected が9→12に増える）。
 #
 # 照合キーは媒体ごとに「不変で衝突しにくい識別子」を抜き出す方式にする
 # （scheme+host+path の完全一致だと、X/Instagram/Threads はクエリの有無や
@@ -247,28 +378,62 @@ def url_key(url):
     return ("generic", "%s://%s%s" % (scheme, host, norm_path))
 
 
-def reviewed_urls(reviews_dir=REVIEWS_DIR):
-    """全 reviews/*.html の <a href="..."> から url_key() の集合を作る。
+def card_index(reviews_dir=REVIEWS_DIR):
+    """全 reviews/*.html をカード単位で解析し、掲載済み判定の土台を作る
+    （正本はここ1か所。check_disclosure.py / build_capture_index.py /
+    stale-check.yml はここを import して使う）。
 
-    戻り値: set of ("kind", key) タプル。読めないファイルは reviewed_rids() 側
-    で既に unreadable として報告されるため、ここでは黙ってスキップする
-    （呼び出し側は reviewed_rids() と reviewed_urls() を同じファイル一覧に
-    対して呼ぶので、unreadable の二重報告を避ける）。
+    戻り値: (rid_dates, url_dates, unreadable)
+      - rid_dates: {rid(int): set(date_str)} — data-rid を持つカードのみ
+      - url_dates: {url_key: set(date_str)} — **data-rid を持たないカードのみ**
+        （P1-a: rid を持つカードの href を URL照合に混ぜると、別rid同士が
+        たまたま同じURLを指すだけで誤って掲載済みにしてしまう）
+      - unreadable: 読めなかったファイル名のリスト
     """
-    keys = set()
+    rid_dates = {}
+    url_dates = {}
+    unreadable = []
     if not os.path.isdir(reviews_dir):
-        return keys
+        return rid_dates, url_dates, unreadable
     for path in sorted(glob.glob(os.path.join(reviews_dir, "*.html"))):
+        stem = os.path.splitext(os.path.basename(path))[0]
         try:
             with io.open(path, encoding="utf-8", newline="") as fh:
                 raw = fh.read()
         except (OSError, UnicodeDecodeError, ValueError):
+            unreadable.append(os.path.basename(path))
             continue
-        for m in HREF_ATTR_RE.finditer(raw):
-            key = url_key(m.group(1))
+        cards, _malformed = extract_vcards(raw)
+        for c in cards:
+            rid_str = card_rid(c["raw"])
+            if rid_str is not None:
+                try:
+                    rid_int = int(rid_str)
+                except ValueError:
+                    rid_int = None
+                if rid_int is not None:
+                    rid_dates.setdefault(rid_int, set()).add(stem)
+                # data-rid を持つカードの href は URL照合に使わない（P1-a）。
+                continue
+            href = card_href(c["raw"])
+            if href is None:
+                continue
+            key = url_key(href)
             if key is not None:
-                keys.add(key)
-    return keys
+                url_dates.setdefault(key, set()).add(stem)
+    return rid_dates, url_dates, unreadable
+
+
+def reviewed_index(reviews_dir=REVIEWS_DIR):
+    """card_index() を日付情報を捨てて集合へ平らにしたもの。
+
+    戻り値: (rids: set[int], url_keys_of_ridless_cards: set[url_key], unreadable)
+    「掲載済みかどうか」の判定だけが要る呼び出し元（select() 等）はこちらを使う。
+    「どの日に掲載されているか」まで要る呼び出し元（check_disclosure.py の
+    バックフィル理由表示など）は card_index() を直接使う。
+    """
+    rid_dates, url_dates, unreadable = card_index(reviews_dir)
+    return set(rid_dates.keys()), set(url_dates.keys()), unreadable
 
 
 def index_only_rids(captures_records, capture_index_path=CAPTURE_INDEX):
@@ -307,9 +472,8 @@ def select(target, captures_path=CAPTURES, reviews_dir=REVIEWS_DIR,
     if since is None:
         since = _resolve_since()
 
-    captures_records, no_rid = load_captures(captures_path)
-    reviewed, unreadable = reviewed_rids(reviews_dir)
-    reviewed_urls_set = reviewed_urls(reviews_dir)
+    captures_records, synth_count = load_captures(captures_path)
+    reviewed, reviewed_urls_set, unreadable = reviewed_index(reviews_dir)
     idx_only = index_only_rids(captures_records, capture_index_path)
 
     selected = []
@@ -344,7 +508,7 @@ def select(target, captures_path=CAPTURES, reviews_dir=REVIEWS_DIR,
         "_past_count": past,
         "_reviewed_count": len(reviewed),
         "_captures_count": len(captures_records),
-        "_captures_no_rid": no_rid,
+        "_synthetic_rid_count": synth_count,
         "_index_only_count": idx_only,
         "_unreadable_reviews": unreadable,
         "_before_since_count": before_since,
@@ -386,18 +550,18 @@ def main(argv):
         warn = ",warn=unreadable" if result["_unreadable_reviews"] else ""
         print("SELECT_STATUS: target=%s selected=%d past=%d reviewed_rids=%d "
               "captures=%d index_only=%d unreadable_reviews=%d before_since=%d "
-              "reviewed_by_url=%d%s"
+              "reviewed_by_url=%d synthetic_rid=%d%s"
               % (target, result["_selected_count"], result["_past_count"],
                  result["_reviewed_count"], result["_captures_count"],
                  result["_index_only_count"], len(result["_unreadable_reviews"]),
                  result["_before_since_count"], result["_reviewed_by_url_count"],
-                 warn))
+                 result["_synthetic_rid_count"], warn))
         return 0
     except Exception as e:
         traceback.print_exc(file=sys.stderr)
         print("SELECT_STATUS: target=%s selected=0 past=0 reviewed_rids=0 "
               "captures=0 index_only=0 unreadable_reviews=0 before_since=0 "
-              "reviewed_by_url=0 error=%s"
+              "reviewed_by_url=0 synthetic_rid=0 error=%s"
               % (target, type(e).__name__))
         return 0
 
@@ -410,7 +574,7 @@ if __name__ == "__main__":
         traceback.print_exc(file=sys.stderr)
         print("SELECT_STATUS: target=unknown selected=0 past=0 reviewed_rids=0 "
               "captures=0 index_only=0 unreadable_reviews=0 before_since=0 "
-              "reviewed_by_url=0 error=%s" % type(e).__name__)
+              "reviewed_by_url=0 synthetic_rid=0 error=%s" % type(e).__name__)
         rc = 0
     sys.stdout.flush()
     sys.exit(rc if isinstance(rc, int) else 0)

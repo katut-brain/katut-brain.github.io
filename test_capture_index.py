@@ -161,6 +161,22 @@ class CaptureIndexTest(unittest.TestCase):
                     '<a class="vlink" href="https://x/9"></a></div></body></html>')
         self.assertIn("UNPUBLISHED: none", self._run())
 
+    def test_different_data_rid_card_sharing_url_does_not_count_as_published(self):
+        """別の data-rid を持つカードが、たまたま同じ URL を href に持つ
+        だけでは掲載済みにならない（2026-09-22 Codexレビュー P1-a 対応。
+        data-rid を持つカードの href は URL照合に混ぜない）。
+        """
+        self._captures({self.yesterday: [9]})
+        # rid=999 のカードが href="https://x/9" を指している（別rid・同URL）。
+        # rid=9 の保存は data-rid でもURLでも掲載を確認できないので未掲載。
+        self._write(os.path.join("reviews", self.yesterday.isoformat() + ".html"),
+                    '<!doctype html><body><div class="vcard">'
+                    '<a class="vlink" href="https://x/9"></a>'
+                    '<button data-rid="999"></button></div></body></html>')
+        out = self._run()
+        self.assertIn("UNPUBLISHED:", out)
+        self.assertIn(self.yesterday.isoformat(), out)
+
     def test_rid_not_found_anywhere_stays_unpublished_even_when_day_has_other_matches(self):
         """同じ日に複数の rid があるとき、一部だけしか reviews に載っていない
         なら、その日はまだ UNPUBLISHED のまま（1件でも未掲載が残っていれば

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # test_select_targets.py — select_targets.py の回帰テスト。
 #
-# 本番の選定関数（select_targets.select / .load_captures / .reviewed_rids）を
+# 本番の選定関数（select_targets.select / .load_captures / .reviewed_index）を
 # 一時ディレクトリに作った captures.json / reviews/*.html へ実際に通す
 # （モックで差し替えない）。標準ライブラリの unittest のみを使う
 # （test_backfill_recovery.py 等と同じ流儀）。
@@ -33,22 +33,35 @@ def _write_captures(path, records):
 
 
 class TestLoadCaptures(unittest.TestCase):
-    def test_rid_and_no_rid_split(self):
+    def test_rid_missing_gets_synthetic_negative_rid(self):
+        """rid の無いレコードは synthetic_rid() の負整数を振って選定対象に
+        含める（2026-09-22 CEO裁定: 永久除外しない）。
+        """
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, "captures.json")
             _write_captures(path, [
                 {"rid": 1, "date": "2026-06-01T00:00:00Z"},
                 {"rid": 2, "date": "2026-06-02"},
-                {"date": "2026-06-03"},  # rid 無し
-                {"rid": "x", "date": "2026-06-04"},  # rid が非整数
+                {"date": "2026-06-03", "source": "https://x/no-rid"},  # rid 無し
+                {"rid": "x", "date": "2026-06-04"},  # rid が非整数 -> 合成
                 {"rid": 3, "date": "not-a-date"},  # 不正な日付は除外
             ])
-            records, no_rid = select_targets.load_captures(path)
-            self.assertEqual(sorted(r for r, _d, _rec in records), [1, 2])
-            self.assertEqual(no_rid, 2)
+            records, synth_count = select_targets.load_captures(path)
+            rids = sorted(r for r, _d, _rec in records)
+            self.assertEqual(synth_count, 2)
+            # rid=1,2 はそのまま。残り2件は負の合成ID。
+            positive = [r for r in rids if r > 0]
+            negative = [r for r in rids if r < 0]
+            self.assertEqual(positive, [1, 2])
+            self.assertEqual(len(negative), 2)
+
+    def test_synthetic_rid_is_stable(self):
+        rec = {"date": "2026-06-03", "source": "https://x/no-rid"}
+        self.assertEqual(select_targets.synthetic_rid(rec),
+                          select_targets.synthetic_rid(dict(rec)))
 
 
-class TestReviewedRids(unittest.TestCase):
+class TestReviewedIndex(unittest.TestCase):
     def test_extraction_quotes_multiple_cards_negative(self):
         with tempfile.TemporaryDirectory() as d:
             reviews = os.path.join(d, "reviews")
@@ -58,8 +71,9 @@ class TestReviewedRids(unittest.TestCase):
                 <div class="vcard"><button data-rid='222'>b</button></div>
                 <div class="vcard"><button data-rid="-333">c</button></div>
             """)
-            rids, unreadable = select_targets.reviewed_rids(reviews)
+            rids, url_keys, unreadable = select_targets.reviewed_index(reviews)
             self.assertEqual(rids, {111, 222, -333})
+            self.assertEqual(url_keys, set())
             self.assertEqual(unreadable, [])
 
     def test_unreadable_file_is_reported_not_raised(self):
@@ -70,14 +84,57 @@ class TestReviewedRids(unittest.TestCase):
             # 壊れたUTF-8バイト列を書く（UnicodeDecodeErrorを起こす）。
             with open(path, "wb") as f:
                 f.write(b"<div data-rid=\"1\">\xff\xfe broken</div>")
-            rids, unreadable = select_targets.reviewed_rids(reviews)
+            rids, url_keys, unreadable = select_targets.reviewed_index(reviews)
             self.assertEqual(rids, set())
+            self.assertEqual(url_keys, set())
             self.assertEqual(unreadable, ["2026-06-02.html"])
 
     def test_missing_reviews_dir(self):
-        rids, unreadable = select_targets.reviewed_rids("/no/such/dir/xyz")
+        rids, url_keys, unreadable = select_targets.reviewed_index("/no/such/dir/xyz")
         self.assertEqual(rids, set())
+        self.assertEqual(url_keys, set())
         self.assertEqual(unreadable, [])
+
+    def test_ridless_card_href_becomes_url_key(self):
+        with tempfile.TemporaryDirectory() as d:
+            reviews = os.path.join(d, "reviews")
+            os.makedirs(reviews)
+            _write(os.path.join(reviews, "2026-06-01.html"),
+                   '<div class="vcard"><a class="vlink" '
+                   'href="https://x.com/user/status/1757864748"></a></div>')
+            rids, url_keys, _unreadable = select_targets.reviewed_index(reviews)
+            self.assertEqual(rids, set())
+            self.assertEqual(url_keys, {("x", "1757864748")})
+
+    def test_p1a_card_with_data_rid_href_is_not_added_to_url_keys(self):
+        """P1-a: data-rid を持つカードの href は URL照合に混ぜない。
+        別の rid を持つカードが同じ URL を指しているだけで
+        「そのURLは掲載済み」と誤判定してはいけない。
+        """
+        with tempfile.TemporaryDirectory() as d:
+            reviews = os.path.join(d, "reviews")
+            os.makedirs(reviews)
+            _write(os.path.join(reviews, "2026-06-01.html"),
+                   '<div class="vcard"><a class="vlink" '
+                   'href="https://x.com/user/status/1757864748"></a>'
+                   '<button data-rid="999"></button></div>')
+            rids, url_keys, _unreadable = select_targets.reviewed_index(reviews)
+            self.assertEqual(rids, {999})
+            self.assertEqual(url_keys, set(),
+                              "data-ridを持つカードのhrefはURLキー集合に入れない")
+
+    def test_card_index_preserves_per_date_info(self):
+        with tempfile.TemporaryDirectory() as d:
+            reviews = os.path.join(d, "reviews")
+            os.makedirs(reviews)
+            _write(os.path.join(reviews, "2026-06-01.html"),
+                   '<div class="vcard"><button data-rid="111"></button></div>')
+            _write(os.path.join(reviews, "2026-06-02.html"),
+                   '<div class="vcard"><a class="vlink" '
+                   'href="https://x.com/user/status/1757864748"></a></div>')
+            rid_dates, url_dates, _unreadable = select_targets.card_index(reviews)
+            self.assertEqual(rid_dates, {111: {"2026-06-01"}})
+            self.assertEqual(url_dates, {("x", "1757864748"): {"2026-06-02"}})
 
 
 class TestSelect(unittest.TestCase):
@@ -101,7 +158,7 @@ class TestSelect(unittest.TestCase):
                     {"rid": 4, "date": "2026-06-01"},   # past, already reviewed -> excluded
                 ],
                 review_files={
-                    "2026-06-01.html": '<div data-rid="4"></div>',
+                    "2026-06-01.html": '<div class="vcard"><button data-rid="4"></button></div>',
                 },
             )
             result = select_targets.select(
@@ -280,6 +337,30 @@ class TestSelectUrlMatch(unittest.TestCase):
                 capture_index_path=os.path.join(d, "capture_index.json"))
             self.assertEqual(result["rids"], [])
             self.assertEqual(result["_reviewed_by_url_count"], 1)
+
+    def test_url_shared_with_different_data_rid_card_does_not_exclude(self):
+        """P1-a: 別の data-rid を持つカードが偶然同じ URL を指しているだけでは
+        掲載済みにならない（そのカードは rid でのみ掲載判定される）。
+        """
+        with tempfile.TemporaryDirectory() as d:
+            captures_path, reviews_dir = self._setup(
+                d,
+                records=[{"rid": 1757864748, "date": "2026-06-14",
+                          "source": "https://x.com/user/status/1757864748?s=12"}],
+                review_files={
+                    "2026-06-13.html": (
+                        '<div class="vcard"><a class="vlink" '
+                        'href="https://x.com/user/status/1757864748">t</a>'
+                        '<button data-rid="999"></button></div>'
+                    ),
+                },
+            )
+            result = select_targets.select(
+                "2026-06-15", captures_path=captures_path,
+                reviews_dir=reviews_dir,
+                capture_index_path=os.path.join(d, "capture_index.json"))
+            self.assertEqual(result["rids"], [1757864748])
+            self.assertEqual(result["_reviewed_by_url_count"], 0)
 
     def test_instagram_shortcode_match_ignores_query_diff(self):
         with tempfile.TemporaryDirectory() as d:

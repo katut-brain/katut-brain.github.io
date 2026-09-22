@@ -32,7 +32,6 @@ Raindrop 側で消えたり取り込みが `INCOMPLETE` だったりすると、
 """
 
 import datetime
-import hashlib
 import json
 import os
 import re
@@ -66,17 +65,9 @@ def _load_json(path):
         return None
 
 
-def synthetic_rid(rec) -> int:
-    """`rid` を持たないレコードに、安定した識別子を振る。
-
-    Raindrop の rid は正の整数なので、**負数**にして合成だと見て分かるようにする。
-    無いとその日が台帳から丸ごと落ちる（台帳は rid の集合で日を表すため、
-    rid の無いレコードだけの日は「保存0件の日」と区別がつかない）。
-    実測では captures.json の320件すべてが整数 rid を持つ（2026-09-09）。
-    """
-    parts = [str(rec.get("date") or "")[:10], str(rec.get("source") or "")]
-    key = chr(31).join(parts)   # 日付にも URL にも現れない区切り
-    return -int(hashlib.sha1(key.encode("utf-8")).hexdigest()[:12], 16)
+# synthetic_rid() は select_targets.py を正本にして re-use する（2026-09-22
+# CEO裁定。rid の無いレコードへ安定した負整数を振る規則を2箇所に書かない）。
+synthetic_rid = select_targets.synthetic_rid
 
 
 def captures_by_day():
@@ -170,10 +161,13 @@ def unpublished_days(index: dict, url_by_rid: dict, since: str, yesterday: str) 
     前提で `day not in published_days()` を見ていたが、その前提は
     select_targets.py 導入後は成り立たない（過去日の保存が別日のreviewsへ
     まとめて載るため）。ここでは reviews の実掲載（select_targets.py の
-    reviewed_rids/reviewed_urls・url_key を再利用）を直接見る。
+    reviewed_index・url_key を再利用）を直接見る。
+    reviewed_index() の url_keys は **data-rid を持たないカードの href だけ**
+    から作られる（2026-09-22 Codexレビュー P1-a 対応。data-rid を持つカードの
+    href まで URL照合に混ぜると、別rid同士がたまたま同じURLを指すだけで
+    誤って掲載済みにしてしまうため）。
     """
-    reviewed_rids, _unreadable = select_targets.reviewed_rids(REVIEWS_DIR)
-    reviewed_urls = select_targets.reviewed_urls(REVIEWS_DIR)
+    reviewed_rids, reviewed_urls, _unreadable = select_targets.reviewed_index(REVIEWS_DIR)
 
     out = []
     for day, rids in sorted(index.items()):

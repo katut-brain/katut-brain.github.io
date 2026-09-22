@@ -325,6 +325,32 @@ class DisclosureCheckTest(unittest.TestCase):
             "reason=backfill(2026-09-11,card=yes)", out)
         self.assertNotIn("DISCLOSURE_VIOLATION: date=2026-09-14", out)
 
+    def test_url_shared_with_a_different_data_rid_card_is_not_excluded(self):
+        """別の data-rid を持つカードが、たまたま同じ URL を href に持つ
+        だけでは掲載済みにならない（2026-09-22 Codexレビュー P1-a 対応）。
+        data-rid を持つカードの href は URL照合に混ぜてはいけない。
+        """
+        self._write_facts("2026-09-14", {
+            "https://x.com/example/status/999": {
+                "route": "x", "missing": ["video_content"], "raindrop_id": 999,
+            },
+        })
+        # 09-11 の review には別rid(111)を持つカードがあり、href だけが
+        # たまたま対象URLと同じ（実運用では起きないはずの取り違えだが、
+        # 誤ってURL照合が効かないことを確認するため意図的に作る）。
+        self._write_review("2026-09-11", self._vcard(
+            "https://x.com/example/status/999",
+            "別の投稿（rid違い）", V_MARKER + "。", "111",
+        ))
+        self._write_review("2026-09-14", self._vcard(
+            "https://x.com/other/status/1", "無関係カード", "本文のみ。", "1",
+        ))
+        out = self._run(["--date", "2026-09-14"])
+        self.assertIn(
+            "DISCLOSURE_VIOLATION: date=2026-09-14 kind=x_video rid=999 "
+            "url=https://x.com/example/status/999 reason=no_card", out)
+        self.assertNotIn("DISCLOSURE_EXCLUDED:", out)
+
     # --- 実データ: 2026-09-08 Threads 開示ゼロ ------------------------------
 
     def test_20260908_threads_no_disclosure_is_violation(self):

@@ -66,12 +66,44 @@ jobs:
           # 2026-09-22: 「reviews/<その日>.html がある＝その日の保存が公開済み」の前提は
           # 崩れた（振り返りは前回ラン以降の未掲載分を載せるので、深夜の保存は前日付の
           # reviews に載り、その日の reviews が作られないことがある）。
-          # そこで「その日の rid が全部どこかの reviews の data-rid に載っているか」で見る。
+          # そこで「その日の rid が全部どこかの reviews の data-rid、または URL照合で
+          # 載っているか」で見る（select_targets.py の card_index/reviewed_index/url_key
+          # を正本として re-use する。2026-09-22 Codexレビュー指摘: rid のみの判定だと、
+          # data-rid 後付けの retrofit 漏れ（rid未確定のまま掲載されたカード）を
+          # 誤って「未公開」と報告してしまう）。
           sys.path.insert(0, os.getcwd())
           import select_targets
-          reviewed, _unreadable = select_targets.reviewed_rids("reviews")
+          reviewed_rids, reviewed_urls, _unreadable = select_targets.reviewed_index("reviews")
+
+          # captures.json があれば rid -> source URL を引けるので、URL照合の
+          # フォールバックに使う。無ければ rid のみで判定する（安全側）。
+          url_by_rid = {}
+          try:
+              with open("captures.json", encoding="utf-8") as fh:
+                  cap_data = json.load(fh)
+              cap_records = cap_data if isinstance(cap_data, list) else \
+                  (cap_data or {}).get("captures", [])
+              for rec in cap_records:
+                  if not isinstance(rec, dict):
+                      continue
+                  rid = rec.get("rid")
+                  source = rec.get("source")
+                  if isinstance(rid, int) and isinstance(source, str) and source:
+                      url_by_rid[rid] = source
+          except (OSError, ValueError):
+              pass
+
+          def _rid_published(rid):
+              if rid in reviewed_rids:
+                  return True
+              src = url_by_rid.get(rid)
+              if not src:
+                  return False
+              key = select_targets.url_key(src)
+              return key is not None and key in reviewed_urls
+
           published = {d for d in saved
-                       if all(r in reviewed for r in days[d].get("rids", []))}
+                       if all(_rid_published(r) for r in days[d].get("rids", []))}
 
           today = (datetime.datetime.now(datetime.timezone.utc)
                    + datetime.timedelta(hours=9)).date()

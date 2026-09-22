@@ -391,35 +391,29 @@ def load_review_cards(review_path):
 # --- 全 reviews にまたがる rid/url インデックス（補助情報のみに使う） ------
 
 def build_global_index(reviews_dir):
-    """{rid: {date, ...}} と {url_key: {date, ...}} を全 reviews/*.html から
-    作る。バックフィル除外判定（_classify_missing_card）が直接使う
+    """{rid(str): {date, ...}} と {url_key: {date, ...}} を全 reviews/*.html
+    から作る。バックフィル除外判定（_classify_missing_card）が直接使う
     （2026-09-22 CEO裁定で capture_index.json の日付台帳ベースの判定から、
-    reviews の実掲載を直接見る方式に変更）。URLの照合キーは
-    select_targets.url_key() を使う（媒体別の照合ロジックを2箇所に書かない）。
+    reviews の実掲載を直接見る方式に変更）。
+
+    カード抽出・rid/URLキーの対応付けそのものは select_targets.card_index()
+    を正本にして re-use する（2026-09-22 Codexレビュー P1-a 対応。同じロジックを
+    複数箇所に書くと「data-rid を持つカードの href まで URL照合に混ぜてしまう」
+    ような食い違いが再発しうるため、ここでは自前でカードを回さない）。
+    select_targets.card_index() の url_dates は **data-rid を持たないカードの
+    href だけ**から作られる（別rid同士が同じURLを指すだけの誤爆を防ぐ）。
+    rid のキー型だけ、このファイルの既存呼び出し規約（rid_str）に合わせて
+    文字列へ変換する。
     """
+    rid_dates_int, key_to_dates, _unreadable = select_targets.card_index(reviews_dir)
     rid_to_dates = {}
-    key_to_dates = {}
-    if not os.path.isdir(reviews_dir):
-        return rid_to_dates, key_to_dates
-    for path in sorted(glob.glob(os.path.join(reviews_dir, "*.html"))):
-        stem = os.path.basename(path)[:-5]
-        if not DATE_RE.match(stem):
-            continue
-        try:
-            with open(path, encoding="utf-8", newline="") as fh:
-                raw = fh.read()
-        except OSError:
-            continue
-        cards, _malformed = extract_vcards(raw)
-        for c in cards:
-            rid = card_rid(c["raw"])
-            href = card_href(c["raw"])
-            if rid:
-                rid_to_dates.setdefault(rid, set()).add(stem)
-            if href:
-                key = select_targets.url_key(href)
-                if key is not None:
-                    key_to_dates.setdefault(key, set()).add(stem)
+    for rid_int, dates in rid_dates_int.items():
+        filtered = {d for d in dates if DATE_RE.match(d)}
+        if filtered:
+            rid_to_dates[str(rid_int)] = filtered
+    key_to_dates = {k: {d for d in dates if DATE_RE.match(d)}
+                     for k, dates in key_to_dates.items()}
+    key_to_dates = {k: dates for k, dates in key_to_dates.items() if dates}
     return rid_to_dates, key_to_dates
 
 
