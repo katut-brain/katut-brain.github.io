@@ -285,6 +285,39 @@ jobs:
           main()
           PY
 
+      # カード単位の保持チェック（2026-09-22 追加）。上の「Check reviews
+      # shrink」はファイル単位（存在・バイト数）でしか見ておらず、同じ
+      # ファイル名のまま上書きで一部のカードだけが消えるケース（手動実行・
+      # TARGET_OVERRIDE・同日再実行で reviews/<TARGET>.html が merge_review.py
+      # を経由せず丸ごと新規生成で上書きされた場合等）を検知できない。
+      # select_targets.py 導入後は reviews/*.html 自体が「掲載済み」の記録を
+      # 兼ねるため、カードが静かに消えると該当URL/ridは二度と選ばれなくなり
+      # 恒久的に失われる。ここでは直前のコミット（HEAD^）時点のカード集合が
+      # 新しい版にすべて含まれているかを check_review_preserved.py で見る。
+      # コミットメッセージに [allow-review-shrink] があれば許可する
+      # （上の「Check reviews shrink」と同じ既存の縮小許可マーカーの流儀）。
+      - name: Check review cards preserved
+        run: |
+          set -euo pipefail
+          if ! git rev-parse -q --verify HEAD^ >/dev/null; then
+            echo "HEAD^ が無い（初回コミット等）。比較対象が無いのでスキップ。"
+            exit 0
+          fi
+          changed=$(git diff --name-only HEAD^ HEAD -- 'reviews/*.html' || true)
+          if [ -z "$changed" ]; then
+            echo "no reviews/*.html changed in this push"
+            exit 0
+          fi
+          allow_flag=()
+          if git log -1 --format=%B HEAD | grep -qF '[allow-review-shrink]'; then
+            allow_flag=(--allow)
+          fi
+          path_args=()
+          while IFS= read -r p; do
+            path_args+=(--path "$p")
+          done <<< "$changed"
+          python3 check_review_preserved.py --old-ref HEAD^ "${path_args[@]}" "${allow_flag[@]}"
+
       # 開示義務チェック（機械判定）。無人Routineの指示遵守だけに頼ると
       # 手順書に文言指示があっても実際に書き漏らす（2026-09-04 Reel 3件・
       # 2026-09-14 Reel 1件・2026-09-08 Threads 3件など実例あり）ため、

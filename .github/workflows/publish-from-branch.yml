@@ -110,6 +110,37 @@ jobs:
                   if not old_days <= new_days:
                       fail(f"capture_index.json would drop days: {sorted(old_days - new_days)}")
 
+          # reviews/*.html はカードが縮まない（2026-09-22 追加）。
+          # select_targets.py 導入後は reviews/*.html 自体が「掲載済み」の
+          # 記録を兼ねるため、上書きでカードが消えると該当URL/ridは二度と
+          # 選ばれなくなり恒久的に失われる。origin/main 側に既に存在する
+          # reviews/*.html については、そのカード集合がこのブランチの新しい
+          # 版にすべて含まれているかを check_review_preserved.py で見る
+          # （build-feed.yml 側にも同じチェックがあるが、ここで先に止めれば
+          # main の履歴にすら残らない＝より強い防御になる）。
+          # コミットメッセージに [allow-review-shrink] があれば許可する
+          # （既存の縮小許可マーカーと同じ流儀）。
+          review_paths = [f["path"] for f in m["files"]
+                           if f["path"].startswith("reviews/") and f["path"].endswith(".html")]
+          if review_paths:
+              sys.path.insert(0, os.getcwd())
+              import check_review_preserved as crp
+              commit_msg = git("log", "-1", "--format=%B", sha)
+              allow_shrink = "[allow-review-shrink]" in commit_msg
+              shrink_errors = []
+              for p in review_paths:
+                  old = subprocess.run(["git", "show", f"origin/main:{p}"], capture_output=True, text=True)
+                  if old.returncode != 0:
+                      continue  # main にまだ無い新規ファイル。比較対象が無いので縮みようがない。
+                  new_text = open(p, encoding="utf-8").read()
+                  missing = crp.missing_cards(old.stdout, new_text)
+                  if missing:
+                      shrink_errors.append(f"{p}: missing {len(missing)} card(s) {sorted(str(x) for x in missing)}")
+              if shrink_errors and not allow_shrink:
+                  fail("review card(s) would be lost (add [allow-review-shrink] to the commit message if intentional): " + " | ".join(shrink_errors))
+              elif shrink_errors:
+                  print(f"review card(s) shrink allowed via [allow-review-shrink]: {shrink_errors}")
+
           with open(os.environ["GITHUB_OUTPUT"], "a") as out:
               out.write("files=" + " ".join(files) + "\n")
           print(f"OK: {len(files)} file(s) validated: {files}")

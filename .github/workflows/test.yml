@@ -80,3 +80,15 @@ jobs:
       # 引用符違い・複数カード・負のrid・読めないファイルのwarn等）。
       - name: Run select-targets tests
         run: python -m unittest -v test_select_targets.py
+
+      # reviews/<TARGET>.html の上書き防止（merge_review.py）の回帰テスト。
+      # 既存カードの保持・重複スキップ（rid一致/強いID一致）・壊れた既存を
+      # 消さないこと等を検証する。
+      - name: Run merge-review tests
+        run: python -m unittest -v test_merge_review.py
+
+      # reviews/*.html のカード保持ゲート（check_review_preserved.py）の
+      # 回帰テスト。本物の git リポジトリを一時ディレクトリに作って
+      # --old-ref 経由の比較を検証する。
+      - name: Run review-preserved gate tests
+        run: python -m unittest -v test_check_review_preserved.py

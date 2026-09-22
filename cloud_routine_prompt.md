@@ -191,8 +191,16 @@
    - **スキップが許されるのは、実際に呼び出した結果としてのみ**：①`WebSearch` を呼び出したがヒット0件だった ②`WebFetch` を呼び出したが失敗・タイムアウト・ペイウォール等で本文を取得できなかった。**この2つ以外の理由（呼び出しコストの節約・時間短縮・「どうせ取れないだろう」という予測判断）で `WebSearch`/`WebFetch` 自体を呼ばずに済ませることは禁止**。
    - **制約**：実在の検索結果・実際に取得できた本文のみ使う。**`WebSearch` が返したURLをそのまま使い、URLを変形・補完・推測しない**（手順4と同じく、URL捏造は過去に404を量産した事故あり）。`WebFetch` で実際に開けたURLだけを出力する。**全テーマで `WebSearch` を実際に呼んだ上で**それでも1本も本文が取れなければ、その場合に限り手順5の「深掘り」節ごと省略する。
    - 出力先は手順5の振り返りHTML内「深掘り」節のみ（**Vaultには書かない**。手順7.5・8.5で行うVaultリポへのブックマークノート書き込みとは別経路で、この4.5の深掘り内容自体はVaultに書かない、という原則をここでは維持する）。
-5. （先に `python3 run_timing.py mark step5 --run-id <8桁>`）`reviews/<TARGET>.html` を生成（**下記テンプレート厳守**）。日本語で書く（英語の本文・キャプションは日本語へ要約・翻訳。固有名詞・ハンドルは原文可）。
-   - ⚠️ **必ず「ファイル」として書き出す**（2026-09-08 追加）。頭の中に文字列として持つのではなく、Write ツールか heredoc で `reviews/<TARGET>.html` を**ワークスペース上の実ファイルとして作る**。手順7の読み返しも、手順7.5の `</footer>` 直前への追記も、手順8の送信も、**すべてこの実ファイルを起点にする**。ここでファイルにしないと、手順8がファイルの代わりに「あなたが覚えている本文」を送ることになり、全角括弧が半角に化けた 2026-09-04 の事故（`79cfd12`）と同じことが起きる。
+5. （先に `python3 run_timing.py mark step5 --run-id <8桁>`）振り返りHTML（**下記テンプレート厳守**）を生成する。日本語で書く（英語の本文・キャプションは日本語へ要約・翻訳。固有名詞・ハンドルは原文可）。
+   - ⚠️ **必ず「ファイル」として、しかも `reviews/<TARGET>.html` ではなく一時パス（例 `/tmp/review_new.html`）へ書き出す**（2026-09-22 変更）。頭の中に文字列として持つのではなく、Write ツールか heredoc で一時パスへ**ワークスペース上の実ファイルとして作る**。
+   - ⚠️ **`reviews/<TARGET>.html` への反映は必ず `merge_review.py` を経由する**（2026-09-22 追加。直接 `reviews/<TARGET>.html` を新規生成で上書きしてはいけない）：
+     ```bash
+     python3 merge_review.py --target $TARGET --new /tmp/review_new.html
+     ```
+     - **なぜ**: select_targets.py 導入後は reviews/*.html 自体が「掲載済み」の記録を兼ねる。同じ TARGET でランが2回走る（手動実行・`TARGET_OVERRIDE`・同日の再実行）と、`reviews/<TARGET>.html` を新規生成でそのまま上書きしてしまうと既存のカードが消える。一度消えると select_targets.py はそのURL/ridをもう「未掲載」と見なさない＝**復元できない**。`merge_review.py` は `reviews/<TARGET>.html` が無ければ一時ファイルをそのまま置くだけ（`mode=new`）、既存があれば既存カードを残したまま新規カード・まとめの追記・テーマ・気づき/深掘りの新規節・notegen-warn を安全に統合する（`mode=merged`）。
+     - 出力の `MERGE_STATUS: target=<TARGET> mode=new|merged kept=N added=N skipped_dup=N` を読む。`mode=merged` で `skipped_dup>0` なら、その件数ぶんは既に掲載済みとして統合時に弾かれている（正常。エラーではない）。
+     - **以降（手順7・7.5・8）で「reviews/<TARGET>.html」と書いてあるものは、このコマンド実行後の `reviews/<TARGET>.html`（統合済みの実ファイル）を指す。** `/tmp/review_new.html` 自体はもう参照しない。
+     - このコマンドが非ゼロで終わった場合（`MERGE_STATUS: ... mode=error`）、`reviews/<TARGET>.html` は**一切変更されていない**（`merge_review.py` は失敗時に既存ファイルへ書き込まない設計）。この場合は手順を止めず、`/tmp/review_new.html` の内容が失われたことをログに残した上で手順6以降へ進む（`reviews/<TARGET>.html` 自体は既存のまま残っているので、mode=error の夜は「今夜ぶんの追記だけ」が失われる。恒久的な破損ではない）。
    - **スタイル**：以下の `<style>` ブロックをそのまま使う（CSS変数・ダーク対応込み）。`<title><TARGET> の振り返り</title>`。
      ```html
      <style>

@@ -543,6 +543,35 @@ def classify_reviewed(rid, source_url, reviewed_rids, reviewed_url_keys,
     return "url" if key in reviewed_url_keys else None
 
 
+def card_identity(card_raw):
+    """1枚の `.vcard` 生HTMLから、その掲載カードを一意に識別するキーを返す
+    （正本はここ1か所。merge_review.py / check_review_preserved.py はここを
+    import して使う。同じロジックを複数箇所に書かない — 2026-09-22追加）。
+
+    classify_reviewed() と同じ優先順位で判定する:
+      1. data-rid があれば ("rid", int値)
+      2. href の url_key() が強い種別（generic以外）なら ("post_id", key)
+      3. href の url_key() が generic種別なら ("url", key)
+      4. どれも取れなければ None（rid無し・href無し・キーを抽出できない
+         カード。呼び出し側は「識別できないので比較対象にしない」扱いにする
+         こと＝安全側。誤って別物同士を同一視しない）
+    """
+    rid_str = card_rid(card_raw)
+    if rid_str is not None:
+        try:
+            return ("rid", int(rid_str))
+        except ValueError:
+            pass
+    href = card_href(card_raw)
+    if href:
+        key = url_key(href)
+        if key is not None:
+            if key[0] != "generic":
+                return ("post_id", key)
+            return ("url", key)
+    return None
+
+
 def index_only_rids(captures_records, capture_index_path=CAPTURE_INDEX):
     """capture_index.json にはあるが captures.json には無い rid の件数を返す
     （参考情報。選定はしない — 本文材料が capture_index.json 側には無いため）。
