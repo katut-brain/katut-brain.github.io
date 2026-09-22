@@ -52,9 +52,21 @@
   python3 run_timing.py mark   <step名> --run-id <8桁>
       ※ --run-id は mark / finish の**必須引数**。省略すると記録せず complete にもしない
   python3 run_timing.py finish --target YYYY-MM-DD --run-id <8桁> \
-                               --reviews reviews/YYYY-MM-DD.html
+                               --reviews reviews/YYYY-MM-DD.html [--saves N]
 
   状態ファイル .run_timing.json・ロック .run_timing.lock は作業用（.gitignore 済み）。
+
+  ⚠️ `saves=`（2026-09-22 CEO裁定で意味が変わった。schema バージョンは
+  v2 のまま据え置き、フィールドの意味だけが変わる点に注意）:
+    旧: captures.json の「date == TARGET」件数（手順3の旧仕様と同じ数え方）。
+    新: select_targets.py の選定件数（その夜 reviews へ書くべき、まだどの
+    reviews にも載っていない保存の件数）。`--saves N` を明示すれば手順書側の
+    数値をそのまま使い、省略時だけ finish が自分で select_targets.select() を
+    呼んで数える（二重に選定を走らせたくない場合や select_targets 側の失敗を
+    切り分けたい場合は明示指定を使う）。過去に書かれた schema=v2 のコメント
+    にある `saves=` は旧い数え方の値であり、このスクリプトを更新した日以降の
+    ランだけが新しい意味を持つ（コメント自体にその区別は残らないので、過去
+    ログを読むときは日付で判断すること）。
 
 既知の限界（直せないので明記する）:
   - `mark` を打つのは無人LLMなので、実作業のあとにまとめて打たれた場合は
@@ -77,7 +89,6 @@ import uuid
 
 STATE_FILE = ".run_timing.json"
 LOCK_FILE = ".run_timing.lock"
-CAPTURES = "captures.json"
 
 LOCK_WAIT_SEC = 10
 # 1ランの所要がこれを超えたら計測として成立していないとみなす（実測の最長は112分）。
@@ -260,16 +271,23 @@ def cmd_mark(name, run_id):
     print("RUN_TIMING: mark %s" % name)
 
 
-def _count_saves(target, captures_path=CAPTURES):
-    """当日の保存件数。手順3と同じ条件（date == TARGET）を機械的に適用する。
+def _count_saves_via_select_targets(target):
+    """`--saves` が明示されなかったときの既定の数え方。
 
-    人手で埋めさせない。捏造・記入漏れ・別日の件数の混入を構造的に防ぐため。
+    2026-09-22 CEO裁定で、手順3の振り返り対象が「captures.json の
+    date == TARGET」から select_targets.py の選定（まだどの reviews にも
+    載っていない保存全件）へ変わったため、`saves=` も同じ選定件数
+    （select_targets.select() の `_selected_count`）で数える
+    （旧 date==target 方式は削除。同じ数え方を2箇所に書かない）。
+    人手で埋めさせない方針は変わらない：値は必ずここで機械的に作る。
+    select_targets 側は自身の失敗を例外にせず `selected=0` 等に握りつぶす
+    設計（無人ランのgateを止めない流儀）なので、ここで拾えない失敗は
+    import 自体の失敗などに限られる。それも含めて例外はすべて呼び出し側
+    （cmd_finish）で捕捉し、拾えなければ saves=unknown にする。
     """
-    with open(captures_path, "r", encoding="utf-8") as f:
-        records = json.load(f)
-    if not isinstance(records, list):
-        raise ValueError("captures.json is not a list")
-    return sum(1 for r in records if isinstance(r, dict) and r.get("date") == target)
+    import select_targets
+    result = select_targets.select(target)
+    return result["_selected_count"]
 
 
 def _is_int(v):
@@ -498,11 +516,16 @@ def insert_comment(html, comment):
     return head + comment + eol + tail, existing
 
 
-def cmd_finish(target, reviews_path, expected_run_id=None):
+def cmd_finish(target, reviews_path, expected_run_id=None, saves=None):
     """**必ずコメントを1件書く**（失敗しても古い値を残さない）。
 
     ただし reviews 自体が読めない・書けない場合だけは古い値を消せない。
     その事実を `RUN_TIMING: WRITE_FAILED` として標準出力に出す。
+
+    saves: 呼び出し側（手順書の `--saves N`）が明示した保存件数。None
+    （未指定）なら select_targets.select() の選定件数を自分で数える
+    （2026-09-22 CEO裁定。--saves を明示で渡せるのは、選定を二重に
+    走らせたくない場合や select_targets 側の失敗を切り分けたい場合のため）。
     """
     end_at = _now()
     try:
@@ -510,11 +533,12 @@ def cmd_finish(target, reviews_path, expected_run_id=None):
     except Exception as e:
         print("RUN_TIMING: state unreadable (%s)" % type(e).__name__)
         state = {"schema": "broken"}
-    try:
-        saves = _count_saves(target)
-    except Exception as e:
-        print("RUN_TIMING: saves count failed (%s)" % type(e).__name__)
-        saves = None
+    if saves is None:
+        try:
+            saves = _count_saves_via_select_targets(target)
+        except Exception as e:
+            print("RUN_TIMING: saves count failed (%s)" % type(e).__name__)
+            saves = None
 
     try:
         comment = build_comment(state, target, saves, expected_run_id, end_at)
@@ -591,8 +615,15 @@ def main(argv):
     elif sub == "mark":
         cmd_mark(argv[1] if len(argv) > 1 else "", _arg(argv, "--run-id"))
     elif sub == "finish":
+        saves_arg = _arg(argv, "--saves")
+        saves = None
+        if saves_arg is not None:
+            try:
+                saves = int(saves_arg)
+            except ValueError:
+                print("RUN_TIMING: ignored invalid --saves %r" % saves_arg)
         cmd_finish(_arg(argv, "--target"), _arg(argv, "--reviews"),
-                   _arg(argv, "--run-id"))
+                   _arg(argv, "--run-id"), saves)
     else:
         print("RUN_TIMING: unknown subcommand %r" % sub)
 

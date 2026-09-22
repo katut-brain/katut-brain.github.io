@@ -28,13 +28,16 @@ Threads 3件など、見たかのような記述や開示ゼロが実例とし�
 それ以外で missing に video_content/visual_content/audio_content を含むもの
 （Instagram /p/ の画像欠損など）は違反対象にせず out_of_scope として件数のみ数える。
 
-対象日の reviews に対応カードが無い場合、capture_index.json（手順1.5の台帳。
-`{"days": {"YYYY-MM-DD": {"rids": [int,...]}}}`）を見て、その rid が当日の
-台帳に無く別日の台帳にあるときだけ「バックフィル（再取得）」として除外する。
-それ以外（rid が無い・当日の台帳にある・台帳のどこにも無い・台帳自体が
-読めない）は正直に違反として扱う（reason=no_card を付けて通常の
-DISCLOSURE_VIOLATION として出す。挿入先のカードが無いので --fix の対象には
-しない）。
+対象日の reviews に対応カードが無い場合、対象日**以外**の既存 reviews/*.html に
+実際にそのカードが掲載されている（data-rid 一致、または select_targets.url_key
+によるURLの媒体別キー一致）ときだけ「バックフィル（再取得）」として除外する
+（2026-09-22 CEO裁定：capture_index.json の日付台帳ベースの判定をやめ、reviews
+の実掲載を直接見る方式に変更。旧方式は「rid が当日の台帳に無く別日の台帳に
+ある」だけで除外しており、別日の reviews に実際にそのカードが載っているかを
+確認していなかった＝掲載が無い場合でも除外してしまうバグがあった）。
+それ以外（rid が無い・別日の reviews のどこにも掲載が無い）は正直に違反として
+扱う（reason=no_card を付けて通常の DISCLOSURE_VIOLATION として出す。挿入先の
+カードが無いので --fix の対象にはしない）。
 
 終了コードは常に0（無人Routineの gate を止めないため）。入力ファイルの欠如や
 例外は DISCLOSURE_ERROR: / status=no_facts / status=no_review 等の行で示す。
@@ -53,6 +56,13 @@ import re
 import sys
 import tempfile
 from urllib.parse import urlsplit
+
+# URL照合の媒体別キー抽出は select_targets.py を正本にして re-use する
+# （2026-09-22 CEO裁定。同じロジックを2箇所に書かない）。同じディレクトリの
+# モジュールなので、スクリプトとして実行されたときは Python が自動で
+# sys.path[0] にこのファイルのディレクトリを入れるためそのまま import できる。
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import select_targets  # noqa: E402
 
 # --- 判定語（正本はここ一箇所） -------------------------------------------
 
@@ -175,43 +185,6 @@ def load_facts(facts_path):
     if not isinstance(data, dict):
         raise ValueError("facts はdictでなければならない: %s" % facts_path)
     return data
-
-
-# --- capture_index.json（当日の保存台帳。バックフィル判定に使う） ----------
-
-def load_capture_index(path):
-    """{"YYYY-MM-DD": {int rid, ...}} を返す。読めない/壊れていれば None
-    （None のときは呼び出し側がバックフィル除外を一切行わない＝安全側）。
-    """
-    try:
-        with open(path, encoding="utf-8") as fh:
-            data = json.load(fh)
-        days = data["days"]
-        if not isinstance(days, dict):
-            raise ValueError("days は dict でなければならない")
-        result = {}
-        for day, v in days.items():
-            if not DATE_RE.match(day):
-                raise ValueError("不正な日付キー: %s" % day)
-            rids = v.get("rids")
-            if not isinstance(rids, list):
-                raise ValueError("day=%s の rids はリストでなければならない" % day)
-            result[day] = set(int(r) for r in rids)
-        return result
-    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
-        return None
-
-
-def build_rid_origin_index(capture_index):
-    """{rid(int): 最初に見つかった保存日} を capture_index 全体から作る。"""
-    origin = {}
-    if not capture_index:
-        return origin
-    for day in sorted(capture_index.keys()):
-        for rid in capture_index[day]:
-            if rid not in origin:
-                origin[rid] = day
-    return origin
 
 
 # --- reviews 読み込みとカード抽出 ------------------------------------------
@@ -418,15 +391,16 @@ def load_review_cards(review_path):
 # --- 全 reviews にまたがる rid/url インデックス（補助情報のみに使う） ------
 
 def build_global_index(reviews_dir):
-    """{rid: {date, ...}} と {url_norm: {date, ...}} を全 reviews/*.html から
-    作る。バックフィル判定そのものには使わない（それは capture_index.json の
-    役目）。ここは除外理由に添える補助情報「バックフィル元の日に実際カードが
-    あるか（card=yes/no）」を出すためだけに使う。
+    """{rid: {date, ...}} と {url_key: {date, ...}} を全 reviews/*.html から
+    作る。バックフィル除外判定（_classify_missing_card）が直接使う
+    （2026-09-22 CEO裁定で capture_index.json の日付台帳ベースの判定から、
+    reviews の実掲載を直接見る方式に変更）。URLの照合キーは
+    select_targets.url_key() を使う（媒体別の照合ロジックを2箇所に書かない）。
     """
     rid_to_dates = {}
-    url_to_dates = {}
+    key_to_dates = {}
     if not os.path.isdir(reviews_dir):
-        return rid_to_dates, url_to_dates
+        return rid_to_dates, key_to_dates
     for path in sorted(glob.glob(os.path.join(reviews_dir, "*.html"))):
         stem = os.path.basename(path)[:-5]
         if not DATE_RE.match(stem):
@@ -443,10 +417,10 @@ def build_global_index(reviews_dir):
             if rid:
                 rid_to_dates.setdefault(rid, set()).add(stem)
             if href:
-                u = normalize_url(href)
-                if u:
-                    url_to_dates.setdefault(u, set()).add(stem)
-    return rid_to_dates, url_to_dates
+                key = select_targets.url_key(href)
+                if key is not None:
+                    key_to_dates.setdefault(key, set()).add(stem)
+    return rid_to_dates, key_to_dates
 
 
 # --- 1日分の処理 ------------------------------------------------------------
@@ -499,7 +473,7 @@ def _write_review_atomic(review_path, content):
         raise
 
 
-def process_date(date, facts_dir, reviews_dir, capture_index, rid_origin,
+def process_date(date, facts_dir, reviews_dir,
                   aux_rid_dates, aux_url_dates, fix=False):
     result = DateResult(date)
     facts_path = os.path.join(facts_dir, "%s.json" % date)
@@ -561,8 +535,7 @@ def process_date(date, facts_dir, reviews_dir, capture_index, rid_origin,
 
         if not candidates:
             reason, is_backfill = _classify_missing_card(
-                date, rid_str, capture_index, rid_origin,
-                aux_rid_dates, aux_url_dates,
+                date, rid_str, url, aux_rid_dates, aux_url_dates,
             )
             if is_backfill:
                 result.excluded += 1
@@ -618,37 +591,28 @@ def process_date(date, facts_dir, reviews_dir, capture_index, rid_origin,
     return result
 
 
-def _classify_missing_card(date, rid_str, capture_index, rid_origin,
-                            aux_rid_dates, aux_url_dates):
+def _classify_missing_card(date, rid_str, url, aux_rid_dates, aux_url_dates):
     """対象日にカードが見つからなかったレコードの扱いを決める。
     戻り値は (reason, is_backfill)。
-    is_backfill=True のときだけ「除外」とし、それ以外は違反(reason=no_card)。
+
+    is_backfill=True になるのは、対象日**以外**の既存 reviews/*.html に
+    実際にそのカードが掲載されているとき（data-rid 一致、または
+    select_targets.url_key() によるURL媒体別キー一致）だけ。それ以外
+    （rid/URLどちらでも他日の掲載が見つからない＝card_flag==no 相当）は
+    正直に違反（reason=no_card）として扱う（2026-09-22 CEO裁定。旧方式の
+    capture_index.json 台帳ベースの判定は「別日の台帳にあるか」だけを見て
+    おり、その日の reviews に実際にカードがあるかを確認していなかった）。
     """
-    if capture_index is None or rid_str is None:
-        return "no_card", False
-    try:
-        rid_int = int(rid_str)
-    except ValueError:
-        return "no_card", False
+    other_dates = set()
+    if rid_str is not None:
+        other_dates |= {d for d in aux_rid_dates.get(rid_str, set()) if d != date}
+    key = select_targets.url_key(url)
+    if key is not None:
+        other_dates |= {d for d in aux_url_dates.get(key, set()) if d != date}
 
-    if date not in capture_index:
-        # 台帳ファイルはあるが当日分のキー自体が無い（その夜の手順1.5が
-        # 走らなかった等）。バックフィルかどうか判定しようがないので、
-        # 安全側で除外は一切許可せず違反にする。
-        return "no_card", False
-
-    day_rids = capture_index[date]
-    if rid_int in day_rids:
-        # 当日の台帳に載っているのにカードが無い＝正直に違反。
-        return "no_card", False
-
-    origin_date = rid_origin.get(rid_int)
-    if not origin_date or origin_date == date:
-        return "no_card", False
-
-    card_dates = aux_rid_dates.get(rid_str, set())
-    card_flag = "yes" if origin_date in card_dates else "no"
-    return "backfill(%s,card=%s)" % (origin_date, card_flag), True
+    if other_dates:
+        return "backfill(%s,card=yes)" % ",".join(sorted(other_dates)), True
+    return "no_card", False
 
 
 def _vdesc_insert_point(raw, card):
@@ -803,8 +767,6 @@ def build_arg_parser():
     p.add_argument("--json", action="store_true", help="JSON出力")
     p.add_argument("--facts-dir", default="fetch_facts")
     p.add_argument("--reviews-dir", default="reviews")
-    p.add_argument("--capture-index", default="capture_index.json",
-                    help="バックフィル判定に使う当日保存の台帳")
     return p
 
 
@@ -842,8 +804,6 @@ def _main(argv):
         print("DISCLOSURE_CHECK: status=no_dates")
         return 0
 
-    capture_index = load_capture_index(args.capture_index)
-    rid_origin = build_rid_origin_index(capture_index)
     aux_rid_dates, aux_url_dates = build_global_index(reviews_dir)
 
     since = args.since
@@ -851,7 +811,7 @@ def _main(argv):
     for date in sorted(dates):
         try:
             r = process_date(
-                date, facts_dir, reviews_dir, capture_index, rid_origin,
+                date, facts_dir, reviews_dir,
                 aux_rid_dates, aux_url_dates, fix=args.fix,
             )
         except Exception as exc:  # noqa: BLE001

@@ -48,10 +48,6 @@ class DisclosureCheckTest(unittest.TestCase):
         self.tmp = tempfile.mkdtemp()
         self.facts_dir = os.path.join(self.tmp, "fetch_facts")
         self.reviews_dir = os.path.join(self.tmp, "reviews")
-        # 既定では capture_index.json を作らない（＝読み込むと None になり、
-        # バックフィル除外は一切発生しない安全側の挙動になる）。バックフィル
-        # を検証するテストだけ _write_capture_index で明示的に作る。
-        self.capture_index_path = os.path.join(self.tmp, "capture_index.json")
         os.mkdir(self.facts_dir)
         os.mkdir(self.reviews_dir)
 
@@ -64,12 +60,6 @@ class DisclosureCheckTest(unittest.TestCase):
         path = os.path.join(self.facts_dir, "%s.json" % date)
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(records, fh, ensure_ascii=False, indent=1)
-
-    def _write_capture_index(self, mapping):
-        """mapping: {"YYYY-MM-DD": [rid, ...]}"""
-        days = {d: {"rids": rids} for d, rids in mapping.items()}
-        with open(self.capture_index_path, "w", encoding="utf-8") as fh:
-            json.dump({"days": days}, fh, ensure_ascii=False, indent=1)
 
     def _write_review(self, date, cards_html):
         path = os.path.join(self.reviews_dir, "%s.html" % date)
@@ -101,8 +91,7 @@ class DisclosureCheckTest(unittest.TestCase):
 
     def _run(self, args, expect=0):
         cmd = [sys.executable, str(SCRIPT), "--facts-dir", self.facts_dir,
-               "--reviews-dir", self.reviews_dir,
-               "--capture-index", self.capture_index_path] + args
+               "--reviews-dir", self.reviews_dir] + args
         r = subprocess.run(cmd, capture_output=True, text=True,
                             encoding="utf-8", errors="replace")
         self.assertEqual(r.returncode, expect, r.stdout + r.stderr)
@@ -217,15 +206,12 @@ class DisclosureCheckTest(unittest.TestCase):
     def test_backfill_rid_from_other_date_is_excluded_not_violation(self):
         """実データ: fetch_facts/2026-09-14.json には09-11のrid(1850403031)が
         再取得で追記されている。そのカードは reviews/2026-09-11.html にあり
-        reviews/2026-09-14.html には無い。capture_index.json（実データの
-        当日保存台帳）では 1850403031 は 2026-09-11 の rids にのみ入っており
-        2026-09-14 の rids には入っていない＝バックフィルとして除外され、
-        違反にしてはいけない。
+        reviews/2026-09-14.html には無い。2026-09-22 CEO裁定後は
+        capture_index.json を見ない：対象日(09-14)以外の既存reviews
+        （09-11）に実際にそのカード(data-rid一致)が掲載されているので、
+        バックフィルとして除外され、違反にしてはいけない
+        （＝別reviewsに掲載済みの再取得分は除外される、の確認）。
         """
-        self._write_capture_index({
-            "2026-09-11": [1850403031],
-            "2026-09-14": [1853167142],
-        })
         self._write_facts("2026-09-11", {
             "https://x.com/masahirochaen/status/2097990179227414850?s=12": {
                 "route": "x", "missing": ["video_content"],
@@ -265,26 +251,24 @@ class DisclosureCheckTest(unittest.TestCase):
             "reason=backfill(2026-09-11,card=yes)", out)
         self.assertNotIn("DISCLOSURE_VIOLATION: date=2026-09-14", out)
 
-    # --- capture_index.json ベースの違反/除外境界（B: CEO差し戻し指示A） ----
+    # --- reviews実掲載ベースの違反/除外境界（2026-09-22 CEO裁定） ------------
 
-    def test_rid_present_today_but_no_card_is_a_violation_not_backfill(self):
-        """当日の capture_index に rid が載っているのにカードが無い場合、
-        過去日にカードがあっても違反(no_card)にする（バックフィル扱いしない）。
+    def test_no_card_anywhere_is_a_violation_not_backfill(self):
+        """対象日のreviewsにカードが無く、他のどのreviewsにも
+        （data-rid・URLどちらでも）そのカードが実在しない場合は、過去日に
+        保存されたものであっても違反(no_card)にする（バックフィル扱いしない）。
+        ＝「過去日保存で初掲載のカードが開示漏れなら違反になる」の確認。
         """
-        self._write_capture_index({
-            "2026-09-10": [999],
-            "2026-09-14": [999],
-        })
         self._write_facts("2026-09-14", {
             "https://x.com/example/status/999": {
                 "route": "x", "missing": ["video_content"], "raindrop_id": 999,
             },
         })
-        # 過去日 09-10 には同じURLのカードが実在する（同一URL再保存の想定）が、
-        # 09-14 の reviews には対応カードが無い。
+        # 別日の reviews はあるが、まったく無関係なカードしか載っていない
+        # （このrid/URLはどこにも掲載されていない）。
         self._write_review("2026-09-10", self._vcard(
-            "https://x.com/example/status/999", "過去のカード",
-            V_MARKER + "。", "999",
+            "https://x.com/unrelated/status/1", "無関係な過去カード",
+            V_MARKER + "。", "1",
         ))
         self._write_review("2026-09-14", self._vcard(
             "https://x.com/other/status/1", "無関係カード", "本文のみ。", "1",
@@ -297,9 +281,8 @@ class DisclosureCheckTest(unittest.TestCase):
 
     def test_rid_none_with_no_card_is_a_violation(self):
         """rid が無い（raindrop_id: null）レコードでカードも見つからない場合、
-        バックフィル判定のしようがないので違反(no_card)にする。
+        URL照合も含めて掲載が確認できないので違反(no_card)にする。
         """
-        self._write_capture_index({"2026-09-14": [1]})
         self._write_facts("2026-09-14", {
             "https://x.com/nowhere/status/1": {
                 "route": "x", "missing": ["video_content"], "raindrop_id": None,
@@ -314,40 +297,33 @@ class DisclosureCheckTest(unittest.TestCase):
             "url=https://x.com/nowhere/status/1 reason=no_card", out)
         self.assertNotIn("DISCLOSURE_EXCLUDED:", out)
 
-    def test_missing_capture_index_means_no_card_is_always_a_violation(self):
-        """capture_index.json が無い（今回のテストでは作らない）ときは、
-        本来ならバックフィルに見える状況でも一切除外しない。
+    def test_backfill_excluded_via_url_key_match_without_matching_data_rid(self):
+        """data-rid が付いていない（2026-08-04の retrofit漏れのような）別日の
+        カードでも、URL(select_targets.url_key)が一致すれば掲載済みとして
+        バックフィル除外される。
         """
-        self._write_facts("2026-09-11", {
-            "https://x.com/masahirochaen/status/2097990179227414850?s=12": {
-                "route": "x", "missing": ["video_content"],
-                "raindrop_id": 1850403031,
-            },
-        })
-        self._write_review("2026-09-11", self._vcard(
-            "https://x.com/masahirochaen/status/2097990179227414850?s=12",
-            "ChatGPTがYouTube再生とリアルタイム同期",
-            "今回は動画の中身までは追えていない",
-            "1850403031",
-        ))
         self._write_facts("2026-09-14", {
-            "https://x.com/masahirochaen/status/2097990179227414850?s=12": {
-                "route": "x", "missing": ["video_content"],
-                "raindrop_id": 1850403031,
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/": {
+                "route": "instagram", "missing": ["video_content"],
+                "raindrop_id": 1842608050,
             },
         })
+        # 09-11 の review には同じURLのカードがあるが data-rid が空（後付け漏れ）。
+        self._write_review("2026-09-11", self._vcard(
+            "https://www.instagram.com/reel/Dcy4SIYiD7U/",
+            "写真1枚をRhinoモデルに変換するAIエージェント「STF Agent」",
+            V_MARKER + "。", "",
+        ))
         self._write_review("2026-09-14", self._vcard(
             "https://x.com/gencoin8/status/2099302097909158238?s=12",
             "別の当日カード", V_MARKER + "。",
             "1853167142",
         ))
-        self.assertFalse(os.path.isfile(self.capture_index_path))
         out = self._run(["--date", "2026-09-14"])
         self.assertIn(
-            "DISCLOSURE_VIOLATION: date=2026-09-14 kind=x_video "
-            "rid=1850403031 url=https://x.com/masahirochaen/"
-            "status/2097990179227414850?s=12 reason=no_card", out)
-        self.assertNotIn("DISCLOSURE_EXCLUDED:", out)
+            "DISCLOSURE_EXCLUDED: date=2026-09-14 rid=1842608050 "
+            "reason=backfill(2026-09-11,card=yes)", out)
+        self.assertNotIn("DISCLOSURE_VIOLATION: date=2026-09-14", out)
 
     # --- 実データ: 2026-09-08 Threads 開示ゼロ ------------------------------
 
@@ -735,8 +711,7 @@ class DisclosureCheckTest(unittest.TestCase):
         env = dict(os.environ)
         env["GITHUB_STEP_SUMMARY"] = summary
         cmd = [sys.executable, str(SCRIPT), "--facts-dir", self.facts_dir,
-               "--reviews-dir", self.reviews_dir,
-               "--capture-index", self.capture_index_path, "--all",
+               "--reviews-dir", self.reviews_dir, "--all",
                "--since", "2026-09-01", "--github", "--json"]
         r = subprocess.run(cmd, capture_output=True, text=True,
                             encoding="utf-8", errors="replace", env=env)
@@ -794,47 +769,6 @@ class DisclosureCheckTest(unittest.TestCase):
         self.assertNotIn("DISCLOSURE_VIOLATION:", out)
         self.assertNotIn("DISCLOSURE_EXCLUDED:", out)
         self.assertNotIn("DISCLOSURE_CHECK: date=2026-09-04 duty=", out)
-
-    # --- C: 当日キーが capture_index に無い夜は除外しない（2周目指示2） ------
-
-    def test_capture_index_file_exists_but_today_key_missing_is_a_violation(self):
-        """capture_index.json ファイル自体はあるが、対象日 D のキーが
-        存在しない（その夜の手順1.5が走らなかった等）場合、rid が過去日に
-        あってもバックフィル除外を一切許可せず violation(no_card) にする。
-        """
-        self._write_capture_index({
-            "2026-09-11": [1850403031],
-            # 2026-09-14 のキーは存在しない（欠損）。
-        })
-        self._write_facts("2026-09-11", {
-            "https://x.com/masahirochaen/status/2097990179227414850?s=12": {
-                "route": "x", "missing": ["video_content"],
-                "raindrop_id": 1850403031,
-            },
-        })
-        self._write_review("2026-09-11", self._vcard(
-            "https://x.com/masahirochaen/status/2097990179227414850?s=12",
-            "ChatGPTがYouTube再生とリアルタイム同期",
-            "今回は動画の中身までは追えていない",
-            "1850403031",
-        ))
-        self._write_facts("2026-09-14", {
-            "https://x.com/masahirochaen/status/2097990179227414850?s=12": {
-                "route": "x", "missing": ["video_content"],
-                "raindrop_id": 1850403031,
-            },
-        })
-        self._write_review("2026-09-14", self._vcard(
-            "https://x.com/gencoin8/status/2099302097909158238?s=12",
-            "別の当日カード", V_MARKER + "。",
-            "1853167142",
-        ))
-        out = self._run(["--date", "2026-09-14"])
-        self.assertIn(
-            "DISCLOSURE_VIOLATION: date=2026-09-14 kind=x_video "
-            "rid=1850403031 url=https://x.com/masahirochaen/"
-            "status/2097990179227414850?s=12 reason=no_card", out)
-        self.assertNotIn("DISCLOSURE_EXCLUDED:", out)
 
     # --- D: HTMLコメントを構造カウントから無視（2周目指示3） ----------------
 
@@ -987,7 +921,6 @@ class DisclosureCheckTest(unittest.TestCase):
         env["GITHUB_STEP_SUMMARY"] = summary
         cmd = [sys.executable, str(SCRIPT), "--facts-dir", self.facts_dir,
                "--reviews-dir", self.reviews_dir,
-               "--capture-index", self.capture_index_path,
                "--date", "2026-09-04", "--since", "2026-09-15", "--github"]
         r = subprocess.run(cmd, capture_output=True, text=True,
                             encoding="utf-8", errors="replace", env=env)
@@ -1010,7 +943,6 @@ class DisclosureCheckTest(unittest.TestCase):
         env["GITHUB_STEP_SUMMARY"] = summary
         cmd = [sys.executable, str(SCRIPT), "--facts-dir", self.facts_dir,
                "--reviews-dir", self.reviews_dir,
-               "--capture-index", self.capture_index_path,
                "--date", "2026-09-16", "--since", "2026-09-15", "--github"]
         r = subprocess.run(cmd, capture_output=True, text=True,
                             encoding="utf-8", errors="replace", env=env)
@@ -1036,7 +968,6 @@ class DisclosureCheckTest(unittest.TestCase):
         env["GITHUB_STEP_SUMMARY"] = summary
         cmd = [sys.executable, str(SCRIPT), "--facts-dir", self.facts_dir,
                "--reviews-dir", self.reviews_dir,
-               "--capture-index", self.capture_index_path,
                "--date", "2026-09-16", "--since", "2026-09-15", "--github"]
         r = subprocess.run(cmd, capture_output=True, text=True,
                             encoding="utf-8", errors="replace", env=env)
@@ -1059,7 +990,6 @@ class DisclosureCheckTest(unittest.TestCase):
         env["GITHUB_STEP_SUMMARY"] = summary
         cmd = [sys.executable, str(SCRIPT), "--facts-dir", self.facts_dir,
                "--reviews-dir", self.reviews_dir,
-               "--capture-index", self.capture_index_path,
                "--date", "2026-09-04", "--since", "2026-09-15", "--github"]
         r = subprocess.run(cmd, capture_output=True, text=True,
                             encoding="utf-8", errors="replace", env=env)
@@ -1084,7 +1014,6 @@ class DisclosureCheckTest(unittest.TestCase):
         env["GITHUB_STEP_SUMMARY"] = summary
         cmd = [sys.executable, str(SCRIPT), "--facts-dir", self.facts_dir,
                "--reviews-dir", self.reviews_dir,
-               "--capture-index", self.capture_index_path,
                "--date", "2026-09-16", "--since", "2026-09-15", "--github"]
         r = subprocess.run(cmd, capture_output=True, text=True,
                             encoding="utf-8", errors="replace", env=env)

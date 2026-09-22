@@ -38,6 +38,11 @@ import os
 import re
 import sys
 
+# published 判定（rid/URL照合）は select_targets.py を正本にして re-use する
+# （2026-09-22 CEO裁定。同じ照合ロジックを2箇所に書かない）。
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import select_targets  # noqa: E402
+
 CAPTURES = "captures.json"
 INDEX = "capture_index.json"
 REVIEWS_DIR = "reviews"
@@ -74,11 +79,20 @@ def synthetic_rid(rec) -> int:
     return -int(hashlib.sha1(key.encode("utf-8")).hexdigest()[:12], 16)
 
 
-def captures_by_day() -> dict:
-    """captures.json から {日付文字列: set(rid)} を作る。"""
+def captures_by_day():
+    """captures.json から ({日付文字列: set(rid)}, {rid: source_url}) を作る。
+
+    source_url は published 判定の URL 照合（select_targets.url_key 経由）で使う
+    （2026-09-22 CEO裁定。data-rid が付いていない/rid未確定のレコードでも、
+    URL一致で「実際にreviewsへ載っている」ことを確認できるようにするため）。
+    captures.json は毎晩作り直されるため、ここで拾えるのは**今夜の
+    captures.json に載っている rid だけ**（過去に captures.json から消えた
+    rid の source は分からない＝そのぶんはrid一致のみで判定する）。
+    """
     data = _load_json(CAPTURES)
     records = data if isinstance(data, list) else (data or {}).get("captures", [])
     out = {}
+    url_by_rid = {}
     for rec in records:
         if not isinstance(rec, dict):
             continue
@@ -93,7 +107,10 @@ def captures_by_day() -> dict:
         if not isinstance(rid, int):
             rid = synthetic_rid(rec)
         out.setdefault(value[:10], set()).add(rid)
-    return out
+        source = rec.get("source")
+        if isinstance(source, str) and source:
+            url_by_rid[rid] = source
+    return out, url_by_rid
 
 
 class LedgerBroken(Exception):
@@ -144,19 +161,38 @@ def save_index(index: dict) -> None:
     os.replace(tmp, INDEX)
 
 
-def published_days() -> set:
-    out = set()
-    try:
-        names = os.listdir(REVIEWS_DIR)
-    except OSError:
-        return out
-    for name in names:
-        if not name.endswith(".html"):
+def unpublished_days(index: dict, url_by_rid: dict, since: str, yesterday: str) -> list:
+    """SINCE以降の日で、その日の保存(rid)のうち reviews/*.html のどれにも
+    掲載されていない（data-rid一致でもURL一致でも見つからない）rid が
+    1件でも残っている日の一覧を返す（2026-09-22 CEO裁定）。
+
+    旧実装は「reviews/<日付>.html というファイルがその日の分だけ公開する」
+    前提で `day not in published_days()` を見ていたが、その前提は
+    select_targets.py 導入後は成り立たない（過去日の保存が別日のreviewsへ
+    まとめて載るため）。ここでは reviews の実掲載（select_targets.py の
+    reviewed_rids/reviewed_urls・url_key を再利用）を直接見る。
+    """
+    reviewed_rids, _unreadable = select_targets.reviewed_rids(REVIEWS_DIR)
+    reviewed_urls = select_targets.reviewed_urls(REVIEWS_DIR)
+
+    out = []
+    for day, rids in sorted(index.items()):
+        if not rids:
             continue
-        try:
-            out.add(datetime.date.fromisoformat(name[:-5]).isoformat())
-        except ValueError:
-            pass
+        if not (since <= day <= yesterday):
+            continue
+        missing = False
+        for rid in rids:
+            if rid in reviewed_rids:
+                continue
+            src = url_by_rid.get(rid)
+            key = select_targets.url_key(src) if src else None
+            if key is not None and key in reviewed_urls:
+                continue
+            missing = True
+            break
+        if missing:
+            out.append(day)
     return out
 
 
@@ -171,7 +207,8 @@ def main() -> int:
         print("LEDGER_ERROR: fix it by hand; tonight's run continues without it.")
         return 1
 
-    for day, rids in captures_by_day().items():
+    by_day, url_by_rid = captures_by_day()
+    for day, rids in by_day.items():
         index.setdefault(day, set()).update(rids)   # 一度観測した rid は消さない
 
     try:
@@ -182,15 +219,11 @@ def main() -> int:
         return 1
 
     # 公開できていない日の報告。**直しには行かない**（人が後から見るための記録）。
-    published = published_days()
-    unpublished = sorted(
-        day for day, rids in index.items()
-        if rids and day not in published
-        and SINCE.isoformat() <= day <= yesterday.isoformat()
-    )
+    unpublished = unpublished_days(index, url_by_rid, SINCE.isoformat(),
+                                    yesterday.isoformat())
     if unpublished:
-        print(f"UNPUBLISHED: {len(unpublished)} day(s) have saves but no review: "
-              + ", ".join(unpublished))
+        print(f"UNPUBLISHED: {len(unpublished)} day(s) have saves not yet reflected "
+              "in any review: " + ", ".join(unpublished))
         print("UNPUBLISHED: this is a record, not a queue. Nothing is retried automatically.")
     else:
         print("UNPUBLISHED: none")

@@ -548,9 +548,17 @@ class CliTest(unittest.TestCase):
     def setUp(self):
         self.dir = tempfile.mkdtemp()
         shutil.copy(os.path.join(HERE, "run_timing.py"), self.dir)
+        # saves= の既定の数え方（--saves 未指定時）は select_targets.select() を
+        # 呼ぶので、そのモジュール自体もサブプロセスの cwd にコピーしておく
+        # （2026-09-22 CEO裁定：saves を select_targets の選定件数にした）。
+        shutil.copy(os.path.join(HERE, "select_targets.py"), self.dir)
+        # rid を持たせる（select_targets.select() は rid の無いレコードを選定対象
+        # から除外するため）。reviews/ は作らないので、これら全件が「まだどの
+        # reviews にも載っていない」として選定される。
         with open(os.path.join(self.dir, "captures.json"), "w", encoding="utf-8") as f:
-            json.dump([{"date": "2026-09-07"}, {"date": "2026-09-07"},
-                       {"date": "2026-09-06"}], f)
+            json.dump([{"date": "2026-09-07", "rid": 1},
+                       {"date": "2026-09-07", "rid": 2},
+                       {"date": "2026-09-06", "rid": 3}], f)
         self.reviews = os.path.join(self.dir, "r.html")
         self._write_reviews(FOOTER_HTML)
 
@@ -589,13 +597,26 @@ class CliTest(unittest.TestCase):
         return rid
 
     def test_happy_path_counts_saves_itself(self):
+        """--saves 未指定なら select_targets.select() の選定件数を自分で数える
+        （2026-09-22 CEO裁定）。setUp の captures.json は3件ともrid付きで、
+        reviews/ が無い＝どれも未掲載なので3件とも選定される
+        （date==targetの2件、ではない。旧 date==target 数え方は廃止）。
+        """
         rid = self._full_run()
         out = self._run("finish", "--target", "2026-09-07", "--run-id", rid,
                         "--reviews", "r.html")
         self.assertIn("status=complete", out)
-        self.assertIn("saves=2", out)   # 手で埋めていない。captures.json から数えた
+        self.assertIn("saves=3", out)   # 手で埋めていない。select_targets が数えた
         self.assertIn("total_s=", out)
         self.assertEqual(self._read_reviews().count("run-timing"), 1)
+
+    def test_explicit_saves_flag_overrides_auto_count(self):
+        """--saves を明示すれば select_targets を呼ばずその値をそのまま使う。"""
+        rid = self._full_run()
+        out = self._run("finish", "--target", "2026-09-07", "--run-id", rid,
+                        "--reviews", "r.html", "--saves", "99")
+        self.assertIn("status=complete", out)
+        self.assertIn("saves=99", out)
 
     def test_run_id_is_required_for_mark_and_finish(self):
         """⑯ --run-id を省略したら記録もせず complete にもしない。"""
@@ -733,12 +754,18 @@ class CliTest(unittest.TestCase):
                         "--reviews", "r.html")
         self.assertIn("target_mismatch", out)
 
-    def test_missing_captures_json_yields_saves_unknown(self):
+    def test_missing_captures_json_yields_saves_zero(self):
+        """select_targets.select() は captures.json が無くても例外にせず
+        0件選定として振る舞う（無人ランのgateを止めない設計）。そのため
+        saves=unknown にはならず saves=0 になる（旧 _count_saves() は
+        captures.json 必須で読めなければ saves=unknown だったが、その
+        挙動は select_targets 側の設計に合わせて変わった）。
+        """
         rid = self._full_run()
         os.remove(os.path.join(self.dir, "captures.json"))
         out = self._run("finish", "--target", "2026-09-07", "--run-id", rid,
                         "--reviews", "r.html")
-        self.assertIn("saves=unknown", out)
+        self.assertIn("saves=0", out)
 
     def test_missing_reviews_file_does_not_stop_the_routine(self):
         rid = self._full_run()

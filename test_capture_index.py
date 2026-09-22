@@ -66,9 +66,20 @@ class CaptureIndexTest(unittest.TestCase):
             {"days": {d.isoformat(): {"rids": sorted(r)}
                       for d, r in mapping.items()}}))
 
-    def _review(self, day):
+    def _review(self, day, rids=()):
+        """reviews/<day>.html を書く。rids に渡した各rid用のカード
+        （data-rid付き）を含める（2026-09-22 CEO裁定: published判定が
+        reviews の実掲載（data-rid/URL一致）を直接見るようになったため、
+        このテストファイルもカードの無い空のhtmlでは「掲載済み」に
+        ならない）。
+        """
+        cards = "".join(
+            '<div class="vcard"><a class="vlink" href="https://x/%d"></a>'
+            '<button data-rid="%d"></button></div>' % (rid, rid)
+            for rid in rids
+        )
         self._write(os.path.join("reviews", day.isoformat() + ".html"),
-                    "<!doctype html></html>")
+                    "<!doctype html><body>%s</body></html>" % cards)
 
     def _read_index(self):
         with open(os.path.join(self.tmp, "capture_index.json"), encoding="utf-8") as fh:
@@ -128,7 +139,7 @@ class CaptureIndexTest(unittest.TestCase):
     def test_reports_days_that_have_saves_but_no_review(self):
         missed = self._d(2)
         self._captures({self.yesterday: [9], missed: [1]})
-        self._review(self.yesterday)
+        self._review(self.yesterday, [9])
         out = self._run()
         self.assertIn("UNPUBLISHED:", out)
         self.assertIn(missed.isoformat(), out)
@@ -136,13 +147,35 @@ class CaptureIndexTest(unittest.TestCase):
 
     def test_reports_none_when_everything_is_published(self):
         self._captures({self.yesterday: [9]})
-        self._review(self.yesterday)
+        self._review(self.yesterday, [9])
         self.assertIn("UNPUBLISHED: none", self._run())
+
+    def test_published_via_url_match_even_without_matching_data_rid(self):
+        """data-rid が付いていない（後付け漏れ等の）カードでも、URL
+        （select_targets.url_key 経由）が一致すれば published とみなす。
+        """
+        self._captures({self.yesterday: [9]})
+        # data-rid を持たないカードだが href は captures.json の source と一致。
+        self._write(os.path.join("reviews", self.yesterday.isoformat() + ".html"),
+                    '<!doctype html><body><div class="vcard">'
+                    '<a class="vlink" href="https://x/9"></a></div></body></html>')
+        self.assertIn("UNPUBLISHED: none", self._run())
+
+    def test_rid_not_found_anywhere_stays_unpublished_even_when_day_has_other_matches(self):
+        """同じ日に複数の rid があるとき、一部だけしか reviews に載っていない
+        なら、その日はまだ UNPUBLISHED のまま（1件でも未掲載が残っていれば
+        その日を報告する）。
+        """
+        self._captures({self.yesterday: [9, 10]})
+        self._review(self.yesterday, [9])  # 10 は掲載されていない
+        out = self._run()
+        self.assertIn("UNPUBLISHED:", out)
+        self.assertIn(self.yesterday.isoformat(), out)
 
     def test_days_with_no_saves_are_not_reported(self):
         """保存0件の日は review を作らないのが仕様。欠落ではない。"""
         self._captures({self.yesterday: [9]})
-        self._review(self.yesterday)
+        self._review(self.yesterday, [9])
         self._index({self._d(2): []})
         self.assertIn("UNPUBLISHED: none", self._run())
 
@@ -151,13 +184,13 @@ class CaptureIndexTest(unittest.TestCase):
         old = self.since - datetime.timedelta(days=1)
         self._index({old: [1]})
         self._captures({self.yesterday: [9]})
-        self._review(self.yesterday)
+        self._review(self.yesterday, [9])
         self.assertIn("UNPUBLISHED: none", self._run())
 
     def test_today_is_not_reported_yet(self):
         """当日はまだ確定していない。"""
         self._captures({self.today: [1], self.yesterday: [9]})
-        self._review(self.yesterday)
+        self._review(self.yesterday, [9])
         self.assertIn("UNPUBLISHED: none", self._run())
 
     # --- 壊れた入力 ---------------------------------------------------------

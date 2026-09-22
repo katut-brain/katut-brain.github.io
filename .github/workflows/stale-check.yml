@@ -63,9 +63,15 @@ jobs:
 
           saved = {d for d, e in days.items()
                    if isinstance(e, dict) and e.get("rids") and d >= SINCE}
-          published = {d for d in
-                       (day_of(os.path.basename(p)[:-5]) for p in glob.glob("reviews/*.html"))
-                       if d}
+          # 2026-09-22: 「reviews/<その日>.html がある＝その日の保存が公開済み」の前提は
+          # 崩れた（振り返りは前回ラン以降の未掲載分を載せるので、深夜の保存は前日付の
+          # reviews に載り、その日の reviews が作られないことがある）。
+          # そこで「その日の rid が全部どこかの reviews の data-rid に載っているか」で見る。
+          sys.path.insert(0, os.getcwd())
+          import select_targets
+          reviewed, _unreadable = select_targets.reviewed_rids("reviews")
+          published = {d for d in saved
+                       if all(r in reviewed for r in days[d].get("rids", []))}
 
           today = (datetime.datetime.now(datetime.timezone.utc)
                    + datetime.timedelta(hours=9)).date()
