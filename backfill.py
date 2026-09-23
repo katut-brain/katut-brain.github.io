@@ -120,6 +120,30 @@ def _depth_rank(depth):
     return _DEPTH_ORDER.get(depth)
 
 
+# Gemini無料枠切れの打ち切り判定に使う exception:* プレフィックス（多重防御）。
+# fetch_content._is_quota_error() の判定を主とするが、それでも取りこぼした
+# 型名がそのまま "exception:ResourceExhausted" 等として fetch_facts に残る
+# ケースに備え、backfill 側でも拾えるようにする（2026-09-23 Codex 2周目
+# レビュー P1 対応）。判定を1関数に集約し、run() 側の分岐を1箇所にする。
+_QUOTA_EXCEPTION_PREFIXES = ("exception:resourceexhausted", "exception:toomanyrequests")
+
+
+def _is_quota_reason(video_reason):
+    """新レコードの video_reason が「Gemini無料枠切れ」を意味するか判定する。
+
+    1. `"gemini_quota"`（fetch_content._is_quota_error() が判定した正規のコード）
+    2. `"exception:ResourceExhausted"` / `"exception:TooManyRequests"` で始まる
+       （fetch_content 側の判定が何らかの理由で拾えず、例外の型名がそのまま
+       残ったケースの多重防御。大文字小文字は区別しない）
+    未記録（None・空文字）や上記以外は False。
+    """
+    if not video_reason:
+        return False
+    if video_reason == "gemini_quota":
+        return True
+    return video_reason.lower().startswith(_QUOTA_EXCEPTION_PREFIXES)
+
+
 # テストが差し替える実行口。None のときだけ本番のサブプロセス実行を使う。
 # 本番パスとテストパスの分岐はここ1点だけ（CEO指定）。
 # シグネチャ: run_one(url, timeout, env) -> None（成功/失敗は呼び出し側が
@@ -702,7 +726,7 @@ def run(target, limit, max_attempts, dry_run, timeout, max_total=None):
         # 自身のカウンタ（attempted/failed/rid_mismatch等）は下の通常ロジックで
         # そのまま数える——起動して書き込みまで到達した事実は変わらないため。
         # 止めるのは「次以降の候補を起動するかどうか」だけ（ループ先頭で見る）。
-        if new_rec.get("video_reason") == "gemini_quota":
+        if _is_quota_reason(new_rec.get("video_reason")):
             quota_hit = True
 
         # attempted の3条件（すべて満たさなければ failed / rid_mismatch）:

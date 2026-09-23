@@ -220,6 +220,74 @@ class _AllowlistRedirectHandler(urllib.request.HTTPRedirectHandler):
             self, req, fp, code, msg, headers, newurl)
 
 
+# Gemini無料枠切れ(429/RESOURCE_EXHAUSTED)の判定に使う型名・ステータス文字列。
+# 小文字化して比較する(型名・属性値の大文字小文字表記はライブラリのバージョンや
+# 経路によって揺れるため)。
+_QUOTA_TYPE_NAMES = {"resourceexhausted", "toomanyrequests"}
+_QUOTA_STATUS_VALUES = {"429", "resource_exhausted"}
+_QUOTA_TEXT_MARKERS = ("resource_exhausted", "resourceexhausted", "too many requests")
+
+
+def _is_quota_error(e):
+    """例外が Gemini 無料枠切れ(429 / RESOURCE_EXHAUSTED)かどうかを判定する
+    (2026-09-23 Codex 2周目レビュー P1 対応)。
+
+    元の判定は `str(e)` に "429"・"RESOURCE_EXHAUSTED"・"quota" のどれかが
+    含まれるかだけを見ていた。これだと次の2ケースを取りこぼす:
+      - `ResourceExhausted("resource exhausted")` のように、型名は枠切れを
+        表すがメッセージに "429" が出ない例外
+      - `.code=429` を持つのにメッセージへ数字が出ない例外
+        （google-genai の `errors.ClientError` 等）
+
+    2026-09-23、インストール済み google-genai 2.8.0 の実ソースで確認した実物の形:
+    `google.genai.errors.ClientError(code, response_json, response)` は
+    `code`(int)・`status`(str, 例 "RESOURCE_EXHAUSTED")・`message`(str) を持つ。
+    `google.api_core.exceptions.ResourceExhausted` / `TooManyRequests`
+    （型名で判定する経路）も同梱環境に存在したが、どちらの import にも依存しない
+    ——未インストールの環境でも動くよう、型名・属性はすべて `getattr` で
+    防御的に読む（無ければ None として扱い、例外を投げない）。
+
+    優先順位はどれも独立の OR 条件（1つでも真なら枠切れ扱い）:
+      1. 型名が ResourceExhausted / TooManyRequests
+      2. `code` / `status_code` / `status` 属性が 429 または "RESOURCE_EXHAUSTED"
+      3. 型名・メッセージ・`status` に "resource_exhausted" / "resourceexhausted" /
+         "too many requests" を含む（大文字小文字は区別しない）
+      4. 既存の文字列判定（`str(e)` に "429"・"RESOURCE_EXHAUSTED"・"quota"）
+    """
+    name = type(e).__name__
+    name_lower = name.lower()
+
+    # 1. 型名そのもの
+    if name_lower in _QUOTA_TYPE_NAMES:
+        return True
+
+    # 2. code / status_code / status 属性（google-genai の ClientError.code は int）
+    for attr in ("code", "status_code", "status"):
+        value = getattr(e, attr, None)
+        if value is None:
+            continue
+        value_str = str(value).strip().lower()
+        if value_str in _QUOTA_STATUS_VALUES:
+            return True
+
+    # 3. 型名・メッセージ・status のどこかにマーカー文字列
+    haystack_parts = [name_lower, str(e).lower()]
+    for attr in ("message", "status"):
+        value = getattr(e, attr, None)
+        if value:
+            haystack_parts.append(str(value).lower())
+    haystack = " ".join(haystack_parts)
+    if any(marker in haystack for marker in _QUOTA_TEXT_MARKERS):
+        return True
+
+    # 4. 既存の文字列判定（後方互換。元の実装の大文字小文字の挙動も変えない）
+    s = str(e)
+    if "429" in s or "RESOURCE_EXHAUSTED" in s or "quota" in s.lower():
+        return True
+
+    return False
+
+
 def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
     """動画(mp4)をダウンロードし、Gemini API(無料枠)で映像+音声の内容を理解して
     日本語要約を返す。X動画・Instagram Reels等、動画の実体URLが手に入るケースで共用する。
@@ -300,9 +368,11 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
     except Exception as e:
         # 無料枠切れ(429)・ネットワーク断・API仕様変更が全部ここに来る。
         # 枠切れは翌日には戻るので一過性側だが、区別できるよう例外の型名だけ残す。
-        name = type(e).__name__
-        if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e) or "quota" in str(e).lower():
+        # 判定は _is_quota_error() に一本化（型名・code/status属性・メッセージ文字列
+        # のどれからでも判定できる。2026-09-23 Codex 2周目レビュー P1 対応）。
+        if _is_quota_error(e):
             return "", "gemini_quota"
+        name = type(e).__name__
         return "", "exception:" + name[:40]
     finally:
         if tmp_path and os.path.exists(tmp_path):

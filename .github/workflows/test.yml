@@ -74,6 +74,11 @@ jobs:
       - name: Run backfill quota-stop tests
         run: python -m unittest -v test_backfill_quota_stop.py
 
+      # Gemini 無料枠切れの判定（型名/属性/メッセージ文字列のどれからでも判定）の
+      # 回帰テスト（2026-09-23 Codex 2周目レビュー P1 対応で追加）。
+      - name: Run gemini-quota detection tests
+        run: python -m unittest -v test_gemini_quota_detection.py
+
       # Instagram Reel 動画取得の復活（2026-09-20）の回帰テスト。
       # 中継(kkinstagram)のHTTP応答だけをダブルにし、理由コードの導出・分類は
       # 本物の関数に通す。ネットワークには出ない。
