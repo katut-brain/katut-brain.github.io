@@ -68,16 +68,21 @@
 
 2.5. **バックフィル（過去に取得できなかった rid 持ちレコードの再取得）**：
    （先に `python3 run_timing.py mark step2_5 --run-id <8桁>`）
-   `FETCH_FACTS_DIR="$PWD/fetch_facts" FACTS_DATE=$TARGET timeout 600 python3 backfill.py --target $TARGET --limit 1 --timeout 480` を実行する。
+   `FETCH_FACTS_DIR="$PWD/fetch_facts" FACTS_DATE=$TARGET timeout 1200 python3 backfill.py --target $TARGET --limit 5 --timeout 480 --max-total 1140` を実行する。
    - ⚠️ **`FETCH_FACTS_DIR="$PWD/fetch_facts"` を必ず前置する**。書き先をリポ直下の `fetch_facts/`（＝手順8(b)で
      `git status` を見る対象と同じディレクトリ）に固定するため。前置しないと `backfill.py`/`fetch_content.py` の
      既定値に依存することになり、実行環境しだいで書き先がリポ追跡対象からずれるリスクがある。
-   - ⚠️ **枠（`--limit`）を上げるのは保留中。`--limit 1` を勝手に上げないこと**（2026-09-08）。
-     旧版はここに「問題が無ければ `--limit 5`（外側 `timeout 2500`）へ上げる」と書いていたが、**この値は破棄した**——
-     `--limit 5 × --timeout 480 = 2400秒` は成功条件「1ラン20分以内」を単独で倍超過し、Codex と gemini-critic が
-     独立に NO-GO を出した（2026-09-07・2026-09-08 の計2ラウンド）。代替値の逆算も、**手順ごとの所要時間が
-     一度も測られていない**ため現時点では不可能と確定した。まず手順1・手順7で入れた計測（`run-timing` コメント）で
-     内訳を集め、実データが出てから枠を決め直す。
+   - ⚠️ **この枠（`--limit 5` / `--max-total 1140` / 外側 `timeout 1200`）は 2026-09-23 に
+     実測（`step2_5_s` 18〜22秒・`fetch_facts/runs/*.json` の `candidates`/`attempted`/`limit`/`timeout`）
+     から決めた。**勝手に変えないこと。旧・棄却済みの「`--limit 5`（外側 `timeout 2500`）」との違いは、
+     外側の時間上限が `1200` で止まる点——`--max-total 1140` により、480秒フルにかかる候補は最大2件までしか
+     起動されず（起動条件「残り ≥ `--timeout`」）、`2500` 案のように単独で長時間を占有しない。
+   - ⚠️ **Gemini 無料枠を先に使い切るリスク**: 手順2.5 のバックフィルは手順4より前に走るため、X動画・
+     Instagram Reel 動画理解で Gemini API 枠を先に消費し、当日の通常取得（手順4）側の動画理解がタイトルのみへ
+     フォールバックする可能性がある（`fetch_content.py` の graceful degradation で止まりはしないが、質は落ちる）。
+   - ⚠️ **`budget_stopped` の見方**: `BACKFILL_STATUS:` 行の `budget_stopped` は「残り時間が `--timeout` 未満で
+     起動を見送った候補数」。0より大きければ、その夜は `--max-total 1140` の枠を使い切って一部候補が翌晩へ
+     繰り越されたことを示す（失敗ではない。試行回数は消費していないので候補のまま残る）。
    - 枠を決め直すときの算術（変えない前提）: 1件あたり最大 `--timeout` 秒・上限 `--limit` 件だが、
      **総時間の上限は `--max-total` で決まる**（既定 `limit × timeout + 30`。`backfill.py` は各候補の起動前に
      「残り < `--timeout`」なら起動せず打ち切り、残件数を `budget_stopped` に記録する）。外側のシェル `timeout` は
