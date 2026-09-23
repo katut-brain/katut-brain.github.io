@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-09-23 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-23 の振り返り</h1>
+  <div class="meta">「Jev」という判定特化の新型AIが一気に広がり、AI×トレードの逸話も相次いだ日（保存22件、前日以前分14件を含む）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存を貫く通奏低音は「生成」と「判断」の分離である。TypeSafe AIが9/22に公開した判定特化モデル「Jev」——文章を1文字も書かず、Choice/Score/Noulの3種の型付き回答だけを70〜500msで返す——が、Claude Code・Codexのコンテキスト圧縮、Slackの自動振り分け、Obsidianのタグ付け、ファイルオープンの高速化など、あらゆる「ちょっとした判断」の受け皿として一晩で13件も保存された。Jevは前日9/22には15件が一気に保存されており、当日も8件と勢いが続く、今週すでに急伸中の関心である。</p>
+    <p>もう一方の軸は、同じ「AIに何を任せるか」という発想がAI×トレードの領域にも染み出している点だ。Jev＋ローカルAI2体の3票合議でFXの5分後を予測する検証や、AIが分析だけを担い注文執行はルールベースのプログラムに厳密に分離する自動売買の8段階開発日記が、Claude Codeで2日組んだbotが元手$68を一晩で$6,732にしたという逸話的な投稿と同じ日に並ぶ。誇張と実装が地続きで語られており、知る/紹介したい軸（noteの記入は22件中0件）が今日はっきり優勢だった。</p>
+    <ul class="pts">
+      <li><b>Jevの急伸</b>：9/22の初出15件から3日連続で保存が続き、Claude Code/Codex双方に「1秒未満で判断だけ返す」役割を担わせる実装例がコンテキスト圧縮・コスト削減・処理速度の3方向で積み上がっている。</li>
+      <li><b>誇張と実装の距離</b>：$68→一晩で$6,732というClaude Codeトレードbotの逸話と、AIの分析とルールベースの注文執行を明確に分離した8段階の自動売買設計が同日に並び、期待値と実装の間の距離が可視化されている。</li>
+      <li><b>知る/紹介したい軸が優勢</b>：22件全てでnoteが空欄。今日は「作りたい」より先に「これは何だ」と紹介・保存する段階にとどまっている。</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>「生成」と「判断」を分けるJevの設計思想は、コスト削減の小技で終わるのか、それとも「エージェントに何を任せるか」という設計原則そのものを変えるのか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">Jev（TypeSafe AIの判定特化モデル）</div>
+    <ul class="ilist">
+      <li><a href="https://typesafe.ai/blog/introducing-system-one-models-and-jev" target="_blank" rel="noopener"><b>Introducing System One Models & Jev</b></a> <span>→ 開発元の公式発表。出力トークンは無料・70〜500msという処理速度で、「判断は数学的にハルシネーションが起きない」という設計自体がコスト構造を変えていると分かる。</span></li>
+      <li><a href="https://apimaster.ai/blog/jev-claude-code-codex" target="_blank" rel="noopener"><b>How to Use Jev in Claude Code and Codex: Four Routes That Work</b></a> <span>→ Jevはモデルとして直接置き換えられず、公式スキル・境界フック・MCP・ルーティングの4経路で組み込むのが実態で、複数の質問を1回にまとめて呼ぶと12倍安く10倍速くなるという実装上の要点がある。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 Jevとエージェント運用（13件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/misakism13/status/2102305405280080143?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2102305377979387904/img/SQLDpPnk4o18Y_nN.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Jevで個人情報の入力を自動化</div><div class="vdesc">Jevを使って個人情報を一括入力する機能を自作し、入力の手間から解放されたと投稿。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/23 13:41</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/misakism13/status/2102305405280080143?s=12" data-title="Jevで個人情報の入力を自動化" data-rid="1863179726">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/yama_threads/status/2102260578521645349?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSw80qOX0AAY04-?format=webp&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Jevで会話コンテキストを91%圧縮</div><div class="vdesc">Claude Codeのセッション履歴を約100万トークンから86Kへ1秒で圧縮したAlex Volkov氏の実測例を基に、Jevは「要約」ではなく関連度スコアによる選別に特化していると解説する記事。</div><div class="vsaved">保存 9/23 13:41</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/yama_threads/status/2102260578521645349?s=12" data-title="Jevで会話コンテキストを91%圧縮" data-rid="1863179775">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/doqblr23/status/2102421892250603536?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fdoqblr23%2Fstatus%2F2102421892250603536%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">落合陽一の論文要約フォーマットが今もエージェントスキルとして現役</div><div class="vdesc">落合陽一が考案した論文要約フォーマットが、10年以上を経てなお現役どころかエージェントスキルとして活用度を増していると指摘する投稿。</div><div class="vsaved">保存 9/23 17:01</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/doqblr23/status/2102421892250603536?s=12" data-title="落合陽一の論文要約フォーマットが今もエージェントスキルとして現役" data-rid="1863351734">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/gemama0/status/2102198046201086356?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2102197556138684416/img/VOAFvXpPpUMtUKYH.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Jevでノート自動タグ付け（Obsidian）</div><div class="vdesc">Jevを使ってObsidianノートを自動タグ付けするシステムを個人開発したと紹介。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/23 17:03</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/gemama0/status/2102198046201086356?s=12" data-title="Jevでノート自動タグ付け（Obsidian）" data-rid="1863352675">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/fta7/status/2102626309096784242?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Ffta7%2Fstatus%2F2102626309096784242%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Jevでファイルを0.5秒・0トークンで開く</div><div class="vdesc">AIに「◯◯を開いて」と頼むたび数秒とトークンを消費していた処理をJevに任せた結果、0.5秒・0トークンで起動できるようになったとの報告。</div><div class="vsaved">保存 9/23 23:03</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/fta7/status/2102626309096784242?s=12" data-title="Jevでファイルを0.5秒・0トークンで開く" data-rid="1863609120">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/aiaircle34052/status/2102561083555033162?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2101857791967178752/img/MiCcd9s5hrptUHqe.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Jev+CodexでAstraコストを50%削減</div><div class="vdesc">Codexの作業中にJevで「ここは深く考えるべきか」をターンごとに判定させ、詰まった時だけ思考量を増やす手法でコストを50%下げたという実演を紹介。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/23 23:05</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/aiaircle34052/status/2102561083555033162?s=12" data-title="Jev+CodexでAstraコストを50%削減" data-rid="1863609906">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/claudecode84/status/2102640354671702397?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2101966502954196992/img/rcMJFO9c3DV8wU5d.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">JevでClaude Codeの知見をCodex/Cursorへ引き継ぐ</div><div class="vdesc">Claude Codeで一度解決した問題の知見を、Jevを介してCodexやCursorが最初から知っている状態で共有できるようになったと紹介。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/24 00:49</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/claudecode84/status/2102640354671702397?s=12" data-title="JevでClaude Codeの知見をCodex/Cursorへ引き継ぐ" data-rid="1863658728">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/dontgiveup_26/status/2102286564521111687?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSzSSnaa4AAbZIm.jpg?format=jpg&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">ブラウザ自動化「Stagehand v4」+ JevでLLM呼び出し97%減</div><div class="vdesc">オープンソースのブラウザ自動化ツール「Stagehand v4」にJevを組み合わせるとLLM呼び出しが97%減り、速度は11倍、繰り返し実行のコストはほぼ0円に収束すると紹介。</div><div class="vsaved">保存 9/24 00:51</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/dontgiveup_26/status/2102286564521111687?s=12" data-title="ブラウザ自動化「Stagehand v4」+ JevでLLM呼び出し97%減" data-rid="1863659114">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/cryptowluha/status/2102730507293221236?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2102730446312288256/img/ukiIIc5aQNoBIZX7.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">無料で使えるGitHub定番リポジトリ5選</div><div class="vdesc">スター50万超の「あらゆるリストのリスト」awesomeや、50分野1400件超の無料APIをまとめたpublic-apisなど、無料で使えるGitHub定番リポジトリ5つを紹介。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/24 00:51</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/cryptowluha/status/2102730507293221236?s=12" data-title="無料で使えるGitHub定番リポジトリ5選" data-rid="1863659444">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/codexneo4/status/2102639599474352401?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2102307877298077696/img/qdrb5gzG02HDiOyf.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">CodexでJevを使うと激速化</div><div class="vdesc">CodexにJevを組み込むと処理が「飛ぶ」ほど速くなるという実演ポスト。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/24 00:53</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/codexneo4/status/2102639599474352401?s=12" data-title="CodexでJevを使うと激速化" data-rid="1863660063">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/jinbaflow_jp/status/2102421323788292474?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2102420746605928448/img/ciLj9u-2XgT5ei0D.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">JevでSlackのメンションを廃止</div><div class="vdesc">Jevに発言内容を判定させ、雑談はスルーし業務依頼だけを検知して経費ルール検索や資料生成のフローを自動起動、Slackでのメンションが不要になったという運用例。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/24 00:54</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/jinbaflow_jp/status/2102421323788292474?s=12" data-title="JevでSlackのメンションを廃止" data-rid="1863660152">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/obsidianstudio9/status/2102724666653909455?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HS5g8NTaAAAGXZC.jpg?format=jpg&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Obsidianのvault管理をAIエージェントクルーに一任</div><div class="vdesc">Obsidianのvault管理を8体以上のAIエージェントの「クルー」に丸ごと任せるツールが登場、14のスキルでvaultの整理・検索からメールの仕分けまで担うと紹介。</div><div class="vsaved">保存 9/24 00:54</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/obsidianstudio9/status/2102724666653909455?s=12" data-title="Obsidianのvault管理をAIエージェントクルーに一任" data-rid="1863660399">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/dontgiveup_26/status/2102667639839510928?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HS4s3ZxbUAA39hM?format=webp&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">重いChromium起動がAIエージェントのブラウザ自動化を苦しめる問題</div><div class="vdesc">AIエージェントにWeb検索やブラウザ自動化をさせるたびに重いChromiumが立ち上がり、MacBookのファンが回りサーバーのメモリが逼迫していた人向けの対策を紹介。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/24 00:55</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/dontgiveup_26/status/2102667639839510928?s=12" data-title="重いChromium起動がAIエージェントのブラウザ自動化を苦しめる問題" data-rid="1863660600">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>📈 AI×トレード・相場（8件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/blog_uki/status/2102524365229502649?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/card_img/2100827023866519552/vjFH_U8p?format=webp&name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">AI株トレード×投資指標のシストレ解説記事</div><div class="vdesc">情報係数（IC）が0.05以上で「優秀」、0.1以上で「非常に優秀」な投資指標とされ、LASSOやExtraTreesによる特徴選択まで踏み込んで解説する、Claudeに読ませたいシストレ記事として紹介されている。</div><div class="vsaved">保存 9/23 17:00</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/blog_uki/status/2102524365229502649?s=12" data-title="AI株トレード×投資指標のシストレ解説記事" data-rid="1863351204">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/forexdog1968/status/2102565752356421663?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HS3PRt6boAAW90Y.jpg?format=jpg&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Jev+ローカルAIの合議で5分後の相場を予測</div><div class="vdesc">Jevとローカルの生成AI2体に同じリアルタイム相場データを渡し、3票中2票が一致したときだけ「合議成立」として記録する仕組みでFXの短期予測を検証中と報告。</div><div class="vsaved">保存 9/23 17:06</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/forexdog1968/status/2102565752356421663?s=12" data-title="Jev+ローカルAIの合議で5分後の相場を予測" data-rid="1863372333">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/syahu_poyo_ai/status/2102676778191876133?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2101899238779330560/img/UMdt_losDyR_lsnN.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claude Codeで作ったトレードbot、2日で$68→一晩$6,732</div><div class="vdesc">日本の19歳大学生がClaude Codeで2日で組んだトレードbotが、元手$68を初日夜のうちに利益$6,732に変えたという実例が紹介されている。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/24 00:47</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/syahu_poyo_ai/status/2102676778191876133?s=12" data-title="Claude Codeで作ったトレードbot、2日で$68→一晩$6,732" data-rid="1863656110">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/t2aman1e/status/2102742685362815230?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HS5xJ45aAAA4YbI.jpg?format=jpg&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">ChatGPTに楽天証券を操作させたら含み益+45%</div><div class="vdesc">ChatGPTに楽天証券の操作を任せた結果、含み益率が+45%を超えたと報告する投稿。</div><div class="vsaved">保存 9/24 00:47</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/t2aman1e/status/2102742685362815230?s=12" data-title="ChatGPTに楽天証券を操作させたら含み益+45%" data-rid="1863656200">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/hagedesu000/status/2102721898685829184?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fhagedesu000%2Fstatus%2F2102721898685829184%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">EMA20×15分足のシンプル投資法</div><div class="vdesc">EMA20と15分足を組み合わせるだけの手法で、初心者でも年300万円ペースを狙えると主張するトレード指南。</div><div class="vsaved">保存 9/24 00:50</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/hagedesu000/status/2102721898685829184?s=12" data-title="EMA20×15分足のシンプル投資法" data-rid="1863658955">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/syganijjfac1688/status/2102660446989980121?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2102658160779800576/img/hW7E6U0UcuKoVIFD.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">800万円を元手に資産8億円、投資家の初心者向けルール</div><div class="vdesc">800万円から資産8億円まで育てた投資家が、5%下落時はまず様子を見るなど「ルールを守れないなら株を買うな」という初心者向け鉄則を開示。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/24 00:50</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/syganijjfac1688/status/2102660446989980121?s=12" data-title="800万円を元手に資産8億円、投資家の初心者向けルール" data-rid="1863659022">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/rorikabu/status/2102755544813761013?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/card_img/2102755517420781568/pdVGf5oQ?format=webp&name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">AIの分析とルール執行を分離した自動売買、開発日記</div><div class="vdesc">AIが分析・判断を担い、注文の実行や数量計算・リスク上限の確認はあらかじめ決めたルールに従うプログラムが担当するよう明確に分離した自動売買ツールをPhase0〜7の8段階で開発中で、現在はPhase3手前という開発日記。</div><div class="vsaved">保存 9/24 00:51</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/rorikabu/status/2102755544813761013?s=12" data-title="AIの分析とルール執行を分離した自動売買、開発日記" data-rid="1863659329">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/entry20210104/status/2102593935407202318?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HS3qCm9XQAAXueL.jpg?format=jpg&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">急騰前の投稿をGrokで遡って調べる株リサーチ術</div><div class="vdesc">急騰してから騒ぐ人ではなく、急騰する前に何を書いていたかを過去の投稿までGrokで掘るべきだと説く、X検索にはGrokが強いという株リサーチの視点。</div><div class="vsaved">保存 9/24 00:52</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/entry20210104/status/2102593935407202318?s=12" data-title="急騰前の投稿をGrokで遡って調べる株リサーチ術" data-rid="1863659755">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🧑‍💼 AIと労働（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/souyakuchan/status/2102265198010826983?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HSy_DbeaoAEV3AC?format=webp&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">「ChatGPTの養分バイト」が大学教員より高時給</div><div class="vdesc">ChatGPTの学習データ生成に関わるアルバイトが、大学教員よりもかなり良い時給になっているという報告。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/24 00:56</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/souyakuchan/status/2102265198010826983?s=12" data-title="「ChatGPTの養分バイト」が大学教員より高時給" data-rid="1863660695">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-09-23 run_id=e40e555c saves=22 step1_s=19 step2_s=27 step2_5_s=88 step3_s=43 step4_s=313 step4_5_s=483 step5_s=6 step7_s=33 total_s=1012 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
