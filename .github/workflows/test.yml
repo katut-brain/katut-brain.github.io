@@ -68,6 +68,12 @@ jobs:
       - name: Run cloud-routine backfill budget tests
         run: python -m unittest -v test_cloud_routine_backfill_budget.py
 
+      # Gemini 無料枠切れ（video_reason=="gemini_quota"）を踏んだ夜、残りの候補を
+      # 起動せず quota_stopped に記録して打ち切ることの回帰テスト
+      # （2026-09-23 Codex 1周目レビュー P1 対応で追加）。
+      - name: Run backfill quota-stop tests
+        run: python -m unittest -v test_backfill_quota_stop.py
+
       # Instagram Reel 動画取得の復活（2026-09-20）の回帰テスト。
       # 中継(kkinstagram)のHTTP応答だけをダブルにし、理由コードの導出・分類は
       # 本物の関数に通す。ネットワークには出ない。

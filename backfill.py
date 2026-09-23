@@ -581,7 +581,7 @@ def run(target, limit, max_attempts, dry_run, timeout, max_total=None):
                      g["last_attempt_at"]))
         print("BACKFILL_STATUS: target=%s candidates=%d attempted=0 improved=0 unchanged=0 "
               "failed=0 exhausted_skipped=%d rid_mismatch=0 rid_changed_skipped=%d stub_written=0 "
-              "unreadable_day_file=0 budget_stopped=0"
+              "unreadable_day_file=0 budget_stopped=0 quota_stopped=0"
               % (target, total_candidates, exhausted_skipped, rid_changed_skipped))
         if not dry_run:
             _write_run_evidence(
@@ -590,7 +590,7 @@ def run(target, limit, max_attempts, dry_run, timeout, max_total=None):
                 candidates=total_candidates, attempted=0, improved=0, unchanged=0,
                 failed=0, exhausted_skipped=exhausted_skipped, rid_mismatch=0,
                 rid_changed_skipped=rid_changed_skipped, stub_written=0,
-                unreadable_day_file=0, budget_stopped=0)
+                unreadable_day_file=0, budget_stopped=0, quota_stopped=0)
         return 0
 
     run_one_fn = _get_run_one()
@@ -603,8 +603,22 @@ def run(target, limit, max_attempts, dry_run, timeout, max_total=None):
     stub_written = 0
     unreadable_day_file = 0
     budget_stopped = 0
+    quota_stopped = 0
+    # Gemini 無料枠が切れた夜、残りの候補が「一過性(transient)」の
+    # gemini_quota を毎回踏んで attempt_seq だけを消費し、DEFAULT_MAX_ATTEMPTS で
+    # exhausted に落ちて永久に候補から外れる事故を防ぐ（2026-09-23 Codex 1周目
+    # レビュー指摘・P1）。無料枠は同一 GEMINI_API_KEY をプロセス内の全候補が
+    # 共有するため、1件で gemini_quota が観測された時点でそれ以降は同じ理由で
+    # 失敗する可能性が高く、試すだけ無駄なうえ exhausted を早める副作用がある。
+    quota_hit = False
 
     for idx, g in enumerate(picked):
+        if quota_hit:
+            # 前の候補で gemini_quota を観測済み。この候補（以降すべて）は
+            # 起動しない。試行回数を消費しないので、翌晩そのまま候補に残る。
+            quota_stopped = len(picked) - idx
+            break
+
         # 総時間予算のチェック（2026-09-05 追加）。この候補を短縮せずに1回分
         # （timeout 秒）走らせる時間が残っていなければ、起動せずに打ち切る。
         # 残件数を budget_stopped として成果物側の
@@ -684,6 +698,13 @@ def run(target, limit, max_attempts, dry_run, timeout, max_total=None):
             failed += 1
             continue
 
+        # gemini_quota の観測（rid_mismatch や改善判定より前に見る）。この候補
+        # 自身のカウンタ（attempted/failed/rid_mismatch等）は下の通常ロジックで
+        # そのまま数える——起動して書き込みまで到達した事実は変わらないため。
+        # 止めるのは「次以降の候補を起動するかどうか」だけ（ループ先頭で見る）。
+        if new_rec.get("video_reason") == "gemini_quota":
+            quota_hit = True
+
         # attempted の3条件（すべて満たさなければ failed / rid_mismatch）:
         # (1) URL一致 … _read_record_for(target, url) で既にURLキー一致は保証済み
         # (2) raindrop_id が候補の rid と一致（int比較）
@@ -719,10 +740,10 @@ def run(target, limit, max_attempts, dry_run, timeout, max_total=None):
 
     print("BACKFILL_STATUS: target=%s candidates=%d attempted=%d improved=%d unchanged=%d "
           "failed=%d exhausted_skipped=%d rid_mismatch=%d rid_changed_skipped=%d stub_written=%d "
-          "unreadable_day_file=%d budget_stopped=%d"
+          "unreadable_day_file=%d budget_stopped=%d quota_stopped=%d"
           % (target, total_candidates, attempted, improved, unchanged, failed,
              exhausted_skipped, rid_mismatch, rid_changed_skipped, stub_written,
-             unreadable_day_file, budget_stopped))
+             unreadable_day_file, budget_stopped, quota_stopped))
     if not dry_run:
         # 完了時に status=started を上書きする。BACKFILL_STATUS と同じ数字を
         # 成果物側にも残すので、ログが読めなくても「その夜に何をしたか」が追える。
@@ -733,7 +754,7 @@ def run(target, limit, max_attempts, dry_run, timeout, max_total=None):
             unchanged=unchanged, failed=failed, exhausted_skipped=exhausted_skipped,
             rid_mismatch=rid_mismatch, rid_changed_skipped=rid_changed_skipped,
             stub_written=stub_written, unreadable_day_file=unreadable_day_file,
-            budget_stopped=budget_stopped)
+            budget_stopped=budget_stopped, quota_stopped=quota_stopped)
     return 0
 
 
@@ -774,7 +795,7 @@ def main(argv):
         traceback.print_exc(file=sys.stderr)
         print("BACKFILL_STATUS: target=%s candidates=0 attempted=0 improved=0 unchanged=0 "
               "failed=0 exhausted_skipped=0 rid_mismatch=0 rid_changed_skipped=0 stub_written=0 "
-              "unreadable_day_file=0 budget_stopped=0 error=%s" % (target, type(e).__name__))
+              "unreadable_day_file=0 budget_stopped=0 quota_stopped=0 error=%s" % (target, type(e).__name__))
         if not args.dry_run:
             _write_run_evidence(target, status="crashed", finished_at=_utcnow(),
                                 limit=args.limit, timeout=args.timeout,
@@ -790,7 +811,7 @@ if __name__ == "__main__":
         traceback.print_exc(file=sys.stderr)
         print("BACKFILL_STATUS: target=unknown candidates=0 attempted=0 improved=0 unchanged=0 "
               "failed=0 exhausted_skipped=0 rid_mismatch=0 rid_changed_skipped=0 stub_written=0 "
-              "unreadable_day_file=0 budget_stopped=0 error=%s" % type(e).__name__)
+              "unreadable_day_file=0 budget_stopped=0 quota_stopped=0 error=%s" % type(e).__name__)
         rc = 0
     sys.stdout.flush()
     sys.exit(rc if isinstance(rc, int) else 0)
