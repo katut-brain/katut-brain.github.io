@@ -332,6 +332,38 @@ class TestApplyAndIdempotency(unittest.TestCase):
         self.assertEqual(rec["rid_evidence"]["card_review_date"], "2026-08-23")
         self.assertIn("api_checked_at", rec["rid_evidence"])
 
+    def test_apply_persists_p2_audit_fields_in_rid_evidence(self):
+        """2026-09-24 P2: apply_resolution()で実際にfetch_facts/*.jsonへ書かれた
+        rid_evidenceに api_complete・api_query・api_link・matched_key が
+        （resolve_record()の戻り値の中身だけでなく）永続化されていることを検証する。
+        run()を通してディスクへ書き、書いたファイルを読み直して確認する
+        （resolve_record()の戻り値を見るだけでは、apply_resolution()が
+        それを実際に書き漏らしていても検出できない）。"""
+        url = "https://x.com/a/status/123"
+        path = self._make_facts_file("2026-08-23", url,
+                                      {"missing": [], "depth": "full"})
+        _write(os.path.join(self.reviews_dir, "2026-08-23.html"),
+               _review_html([_vcard(999, url)]))
+        http_get = _make_http_get(items=[{"_id": 999, "link": url}], count=1)
+
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = mlr.run(facts_dir=self.facts_dir, reviews_dir=self.reviews_dir,
+                          apply=True, token="tok", http_get=http_get,
+                          since="2026-08-23", until="2026-08-23")
+        self.assertEqual(rc, 0)
+
+        with io.open(path, encoding="utf-8") as f:
+            store = json.load(f)
+        evidence = store[url]["rid_evidence"]
+        self.assertIs(evidence["api_complete"], True)
+        self.assertIsInstance(evidence["api_query"], str)
+        self.assertIn("created:>", evidence["api_query"])
+        self.assertEqual(evidence["api_link"], url)
+        # matched_key はJSONへ書く際にtupleがlistへ変換されるので、
+        # ["strong", ["x", "123"]] の形で永続化されていることを検証する。
+        self.assertEqual(evidence["matched_key"], ["strong", ["x", "123"]])
+
     def test_apply_writes_unresolved_reason_and_checked_at(self):
         url = "https://x.com/a/status/123"
         path = self._make_facts_file("2026-08-23", url)
