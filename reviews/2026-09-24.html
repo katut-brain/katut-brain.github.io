@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-09-24 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-24 の振り返り</h1>
+  <div class="meta">AIに「判断」を委ねる一日——Jevトレード12件・建築1件・実務Tips2件、計15件</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>9月24日の保存15件のうち12件が「AIに判断だけを委ねる」金融トレードの話題で占められた。震源は9月に公開されたばかりの判断特化型AIモデル「Jev」（米TypeSafe AI、元OpenAI研究者が主導開発）——文章を生成せず、選択・Yes/No・数値予測だけを70〜500ミリ秒、入力100万tokenあたり$0.042という圧倒的な速さとコストで返す。デモ口座を1万ドルから1.7万ドル（+73%）に伸ばした報告や、「$24.80を1000倍にしろ、無理なら電源切る」とだけ指示して寝たら資産が15倍になったという逸話まで、AIに損切りの判断や執行そのものを預ける事例が続々と共有された。</p>
+    <p>この「判断の外部化」という発想は金融に閉じない。Anthropicエンジニア発として紹介されていたTipsは、コーディングエージェント自身に失敗パターン（コンテキスト超過によるハルシネーション、ロックなき共有状態変更のrace condition）を<code>AGENT_LEARNINGS.md</code>へ記録させ、次のセッションの判断材料として渡すというもの——これもJevと同じく「反復的な判断を構造化して外部に持たせる」設計思想。Instagramで保存していたRhino+Grasshopper+AIのパラメトリック都市モデルも、水・交通・建築をアルゴリズムに委ねて進化させる提案で、判断・生成をAIに任せる軸がこの日はトレード・コーディング・建築の3領域で同時に立ち上がっていた。</p>
+    <ul class="pts">
+      <li><b>Jevへの急速な注目</b>：判断のみを返す新AIモデルが公開1ヶ月弱でトレーダー界隈に浸透し始めている</li>
+      <li><b>「知る/紹介したい」が支配的</b>：15件中、自分のコメント（note）が付いた保存は0件——今日は純粋に情報収集・共有の日だった</li>
+      <li><b>継続する関心</b>：Jev・FX自動化系の話題は9/22（16件）→9/23（9件）→9/24（12件）と3日連続で保存が続いている</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>Jevのように「判断だけ」を高速・低コストで返すモデルが定着すると、人間のトレーダーが担ってきた「損切りの速さ」や「感情を排した実行」は、どこまでAIへ委譲してよいのか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">Jev（判断特化型AIモデル）</div>
+    <ul class="ilist">
+      <li><a href="https://www.sbbit.jp/article/cont1/187035" target="_blank" rel="noopener"><b>元OpenAIの研究者による「生成」しない「判断」のみ行う新AIモデル「Jev」とは何か？</b></a> <span>→ 米TypeSafe AIが2026年9月公開。最大255択の選択・数値予測・真偽確率判定の3機能を70〜500msで返し、コストと形式的ハルシネーションを抑える「判断専用レイヤー」という位置づけ。生成するLLMと判断するJevの役割分担が次世代エージェント設計の軸になりうる。</span></li>
+    </ul>
+  </section>
+
+  <h2>🏛 建築・パラメトリックデザイン（1件）</h2>
+  <div class="cards">
+        <div class="vcard">
+          <a class="vlink" href="https://www.instagram.com/p/DdoNXeJgh2A/?stkn=aGh5M2J1cmx0Nzdt" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.82787-15/819673142_18010725191970572_1972612082991135577_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=103&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0FST1VTRUxfSVRFTS5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&amp;_nc_ohc=P4sIWHsp-CYQ7kNvwGnMcVa&amp;_nc_oc=AdoPglaUSqCQ-m0ExqqoefFhZUUEmK8lVFLUUbaVDtXpEOSftlCrYs3gtfSiewzPP24&amp;_nc_zt=23&amp;_nc_ht=scontent-ord5-2.cdninstagram.com&amp;_nc_gid=bAZ8jTocvSOhyAAoNSei0Q&amp;_nc_ss=7b60f&amp;oh=00_AQJCFGgnnV-aq20x4XGjYeXZiFXU8rWATWUxgi9iKLDcow&amp;oe=6ABB5667" onerror="this.remove()"><span class="ph">Instagram</span></div>
+            <div class="vbody"><div class="vtitle">コードで都市を設計する——Rhino×Grasshopper×AIのパラメトリック都市モデル</div><div class="vdesc">水・交通・ランドスケープ・建築を一つのアルゴリズムとして進化させる都市モデルを提案。「パラメータを変えたら住みたくなるか、それとも変えたくなるか」という問いかけで締めくくる。</div><div class="vsaved">保存 9/24 20:48</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/p/DdoNXeJgh2A/?stkn=aGh5M2J1cmx0Nzdt" data-title="コードで都市を設計する——Rhino×Grasshopper×AIのパラメトリック都市モデル" data-rid="1864344906">💬 AIと話す</button>
+        </div>
+  </div>
+
+  <h2>🤖 AIトレード・投資判断の自動化（12件）</h2>
+  <div class="cards">
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/ai_300/status/2102941087174140037?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2102815855071698945/img/oIDHkMqlMDsoWm2H.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">Jevで自動売買ロボットを作る——MON/USDCの価格をリアルタイム判定</div><div class="vdesc">長い分析レポートを書くAIは不要で、BuyかSellかの判断だけを高速に返すJevが自動AI取引の起点になりうると指摘。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/24 18:16</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ai_300/status/2102941087174140037?s=12" data-title="Jevで自動売買ロボットを作る——MON/USDCの価格をリアルタイム判定" data-rid="1864213377">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/ai_monetize_1/status/2102684898385367214?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2102471162714595328/img/ZzuoM5NHzR1TiMKz.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">Jevに『1000倍にしろ、無理なら電源切る』と送って寝たら資産が15倍に</div><div class="vdesc">海外の個人が就寝前にJevへ一言だけ指示したところ、朝には残高が$24.80から$31,847.52（約478万円）へ。本人はチャートも見ていなかったという。※動画の内容は未取得。</div><div class="vsaved">保存 9/24 23:28</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ai_monetize_1/status/2102684898385367214?s=12" data-title="Jevに『1000倍にしろ、無理なら電源切る』と送って寝たら資産が15倍に" data-rid="1864535333">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/richwomanbtc/status/2102992585560314019?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">松尾研究所、金融×AIの国際学会でOutstanding Paper Award受賞</div><div class="vdesc">指数先物と現物株バスケットの追従・平均回帰を単一の最適化問題として統一的に定式化した論文が受賞。2026年7月のBest Paper Awardに続く成果で、松尾研の金融×AIクオンツ運用研究が加速している。</div><div class="vsaved">保存 9/24 23:28</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/richwomanbtc/status/2102992585560314019?s=12" data-title="松尾研究所、金融×AIの国際学会でOutstanding Paper Award受賞" data-rid="1864535399">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/foodloss_otoko/status/2102933493944840354?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">Claude Code×FXで自動化できるものをまとめてみた</div><div class="vdesc">「これで神仕組みが完成した」と意気込む投稿。具体的な自動化項目は本文の続き（リプライ等）にあり、今回の取得範囲では要点までは分からない。</div><div class="vsaved">保存 9/24 23:29</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/foodloss_otoko/status/2102933493944840354?s=12" data-title="Claude Code×FXで自動化できるものをまとめてみた" data-rid="1864535522">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/fxwolf2/status/2103050475402891543?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/media/HS-JBAGaEAAUBIb.png" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">Jevお試しロンドントレード、揉み合いで往復ビンタも最後は回収</div><div class="vdesc">ロンドンオープンの値動きに苦戦しつつ最終的に持ち直したという実践レポート。NY時間でも試すとのこと。</div><div class="vsaved">保存 9/24 23:30</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/fxwolf2/status/2103050475402891543?s=12" data-title="Jevお試しロンドントレード、揉み合いで往復ビンタも最後は回収" data-rid="1864535849">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/pennyhunter_sub/status/2102990692528353777?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/media/HS9S45PaoAAgbX2.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">1万ドルの99%をAIが運用するデモ口座、1ヶ月で1.7万ドルへ</div><div class="vdesc">資産総額17,296.26ドル・損益+72.96%（すべて預り金のまま、株式やETFは0%）と画像で確認。実口座も10万円→13万7千円まで伸び、『AIが自分のアカウント代を稼ぐフェーズに入った』とコメント。</div><div class="vsaved">保存 9/24 23:35</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/pennyhunter_sub/status/2102990692528353777?s=12" data-title="1万ドルの99%をAIが運用するデモ口座、1ヶ月で1.7万ドルへ" data-rid="1864538355">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/mzgaangy/status/2103077399764349147?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/media/HS-hvSWagAAYLAq.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">1万円を1,500億円にしたジョージ・ソロスの投資法、6つの要点</div><div class="vdesc">①間違いを認める速さ②リスク管理とチャンスの最大化③市場の非合理性を前提に動く④リフレクシビティ（再帰性）理論⑤群集心理のピークを読む逆張り⑥感情ではなく身体感覚（痛み・胸騒ぎ）で判断、の6点を画像から確認。</div><div class="vsaved">保存 9/24 23:36</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/mzgaangy/status/2103077399764349147?s=12" data-title="1万円を1,500億円にしたジョージ・ソロスの投資法、6つの要点" data-rid="1864538635">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/mizchi/status/2103045761210655176?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">Jevで向いてること・向いてないこと、30+のユースケースで検証</div><div class="vdesc">選択・採点・Yes/No判定などJevが得意な用途と苦手な用途を30以上のユースケースで検証したリサーチだが、検証結果本体の本文は今回の取得範囲では読めなかった。</div><div class="vsaved">保存 9/24 23:37</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/mizchi/status/2103045761210655176?s=12" data-title="Jevで向いてること・向いてないこと、30+のユースケースで検証" data-rid="1864538942">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/tetumemo/status/2102964330547568706?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/media/HS865n5bEAAjdyw.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">JevでAI費用削減——判断だけを軽く切り出す設計</div><div class="vdesc">文章生成はLLM、選択・採点・Yes/NoはJev、厳密ルール処理はコード、と役割分担。Jevは70〜500msで応答し、入力100万tokenあたり$0.042・出力tokenは無料という価格設計を画像から確認。</div><div class="vsaved">保存 9/24 23:39</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/tetumemo/status/2102964330547568706?s=12" data-title="JevでAI費用削減——判断だけを軽く切り出す設計" data-rid="1864540991">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/cora64189920179/status/2103095086569705961?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">『さすがにこれは出さない方が良かった』——8年使い続けているトレード手法を公開</div><div class="vdesc">兼業トレーダーが8年来使ってきた手法・ツールを思わず公開してしまったという投稿。具体的な中身は本文からは分からない。</div><div class="vsaved">保存 9/24 23:42</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/cora64189920179/status/2103095086569705961?s=12" data-title="『さすがにこれは出さない方が良かった』——8年使い続けているトレード手法を公開" data-rid="1864541832">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/minwu_15/status/2102996657042554961?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/media/HS9YT03aIAAxmyU.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">長期インデックス積立＋トレード枠の『2刀流戦略』</div><div class="vdesc">オルカンやS&P500だけの積み立てでは資産を取り崩せず『今』を楽しめないとして、インデックス積立に加え別枠のトレード資金を持つことを勧める提案。添付のFear & Greed指数はNasdaq100先物が『恐怖35』（1週間前28から上昇、1ヶ月・1年前は55）を示していた。</div><div class="vsaved">保存 9/24 23:43</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/minwu_15/status/2102996657042554961?s=12" data-title="長期インデックス積立＋トレード枠の『2刀流戦略』" data-rid="1864543053">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/_zheergen/status/2102925217568022533?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2102924014813650944/img/v2Mmc7oYfBRvx4lh.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">A株クオンツ向け無料Python SDK『AData』、5.2Kスター</div><div class="vdesc">行情・資金流・龍虎榜・概念・ETF・転換社債など複数の公開データソースを統一APIにまとめた純Python製の無料SDK。同種データのマルチソース切り替えにも対応。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/24 23:44</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/_zheergen/status/2102925217568022533?s=12" data-title="A株クオンツ向け無料Python SDK『AData』、5.2Kスター" data-rid="1864543334">💬 AIと話す</button>
+        </div>
+  </div>
+
+  <h2>🛠 実務Tips（2件）</h2>
+  <div class="cards">
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/kuzzken/status/2103000851254305224?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">自宅Mac miniへのリモートアクセスはJump Desktopが快適</div><div class="vdesc">純正の画面共有＋VPN構成よりも、Jump Desktopを使うほうが快適だという指摘。</div><div class="vsaved">保存 9/24 23:35</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kuzzken/status/2103000851254305224?s=12" data-title="自宅Mac miniへのリモートアクセスはJump Desktopが快適" data-rid="1864538504">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/claudecode84/status/2102987391065612304?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/media/HS86OnGbcAAgFBR.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">Anthropicエンジニア発、AIエージェントを『育てる』学習ログ運用術</div><div class="vdesc">エージェント自身の失敗（コンテキスト上限超過によるハルシネーション、ロックなき共有状態変更によるrace condition等）を<code>AGENT_LEARNINGS.md</code>に記録し、次のセッションで参照させることで同じ失敗を繰り返させない運用を画像から確認。</div><div class="vsaved">保存 9/24 23:41</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/claudecode84/status/2102987391065612304?s=12" data-title="Anthropicエンジニア発、AIエージェントを『育てる』学習ログ運用術" data-rid="1864541544">💬 AIと話す</button>
+        </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（1件中0件成功・内訳: exception:URLError 1件）。中継サービスの死亡を疑うこと</p>
+<!-- run-timing schema=v2 status=incomplete target=2026-09-24 run_id=d15baadc saves=15 step1_s=15 step2_s=19 step2_5_s=81 step3_s=14 step5_s=6 step7_s=85 reason=missing-step4_5 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
