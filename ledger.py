@@ -425,6 +425,14 @@ def backfill_candidates(target_day, max_attempts=DEFAULT_MAX_ATTEMPTS):
         # で INCLUDE_LEGACY が True にされていた場合に旧レコードを誤って対象化しうる）。
         if not _has_solid_rid(g["latest"]):
             continue
+        # migrate_legacy_rid.py が付与した raindrop_id(rid_source=="legacy_migrated")は
+        # 「記録時の事実」ではなく、後日 Raindrop API + reviews のカード照合で確定させた
+        # 旧レコード。backfill.py の前提「対象母集団は rid を持つ**新規**レコードのみ。
+        # rid 無しの旧レコードには一切触らない」を rid 付与後も守るため、rid グループの
+        # 集計（ledger --summary 等）には含めたまま、backfill対象からだけ除外する
+        # （2026-09-24 P1-1 ユーザー裁定: 回収対象にしない）。
+        if _rid_source_of(g["latest"]) == "legacy_migrated":
+            continue
         if g["state"] != "open":
             continue
         if g["reason_kind"] == "permanent":

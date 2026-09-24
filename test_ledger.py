@@ -67,9 +67,11 @@ class TestLegacyMigratedGrouping(LedgerTestBase):
         g = groups[("rid", 999)]
         self.assertEqual(g["state"], "resolved")
 
-    def test_backfill_candidates_include_legacy_migrated_rid(self):
-        """backfill_candidates() は _has_solid_rid() を見るので、legacy_migrated
-        レコードの raindrop_id も『記録時の事実』と同格にバックフィル対象になりうる。"""
+    def test_backfill_candidates_excludes_legacy_migrated_rid(self):
+        """backfill.py の前提『rid無しの旧レコードには一切触らない』は、
+        migrate_legacy_rid.py が事後にridを付与した後も守る。rid_source=="legacy_migrated"
+        のグループはバックフィル対象から除外する（rid グループ集計自体には残る。
+        2026-09-24 P1-1 ユーザー裁定: 回収対象にしない）。"""
         self._write_day("2026-08-23", {
             "https://x.com/a/status/1": {
                 "url": "https://x.com/a/status/1",
@@ -82,7 +84,12 @@ class TestLegacyMigratedGrouping(LedgerTestBase):
         })
         cands = ledger.backfill_candidates("2026-08-24")
         rids = [g["key"][1] for g in cands]
-        self.assertIn(999, rids)
+        self.assertNotIn(999, rids)
+        # 一方で rid グループの集計(_build_groups)には残る（ledger --summaryの
+        # rid_source内訳から消えてはいけない）。
+        records = ledger._load_all_records()
+        groups = ledger._build_groups(records)
+        self.assertIn(("rid", 999), groups)
 
 
 class TestSummaryLegacyUnresolved(LedgerTestBase):

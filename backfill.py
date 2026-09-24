@@ -2,8 +2,12 @@
 # backfill.py — 過去に取得できなかった rid 持ちレコードを再取得する（Task G-2）。
 #
 # 対象母集団は rid（raindrop_id）を持つ新規レコードのみ。rid 無しの旧レコードには
-# 一切触らない。抽出ロジックは ledger.py に一本化し（ledger.backfill_candidates）、
-# ここでは呼ぶだけにする（同じ抽出ロジックを二重に書かない）。
+# 一切触らない。migrate_legacy_rid.py が事後に rid を付与した旧レコード
+# （rid_source=="legacy_migrated"）も、rid を持つに至った後もこの前提に含めて
+# 除外する（ledger.backfill_candidates 側で明示的にスキップ。2026-09-24 P1-1
+# ユーザー裁定: 回収対象にしない）。抽出ロジックは ledger.py に一本化し
+# （ledger.backfill_candidates）、ここでは呼ぶだけにする（同じ抽出ロジックを
+# 二重に書かない）。
 #
 # 実行方式: 1URLごとに `fetch_content.py <url>` を **別プロセスで・完全に逐次**実行する
 # （2026-09-03 Codexの敵対的レビューで NO-GO: ThreadPoolExecutor 案は

@@ -82,6 +82,26 @@ class TestIdentityKey(unittest.TestCase):
         self.assertEqual(a[0], "norm")
 
 
+class TestIdentityKeyEmptyExclusion(unittest.TestCase):
+    """2026-09-24 差し戻し P0-3: 空URL・正規化結果が空のキー同士を一致させない。"""
+
+    def test_empty_url_returns_none(self):
+        self.assertIsNone(mlr.identity_key(""))
+        self.assertIsNone(mlr.identity_key(None))
+        self.assertIsNone(mlr.identity_key("   "))
+
+    def test_two_empty_urls_do_not_match_via_find_api_matches(self):
+        candidates = [{"_id": 1, "link": ""}, {"_id": 2, "link": "   "}]
+        matches = mlr.find_api_matches("", candidates)
+        self.assertEqual(matches, [])
+
+    def test_none_link_candidate_is_excluded(self):
+        candidates = [{"_id": 1, "link": None},
+                      {"_id": 2, "link": "https://x.com/a/status/123"}]
+        matches = mlr.find_api_matches("https://x.com/a/status/123", candidates)
+        self.assertEqual([c["_id"] for c in matches], [2])
+
+
 class TestFetchRaindrops(unittest.TestCase):
     def test_single_page_complete(self):
         http_get = _make_http_get(items=[{"_id": 1, "link": "https://x.com/a/status/1"}],
@@ -118,6 +138,23 @@ class TestFetchRaindrops(unittest.TestCase):
                                                         http_get=http_get)
         self.assertFalse(complete)
         self.assertTrue(any("count不一致" in e for e in errors))
+
+    def test_page_error_marks_incomplete_even_if_count_happens_to_match(self):
+        """2026-09-24 差し戻し P0-1: ページ取得エラーが1件でもあれば、
+        たまたまcountが一致していても complete=False にする（安全側）。"""
+        calls = {"n": 0}
+
+        def http_get(url, token):
+            calls["n"] += 1
+            if "page=0" in url:
+                raise RuntimeError("boom")
+            return {"count": 0, "items": []}
+
+        items, complete, errors = mlr.fetch_raindrops(
+            "created:>2026-01-01", "tok", http_get=http_get,
+            page_retries=1, retry_wait=0)
+        self.assertFalse(complete)
+        self.assertTrue(any("page=0" in e for e in errors))
 
 
 class TestResolveRecord(unittest.TestCase):
@@ -198,6 +235,54 @@ class TestResolveRecord(unittest.TestCase):
                                 reviews_dir=self.reviews_dir)
         self.assertEqual(r["status"], "resolved")
         self.assertIsNone(r["card_review_date"])
+
+    def test_api_incomplete_short_circuits_to_unresolved(self):
+        """2026-09-24 差し戻し P0-1: api_complete=False のときは matching を
+        一切試みず api_incomplete で返す（候補が1件で一致していても確定させない）。"""
+        candidates = [{"_id": 999, "link": "https://x.com/a/status/123"}]
+        r = mlr.resolve_record("https://x.com/a/status/123", "2026-08-23", candidates,
+                                reviews_dir=self.reviews_dir, api_complete=False,
+                                api_query="created:>2026-08-22")
+        self.assertEqual(r["status"], "unresolved")
+        self.assertEqual(r["reason"], "api_incomplete")
+
+    def test_card_rid_conflict_multiple_different_rids_blocks_confirmation(self):
+        """2026-09-24 差し戻し P0-2: 同一URLに対応する複数カードが異なる
+        data-ridを持つ場合、API単独でも確定させない。"""
+        url = "https://x.com/a/status/123"
+        _write(os.path.join(self.reviews_dir, "2026-08-23.html"),
+               _review_html([_vcard(111, url), _vcard(222, url)]))
+        candidates = [{"_id": 999, "link": url}]
+        r = mlr.resolve_record(url, "2026-08-23", candidates, reviews_dir=self.reviews_dir)
+        self.assertEqual(r["status"], "unresolved")
+        self.assertEqual(r["reason"], "card_rid_conflict")
+
+    def test_card_rid_conflict_non_numeric_data_rid_blocks_confirmation(self):
+        """2026-09-24 差し戻し P0-2: data-rid が数値でないカードがあれば
+        API単独でも確定させない。"""
+        url = "https://x.com/a/status/123"
+        _write(os.path.join(self.reviews_dir, "2026-08-23.html"),
+               _review_html([
+                   '<div class="vcard" data-rid="abc">'
+                   '<a class="vlink" href="%s">link</a></div>' % url
+               ]))
+        candidates = [{"_id": 999, "link": url}]
+        r = mlr.resolve_record(url, "2026-08-23", candidates, reviews_dir=self.reviews_dir)
+        self.assertEqual(r["status"], "unresolved")
+        self.assertEqual(r["reason"], "card_rid_conflict")
+
+    def test_resolved_evidence_carries_api_query_and_link_and_matched_key(self):
+        """2026-09-24 差し戻し P2: rid_evidence用の監査材料が resolve_record の
+        戻り値に含まれる。"""
+        url = "https://x.com/a/status/123"
+        candidates = [{"_id": 999, "link": url}]
+        r = mlr.resolve_record(url, "2026-08-23", candidates, reviews_dir=self.reviews_dir,
+                                api_query="created:>2026-08-22 created:<2026-08-24")
+        self.assertEqual(r["status"], "resolved")
+        self.assertTrue(r["api_complete"])
+        self.assertEqual(r["api_query"], "created:>2026-08-22 created:<2026-08-24")
+        self.assertEqual(r["api_link"], url)
+        self.assertEqual(r["matched_key"][0], "strong")
 
 
 class TestApplyAndIdempotency(unittest.TestCase):
@@ -292,6 +377,61 @@ class TestApplyAndIdempotency(unittest.TestCase):
 
         self.assertEqual(after_first, after_second)
         self.assertEqual(after_second[url]["raindrop_id"], 999)
+
+    def test_api_incomplete_does_not_write_even_with_apply(self):
+        """2026-09-24 差し戻し P0-1: run(..., apply=True) でも api_incomplete の
+        対象には一切書かない（次回API正常時に再挑戦できる状態を保つ）。"""
+        url = "https://x.com/a/status/123"
+        path = self._make_facts_file("2026-08-23", url)
+        with io.open(path, encoding="utf-8") as f:
+            before = f.read()
+
+        def http_get(url_, token):
+            if "page=0" in url_:
+                raise RuntimeError("simulated API failure")
+            return {"count": 0, "items": []}
+
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            mlr.run(facts_dir=self.facts_dir, reviews_dir=self.reviews_dir,
+                    apply=True, token="tok", http_get=http_get)
+
+        with io.open(path, encoding="utf-8") as f:
+            after = f.read()
+        self.assertEqual(before, after)
+        self.assertIn("api_incomplete", buf.getvalue())
+
+    def test_optimistic_lock_blocks_write_when_file_changed_after_collection(self):
+        """2026-09-24 差し戻し P1-2: 収集後にファイルが書き換わっていたら
+        書かずにエラーにする（楽観ロック）。"""
+        url = "https://x.com/a/status/123"
+        path = self._make_facts_file("2026-08-23", url)
+        _write(os.path.join(self.reviews_dir, "2026-08-23.html"),
+               _review_html([_vcard(999, url)]))
+        http_get = _make_http_get(items=[{"_id": 999, "link": url}], count=1)
+
+        targets = mlr.collect_legacy_targets(facts_dir=self.facts_dir)
+        self.assertEqual(len(targets), 1)
+        day, target_url, rec, target_path, raw_text = targets[0]
+
+        # 収集後に外部からファイル内容を書き換える（別プロセスの想定）。
+        with io.open(target_path, encoding="utf-8") as f:
+            store = json.load(f)
+        store[url]["unexpected_external_edit"] = True
+        with io.open(target_path, "w", encoding="utf-8") as f:
+            json.dump(store, f)
+
+        resolution = mlr.resolve_record(target_url, day, [{"_id": 999, "link": url}],
+                                         reviews_dir=self.reviews_dir)
+        changed, err = mlr.apply_resolution(target_path, target_url, resolution, raw_text)
+        self.assertFalse(changed)
+        self.assertIsNotNone(err)
+        self.assertIn("楽観ロック競合", err)
+
+        with io.open(target_path, encoding="utf-8") as f:
+            final = json.load(f)
+        self.assertTrue(final[url]["unexpected_external_edit"])
+        self.assertNotIn("raindrop_id", final[url])
 
     def test_dry_run_does_not_write(self):
         url = "https://x.com/a/status/123"
