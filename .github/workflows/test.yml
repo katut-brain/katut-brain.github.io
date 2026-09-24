@@ -55,6 +55,11 @@ jobs:
       - name: Run run-timing tests
         run: python -m unittest -v test_run_timing.py
 
+      # 所要時間の異常膨張検知（check_run_timing.py。capture-pipeline 成功
+      # 条件(b)）の回帰テスト。
+      - name: Run run-timing anomaly-check tests
+        run: python -m unittest -v test_check_run_timing.py
+
       # 手順2.5（バックフィル）の実行証跡の回帰テスト。
       # ⚠️ **テストファイルを足したら必ずここにも足す。** この workflow は
       # ファイルを列挙して実行する方式なので、足し忘れると「手元では緑・CIでは

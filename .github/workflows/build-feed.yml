@@ -333,6 +333,19 @@ jobs:
         continue-on-error: true
         run: python check_disclosure.py --all --since 2026-09-15 --github
 
+      # 無人ランの所要時間の異常膨張検知（capture-pipeline 成功条件(b)）。
+      # run_timing.py が reviews/*.html に書く run-timing コメントを読み、
+      # status=incomplete、または status=complete で total_s/saves>180 かつ
+      # total_s>1200 のときに ::warning を出す。ここで使う閾値は異常検知の
+      # トリガーであり性能SLAではない（20分基準そのものは2026-09-08に撤回済み）。
+      # 判定ロジックの正本は check_run_timing.py 側（このymlにはコピーしない）。
+      # --since は計測導入（schema=v2運用開始）より前の日を対象外にするための
+      # 足切り。警告のみ・公開を止めない: continue-on-error により、このステップ
+      # が失敗しても Rebuild index.html 以降・deploy は従来どおり進む。
+      - name: Check run-timing anomalies
+        continue-on-error: true
+        run: python check_run_timing.py --all --since 2026-09-15 --github
+
       # _build_feed.py は標準ライブラリのみ・環境変数もネットワークも不要
       - name: Rebuild index.html
         run: python _build_feed.py
