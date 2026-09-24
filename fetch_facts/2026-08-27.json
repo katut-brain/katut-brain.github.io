@@ -17,6 +17,23 @@
   "image_count": 0,
   "has_video": false,
   "video_understood": false,
-  "reason": "og:meta無し（JS殻/ログイン壁の可能性）"
+  "reason": "og:meta無し（JS殻/ログイン壁の可能性）",
+  "raindrop_id": 1835881821,
+  "rid_source": "legacy_migrated",
+  "rid_evidence": {
+   "method": "strong",
+   "api_checked_at": "2026-09-24T02:53:05Z",
+   "card_review_date": "2026-08-27",
+   "api_complete": true,
+   "api_query": "created:>2026-08-22 created:<2026-09-02",
+   "api_link": "https://www.instagram.com/reel/DcdJkRQtZLB/",
+   "matched_key": [
+    "strong",
+    [
+     "instagram",
+     "DcdJkRQtZLB"
+    ]
+   ]
+  }
  }
 }

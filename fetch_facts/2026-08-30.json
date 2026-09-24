@@ -19,7 +19,24 @@
   "image_count": 1,
   "has_video": true,
   "video_understood": false,
-  "reason": ""
+  "reason": "",
+  "raindrop_id": 1838292051,
+  "rid_source": "legacy_migrated",
+  "rid_evidence": {
+   "method": "strong",
+   "api_checked_at": "2026-09-24T02:53:05Z",
+   "card_review_date": "2026-08-30",
+   "api_complete": true,
+   "api_query": "created:>2026-08-22 created:<2026-09-02",
+   "api_link": "https://www.instagram.com/reel/Dbc6qDWzsa2/",
+   "matched_key": [
+    "strong",
+    [
+     "instagram",
+     "Dbc6qDWzsa2"
+    ]
+   ]
+  }
  },
  "https://www.instagram.com/reel/Dcotr0nR_EO/": {
   "fetched_at": "2026-08-30T19:06:11Z",
@@ -41,7 +58,24 @@
   "image_count": 1,
   "has_video": true,
   "video_understood": false,
-  "reason": ""
+  "reason": "",
+  "raindrop_id": 1838071169,
+  "rid_source": "legacy_migrated",
+  "rid_evidence": {
+   "method": "strong",
+   "api_checked_at": "2026-09-24T02:53:05Z",
+   "card_review_date": "2026-08-30",
+   "api_complete": true,
+   "api_query": "created:>2026-08-22 created:<2026-09-02",
+   "api_link": "https://www.instagram.com/reel/Dcotr0nR_EO/",
+   "matched_key": [
+    "strong",
+    [
+     "instagram",
+     "Dcotr0nR_EO"
+    ]
+   ]
+  }
  },
  "https://www.threads.com/share/_hpMfB71g/": {
   "fetched_at": "2026-08-30T19:06:19Z",
@@ -64,7 +98,21 @@
   "image_count": 1,
   "has_video": false,
   "video_understood": false,
-  "reason": ""
+  "reason": "",
+  "raindrop_id": 1838711329,
+  "rid_source": "legacy_migrated",
+  "rid_evidence": {
+   "method": "norm",
+   "api_checked_at": "2026-09-24T02:53:05Z",
+   "card_review_date": "2026-08-30",
+   "api_complete": true,
+   "api_query": "created:>2026-08-22 created:<2026-09-02",
+   "api_link": "https://www.threads.com/share/_hpMfB71g/",
+   "matched_key": [
+    "norm",
+    "https://threads.com/share/_hpMfB71g"
+   ]
+  }
  },
  "https://youtu.be/PKfZ1gnVJ44": {
   "fetched_at": "2026-08-30T19:06:21Z",
@@ -86,6 +134,20 @@
   "image_count": 1,
   "has_video": false,
   "video_understood": false,
-  "reason": ""
+  "reason": "",
+  "raindrop_id": 1838215332,
+  "rid_source": "legacy_migrated",
+  "rid_evidence": {
+   "method": "norm",
+   "api_checked_at": "2026-09-24T02:53:05Z",
+   "card_review_date": "2026-08-30",
+   "api_complete": true,
+   "api_query": "created:>2026-08-22 created:<2026-09-02",
+   "api_link": "https://youtu.be/PKfZ1gnVJ44",
+   "matched_key": [
+    "norm",
+    "https://youtu.be/PKfZ1gnVJ44"
+   ]
+  }
  }
 }

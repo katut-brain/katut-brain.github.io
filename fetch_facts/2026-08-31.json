@@ -19,7 +19,24 @@
   "image_count": 4,
   "has_video": false,
   "video_understood": false,
-  "reason": ""
+  "reason": "",
+  "raindrop_id": 1839529910,
+  "rid_source": "legacy_migrated",
+  "rid_evidence": {
+   "method": "strong",
+   "api_checked_at": "2026-09-24T02:53:05Z",
+   "card_review_date": "2026-08-31",
+   "api_complete": true,
+   "api_query": "created:>2026-08-22 created:<2026-09-02",
+   "api_link": "https://x.com/yanliudreamer/status/2093968800316293400?s=12",
+   "matched_key": [
+    "strong",
+    [
+     "x",
+     "2093968800316293400"
+    ]
+   ]
+  }
  },
  "https://x.com/makeai_ceo/status/2093264660082597994?s=12": {
   "fetched_at": "2026-08-31T19:07:21Z",
@@ -39,6 +56,23 @@
   "image_count": 0,
   "has_video": false,
   "video_understood": false,
-  "reason": ""
+  "reason": "",
+  "raindrop_id": 1839188188,
+  "rid_source": "legacy_migrated",
+  "rid_evidence": {
+   "method": "strong",
+   "api_checked_at": "2026-09-24T02:53:05Z",
+   "card_review_date": "2026-08-31",
+   "api_complete": true,
+   "api_query": "created:>2026-08-22 created:<2026-09-02",
+   "api_link": "https://x.com/makeai_ceo/status/2093264660082597994?s=12",
+   "matched_key": [
+    "strong",
+    [
+     "x",
+     "2093264660082597994"
+    ]
+   ]
+  }
  }
 }

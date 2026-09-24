@@ -19,7 +19,24 @@
   "image_count": 1,
   "has_video": true,
   "video_understood": false,
-  "reason": ""
+  "reason": "",
+  "raindrop_id": 1840523573,
+  "rid_source": "legacy_migrated",
+  "rid_evidence": {
+   "method": "strong",
+   "api_checked_at": "2026-09-24T02:53:05Z",
+   "card_review_date": "2026-09-01",
+   "api_complete": true,
+   "api_query": "created:>2026-08-22 created:<2026-09-02",
+   "api_link": "https://x.com/codex_lab_/status/2094091484320657619?s=12",
+   "matched_key": [
+    "strong",
+    [
+     "x",
+     "2094091484320657619"
+    ]
+   ]
+  }
  },
  "https://x.com/sven_wag/status/2094240619392643464?s=12": {
   "fetched_at": "2026-09-01T19:07:45Z",
@@ -41,7 +58,24 @@
   "image_count": 1,
   "has_video": true,
   "video_understood": false,
-  "reason": ""
+  "reason": "",
+  "raindrop_id": 1840094902,
+  "rid_source": "legacy_migrated",
+  "rid_evidence": {
+   "method": "strong",
+   "api_checked_at": "2026-09-24T02:53:05Z",
+   "card_review_date": "2026-09-01",
+   "api_complete": true,
+   "api_query": "created:>2026-08-22 created:<2026-09-02",
+   "api_link": "https://x.com/sven_wag/status/2094240619392643464?s=12",
+   "matched_key": [
+    "strong",
+    [
+     "x",
+     "2094240619392643464"
+    ]
+   ]
+  }
  },
  "https://x.com/noukin_aigori/status/2094379745777684618?s=12": {
   "fetched_at": "2026-09-01T19:07:52Z",
@@ -61,7 +95,24 @@
   "image_count": 0,
   "has_video": false,
   "video_understood": false,
-  "reason": ""
+  "reason": "",
+  "raindrop_id": 1840088941,
+  "rid_source": "legacy_migrated",
+  "rid_evidence": {
+   "method": "strong",
+   "api_checked_at": "2026-09-24T02:53:05Z",
+   "card_review_date": "2026-09-01",
+   "api_complete": true,
+   "api_query": "created:>2026-08-22 created:<2026-09-02",
+   "api_link": "https://x.com/noukin_aigori/status/2094379745777684618?s=12",
+   "matched_key": [
+    "strong",
+    [
+     "x",
+     "2094379745777684618"
+    ]
+   ]
+  }
  },
  "https://x.com/gkxspace/status/2094374022729310372?s=12": {
   "fetched_at": "2026-09-01T19:07:59Z",
@@ -83,7 +134,24 @@
   "image_count": 2,
   "has_video": false,
   "video_understood": false,
-  "reason": ""
+  "reason": "",
+  "raindrop_id": 1840088832,
+  "rid_source": "legacy_migrated",
+  "rid_evidence": {
+   "method": "strong",
+   "api_checked_at": "2026-09-24T02:53:05Z",
+   "card_review_date": "2026-09-01",
+   "api_complete": true,
+   "api_query": "created:>2026-08-22 created:<2026-09-02",
+   "api_link": "https://x.com/gkxspace/status/2094374022729310372?s=12",
+   "matched_key": [
+    "strong",
+    [
+     "x",
+     "2094374022729310372"
+    ]
+   ]
+  }
  },
  "https://www.instagram.com/p/DbiEV6mgAbM/?img_index=1": {
   "fetched_at": "2026-09-01T19:08:09Z",
@@ -106,6 +174,23 @@
   "image_count": 1,
   "has_video": false,
   "video_understood": false,
-  "reason": ""
+  "reason": "",
+  "raindrop_id": 1839688623,
+  "rid_source": "legacy_migrated",
+  "rid_evidence": {
+   "method": "strong",
+   "api_checked_at": "2026-09-24T02:53:05Z",
+   "card_review_date": "2026-09-01",
+   "api_complete": true,
+   "api_query": "created:>2026-08-22 created:<2026-09-02",
+   "api_link": "https://www.instagram.com/p/DbiEV6mgAbM/?img_index=1",
+   "matched_key": [
+    "strong",
+    [
+     "instagram",
+     "DbiEV6mgAbM"
+    ]
+   ]
+  }
  }
 }

@@ -19,7 +19,24 @@
   "image_count": 1,
   "has_video": true,
   "video_understood": false,
-  "reason": ""
+  "reason": "",
+  "raindrop_id": 1831233892,
+  "rid_source": "legacy_migrated",
+  "rid_evidence": {
+   "method": "strong",
+   "api_checked_at": "2026-09-24T02:53:04Z",
+   "card_review_date": "2026-08-23",
+   "api_complete": true,
+   "api_query": "created:>2026-08-22 created:<2026-09-02",
+   "api_link": "https://www.instagram.com/reel/Db_AzXms5_r/?igsi=cmt2dG9idXYwOHUy",
+   "matched_key": [
+    "strong",
+    [
+     "instagram",
+     "Db_AzXms5_r"
+    ]
+   ]
+  }
  },
  "https://x.com/huoshan007/status/2091066089320898622?s=12": {
   "fetched_at": "2026-08-23T19:08:49Z",
@@ -39,7 +56,24 @@
   "image_count": 1,
   "has_video": true,
   "video_understood": true,
-  "reason": ""
+  "reason": "",
+  "raindrop_id": 1830667554,
+  "rid_source": "legacy_migrated",
+  "rid_evidence": {
+   "method": "strong",
+   "api_checked_at": "2026-09-24T02:53:05Z",
+   "card_review_date": "2026-08-23",
+   "api_complete": true,
+   "api_query": "created:>2026-08-22 created:<2026-09-02",
+   "api_link": "https://x.com/huoshan007/status/2091066089320898622?s=12",
+   "matched_key": [
+    "strong",
+    [
+     "x",
+     "2091066089320898622"
+    ]
+   ]
+  }
  },
  "https://x.com/cztftv7f0e32590/status/2090873751202353163?s=12": {
   "fetched_at": "2026-08-23T19:08:53Z",
@@ -59,7 +93,24 @@
   "image_count": 0,
   "has_video": false,
   "video_understood": false,
-  "reason": ""
+  "reason": "",
+  "raindrop_id": 1830051790,
+  "rid_source": "legacy_migrated",
+  "rid_evidence": {
+   "method": "strong",
+   "api_checked_at": "2026-09-24T02:53:05Z",
+   "card_review_date": "2026-08-23",
+   "api_complete": true,
+   "api_query": "created:>2026-08-22 created:<2026-09-02",
+   "api_link": "https://x.com/cztftv7f0e32590/status/2090873751202353163?s=12",
+   "matched_key": [
+    "strong",
+    [
+     "x",
+     "2090873751202353163"
+    ]
+   ]
+  }
  },
  "https://www.instagram.com/p/DcJUHa8iGu4/?img_index=3&igsi=MWZzaHY4M2F3bTJxcQ==": {
   "fetched_at": "2026-08-23T19:09:00Z",
@@ -82,7 +133,24 @@
   "image_count": 1,
   "has_video": false,
   "video_understood": false,
-  "reason": ""
+  "reason": "",
+  "raindrop_id": 1831234022,
+  "rid_source": "legacy_migrated",
+  "rid_evidence": {
+   "method": "strong",
+   "api_checked_at": "2026-09-24T02:53:05Z",
+   "card_review_date": "2026-08-23",
+   "api_complete": true,
+   "api_query": "created:>2026-08-22 created:<2026-09-02",
+   "api_link": "https://www.instagram.com/p/DcJUHa8iGu4/?img_index=3&igsi=MWZzaHY4M2F3bTJxcQ==",
+   "matched_key": [
+    "strong",
+    [
+     "instagram",
+     "DcJUHa8iGu4"
+    ]
+   ]
+  }
  },
  "https://www.instagram.com/p/DcT2DppGNEZ/?img_index=3&igsi=eHE0Y2RqZWx0bXJ5": {
   "fetched_at": "2026-08-23T19:09:01Z",
@@ -105,6 +173,23 @@
   "image_count": 1,
   "has_video": false,
   "video_understood": false,
-  "reason": ""
+  "reason": "",
+  "raindrop_id": 1831233596,
+  "rid_source": "legacy_migrated",
+  "rid_evidence": {
+   "method": "strong",
+   "api_checked_at": "2026-09-24T02:53:05Z",
+   "card_review_date": "2026-08-23",
+   "api_complete": true,
+   "api_query": "created:>2026-08-22 created:<2026-09-02",
+   "api_link": "https://www.instagram.com/p/DcT2DppGNEZ/?img_index=3&igsi=eHE0Y2RqZWx0bXJ5",
+   "matched_key": [
+    "strong",
+    [
+     "instagram",
+     "DcT2DppGNEZ"
+    ]
+   ]
+  }
  }
 }
