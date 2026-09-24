@@ -21,8 +21,19 @@
   `test_same_looking_string_inside_script_is_not_touched` 等）のと対称的に、
   読み取り側も同じ位置規約を守ることで、本文中の同形文字列を誤って計測結果
   として読んでしまう事故を防ぐ。位置特定そのものは run_timing.py の
-  `COMMENT_RE` / `UNCLOSED_RE` / `_strip_trailing_blank_lines` をそのまま
-  re-use し、同じ判定を2箇所に重複させない。
+  `COMMENT_RE` / `_strip_trailing_blank_lines` をそのまま re-use し、
+  同じ判定を2箇所に重複させない。
+
+  ⚠️ **未閉鎖判定の範囲（2026-09-24 2周目差し戻し P1-2）**: 「閉じていない
+  run-timing コメント」の検出は、run_timing.py の `UNCLOSED_RE` を head
+  全体に適用するのではなく、footer 直前の末尾に実際に連なっている場合
+  だけに限定する（`_unclosed_adjacent_to_footer`）。`UNCLOSED_RE` を head
+  全体にそのまま適用すると、`<script>const x="<!-- run-timing";</script>`
+  のように本文中に閉じていない同形文字列があるだけで（footer からは
+  遠く離れていても）誤って parse_error にしてしまう
+  （run_timing.py 自身が `insert_comment` で head 全体を見るのは
+  「書き込んでよいか」の保守的な自衛であり、読み取り側の「これは計測
+  コメントか」の判定に転用すると過検知になる）。
 
 判定:
   - footer 直前に run-timing コメントが**無い** review は対象外（計測導入前
@@ -51,16 +62,34 @@
     絶対閾値（1200秒=20分）を超えているならそれ自体が既に異常（何に
     2/3時間近く使ったのか、1件あたりコストでは説明できない）。両方の
     条件を課すと saves=0 の夜だけ実質チェックを無効化してしまう。
+    **解釈の確定（2026-09-24 2周目差し戻し）**: これは「saves=0 のときの
+    比率は無限大＝常に180超とみなす」という解釈で確定する（この分岐は
+    現状維持・変更しない）。
 
-`--since` は YYYY-MM-DD 形式を検証する。不正な値は**黙って全件を抑止せず**、
-無視した旨を出力に残してから since=None（全件を警告対象）として続行する
-（2026-09-24 差し戻し P2-1）。
+  - footer 直前に居座っているが `run_timing.COMMENT_RE` に一致しない
+    run-timing 様のコメント（`schema=x` のような非数値バージョン・
+    `schema=` フィールド自体の欠落・許容文字外の値など）も、footer 直前で
+    途切れずに閉じている（`-->` を持つ）限り status=parse_error
+    reason=malformed_comment とする（2026-09-24 2周目差し戻し P1-1の3）。
+    「footer直前に居座っている」の判定は、正規形コメントの位置特定
+    （`</footer>` 直前・空行はまたいでよい）と同じ規約を緩い正規表現
+    （`_LOOSE_COMMENT_RE`）に適用して行う——本文中の同形文字列
+    （`<script>` 等）は footer 直前まで連なっていない限り拾わない
+    （下記 `--since` 検証と同様、この判定も「本文中の無関係な文字列を
+    誤検知しない」ことを最優先にする）。
+
+`--since` は `datetime.date.fromisoformat` で**暦日として**検証する
+（2026-09-24 2周目差し戻し P2-1）。`YYYY-MM-DD` の形はしていても
+`2026-99-99` のように暦として存在しない日付は不正として扱う。不正な値は
+**黙って全件を抑止せず**、無視した旨を出力に残してから since=None
+（全件を警告対象）として続行する。
 
 常に exit 0（公開を止めない。無人Routineの成果物公開ゲートの一部として使う
 前提は check_disclosure.py と同じ）。
 """
 
 import argparse
+import datetime
 import glob
 import os
 import re
@@ -76,6 +105,18 @@ DATE_RE = re.compile(r"^(\d{4}-\d\d-\d\d)$")
 # 中で「開始したのに正規形として閉じなかったコメント」を見分けるのに使う）。
 # 正規形かどうかの判定は run_timing.COMMENT_RE の側に一任し、ここでは複製しない。
 _RUN_TIMING_START_RE = re.compile(r"<!-- run-timing")
+
+# footer直前で「閉じてはいるが COMMENT_RE の許容文字/形式に合わない」
+# run-timing様コメント（schema=x・schema欠落等）を見つけるための緩い正規表現。
+# 1行に収まる想定は本物のコメントと同じ（改行を跨がせない）。
+_LOOSE_COMMENT_RE = re.compile(r"<!-- run-timing\b[^\n]*?-->[ \t]*\r?\n?")
+
+# 「footer直前の末尾で閉じられないまま途切れている」と判定してよいのは、
+# 開始位置から先が全てこの許容文字集合（+ 空白・改行）だけで構成されている
+# ときだけ。本文中の同形文字列（<script> のJS文字列・タグ・日本語本文等）が
+# 続く場合はここでは弾き、no_comment（対象外）に倒す
+# （2026-09-24 2周目差し戻し P1-2）。
+_UNCLOSED_TAIL_ALLOWED_RE = re.compile(r"^[0-9A-Za-z_=,\- \t\r\n]*$")
 
 # saves/total_s が無いのに status=complete になっている（本来 build_comment の
 # 仕様上は起き得ないが、コメントが手で書き換えられた等の異常に備える）ときの
@@ -139,18 +180,19 @@ def _footer_head(html_text):
     return html_text[:idx]
 
 
-def _comments_immediately_before(head):
-    """head（`</footer>` 直前までの文字列）の**末尾に連なって**いる run-timing
-    の正規形コメントを、run_timing.insert_comment と同じ剥がし方
-    （末尾の空白のみの行を飛ばしながら、末尾に接する正規形コメントだけを
-    後ろから拾う）で集めて返す。本文中の同形文字列（<script> 等）は、その
-    直後に本文が続く限り「末尾に接する」ことがないので混ざらない。
+def _matches_immediately_before(head, pattern):
+    """head（`</footer>` 直前までの文字列）の**末尾に連なって**いる pattern の
+    マッチを、run_timing.insert_comment と同じ剥がし方（末尾の空白のみの行を
+    飛ばしながら、末尾に接するマッチだけを後ろから拾う）で集めて返す。
+    本文中の同形文字列（<script> 等）は、その直後に本文が続く限り
+    「末尾に接する」ことがないので混ざらない。汎用ヘルパーとして正規形
+    （COMMENT_RE）と緩い形（_LOOSE_COMMENT_RE）の両方で使う。
     """
     matches = []
     candidate = head
     while True:
         candidate = run_timing._strip_trailing_blank_lines(candidate)
-        found = list(run_timing.COMMENT_RE.finditer(candidate))
+        found = list(pattern.finditer(candidate))
         if not found or found[-1].end() != len(candidate):
             break
         m = found[-1]
@@ -158,6 +200,27 @@ def _comments_immediately_before(head):
         candidate = candidate[:m.start()]
     matches.reverse()  # 出現順（古い方が先）に戻す
     return matches
+
+
+def _unclosed_adjacent_to_footer(candidate):
+    """`candidate`（末尾の空白のみの行を除いた head）の末尾が、閉じられない
+    まま途切れた run-timing コメントで終わっているかを判定する。
+
+    本文中の同形文字列（<script> のJS文字列リテラル等）を誤検知しないよう、
+    開始位置以降のテキストが全て許容文字（英数字・`_=,- ` と空白・改行）
+    だけで構成され、かつ `-->` を一切含まない場合**だけ** True にする。
+    他のタグ・引用符・日本語本文などが続く場合は「本文がその後も続いている」
+    ＝ footer 直前で途切れた壊れたコメントではないと判断し False を返す
+    （2026-09-24 2周目差し戻し P1-2。run_timing.UNCLOSED_RE を head 全体に
+    適用すると、本文中の無関係な文字列まで拾ってしまう）。
+    """
+    idx = candidate.rfind("<!-- run-timing")
+    if idx == -1:
+        return False
+    tail = candidate[idx + len("<!-- run-timing"):]
+    if "-->" in tail:
+        return False  # 閉じている（別の理由で異常な形はここでは見ない）
+    return bool(_UNCLOSED_TAIL_ALLOWED_RE.match(tail))
 
 
 def read_run_timing_comment(html_text):
@@ -177,27 +240,34 @@ def read_run_timing_comment(html_text):
     if head is None:
         return "no_comment", {}, None
 
-    starts = list(_RUN_TIMING_START_RE.finditer(head))
-    if not starts:
+    if not _RUN_TIMING_START_RE.search(head):
         return "no_comment", {}, None
 
-    if run_timing.UNCLOSED_RE.search(head):
-        # footer より前に閉じていない run-timing コメントがある＝
-        # run_timing.py 自身もこの状態では書き込みを拒否する壊れ方。
+    strict = _matches_immediately_before(head, run_timing.COMMENT_RE)
+    if len(strict) > 1:
+        return "parse_error", {}, "multiple_comments"
+    if len(strict) == 1:
+        fields = _parse_fields(strict[0])
+        if fields.get("schema") != "v2":
+            return "parse_error", {}, "unsupported_schema"
+        return "ok", fields, None
+
+    # 正規形として footer 直前に連なるものが無い場合、その位置で
+    # ①閉じられないまま途切れているか、②閉じてはいるが正規形に合わない
+    # （schema=x・schema欠落等）かを見る。どちらも「計測コメントのつもりで
+    # 書かれたが壊れている」とみなし parse_error にする
+    # （2026-09-24 2周目差し戻し P1-1の3・P1-2）。
+    candidate = run_timing._strip_trailing_blank_lines(head)
+    if _unclosed_adjacent_to_footer(candidate):
         return "parse_error", {}, "malformed_comment"
 
-    valid = _comments_immediately_before(head)
-    if not valid:
-        # `<!-- run-timing` はあるが footer の直前に連なっていない
-        # （本文中の同形文字列、または直前だが正規形でない）。
-        return "no_comment", {}, None
-    if len(valid) > 1:
-        return "parse_error", {}, "multiple_comments"
+    loose = _matches_immediately_before(head, _LOOSE_COMMENT_RE)
+    if loose:
+        return "parse_error", {}, "malformed_comment"
 
-    fields = _parse_fields(valid[0])
-    if fields.get("schema") != "v2":
-        return "parse_error", {}, "unsupported_schema"
-    return "ok", fields, None
+    # `<!-- run-timing` はあるが footer の直前に連なっていない
+    # （本文中の同形文字列であり、footer とは無関係）。
+    return "no_comment", {}, None
 
 
 def evaluate(fields):
@@ -245,10 +315,13 @@ def process_date(date, reviews_dir):
     try:
         with open(path, encoding="utf-8", newline="") as fh:
             html_text = fh.read()
-    except OSError as exc:
-        # review が読めない＝計測装置（このチェッカー自身）が機能しない状態。
-        # コメント無しと違って「見えていない」だけなので検知対象にする
-        # （2026-09-24 差し戻し P1-1）。
+    except (OSError, UnicodeDecodeError) as exc:
+        # review が読めない・UTF-8としてデコードできない＝計測装置
+        # （このチェッカー自身）が機能しない状態。コメント無しと違って
+        # 「見えていない」だけなので検知対象にする（2026-09-24 差し戻し
+        # P1-1）。**この日だけ** parse_error にし、他の日の処理には
+        # 影響させない（呼び出し元の --all ループも1件ごとに独立させて
+        # いるので、ここで例外を投げずに握りつぶすことが二重に効く）。
         result.status = "parse_error"
         result.warn = True
         result.reason = "unreadable:%s" % type(exc).__name__
@@ -291,17 +364,25 @@ def collect_dates(args, reviews_dir):
 
 def _validate_since(raw):
     """(since, notice) を返す。raw が None ならそのまま (None, None)。
-    形式が不正なら**黙って全件抑止しない**——since=None（全件を警告対象に
-    戻す）にした上で、無視した旨を notice に入れて呼び出し側で出力させる
-    （2026-09-24 差し戻し P2-1）。
+
+    形式（YYYY-MM-DD）だけでなく**暦日として実在するか**まで
+    `datetime.date.fromisoformat` で検証する（2026-09-24 2周目差し戻し
+    P2-1）。`2026-99-99` のように形はしていても暦に存在しない日付は不正
+    として扱う。不正なら**黙って全件抑止しない**——since=None（全件を
+    警告対象に戻す）にした上で、無視した旨を notice に入れて呼び出し側で
+    出力させる。
     """
     if raw is None:
         return None, None
     if DATE_RE.match(raw):
-        return raw, None
+        try:
+            datetime.date.fromisoformat(raw)
+            return raw, None
+        except ValueError:
+            pass
     return None, (
-        "RUN_TIMING_CHECK: invalid --since %r; ignored (all dates enforced)"
-        % raw
+        "RUN_TIMING_CHECK: invalid --since %r (not a real calendar date); "
+        "ignored (all dates enforced)" % raw
     )
 
 
@@ -340,7 +421,18 @@ def _main(argv):
 
     results = []
     for date in sorted(dates):
-        results.append(process_date(date, reviews_dir))
+        try:
+            r = process_date(date, reviews_dir)
+        except Exception as exc:  # noqa: BLE001 - 1ファイルの異常で
+            # --all 全体を1行のエラーに潰さない（2026-09-24 2周目差し戻し
+            # P1-1）。process_date 自身も読み取り/デコード例外を捕まえて
+            # いるが、それ以外の予期しない例外（バグ等）に対する最後の
+            # 防波堤としてもここで1件ずつ隔離する。
+            r = RunTimingResult(date)
+            r.status = "parse_error"
+            r.warn = True
+            r.reason = "unreadable:%s" % type(exc).__name__
+        results.append(r)
 
     warned = 0
     checked = 0

@@ -64,13 +64,46 @@ class ReadCommentTests(unittest.TestCase):
         self.assertEqual(fields["total_s"], "371")
 
     def test_broken_comment_is_parse_error(self):
-        # 閉じタグ `-->` が無い壊れたコメント。
+        # 閉じタグ `-->` が無い壊れたコメント。footer 直前（閉じタグの直前）
+        # に置き、途中で途切れたまま footer に達している状態を再現する。
         html_text = FOOTER_HTML.replace(
-            "<footer>", "<!-- run-timing schema=v2 status=complete\n<footer>"
+            "</footer>", "\n<!-- run-timing schema=v2 status=complete\n</footer>"
         )
         status, fields, reason = check_run_timing.read_run_timing_comment(html_text)
         self.assertEqual(status, "parse_error")
         self.assertEqual(reason, "malformed_comment")
+
+    def test_schema_x_adjacent_to_footer_is_parse_error(self):
+        """P1-1の3: footer直前に居座る run-timing 様コメントが `schema=x`
+        （非数値バージョン）で COMMENT_RE に一致しない場合、no_comment ではなく
+        parse_error(malformed_comment) にする。
+        """
+        html_text = FOOTER_HTML.replace(
+            "</footer>", "\n<!-- run-timing schema=x status=complete -->\n</footer>"
+        )
+        status, fields, reason = check_run_timing.read_run_timing_comment(html_text)
+        self.assertEqual(status, "parse_error")
+        self.assertEqual(reason, "malformed_comment")
+
+    def test_schema_missing_adjacent_to_footer_is_parse_error(self):
+        """P1-1の3: footer直前に居座るコメントに schema フィールド自体が無い
+        場合も parse_error(malformed_comment)。
+        """
+        html_text = FOOTER_HTML.replace(
+            "</footer>", "\n<!-- run-timing status=complete saves=4 -->\n</footer>"
+        )
+        status, fields, reason = check_run_timing.read_run_timing_comment(html_text)
+        self.assertEqual(status, "parse_error")
+        self.assertEqual(reason, "malformed_comment")
+
+    def test_unclosed_script_string_far_from_footer_is_no_comment(self):
+        """P1-2: `<script>` 内の**閉じていない**同形文字列は、footer から
+        離れていれば no_comment のまま（parse_error にしない）。
+        """
+        js = ('<script>const x="<!-- run-timing";</script>\n')
+        html_text = FOOTER_HTML.replace("<footer>", js + "<footer>")
+        status, fields, reason = check_run_timing.read_run_timing_comment(html_text)
+        self.assertEqual(status, "no_comment")
 
     def test_multiple_comments_is_parse_error(self):
         one = _comment(status="complete", target="2026-09-18", run_id="3b462ccb",
@@ -183,6 +216,30 @@ class EvaluateTests(unittest.TestCase):
         self.assertEqual(reason, "unknown_status:running")
 
 
+class ValidateSinceTests(unittest.TestCase):
+    def test_valid_date_passes_through(self):
+        since, notice = check_run_timing._validate_since("2026-09-17")
+        self.assertEqual(since, "2026-09-17")
+        self.assertIsNone(notice)
+
+    def test_none_passes_through(self):
+        since, notice = check_run_timing._validate_since(None)
+        self.assertIsNone(since)
+        self.assertIsNone(notice)
+
+    def test_non_calendar_date_is_rejected(self):
+        # P2-1: 形（YYYY-MM-DD）はしていても暦として存在しない。
+        since, notice = check_run_timing._validate_since("2026-99-99")
+        self.assertIsNone(since)
+        self.assertIsNotNone(notice)
+        self.assertIn("2026-99-99", notice)
+
+    def test_garbage_is_rejected(self):
+        since, notice = check_run_timing._validate_since("not-a-date")
+        self.assertIsNone(since)
+        self.assertIsNotNone(notice)
+
+
 class ProcessDateAndCliTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp(prefix="check_run_timing_test_")
@@ -224,7 +281,7 @@ class ProcessDateAndCliTests(unittest.TestCase):
     def test_parse_error_review_warns(self):
         # P1-1: 壊れたコメント（計測装置の故障）も検知対象として warn=True。
         broken = FOOTER_HTML.replace(
-            "<footer>", "<!-- run-timing schema=v2 status=complete\n<footer>"
+            "</footer>", "\n<!-- run-timing schema=v2 status=complete\n</footer>"
         )
         with open(os.path.join(self.tmp, "2026-09-19.html"), "w",
                   encoding="utf-8", newline="") as fh:
@@ -233,6 +290,17 @@ class ProcessDateAndCliTests(unittest.TestCase):
         self.assertEqual(r.status, "parse_error")
         self.assertTrue(r.warn)
         self.assertEqual(r.reason, "malformed_comment")
+
+    def test_undecodable_file_does_not_crash_and_is_parse_error(self):
+        # P1-1: UTF-8としてデコードできないファイルは、その日だけ
+        # parse_error(reason=unreadable:...) になり例外を外に投げない。
+        path = os.path.join(self.tmp, "2026-09-20.html")
+        with open(path, "wb") as fh:
+            fh.write(b"\xff\xfe\x00\x00not valid utf-8 <footer></footer>")
+        r = check_run_timing.process_date("2026-09-20", self.tmp)
+        self.assertEqual(r.status, "parse_error")
+        self.assertTrue(r.warn)
+        self.assertTrue(r.reason.startswith("unreadable:"))
 
     def test_unknown_status_review_warns(self):
         comment = _comment(status="running", target="2026-09-19",
@@ -278,7 +346,7 @@ class CliContractTests(unittest.TestCase):
 
     def test_github_warning_emitted_for_parse_error(self):
         broken = FOOTER_HTML.replace(
-            "<footer>", "<!-- run-timing schema=v2 status=complete\n<footer>"
+            "</footer>", "\n<!-- run-timing schema=v2 status=complete\n</footer>"
         )
         with open(os.path.join(self.tmp, "2026-09-19.html"), "w",
                   encoding="utf-8", newline="") as fh:
@@ -287,6 +355,24 @@ class CliContractTests(unittest.TestCase):
         self.assertEqual(rc, 0)
         self.assertIn("::warning title=run-timing::", out)
         self.assertIn("malformed_comment", out)
+
+    def test_unreadable_file_does_not_abort_other_dates_in_all(self):
+        """P1-1: --all の中に非UTF-8ファイルが1件混ざっていても、その日だけ
+        parse_error(warn) になり、他の日付は通常どおり出力される
+        （--all 全体が1行のエラーに潰れない）。
+        """
+        ok_comment = _comment(status="incomplete", target="2026-09-17",
+                               run_id="5cfbafd2", saves=8, reason="missing-step4_5")
+        self._write("2026-09-17", ok_comment)
+        with open(os.path.join(self.tmp, "2026-09-20.html"), "wb") as fh:
+            fh.write(b"\xff\xfe not valid utf-8 <footer></footer>")
+        rc, out = self._run(["--reviews-dir", self.tmp, "--all", "--github"])
+        self.assertEqual(rc, 0)
+        self.assertIn("date=2026-09-17", out)
+        self.assertIn("incomplete:missing-step4_5", out)
+        self.assertIn("date=2026-09-20", out)
+        self.assertIn("unreadable:", out)
+        self.assertIn("RUN_TIMING_CHECK: checked=2 warned=2", out)
 
     def test_github_warning_emitted_for_unknown_status(self):
         comment = _comment(status="running", target="2026-09-19",
@@ -333,6 +419,19 @@ class CliContractTests(unittest.TestCase):
         self.assertIn("invalid --since", out)
         self.assertIn("ignored", out)
         # 無視された結果、抑止されず警告が出ること（黙って全件抑止しない）。
+        self.assertIn("::warning", out)
+
+    def test_invalid_calendar_since_is_ignored_and_noted(self):
+        # P2-1: 形は YYYY-MM-DD でも暦として存在しない日付（2026-99-99）は
+        # datetime.date.fromisoformat で不正と判定し、無視した旨を出す。
+        comment = _comment(status="incomplete", target="2026-09-17",
+                            run_id="5cfbafd2", saves=8, reason="missing-step4_5")
+        self._write("2026-09-17", comment)
+        rc, out = self._run(["--reviews-dir", self.tmp, "--all", "--github",
+                              "--since", "2026-99-99"])
+        self.assertEqual(rc, 0)
+        self.assertIn("invalid --since", out)
+        self.assertIn("ignored", out)
         self.assertIn("::warning", out)
 
 
