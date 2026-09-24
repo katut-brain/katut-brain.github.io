@@ -114,3 +114,13 @@ jobs:
       # --old-ref 経由の比較を検証する。
       - name: Run review-preserved gate tests
         run: python -m unittest -v test_check_review_preserved.py
+
+      # 旧レコード(raindrop_id無し)へridを付ける移行スクリプト(migrate_legacy_rid.py)
+      # の回帰テスト。Raindrop APIはモック（GETは実施しない）。
+      - name: Run legacy-rid migration tests
+        run: python -m unittest -v test_migrate_legacy_rid.py
+
+      # ledger.py の legacy_migrated 合流・legacy_rid_unresolved 集計の回帰テスト
+      # （2026-09-24 legacy-rid-migration Task追加）。
+      - name: Run ledger tests
+        run: python -m unittest -v test_ledger.py

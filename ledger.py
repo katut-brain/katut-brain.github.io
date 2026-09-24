@@ -21,6 +21,10 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 # （2026-09-03 Task G-2）。
 DEFAULT_MAX_ATTEMPTS = 3
 
+# migrate_legacy_rid.py の legacy_rid_unresolved が取りうる理由コード。表示順の既定値
+# （正本は migrate_legacy_rid.py の REASON_CODES。ここでは表示順序だけ持つ）。
+REASON_CODE_ORDER = ("raindrop_missing", "raindrop_ambiguous", "card_rid_mismatch")
+
 # 読み先は fetch_content.py の書き先と必ず同じ解決規則にする（環境変数名も同一）。
 # ここを揃えないと、FETCH_FACTS_DIR を指して取得した分を照会側が見に行かず、
 # 「取ったのに引けない」という観測装置として最悪の食い違いが起きる。
@@ -536,6 +540,7 @@ def cmd_summary():
     rid_source_counts = {}
     video_reason_counts = {}
     fail_reason_counts = {}
+    legacy_unresolved_counts = {}
     unresolved_count = 0
     unknown_video_content_count = 0
     exhausted_count = 0
@@ -576,6 +581,12 @@ def cmd_summary():
     for rec in records:
         _, src = _effective_rid(rec)
         rid_source_counts[src] = rid_source_counts.get(src, 0) + 1
+        # migrate_legacy_rid.py が付けた「解決できなかった理由」。raindrop_id を
+        # 持たないまま残ったレコードのうち、既にAPI/カード照合を試みて理由が
+        # 分かっているものだけがこのキーを持つ（2026-09-24 Task追加）。
+        reason = rec.get("legacy_rid_unresolved")
+        if isinstance(reason, str) and reason:
+            legacy_unresolved_counts[reason] = legacy_unresolved_counts.get(reason, 0) + 1
 
     print("=== ledger --summary ===")
     print("総レコード数(fetch_facts/*.json): %d" % len(records))
@@ -620,17 +631,40 @@ def cmd_summary():
         print("  (記録なし。2026-09-03 以前のレコードには fail_reason が無い)")
     print()
     print("-- rid_source 別件数(レコード単位) --")
-    for k in ("exact", "normalized", "ambiguous", "unresolved", "no_captures", "backfill", "(missing)"):
+    known_rid_sources = ("exact", "normalized", "ambiguous", "unresolved", "no_captures",
+                          "backfill", "legacy_migrated", "(missing)")
+    for k in known_rid_sources:
         print("  %s: %d" % (k, rid_source_counts.get(k, 0)))
     for k, v in rid_source_counts.items():
-        if k not in ("exact", "normalized", "ambiguous", "unresolved", "no_captures", "backfill", "(missing)"):
+        if k not in known_rid_sources:
             print("  %s: %d" % (k, v))
-    if any(k.startswith("legacy_") for k in rid_source_counts):
+    # legacy_migrated は migrate_legacy_rid.py が Raindrop API + reviews のカード
+    # data-rid を突き合わせて確定させた、記録時の事実に代わる恒久的な結果
+    # （2026-09-24 Task追加）。--include-legacy の "legacy_<元source>"
+    # （captures.json による都度の再解決。後日変わりうる）とは意味が違うので、
+    # 下の再現性に関する警告からは除外する。
+    runtime_legacy_sources = [k for k in rid_source_counts
+                               if k.startswith("legacy_") and k != "legacy_migrated"]
+    if runtime_legacy_sources:
         print()
-        print("  ⚠️ legacy_* は『記録時の事実』ではなく『照会時に captures.json で救済できた』")
-        print("     という意味。captures.json は毎晩再生成されるので、同じ履歴でも後日の照会で")
-        print("     結果が変わりうる（再現性が無い）。恒久的な事実として扱わないこと。")
-        print("     raindrop_id が記録時に入っているレコード(exact/normalized)だけが再現可能。")
+        print("  ⚠️ legacy_<元source>（legacy_migrated を除く）は『記録時の事実』ではなく")
+        print("     『照会時に captures.json で救済できた』という意味。captures.json は毎晩")
+        print("     再生成されるので、同じ履歴でも後日の照会で結果が変わりうる（再現性が無い）。")
+        print("     恒久的な事実として扱わないこと。raindrop_id が記録時に入っているレコード")
+        print("     (exact/normalized)、または migrate_legacy_rid.py が確定させたレコード")
+        print("     (legacy_migrated) だけが再現可能。")
+    print()
+    print("-- legacy_rid_unresolved 別件数(migrate_legacy_rid.py が解決を試みて")
+    print("   確定できなかった理由。レコード単位) --")
+    if legacy_unresolved_counts:
+        for k in REASON_CODE_ORDER:
+            if k in legacy_unresolved_counts:
+                print("  %s: %d" % (k, legacy_unresolved_counts[k]))
+        for k, v in legacy_unresolved_counts.items():
+            if k not in REASON_CODE_ORDER:
+                print("  %s: %d" % (k, v))
+    else:
+        print("  (無し)")
     return 0
 
 
