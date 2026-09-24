@@ -8,7 +8,9 @@ test_*.py と同じ流儀。pytest からも実行できる）。
 その撤回後に導入した「機械検知」側のテスト）。
 """
 
+import contextlib
 import glob
+import io
 import os
 import shutil
 import sys
@@ -48,9 +50,12 @@ class ReadCommentTests(unittest.TestCase):
         self.assertEqual(status, "no_comment")
 
     def test_single_valid_comment(self):
+        # run_timing.insert_comment は `</footer>`（閉じタグ）の直前に置くので、
+        # テストもその位置に合わせる。
         html_text = FOOTER_HTML.replace(
-            "<footer>", _comment(status="complete", target="2026-09-18",
-                                  run_id="3b462ccb", saves=4, total_s=371) + "\n<footer>"
+            "</footer>", "\n" + _comment(
+                status="complete", target="2026-09-18",
+                run_id="3b462ccb", saves=4, total_s=371) + "\n</footer>"
         )
         status, fields, reason = check_run_timing.read_run_timing_comment(html_text)
         self.assertEqual(status, "ok")
@@ -72,10 +77,44 @@ class ReadCommentTests(unittest.TestCase):
                         saves=4, total_s=371)
         two = _comment(status="incomplete", target="2026-09-19", run_id="aaaaaaaa",
                         saves="unknown", reason="missing-step5")
-        html_text = FOOTER_HTML.replace("<footer>", one + "\n" + two + "\n<footer>")
+        html_text = FOOTER_HTML.replace(
+            "</footer>", "\n" + one + "\n" + two + "\n</footer>")
         status, fields, reason = check_run_timing.read_run_timing_comment(html_text)
         self.assertEqual(status, "parse_error")
         self.assertEqual(reason, "multiple_comments")
+
+    def test_unsupported_schema_is_parse_error(self):
+        html_text = FOOTER_HTML.replace(
+            "</footer>",
+            "\n<!-- run-timing schema=v1 step1=10 -->\n</footer>",
+        )
+        status, fields, reason = check_run_timing.read_run_timing_comment(html_text)
+        self.assertEqual(status, "parse_error")
+        self.assertEqual(reason, "unsupported_schema")
+
+    def test_comment_outside_footer_position_is_not_picked_up(self):
+        """P1-2: 本文（<script>）にある同形の文字列は、footer 直前でなければ
+        拾わない。run_timing.py 自身が消してよいのを footer 直前だけに
+        限定しているのと対称的に、読み取り側もその位置規約に合わせる。
+        """
+        js = ('<script>\nconst example = "<!-- run-timing schema=v2 '
+              'status=complete -->";\n</script>\n')
+        html_text = FOOTER_HTML.replace("<footer>", js + "<footer>")
+        status, fields, reason = check_run_timing.read_run_timing_comment(html_text)
+        self.assertEqual(status, "no_comment")
+
+    def test_two_footers_is_no_comment_not_crash(self):
+        """`</footer>` が複数あると run_timing.py 自身も書き込みを拒否する
+        状態なので、位置を特定できないものとして no_comment 扱いにする
+        （クラッシュしない・誤った値を読まないことを確認する）。
+        """
+        comment = _comment(status="complete", target="2026-09-18",
+                            run_id="3b462ccb", saves=4, total_s=371)
+        dirty = FOOTER_HTML.replace(
+            "<footer>", comment + "\n<footer>"
+        ).replace("</html>", "<script>var s = \"</footer>\";</script>\n</html>")
+        status, fields, reason = check_run_timing.read_run_timing_comment(dirty)
+        self.assertEqual(status, "no_comment")
 
 
 class EvaluateTests(unittest.TestCase):
@@ -136,6 +175,13 @@ class EvaluateTests(unittest.TestCase):
         self.assertTrue(warn)
         self.assertEqual(reason, "malformed_complete_fields")
 
+    def test_unknown_status_warns(self):
+        # P1-3: complete/incomplete のどちらでもない値は異常として警告する。
+        fields = {"status": "running", "saves": "4", "total_s": "371"}
+        warn, reason = check_run_timing.evaluate(fields)
+        self.assertTrue(warn)
+        self.assertEqual(reason, "unknown_status:running")
+
 
 class ProcessDateAndCliTests(unittest.TestCase):
     def setUp(self):
@@ -174,6 +220,120 @@ class ProcessDateAndCliTests(unittest.TestCase):
         rc = check_run_timing.main(["--reviews-dir", self.tmp, "--all",
                                      "--nonexistent-flag"])
         self.assertEqual(rc, 0)
+
+    def test_parse_error_review_warns(self):
+        # P1-1: 壊れたコメント（計測装置の故障）も検知対象として warn=True。
+        broken = FOOTER_HTML.replace(
+            "<footer>", "<!-- run-timing schema=v2 status=complete\n<footer>"
+        )
+        with open(os.path.join(self.tmp, "2026-09-19.html"), "w",
+                  encoding="utf-8", newline="") as fh:
+            fh.write(broken)
+        r = check_run_timing.process_date("2026-09-19", self.tmp)
+        self.assertEqual(r.status, "parse_error")
+        self.assertTrue(r.warn)
+        self.assertEqual(r.reason, "malformed_comment")
+
+    def test_unknown_status_review_warns(self):
+        comment = _comment(status="running", target="2026-09-19",
+                            run_id="deadbeef", saves=4)
+        self._write("2026-09-19", comment)
+        r = check_run_timing.process_date("2026-09-19", self.tmp)
+        self.assertEqual(r.status, "ok")
+        self.assertTrue(r.warn)
+        self.assertEqual(r.reason, "unknown_status:running")
+
+
+class CliContractTests(unittest.TestCase):
+    """P2-2: main() の CLI 契約（::warning 出力・--since の抑止/許可・
+    footer 外コメント・未知 status・parse_error の警告・不正 --since）。
+    """
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="check_run_timing_cli_test_")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _write(self, date, comment_line):
+        html_text, _ = check_run_timing.run_timing.insert_comment(FOOTER_HTML, comment_line)
+        with open(os.path.join(self.tmp, "%s.html" % date), "w",
+                  encoding="utf-8", newline="") as fh:
+            fh.write(html_text)
+
+    def _run(self, argv):
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = check_run_timing.main(argv)
+        return rc, buf.getvalue()
+
+    def test_github_warning_emitted_for_incomplete(self):
+        comment = _comment(status="incomplete", target="2026-09-17",
+                            run_id="5cfbafd2", saves=8, reason="missing-step4_5")
+        self._write("2026-09-17", comment)
+        rc, out = self._run(["--reviews-dir", self.tmp, "--all", "--github"])
+        self.assertEqual(rc, 0)
+        self.assertIn("::warning title=run-timing::", out)
+        self.assertIn("incomplete:missing-step4_5", out)
+
+    def test_github_warning_emitted_for_parse_error(self):
+        broken = FOOTER_HTML.replace(
+            "<footer>", "<!-- run-timing schema=v2 status=complete\n<footer>"
+        )
+        with open(os.path.join(self.tmp, "2026-09-19.html"), "w",
+                  encoding="utf-8", newline="") as fh:
+            fh.write(broken)
+        rc, out = self._run(["--reviews-dir", self.tmp, "--all", "--github"])
+        self.assertEqual(rc, 0)
+        self.assertIn("::warning title=run-timing::", out)
+        self.assertIn("malformed_comment", out)
+
+    def test_github_warning_emitted_for_unknown_status(self):
+        comment = _comment(status="running", target="2026-09-19",
+                            run_id="deadbeef", saves=4)
+        self._write("2026-09-19", comment)
+        rc, out = self._run(["--reviews-dir", self.tmp, "--all", "--github"])
+        self.assertEqual(rc, 0)
+        self.assertIn("::warning title=run-timing::", out)
+        self.assertIn("unknown_status:running", out)
+
+    def test_no_comment_never_warns(self):
+        rc, out = self._run(["--reviews-dir", self.tmp, "--date", "2026-09-19",
+                              "--github"])
+        self.assertEqual(rc, 0)
+        self.assertIn("status=no_comment", out)
+        self.assertNotIn("::warning", out)
+
+    def test_since_suppresses_warning_before_cutoff(self):
+        comment = _comment(status="incomplete", target="2026-09-17",
+                            run_id="5cfbafd2", saves=8, reason="missing-step4_5")
+        self._write("2026-09-17", comment)
+        rc, out = self._run(["--reviews-dir", self.tmp, "--all", "--github",
+                              "--since", "2026-09-18"])
+        self.assertEqual(rc, 0)
+        self.assertNotIn("::warning", out)
+        self.assertIn("RUN_TIMING_CHECK: checked=1 warned=0", out)
+
+    def test_since_allows_warning_on_or_after_cutoff(self):
+        comment = _comment(status="incomplete", target="2026-09-17",
+                            run_id="5cfbafd2", saves=8, reason="missing-step4_5")
+        self._write("2026-09-17", comment)
+        rc, out = self._run(["--reviews-dir", self.tmp, "--all", "--github",
+                              "--since", "2026-09-17"])
+        self.assertEqual(rc, 0)
+        self.assertIn("::warning", out)
+
+    def test_invalid_since_is_ignored_and_noted_not_silently_suppressed(self):
+        comment = _comment(status="incomplete", target="2026-09-17",
+                            run_id="5cfbafd2", saves=8, reason="missing-step4_5")
+        self._write("2026-09-17", comment)
+        rc, out = self._run(["--reviews-dir", self.tmp, "--all", "--github",
+                              "--since", "not-a-date"])
+        self.assertEqual(rc, 0)
+        self.assertIn("invalid --since", out)
+        self.assertIn("ignored", out)
+        # 無視された結果、抑止されず警告が出ること（黙って全件抑止しない）。
+        self.assertIn("::warning", out)
 
 
 class RealReviewsTests(unittest.TestCase):
