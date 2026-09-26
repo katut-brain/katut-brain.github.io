@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-09-26 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-26 の振り返り</h1>
+  <div class="meta">AIによる高速化デモと投資・資産形成への関心が交差した1日（7件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日保存の7件を貫くのは「時間を圧縮する」という一点だ。東証48銘柄を8.82秒で仕分けるスクリーニングAI、巻物の図面から23秒で厳島神社を3DCG化するOpus5.5×Blender、そして『蜘蛛の糸』18万字を3時間で読み切るRSVP速読——いずれも、人力なら時間のかかる情報処理・創作・読解を、AIやツールで極端に短縮する事例。速さそのものが今日の関心の中心にある。</p>
+    <p>その速さへの興味は資産形成の文脈にも流れ込んでいる。ポイント交換ルートの図解、伸びる会社を安く買う井村氏の投資法、銘柄仕分けAIのデモ、7年前の井村氏動画への言及と、7件中4件が投資・資産形成に触れており、9/21・9/22・9/23・9/24と続いてきた関心が今週すでに5日目に入っている。単発の流行ではなく、着実に育っている軸と見てよい。</p>
+    <ul class="pts">
+      <li><b>速さのデモ</b>：銘柄仕分け8.82秒・3D生成23秒・速読18万字/3時間と、圧縮された時間そのものが見せ場になっている</li>
+      <li><b>投資・資産形成</b>：ポイント運用からグロース×バリューの判断軸まで、7件中4件が資産形成に接続</li>
+      <li><b>情報を再利用可能な形にする志向</b>：AIエージェント用デザインサイト集、自己拡張するObsidianセカンドブレイン設計図と、「集めて仕組み化する」関心も並走</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>銘柄仕分けAIの8.82秒という速さは、井村氏が説く「伸びる会社を安く買う」ための地道な比較検討をどこまで代替できるのか——速さと判断の質は本当に両立するのか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">井村氏の投資手法（グロース×バリュー）</div>
+    <ul class="ilist">
+      <li><a href="https://jack-money-lab.com/growth-stock-vs-value-stock-complete-guide-2026/" target="_blank" rel="noopener"><b>【2026年版】グロース株 vs バリュー株 完全ガイド</b></a> <span>→ PEGレシオ（PER÷利益成長率）が1倍前後を適正価格の目安とする考え方があり、今日の「成長率＞PER」という判断軸と符合する。グロース株はPER20倍以上・PBR3倍以上、バリュー株はPER12倍以下・PBR1倍前後が業種ごとの目安になるという。</span></li>
+    </ul>
+    <div class="ntag">Opus5.5×Blenderでの3D生成</div>
+    <ul class="ilist">
+      <li><a href="https://zenn.dev/ryuuri/articles/9aada2690dde3e" target="_blank" rel="noopener"><b>Opus5.5にBlenderを使って、動画作成までやってもらった</b></a> <span>→ 同じ手法で30代VTuberの3LDK部屋をフル生成した事例があり、家具アセットをダウンロードせず全てPythonで自作していた点が特徴。プロンプトはわずか3回（詳細な初期指定→90秒動画化→微修正）で完成に至っている。</span></li>
+    </ul>
+  </section>
+
+  <h2>📈 投資・資産形成（3件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/kakei_no_mikata/status/2103762799683833987?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HTIQXr1a0AA1HI_.jpg?format=jpg&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">ポイント交換ルートまとめ（保存版）</div><div class="vdesc">Vポイント・dポイントなど5つの集約先とポイント投資までの交換ルートを図解、SBI証券でのポイント運用導線も明記。</div><div class="vsaved">保存 9/26 23:44</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kakei_no_mikata/status/2103762799683833987?s=12" data-title="ポイント交換ルートまとめ（保存版）" data-rid="1866550275">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/toushi_kenshou/status/2103587198427877752?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HTFrnxibUAADNiy.jpg?format=jpg&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">井村氏の投資手法：伸びる会社を安く買う</div><div class="vdesc">伸びる会社を安く買う井村氏の投資法を紹介、成長率＞PERという判断軸と割安性・成長性の見極めチェックリストを図解。</div><div class="vsaved">保存 9/27 01:03</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/toushi_kenshou/status/2103587198427877752?s=12" data-title="井村氏の投資手法：伸びる会社を安く買う" data-rid="1866585449">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/29meat_ai/status/2103663993579803010?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2103629840415100928/img/lZjoWnGDb_8ETc3P.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">銘柄仕分けAIが48銘柄を8.8秒で判定</div><div class="vdesc">東証48銘柄を8.82秒で仕分けるAIデモ、買い候補19・監視21・除外8に自動分類し判定ログまで表示。</div><div class="vsaved">保存 9/26 23:46</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/29meat_ai/status/2103663993579803010?s=12" data-title="銘柄仕分けAIが48銘柄を8.8秒で判定" data-rid="1866551132">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🤖 AIによる高速生成デモ（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/ayu_ai_0912/status/2103737014508216515?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2103736067396689920/img/ss3RbIaIoSk9t_7X.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Opus5.5×Blenderで厳島神社を3DCG化</div><div class="vdesc">厳島神社之図の巻物からワイヤーフレームが立ち上がり瀬戸内海の全景まで組み上がる23秒のOpus5.5×Blender生成。</div><div class="vsaved">保存 9/27 01:04</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ayu_ai_0912/status/2103737014508216515?s=12" data-title="Opus5.5×Blenderで厳島神社を3DCG化" data-rid="1866586934">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/hanagasa_ai/status/2103523505598075353?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2103523377835339776/img/gg-L-6mhZhNsORNj.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">RSVP速読で18万文字を3時間で読了</div><div class="vdesc">RSVP方式で「蜘蛛の糸」を1500→2000字/分まで加速、18万文字を3時間で読み切り内容も定着したと報告。</div><div class="vsaved">保存 9/27 01:22</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/hanagasa_ai/status/2103523505598075353?s=12" data-title="RSVP速読で18万文字を3時間で読了" data-rid="1866620487">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🧠 ツール・ナレッジ管理（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/fukku_ai_bd/status/2103730579221193109?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HTHzz6cbEAA_EV6.jpg?format=jpg&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">AIエージェント向けデザイン参考サイト14選</div><div class="vdesc">scrolltide.co・minimal.gallery・kage.designなど、AIエージェントに食わせる用のデザイン参考サイト14個の一覧。</div><div class="vsaved">保存 9/26 23:42</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/fukku_ai_bd/status/2103730579221193109?s=12" data-title="AIエージェント向けデザイン参考サイト14選" data-rid="1866549860">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/obsidianstudio9/status/2103623080228860329?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2099149553509240834/img/NNRyiRiccMCl9tQF.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">自己拡張するセカンドブレインの設計図</div><div class="vdesc">CLAUDE.md憲法・raw/読み取り専用・wiki/自動生成の3層構造で、良い回答が自動でWikiに蓄積されるセカンドブレイン設計図。</div><div class="vsaved">保存 9/27 01:04</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/obsidianstudio9/status/2103623080228860329?s=12" data-title="自己拡張するセカンドブレインの設計図" data-rid="1866586983">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-09-26 run_id=49f283c4 saves=7 step1_s=14 step2_s=21 step2_5_s=81 step3_s=15 step4_s=280 step4_5_s=4 step5_s=70 step7_s=15 total_s=500 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
