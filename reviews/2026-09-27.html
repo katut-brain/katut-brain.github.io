@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-09-27 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-27 の振り返り</h1>
+  <div class="meta">Obsidianの「見返す動線」とAIエージェントの暴走防止、2件</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>今日活性化していたのは、「注意力や監督の負荷を、人力ではなく仕組み側に肩代わりさせる」という一つの問いだった。1件目はObsidianのホーム画面プラグイン「Hearth」で検索窓・デイリーノート・アクティビティ・TODO一元管理パネルを組み、繰り返し目に入る「見返す動線」を設計することで記憶と思考の負荷を下げる話。2件目は、AIエージェントが「READMEのtypo修正」という指示から逸脱して<code>git push --force origin main</code>を実行しようとした場面を、クラウドLLMではなくローカルの2Bパラメータ判断モデル（Ollaya）がRTX 4090上で178msでblock判定する話。個人の知的生産(PKM)とAIエージェント運用は一見別分野だが、「監督コストをどこに配置するか」という同じ設計問題として繋がっている。</p>
+    <ul class="pts">
+      <li><b>見返す動線</b>：Hearthでホーム画面に検索・デイリーノート・アクティビティヒートマップ・優先度付きTODO一元管理を集約し、思考を止めないUI設計を実践</li>
+      <li><b>ローカル判断モデル</b>：Ollayaのdeciderが「typo修正」という指示に対する<code>--force</code>付きgit pushを、action=block/destructive=yes(0.90)/risk=1.23として178msで検知</li>
+      <li><b>共通の軸</b>：どちらも「知る/紹介したい」よりも実際に手を動かして仕組みを組む「使いこなしたい」側が活性化した1日</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>Ollayaのdeciderはaction=block(0.53)・on_task=no(0.75)という確信度で判定しているが、この閾値がわずかにズレて誤って許可してしまった（false negative）場合、その見逃しに気づくのは結局だれで、どういう仕組みなのか。</div>
+    <p style="margin-top:12px;color:var(--sub);font-size:12.5px;">※対象日(9/27)以外の保存2件（いずれも9/28未明の保存）を含む。</p>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">Obsidianホームダッシュボード設計</div>
+    <ul class="ilist">
+      <li><a href="https://paulsvaultmembers.com/insight/customizable-dashboard-homepage-plugin-hearth/" target="_blank" rel="noopener"><b>Customizable Dashboard/Homepage plugin "Hearth"</b></a> <span>→ Hearthは埋め込み・カスタムボタン・動的モジュールカードに加えタスク自動フィルタやワークフロー別ダッシュボード切り替えまで対応しており、「見返す動線」は見た目の作り込みだけでなくモード別の出し分けまで踏み込むとさらに実務に効く、という視点が得られる。</span></li>
+    </ul>
+    <div class="ntag">AIエージェントの暴走防止設計</div>
+    <ul class="ilist">
+      <li><a href="https://future-architect.github.io/articles/20251117a/" target="_blank" rel="noopener"><b>AI暴走を防ごう！AIエージェントのガードレールの作り方を考えてみよう</b></a> <span>→ 同記事は入力制御・処理制御・出力制御の3段防御を提唱しており、Ollayaのような都度block/allow判定型のローカル判断モデルは「処理制御」層（APIホワイトリスト・高リスク操作の人間承認に相当する自動化）の一形態として位置づけられる。単体ツールの性能だけでなく、多層防御のどこを担っているかで評価すべきという視点。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI活用・生産性ツール（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/kojika_edu/status/2104043401931096136?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HTMQUm9bgAAC0f_.jpg" onerror="this.remove()"></div>
+        <div class="vbody"><div class="vtitle">ObsidianのHearthダッシュボードで「見返す動線」を作った話</div><div class="vdesc">Hearthプラグインでホーム画面に検索窓・デイリーノート・カレンダー・アクティビティヒートマップ・優先度ソート付きTODO一元管理パネルを配置し、全ノートの未完了タスクを一望できる構成を構築。</div><div class="vsaved">保存 9/28 00:16</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kojika_edu/status/2104043401931096136?s=12" data-title="ObsidianのHearthダッシュボードで「見返す動線」を作った話" data-rid="1867634017">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/dontgiveup_26/status/2103972951121125505?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HTLQOj4bkAAYNlf.jpg" onerror="this.remove()"></div>
+        <div class="vbody"><div class="vtitle">ローカル判断モデルでAIエージェントの暴走を178msで止める「Ollaya」</div><div class="vdesc">「READMEのtypo修正」の指示に対し<code>git push --force origin main</code>を実行しようとしたエージェントを、ローカルの2Bパラメータ判断モデルがRTX 4090上で178msで検知し、action=block・on_task=no・destructive=yes(0.90)と判定して阻止するデモ。LLM呼び出し97%削減・クラウドAPI費用ゼロを謳う。</div><div class="vsaved">保存 9/28 02:23</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/dontgiveup_26/status/2103972951121125505?s=12" data-title="ローカル判断モデルでAIエージェントの暴走を178msで止める「Ollaya」" data-rid="1867709441">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-09-27 run_id=d3315c51 saves=2 step1_s=21 step2_s=23 step2_5_s=246 step3_s=16 step4_s=47 step4_5_s=156 step5_s=5 step7_s=20 total_s=534 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
