@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-09-29 の振り返り</title>
+<style>` ブロックをそのまま使う（CSS変数・ダーク対応込み）。`<title><TARGET> の振り返り</title>`。
+     ```html
+     <style>
+       :root {
+         --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+         --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+         --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+         --chip: #f5f5f7; --accent: #0071e3;
+       }
+       @media (prefers-color-scheme: dark) {
+         :root {
+           --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+           --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+           --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+           --chip: #1c1c1e; --accent: #0a84ff;
+         }
+       }
+       * { box-sizing: border-box; }
+       html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+         font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+         -webkit-font-smoothing: antialiased; font-size: 15px; }
+       .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+       a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+       a.back:hover { text-decoration: underline; }
+       h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+       .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+       h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+       .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+       .summary h2 { margin-top: 0; }
+       .summary p { margin: 0 0 12px; }
+       .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+       .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+       .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+       .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+       .q b { color: var(--text); }
+
+       .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+       .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+         color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+       .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+       .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+       .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+       .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+       .ilist b, .qlist b { color: var(--text); }
+       .ilist span, .qlist span { color: var(--sub); }
+       .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+       .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+       .cards { display: grid; gap: 12px; }
+       .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+         border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+       .vcard:hover { border-color: var(--border-s); }
+       .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+       .vcard:hover .vlink { transform: translateY(-1px); }
+       .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+         display: flex; align-items: center; justify-content: center; }
+       .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+       .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+       .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+       .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+       .vdesc { color: var(--sub); font-size: 12.5px; }
+       .vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+       .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+         border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+         font-family: inherit; }
+       .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+       @media (max-width: 460px) {
+         .vlink { flex-direction: column; }
+         .thumb { width: 100%; height: 150px; }
+         .vbody { padding: 0 14px 14px; }
+         .deepdive { display: none; }
+       }
+       footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+     </style>
+</head><body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-29 の振り返り</h1>
+  <div class="meta">日本株×AI分析の道具立てに保存が集中した日（10件）</div>
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存10件のうち6件が、投資・トレードにAIやAPIをどう組み込むかという話でした。月約6000円の最小構成、J-Quantsの信用取引残高の日次化、tradingview-mcp、株価予測論文の解説動画と、データ・道具・理論の三層が揃って集まっています。通奏低音は「AIに何を材料として渡し、何を正解とみなすか」という問いです。</p>
+    <p>残りは開発ツール（Peitho、DevPortal、Jev翻訳拡張）と、バルセロナの場所1件。いずれも「作りたい」軸より「知る・集める」軸が活性化した日でした。ユーザー自身のコメント（note）は付いていません。</p>
+    <ul class="pts">
+      <li><b>データの粒度が変わった</b>：J-Quantsの信用残が週次から日次になり、分析の時間解像度が上がるという含意がある。</li>
+      <li><b>ラベル設計</b>：「当てたいリターンで学習するのが最善とは限らない」論文は、何を正解にするかが成果を左右するという問いを立てる。</li>
+      <li><b>手法の真偽</b>：Zone Break手法のように根拠が示されない勝ちやすさの主張は、検証手段（バックテストMCPなど）と対で読む必要がある。</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>短期リターンで学習した方がICが上がるという結果は、日次化された信用残のような新データでも成り立つのか？</div>
+  </section>
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">日本株×AIエージェント分析</div>
+    <ul class="ilist">
+      <li><a href="https://github.com/edinetdb/dexter-jp" target="_blank" rel="noopener"><b>edinetdb/dexter-jp</b></a> <span>→ EDINET DBとJ-Quantsを横断し、計画・検証・レポート作成まで自律で行う日本株特化のAIエージェント。今日の「最小構成」の先にある使い方の具体例として読める。</span></li>
+    </ul>
+  </section>
+  <h2>📈 投資・トレード×AI（6件）</h2>
+<div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/pyon/status/2104522800530923523?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fpyon%2Fstatus%2F2104522800530923523%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">日本株分析の最小構成（月約6000円）</div><div class="vdesc">GPT/Claude＋J-Quants＋EDINET DB lightで月約6000円。無料のGPT/Claudeとは戦闘力が段違いとし、この構成の使い方記事も予告。</div><div class="vsaved">保存 9/29 08:16</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/pyon/status/2104522800530923523?s=12" data-title="日本株分析の最小構成（月約6000円）" data-rid="1869348194">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/k_trader_xauusd/status/2104555436859076959?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HTTiAmva0AAYD49?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">海外で流行の手法「Direction via Zone Break」</div><div class="vdesc">AIが示すゾーンが🟥→🟩でロング、🟩→🟥でショート、利確はエントリー幅の2倍というインジケーター手法。根拠の検証は示されていない。</div><div class="vsaved">保存 9/29 18:35</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/k_trader_xauusd/status/2104555436859076959?s=12" data-title="海外で流行の手法「Direction via Zone Break」" data-rid="1869673706">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/richwomanbtc/status/2104860324910543316?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/card_img/2104860265519169536/uyia-puH?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">株価予測の「Label Horizon Paradox」（ICML 2026）</div><div class="vdesc">当てたいリターンで学習するのが最善とは限らず、途中の短い期間のリターンを正解にした方が評価指標ICが上がりうるという論文を、ずんだもん解説動画で紹介。</div><div class="vsaved">保存 9/29 18:36</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/richwomanbtc/status/2104860324910543316?s=12" data-title="株価予測の「Label Horizon Paradox」（ICML 2026）" data-rid="1869673949">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/cora64189920179/status/2104563121495187545?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fcora64189920179%2Fstatus%2F2104563121495187545%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">昔の自分に教えたい最初の一歩</div><div class="vdesc">「まずFXに1万円だけ入金する」を第一歩に据える、初心者向けの少額スタート論。</div><div class="vsaved">保存 9/29 18:39</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/cora64189920179/status/2104563121495187545?s=12" data-title="昔の自分に教えたい最初の一歩" data-rid="1869675837">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/jpx_jquants/status/2104477336292983219?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2104477336292983219" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">J-Quantsの信用取引残高が日次提供に</div><div class="vdesc">markets/margin-interestが週次から日次に変更、申込翌営業日16:00頃に更新。公表日と金額6項目が追加され全16項目に。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/29 18:46</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/jpx_jquants/status/2104477336292983219?s=12" data-title="J-Quantsの信用取引残高が日次提供に" data-rid="1869679345">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/trendtech33566/status/2104709393107517748?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/card_img/2103267807970422784/Pj-jnUyt?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">tradingview-mcp：銘柄分析をAIに任せる</div><div class="vdesc">⭐約4.7千のMCPサーバ。株・仮想通貨・FX・先物のデータ取得、37のテクニカル分析、条件スクリーニングとバックテストが可能。</div><div class="vsaved">保存 9/29 22:10</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/trendtech33566/status/2104709393107517748?s=12" data-title="tradingview-mcp：銘柄分析をAIに任せる" data-rid="1869817515">💬 AIと話す</button>
+    </div>
+</div>
+
+  <h2>🛠 開発ツール（3件）</h2>
+<div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/kfly8/status/2104425752838181186?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/card_img/2103484035599155200/XJuoK7nU?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">HTMLスライドはPeithoで作る</div><div class="vdesc">Markdownを正本にし、レイアウトがスキーマとなるHTMLプレゼンツール。スロット違反はビルドエラー、発表者ビューとスマホリモコン付き。</div><div class="vsaved">保存 9/29 18:42</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kfly8/status/2104425752838181186?s=12" data-title="HTMLスライドはPeithoで作る" data-rid="1869677316">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/2020_hira/status/2104770291260117094?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2104770291260117094" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Jev翻訳のChrome拡張が公開</div><div class="vdesc">英語力の差を埋める自作の翻訳Chrome拡張が審査通過。Jevをオフにしても使える。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/29 18:44</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/2020_hira/status/2104770291260117094?s=12" data-title="Jev翻訳のChrome拡張が公開" data-rid="1869678818">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/taiyop/status/2104832672581435670?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HTXd-uUawAA1XFt?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">自作DevPortalでツール起動が超お手軽に</div><div class="vdesc">ローカルの複数Webアプリをターミナル無しで起動・管理できるmacOS向けランチャー兼リバースプロキシ。検証もしやすいとの実感。</div><div class="vsaved">保存 9/29 21:43</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/taiyop/status/2104832672581435670?s=12" data-title="自作DevPortalでツール起動が超お手軽に" data-rid="1869786595">💬 AIと話す</button>
+    </div>
+</div>
+
+  <h2>🗺 場所・文化（1件）</h2>
+<div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://maps.app.goo.gl/jV25ZXtwWJY3i4NH9?g_st=io.raindrop.ios.share" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://lh3.googleusercontent.com/gps-cs-s/ANWiy9TitYNDJmh6Fq9TfW0mWioU68n9mtzxV1EvQ9ws6PWFfsHMEI4hu6u03-9HgGTyg229Ef-OV2W9y534usBj-qJomS-P0JtlSippI5tChKt3dKBnutCeqPZ88IAedZa5GFlp7RhStYGoe-g=w900-h900-p-k-no" onerror="this.remove()"><span class="ph">Googleマップ</span></div>
+        <div class="vbody"><div class="vtitle">Jon Cake（バルセロナ・サンタ・カテリーナ）</div><div class="vdesc">バルセロナのSanta Caterina地区にあるスポットをGoogleマップで保存。</div><div class="vsaved">保存 9/29 10:43</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://maps.app.goo.gl/jV25ZXtwWJY3i4NH9?g_st=io.raindrop.ios.share" data-title="Jon Cake（バルセロナ・サンタ・カテリーナ）" data-rid="1869428755">💬 AIと話す</button>
+    </div>
+</div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-09-29 run_id=112d58e5 saves=10 step1_s=11 step2_s=16 step2_5_s=65 step3_s=7 step4_s=53 step4_5_s=98 step5_s=3 step7_s=0 total_s=253 -->
+</footer>
+</div>
+<script>
+     function openChat(btn) {
+       var url = btn.getAttribute('data-url');
+       var title = btn.getAttribute('data-title');
+       var rid = btn.getAttribute('data-rid');
+       var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+       var workdir = 'C:\\Users\\katut';
+       var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+       var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+         'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+         bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+         'あればそのノートに今回の深掘り内容を追記する。' +
+         'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+         '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+       var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+       location.href = link;
+     }
+     </script>
+</body></html>
