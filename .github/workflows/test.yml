@@ -103,6 +103,12 @@ jobs:
       - name: Run select-targets tests
         run: python -m unittest -v test_select_targets.py
 
+      # 手順7.5「取りこぼしの回収」（note_gaps.py）の回帰テスト。公開済み・Vaultに
+      # ノート無しを翌晩に拾うこと（手順8成功・8.5未実行の再現）、今夜の reviews を
+      # 数えないこと、Vault が読めない夜は何も選ばないこと等（2026-09-30 追加）。
+      - name: Run note-gaps tests
+        run: python -m unittest -v test_note_gaps.py
+
       # reviews/<TARGET>.html の上書き防止（merge_review.py）の回帰テスト。
       # 既存カードの保持・重複スキップ（rid一致/強いID一致）・壊れた既存を
       # 消さないこと等を検証する。
