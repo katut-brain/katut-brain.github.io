@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-09-30 の振り返り</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+    --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+    --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+    --chip: #f5f5f7; --accent: #0071e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+      --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+      --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+      --chip: #1c1c1e; --accent: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; font-size: 15px; }
+  .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+  .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+  .summary h2 { margin-top: 0; }
+  .summary p { margin: 0 0 12px; }
+  .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+  .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .q b { color: var(--text); }
+
+  .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+  .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+  .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+  .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+  .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+  .ilist b, .qlist b { color: var(--text); }
+  .ilist span, .qlist span { color: var(--sub); }
+  .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .cards { display: grid; gap: 12px; }
+  .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+    border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  .vcard:hover { border-color: var(--border-s); }
+  .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+  .vcard:hover .vlink { transform: translateY(-1px); }
+  .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+  .vbody { padding: 12px 14px 12px 0; min-width: 0; }
+  .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+  .vdesc { color: var(--sub); font-size: 12.5px; }
+  .vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+  .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+    font-family: inherit; }
+  .deepdive:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 460px) {
+    .vlink { flex-direction: column; }
+    .thumb { width: 100%; height: 150px; }
+    .vbody { padding: 0 14px 14px; }
+    .deepdive { display: none; }
+  }
+  footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-09-30 の振り返り</h1>
+  <div class="meta">AIエージェントで「稼ぐ」と「理解する」を回す日（7件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存7件は、AIを「使って成果を出す」側に全振りしていた。3件は株式・暗号資産の投資（エージェントでの戦略構築、強化学習基盤FinRL、無料チャートツール）、4件はClaudeまわりの運用術（賞を狙わせる指示文、サイドバー整理、TeX64、説明ツールexplainer）。通奏低音は「AIが速く作れるようになった分、人間が理解・判断・検証する部分がボトルネックになる」という問いで、explainerの「理解が新たなボトルネック」という主張と、投資側の「突然死しづらい設計を選ぶ」所見が同じ構造を指している。</p>
+    <p>noteは付いておらず、どちらも「知る／紹介したい」軸の保存。ただし指示文のコピペ型Tipsが3件並んでおり、「作りたい」軸も半分立ち上がっている。</p>
+    <ul class="pts">
+      <li><b>投資×AI</b>：UKI氏は「個別アルファよりリスクプレミアム狙いが楽で突然死しづらい」と言い、FinRLは訓練/テスト期間の時間分離とドローダウン評価を前提にする——どちらも「勝ち方」より「壊れ方」の設計から入っている</li>
+      <li><b>検証の型</b>：「賞を獲れる水準まで自己点検を繰り返せ」という一文は、生成と評価を同じエージェントに回させる最小のループという含意がある</li>
+      <li><b>運用の可視化</b>：並行タスクを4状態に分類させる発想は、人間の判断待ちを明示するUIをAI自身に作らせる試み</li>
+      <li><b>エコシステム</b>：TeX64やexplainerのように、Claudeは「プラグイン＋スキル」で専門用途へ分岐している</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>エージェントに自己評価を繰り返させる時、「良くなった」の基準を誰が（どの指標で）固定するのか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">エージェントによる投資戦略</div>
+    <ul class="ilist">
+      <li><a href="https://note.com/rami_engineer/n/n0d468a22bf0c" target="_blank" rel="noopener"><b>AIトレーダー8人だけの株式市場で起きた、人間そっくりな現象とは｜らみ</b></a> <span>→ 価値投資家・モメンタム型など役割を与えたLLMエージェント8体は、損失が出ても利益最大化より指示された方針の遵守を優先した。割高が長く残る非対称性やバブル形成も自然に再現され、同質的なAIが集団で参加すると市場が不安定になりうるという視点は、個別戦略の「突然死しづらさ」を市場全体の層でも考える必要を示す。</span></li>
+    </ul>
+  </section>
+
+  <h2>📈 AI×投資・トレード（3件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/blog_uki/status/2105074561465393626?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fblog_uki%2Fstatus%2F2105074561465393626%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">エージェントで組む株式投資戦略の所見（UKI氏）</div><div class="vdesc">個別アルファよりリスクプレミアムを狙うほうが楽で、現状では突然死しづらいという実践者の所見。続きのスレッドは未取得で、本文は冒頭2文のみ。</div><div class="vsaved">保存 9/30 16:57</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/blog_uki/status/2105074561465393626?s=12" data-title="エージェントで組む株式投資戦略の所見（UKI氏）" data-rid="1871174308">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/news_no_mori_/status/2105156087817388170?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HTcETc8agAANXHx?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">無料でTradingView不要級のチャートツール（openmarket）</div><div class="vdesc">最大16銘柄の同時表示・単体チャートへのタブ切替・ウォッチリスト50銘柄・簡単なアラートが無料。添付画像は3×3のマルチチャートとTradingViewからのインポート機能付きウォッチリスト画面。</div><div class="vsaved">保存 9/30 16:59</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/news_no_mori_/status/2105156087817388170?s=12" data-title="無料でTradingView不要級のチャートツール（openmarket）" data-rid="1871175135">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/_zheergen/status/2104888134832152732?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2104888134832152732" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">強化学習トレード基盤FinRLをコロンビア大系チームが公開</div><div class="vdesc">16.4K starsのMIT公開OSS。状態（価格・指標・保有）→行動（売買）→報酬（資産増減）のサイクルで学習し、手数料や資金制約で100株注文が99株約定になる現実的制約も再現。訓練／テスト期間を時間軸で分けてドローダウンやバイ＆ホールドと比較する評価設計が核心。</div><div class="vsaved">保存 9/30 19:43</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/_zheergen/status/2104888134832152732?s=12" data-title="強化学習トレード基盤FinRLをコロンビア大系チームが公開" data-rid="1871292495">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🤖 Claude・AI活用術（4件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/mizchi/status/2105187481318793608?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/card_img/2104934820107411456/mveOZ3-c?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">AIが人間に図で説明するツール mizchi/explainer</div><div class="vdesc">「AIが速く書きすぎて人間の理解が追いつかない」という課題に対し、読者が既に知っていることを省き、主張と図をツールで検証して読者1人向けに説明を作るClaude Codeプラグイン（skill3本、Star 188）。</div><div class="vsaved">保存 9/30 16:57</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/mizchi/status/2105187481318793608?s=12" data-title="AIが人間に図で説明するツール mizchi/explainer" data-rid="1871174435">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/kktex_latex3/status/2105141650691690505?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HTb3FoDa8AAVe8n?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">ClaudeのプラグインにTeX64が登録</div><div class="vdesc">Anthropic Directoryに新規掲載された「TeX64」（v0.8.0・スキル1・コネクタ1）の画面。講義資料を日本語の学習ノート・試験まとめ・演習シートにしPDF組版する、TeXインストール不要のプラグイン。</div><div class="vsaved">保存 9/30 19:42</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kktex_latex3/status/2105141650691690505?s=12" data-title="ClaudeのプラグインにTeX64が登録" data-rid="1871291448">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/kajikent/status/2105095422448746573?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fkajikent%2Fstatus%2F2105095422448746573%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Webサイトを一発で作らせる指示文の締め方</div><div class="vdesc">指示文の末尾に「awwwards・webby awards・FWAで賞を獲れる水準を目指し、その基準になるまでセルフチェックで改善を繰り返して」と付けるだけ、という型。4,376いいねで反響大。</div><div class="vsaved">保存 9/30 19:43</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kajikent/status/2105095422448746573?s=12" data-title="Webサイトを一発で作らせる指示文の締め方" data-rid="1871291983">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/showheyohtaki/status/2104970962341179900?s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2104970962341179900" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claudeにサイドバーを整理させてタスクを見える化</div><div class="vdesc">並行タスクの混乱を、1時間ごとに「🟥判断待ち」「🟧手作業」「🟦外部待ち」「✅完了」へ分類させて解消する工夫。コピペ用の指示はリプ欄にある。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 9/30 20:36</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/showheyohtaki/status/2104970962341179900?s=12" data-title="Claudeにサイドバーを整理させてタスクを見える化" data-rid="1871332320">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-09-30 run_id=ff329f4c saves=7 step1_s=11 step2_s=17 step2_5_s=181 step3_s=10 step4_s=63 step4_5_s=54 step5_s=6 step7_s=0 total_s=342 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
