@@ -450,7 +450,7 @@
      python3 note_gaps.py --target "$TARGET" --vault-dir <Vaultリポのディレクトリ> --targets /tmp/targets.json --out /tmp/note_gaps.json
      ```
      - **`<Vaultリポのディレクトリ>`** には、直下に `Explore/bookmarks/` があるVaultリポのクローンのルートを渡す（下の重複チェック・ノート作成で使うディレクトリと同じもの）。呼ぶ前に `ls <そのディレクトリ>/Explore/bookmarks | head -3` で実在を確かめる。`<` `>` は置き換える記法なので、そのまま打たない。
-     - **`NOTE_GAPS:` 行を必ず読み、ランのログにそのまま残す**。`selected=N` が今夜の回収件数（1晩5件まで・公開日の古い順）。`gaps=` は回収待ちの総数で、`selected` より多ければ残りは次の夜以降に回る。スクリプト内の例外・不正な引数・`--out` の書き込み失敗のときも、exit 0 で `status=error` の行が出る。**行が出ない・exit が0以外・行に `error=` が付いているときも、`status=ok` 以外と同じ扱い**にする（`/tmp/note_gaps.json` は読まない）。
+     - **`NOTE_GAPS:` 行を必ず読み、ランのログにそのまま残す**。`selected=N` が今夜の回収件数（1晩5件まで・公開日の古い順）。`gaps=` は回収待ちの総数で、`selected` より多ければ残りは次の夜以降に回る。スクリプト内の例外・不正な引数・`--out` の書き込み失敗のときも、exit 0 で `status=error` の行が出る。**行が出ない・exit が0以外・行に `error=` が付いているときも、`status=ok` 以外と同じ扱い**にする（`/tmp/note_gaps.json` は読まない）。`status=ok` の行に `warn=unreadable_reviews:N` が付いていても回収してよい（読めない reviews にだけ載っているカードが候補に出ないだけで、重複は作らない）。
      - `status=ok` 以外（`vault_unreadable`＝Vaultリポが見つからない・ノートが少なすぎる・読めないノートがある／`error`）なら回収はしない。手順は止めず、手順3の選定分だけで続ける。`vault_unreadable` の `reason=` は `no_dir`（Vaultのパスが違う疑い）・`too_few:N`（ノートが少なすぎる）・`read_failed:N`（読めないノートがある）。**`reason=no_dir` のときだけ、パスを確かめて1回だけ呼び直してよい**。それでも `status=ok` にならなければ回収なしで続ける。
      - `/tmp/note_gaps.json` の `records` の各件も、手順3の選定と同じくこの手順でノートにする（重複チェック・安全制約・ファイル名・frontmatter・スキーマ検証・検証結果の記録はすべて同じ）。回収レコードが重複チェックでスキップされた（＝`note_gaps.py` は「ノートが無い」と数えたが、Vault には既にある）ときは、その rid を `NOTE_GAPS_SKIPPED: <rid>,<rid>` の1行でログに残す（毎晩同じ rid が出るなら、`note_gaps.py` が数えないノートが Vault にある印で、回収の枠を占有する）。違いは次の3点だけ：
        - **材料**：手順4の本文は無い。レコードの `title`・`note`（保存時のユーザーコメント）・`vtitle`・`vdesc`（公開済みカードの一言）だけを使う。**調べ直さない**（`WebSearch`・`WebFetch`・`fetch_content.py` を呼ばない）。本文は分かっている範囲で2〜4文にし、最後に「（公開済みの振り返りカードから後日作成。本文は取り直していない）」の1文をそのまま付ける。
@@ -561,7 +561,7 @@
    - 何も push せず正常終了する（台帳は手順2.1 で押し終えている）。
 
    - 共通: `index.html` の出来ばえは確認しなくてよい（Actions 側の検証ゲートが担当する）。**`index.html` を GitHub から読みに行かないこと** — 122KB を読むと文脈が膨らんで自動圧縮で迷子になる。
-   - 共通: 送信が一時失敗しても、自分で打つ `git push` にも `push_files` にも**戻らない**。`push_via_branch.sh` を2回まで、それでもダメならその夜は諦める（`WRITE_COMMIT: <sha>` が出た後は再実行しない）。**押せなかった日は翌晩の手順2.1 が拾い直す**（`captures.json` に保存があるのに reviews が無い日として検出される）。
+   - 共通: 送信が一時失敗しても、自分で打つ `git push` にも `push_files` にも**戻らない**。`push_via_branch.sh` を2回まで、それでもダメならその夜は諦める（`WRITE_COMMIT: <sha>` が出た後は再実行しない）。**押せなかった日の保存は、翌晩の手順3 が同じ保存をまた選ぶ**（reviews が公開されていないので「どの reviews にも載っていない保存」のまま。`captures.json` に保存があるのに reviews が無い日は手順2.1 が検出するが、手順2.1 自体は回収しない）。
 8.5. **公開（Vaultリポへ・ブックマークノート）**（手順7.5でノートを新規作成した場合のみ実行）：対象は `katut-brain/obsidian-vault` リポ（手順8の `katut-brain.github.io` とは別リポ）。
    - 押すファイルは、手順7.5でスキーマ検証に**合格**し新規作成した `Explore/bookmarks/rd-*.md` のみ（検証落ちのファイル・既存ファイルは含めない）。
    - ⚠️ **今夜は書き込み経路を変えない。従来どおり `push_files` で押す**（2026-09-09 の裁定）。Vaultリポに `gh api` が届くかがまだ確認できていないため、確認が取れるまで動かさない。
@@ -603,5 +603,5 @@
 - (b) 手順3の選定が0件（対象が無い日）だが、**今回のランで `fetch_facts/` 配下に変更が生じた**（`git status --porcelain -- fetch_facts/` で差分あり。改善(attempted)・スタブ書き込み(stub_written)・backfill_ridタグ付け(rid_mismatch)のほか、**手順2.5 の証跡 `fetch_facts/runs/<TARGET>.json` だけが増えた夜も含む**） → reviews は作らず、`fetch_facts/` 配下の実在するものを push する（コミットメッセージ `update: <TARGET> (backfill only)`）。
 - (c) 手順3の選定が0件かつ、今回のランでの `fetch_facts/` 配下への変更も無い（`git status --porcelain -- fetch_facts/` が空） → 何も push せず正常終了する。**手順2.5 が最初の証跡書き込みに成功していれば証跡が増えるので、通常この分岐には入らない**。入った場合は「手順2.5 を飛ばした」「最初の書き込みに到達する前に止まった」「証跡の書き込みに失敗した（`BACKFILL_EVIDENCE: write_failed`）」のどれかなので、**ランのログと併せて判定する**（分岐そのものは (c) で正しい＝押すものが無いなら押さない）。
 - 手順3の選定が1件以上あった日は、重複チェックでスキップされなかった各レコードについて、スキーマ検証に合格したノートが Vaultリポ `Explore/bookmarks/` に作成され `main` へ push される（1件も新規作成対象が無ければ手順8.5のpushは行わない＝これも正常終了）。
-- 2026-08-05 以降に公開済みで Vault にノートが無いブックマークは、次に手順3の選定が1件以上ある夜に、手順7.5「取りこぼしの回収」（`note_gaps.py`・1晩5件まで）でノートが作られ、同じ手順8.5 の push に入る。`NOTE_GAPS:` が `status=ok` 以外（行が出ない・exit が0以外を含む）の夜は回収0件で正常終了。
+- 2026-08-05 以降に公開済みで Vault にノートが無いブックマークは、次に reviews を作る夜（手順3の選定が1件以上あり、手順5で reviews を作った夜）に、手順7.5「取りこぼしの回収」（`note_gaps.py`・1晩5件まで）でノートが作られ、同じ手順8.5 の push に入る。`NOTE_GAPS:` が `status=ok` 以外（行が出ない・exit が0以外を含む）の夜は回収0件で正常終了。
 - ⚠️ **例外**: 手順3の選定が1件以上でも、手順5の `merge_review.py` が `mode=error`（かつ実行前に `reviews/<TARGET>.html` が存在しなかった＝新規HTML自体の構造検証で弾かれた）だった夜は、`reviews/<TARGET>.html` が作られない。この夜は「選定1件以上」であっても (a) ではなく、`fetch_facts/` 配下の変更有無で (b)/(c) と同じ基準を適用する（reviews が無いので push 対象に含めようがないため）。選定内容は捨てられたわけではなく、翌晩以降 select_targets.py が同じレコードを再度候補にする。

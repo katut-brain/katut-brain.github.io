@@ -210,6 +210,19 @@ class TestVaultFailClosed(unittest.TestCase):
             self.assertEqual([r["rid"] for r in fx.gaps("2026-09-20")["records"]],
                              [1860000007])
 
+    def test_only_rd_notes_count_toward_the_minimum(self):
+        """rd-*.md が少ないのに他の .md が多いからと「信用できる」にしない。"""
+        with tempfile.TemporaryDirectory() as d:
+            fx = Fixture(d)
+            _filler(fx.vault, note_gaps.MIN_VAULT_NOTES - 1)
+            for i in range(30):
+                _write(os.path.join(fx.vault, "Explore", "bookmarks", "memo-%d.md" % i), "メモ\n")
+            _review(os.path.join(fx.reviews, "2026-09-19.html"),
+                    [_card(1860000123, "https://example.com/d4")])
+            res = fx.gaps("2026-09-20")
+            self.assertEqual(res["status"], "vault_unreadable")
+            self.assertEqual(res["reason"], "too_few:%d" % (note_gaps.MIN_VAULT_NOTES - 1))
+
     def test_threshold_value_is_pinned(self):
         """しきい値そのものを固定する（1 や 101 に変えられても他のテストは境界を
         note_gaps.MIN_VAULT_NOTES から作るので気づけない）。"""
@@ -327,6 +340,35 @@ class TestVaultNoteDetection(unittest.TestCase):
             res = fx.gaps("2026-09-25")
             self.assertEqual([r["rid"] for r in res["records"]], [1860000094])
 
+    def test_name_must_end_rid_with_delimiter_and_only_md_is_read(self):
+        """rd-123abc.md を rid=123 と誤読すると、本物の欠落を「ある」と数え取りこぼす。
+        .md 以外（画像・.bak など）は rid の候補にも読み取りの対象にもしない。"""
+        with tempfile.TemporaryDirectory() as d:
+            fx = Fixture(d)
+            _filler(fx.vault)
+            bm = os.path.join(fx.vault, "Explore", "bookmarks")
+            _write(os.path.join(bm, "rd-1860000120abc.md"), "区切りが無い\n")
+            _write(os.path.join(bm, "rd-1860000121.md.bak"), "退避\n")
+            _review(os.path.join(fx.reviews, "2026-09-10.html"),
+                    [_card(1860000120, "https://example.com/d1"),
+                     _card(1860000121, "https://example.com/d2")])
+            res = fx.gaps("2026-09-25")
+            self.assertEqual([r["rid"] for r in res["records"]], [1860000120, 1860000121])
+
+    def test_non_md_files_do_not_block_recovery(self):
+        """Vault に画像などの .md 以外があっても、読めない扱い（read_failed）にしない。"""
+        with tempfile.TemporaryDirectory() as d:
+            fx = Fixture(d)
+            _filler(fx.vault)
+            bm = os.path.join(fx.vault, "Explore", "bookmarks")
+            with io.open(os.path.join(bm, "cover.png"), "wb") as f:
+                f.write(b"\x89PNG\r\n\x1a\n\xff\xfe\x00binary")
+            _review(os.path.join(fx.reviews, "2026-09-10.html"),
+                    [_card(1860000122, "https://example.com/d3")])
+            res = fx.gaps("2026-09-25")
+            self.assertEqual(res["status"], "ok")
+            self.assertEqual([r["rid"] for r in res["records"]], [1860000122])
+
     def test_negative_synthetic_rid(self):
         with tempfile.TemporaryDirectory() as d:
             fx = Fixture(d)
@@ -373,6 +415,8 @@ class TestSinceAndLimit(unittest.TestCase):
             self.assertEqual([r["rid"] for r in res["records"]],
                              [1860000030, 1860000010, 1860000020, 1860000040, 1860000041])
             self.assertEqual(fx.gaps("2026-09-20", limit=0)["records"], [])
+            # 負の上限で「最後の1件以外」を選ばない（スライスの max(0, …) を守る）。
+            self.assertEqual(fx.gaps("2026-09-20", limit=-1)["records"], [])
 
 
 class TestMaterial(unittest.TestCase):
@@ -457,6 +501,34 @@ class TestCli(unittest.TestCase):
             self.assertIn("status=ok gaps=2 selected=1 ", text)
             self.assertIn("since=2026-09-01 limit=1", text)
             self.assertEqual([r["rid"] for r in _read_json(out)["records"]], [1860000102])
+
+    def test_malformed_since_falls_back_to_default(self):
+        with tempfile.TemporaryDirectory() as d:
+            fx = Fixture(d)
+            _filler(fx.vault)
+            _review(os.path.join(fx.reviews, "2026-09-19.html"),
+                    [_card(1860000124, "https://example.com/d5")])
+            rc, text = self._run(["--target", "2026-09-20", "--vault-dir", fx.vault,
+                                  "--reviews-dir", fx.reviews, "--captures", fx.captures,
+                                  "--since", "garbage"])
+            self.assertEqual(rc, 0)
+            self.assertIn("since=%s " % note_gaps.GAP_SINCE, text)
+            self.assertIn("status=ok gaps=1 selected=1 ", text)
+
+    def test_without_out_records_json_comes_first_then_one_status_line(self):
+        """--out 無しのときは records の JSON を標準出力に出し、最後に NOTE_GAPS 行を1行。"""
+        with tempfile.TemporaryDirectory() as d:
+            fx = Fixture(d)
+            _filler(fx.vault)
+            _review(os.path.join(fx.reviews, "2026-09-19.html"),
+                    [_card(1860000125, "https://example.com/d6")])
+            rc, text = self._run(["--target", "2026-09-20", "--vault-dir", fx.vault,
+                                  "--reviews-dir", fx.reviews, "--captures", fx.captures])
+            self.assertEqual(rc, 0)
+            body, _, status = text.rpartition("NOTE_GAPS:")
+            self.assertEqual([r["rid"] for r in json.loads(body)], [1860000125])
+            self.assertEqual(text.count("NOTE_GAPS:"), 1)
+            self.assertTrue(status.strip().startswith("target=2026-09-20 status=ok"))
 
     def test_malformed_target_falls_back_to_yesterday(self):
         """TARGET_OVERRIDE の打ち間違いをそのまま使うと、今夜の reviews を除外できない。"""
