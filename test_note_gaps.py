@@ -174,10 +174,26 @@ class TestVaultFailClosed(unittest.TestCase):
                     [_card(1860000006, "https://example.com/e")])
             res = fx.gaps("2026-09-20")
             self.assertEqual(res["status"], "vault_unreadable")
+            self.assertEqual(res["reason"], "no_dir")
             self.assertEqual(res["records"], [])
             res = note_gaps.find_gaps("2026-09-20", None, reviews_dir=fx.reviews,
                                       captures_path=fx.captures)
             self.assertEqual(res["status"], "vault_unreadable")
+            self.assertEqual(res["reason"], "no_dir")
+
+    def test_wrong_directory_levels_select_nothing(self):
+        """手順書の <Vaultリポのディレクトリ> を間違えても（1つ上・1つ下）何も選ばない。"""
+        with tempfile.TemporaryDirectory() as d:
+            fx = Fixture(d)
+            _filler(fx.vault)
+            _review(os.path.join(fx.reviews, "2026-09-19.html"),
+                    [_card(1860000006, "https://example.com/e")])
+            for wrong in (d, os.path.join(fx.vault, "Explore"),
+                          os.path.join(fx.vault, "Explore", "bookmarks")):
+                res = note_gaps.find_gaps("2026-09-20", wrong, reviews_dir=fx.reviews,
+                                          captures_path=fx.captures)
+                self.assertEqual((res["status"], res["records"], res["vault_notes"]),
+                                 ("vault_unreadable", [], 0), wrong)
 
     def test_too_few_notes_selects_nothing(self):
         """読み取りが途中で切れた等で件数が少ないときに、全部を「無い」と数えない。"""
@@ -188,10 +204,68 @@ class TestVaultFailClosed(unittest.TestCase):
                     [_card(1860000007, "https://example.com/f")])
             res = fx.gaps("2026-09-20")
             self.assertEqual(res["status"], "vault_unreadable")
+            self.assertEqual(res["reason"], "too_few:%d" % (note_gaps.MIN_VAULT_NOTES - 1))
             self.assertEqual(res["records"], [])
             _note(fx.vault, "rd-9999999-one-more.md", 9999999)
             self.assertEqual([r["rid"] for r in fx.gaps("2026-09-20")["records"]],
                              [1860000007])
+
+    def test_threshold_value_is_pinned(self):
+        """しきい値そのものを固定する（1 や 101 に変えられても他のテストは境界を
+        note_gaps.MIN_VAULT_NOTES から作るので気づけない）。"""
+        self.assertEqual(note_gaps.MIN_VAULT_NOTES, 100)
+
+    def test_unreadable_note_without_rid_in_filename_selects_nothing(self):
+        """rid をファイル名から取れず、中身も読めないノートがあると、その中に載っている
+        rid を「無い」と数えかねない。100件以上あっても何も選ばない（読めた分は
+        fail-closed にしない＝次のテストで確認）。"""
+        with tempfile.TemporaryDirectory() as d:
+            fx = Fixture(d)
+            _filler(fx.vault)
+            bad = os.path.join(fx.vault, "Explore", "bookmarks", "rd-renamed-note.md")
+            with io.open(bad, "wb") as f:
+                f.write(b"---\nraindrop_id: 1860000070\n\xff\xfe broken bytes\n---\n")
+            _review(os.path.join(fx.reviews, "2026-09-19.html"),
+                    [_card(1860000070, "https://example.com/s")])
+            res = fx.gaps("2026-09-20")
+            self.assertEqual(res["status"], "vault_unreadable")
+            self.assertEqual(res["reason"], "read_failed:1")
+            self.assertEqual(res["records"], [])
+
+    def test_unreadable_note_with_rid_in_filename_is_still_counted(self):
+        with tempfile.TemporaryDirectory() as d:
+            fx = Fixture(d)
+            _filler(fx.vault)
+            bad = os.path.join(fx.vault, "Explore", "bookmarks", "rd-1860000071-broken.md")
+            with io.open(bad, "wb") as f:
+                f.write(b"\xff\xfe not utf-8")
+            _review(os.path.join(fx.reviews, "2026-09-19.html"),
+                    [_card(1860000071, "https://example.com/t"),
+                     _card(1860000072, "https://example.com/u")])
+            res = fx.gaps("2026-09-20")
+            self.assertEqual(res["status"], "ok")
+            self.assertEqual([r["rid"] for r in res["records"]], [1860000072])
+
+    def test_directory_walk_failure_selects_nothing(self):
+        """フォルダの走査に失敗したとき（権限等）は、見えなかった側に rid があるかも
+        しれないので何も選ばない。"""
+        with tempfile.TemporaryDirectory() as d:
+            fx = Fixture(d)
+            _filler(fx.vault)
+            _review(os.path.join(fx.reviews, "2026-09-19.html"),
+                    [_card(1860000073, "https://example.com/v")])
+            real_walk = os.walk
+
+            def failing_walk(top, onerror=None, **kw):
+                if onerror is not None:
+                    onerror(PermissionError("denied"))
+                return real_walk(top, onerror=onerror, **kw)
+
+            with unittest.mock.patch.object(note_gaps.os, "walk", side_effect=failing_walk):
+                res = fx.gaps("2026-09-20")
+            self.assertEqual(res["status"], "vault_unreadable")
+            self.assertEqual(res["reason"], "read_failed:1")
+            self.assertEqual(res["records"], [])
 
 
 class TestVaultNoteDetection(unittest.TestCase):
@@ -213,6 +287,45 @@ class TestVaultNoteDetection(unittest.TestCase):
             _review(os.path.join(fx.reviews, "2026-09-19.html"),
                     [_card(1860000009, "https://example.com/h")])
             self.assertEqual(fx.gaps("2026-09-20")["records"], [])
+
+    def test_notes_in_subfolders_and_other_names_are_counted(self):
+        """手順7.5 の重複チェックは grep -r（サブフォルダも・ファイル名不問）。ここが
+        非再帰だと、そのノートを毎晩 gap と数えては重複チェックで飛ばし、古い順の
+        5枠を占有して、新しい本物の gap が回収されなくなる。"""
+        with tempfile.TemporaryDirectory() as d:
+            fx = Fixture(d)
+            _filler(fx.vault)
+            bm = os.path.join(fx.vault, "Explore", "bookmarks")
+            _note(fx.vault, os.path.join("archive", "old-1.md"), 1860000080)
+            _note(fx.vault, os.path.join("a", "b", "nested-2.md"), 1860000081)
+            _note(fx.vault, "manual-3.md", 1860000082)
+            _write(os.path.join(bm, "archive", "rd-1860000083-deep.md"), "中身なし\n")
+            _review(os.path.join(fx.reviews, "2026-09-10.html"),
+                    [_card(1860000080 + i, "https://example.com/w%d" % i) for i in range(4)])
+            _review(os.path.join(fx.reviews, "2026-09-20.html"),
+                    [_card(1860000099, "https://example.com/x")])
+            res = fx.gaps("2026-09-25")
+            self.assertEqual([r["rid"] for r in res["records"]], [1860000099])
+
+    def test_filename_and_frontmatter_variants(self):
+        """BOM 付き・行末コメント付き・slug の無い rd-<rid>.md も「ある」と数える
+        （数え落とすと Vault に重複ノートができる）。"""
+        with tempfile.TemporaryDirectory() as d:
+            fx = Fixture(d)
+            _filler(fx.vault)
+            bm = os.path.join(fx.vault, "Explore", "bookmarks")
+            with io.open(os.path.join(bm, "bom.md"), "wb") as f:
+                f.write("﻿---\nraindrop_id: 1860000090\n---\n".encode("utf-8"))
+            _write(os.path.join(bm, "comment.md"),
+                   "---\nraindrop_id: 1860000091   # 手で直した\n---\n")
+            _write(os.path.join(bm, "quoted.md"), "---\r\nraindrop_id: \"1860000092\"\r\n---\r\n")
+            _write(os.path.join(bm, "rd-1860000093.md"), "slug 無し\n")
+            _write(os.path.join(bm, "body-only.md"),
+                   "---\ntags: []\n---\n本文に raindrop_id: 1860000094 と書いただけ\n")
+            _review(os.path.join(fx.reviews, "2026-09-10.html"),
+                    [_card(1860000090 + i, "https://example.com/y%d" % i) for i in range(5)])
+            res = fx.gaps("2026-09-25")
+            self.assertEqual([r["rid"] for r in res["records"]], [1860000094])
 
     def test_negative_synthetic_rid(self):
         with tempfile.TemporaryDirectory() as d:
@@ -319,6 +432,93 @@ class TestCli(unittest.TestCase):
             self.assertEqual(rc, 0)
             self.assertIn("status=vault_unreadable gaps=0 selected=0", text)
             self.assertEqual(_read_json(out)["records"], [])
+
+    def test_args_are_wired_through_main(self):
+        """手順書は CLI で呼ぶ。--targets / --limit / --since が main から find_gaps へ
+        本当に渡っていること（find_gaps を直接呼ぶテストでは配線を壊しても緑になる）。"""
+        with tempfile.TemporaryDirectory() as d:
+            fx = Fixture(d)
+            _filler(fx.vault)
+            _review(os.path.join(fx.reviews, "2026-08-20.html"),
+                    [_card(1860000100, "https://example.com/c1")])
+            _review(os.path.join(fx.reviews, "2026-09-10.html"),
+                    [_card(1860000101, "https://example.com/c2"),
+                     _card(1860000102, "https://example.com/c3"),
+                     _card(1860000103, "https://example.com/c4")])
+            tpath = os.path.join(d, "targets.json")
+            _write(tpath, json.dumps({"rids": [1860000101]}))
+            out = os.path.join(d, "gaps.json")
+            rc, text = self._run(["--target", "2026-09-20", "--vault-dir", fx.vault,
+                                  "--reviews-dir", fx.reviews, "--captures", fx.captures,
+                                  "--targets", tpath, "--limit", "1", "--since", "2026-09-01",
+                                  "--out", out])
+            self.assertEqual(rc, 0)
+            # 08-20 は --since より前・1860000101 は --targets で除外 → 残り2件のうち limit=1。
+            self.assertIn("status=ok gaps=2 selected=1 ", text)
+            self.assertIn("since=2026-09-01 limit=1", text)
+            self.assertEqual([r["rid"] for r in _read_json(out)["records"]], [1860000102])
+
+    def test_malformed_target_falls_back_to_yesterday(self):
+        """TARGET_OVERRIDE の打ち間違いをそのまま使うと、今夜の reviews を除外できない。"""
+        with tempfile.TemporaryDirectory() as d:
+            fx = Fixture(d)
+            _filler(fx.vault)
+            rc, text = self._run(["--target", "garbage", "--vault-dir", fx.vault,
+                                  "--reviews-dir", fx.reviews, "--captures", fx.captures])
+            self.assertEqual(rc, 0)
+            self.assertIn("target=%s status=ok" % select_targets._default_target(), text)
+            self.assertNotIn("garbage", text)
+
+    def test_unwritable_out_is_not_reported_ok_and_old_out_is_removed(self):
+        """--out に書けなかったのに status=ok のままだと、前の夜の /tmp/note_gaps.json が
+        残っていたときに古い records をノートにしてしまう。"""
+        with tempfile.TemporaryDirectory() as d:
+            fx = Fixture(d)
+            _filler(fx.vault)
+            _review(os.path.join(fx.reviews, "2026-09-19.html"),
+                    [_card(1860000110, "https://example.com/z")])
+            out = os.path.join(d, "gaps.json")
+            _write(out, json.dumps({"status": "ok", "records": [{"rid": 1}]}))
+            os.makedirs(out + ".tmp")  # 一時ファイルを作れない状態にする
+            with unittest.mock.patch("sys.stderr", io.StringIO()):
+                rc, text = self._run(["--target", "2026-09-20", "--vault-dir", fx.vault,
+                                      "--reviews-dir", fx.reviews, "--captures", fx.captures,
+                                      "--out", out])
+            self.assertEqual(rc, 0)
+            self.assertIn("status=error gaps=1 selected=0 ", text)
+            self.assertIn("error=out_", text)
+            self.assertFalse(os.path.exists(out))
+
+    def test_missing_out_parent_is_error(self):
+        with tempfile.TemporaryDirectory() as d:
+            fx = Fixture(d)
+            _filler(fx.vault)
+            with unittest.mock.patch("sys.stderr", io.StringIO()):
+                rc, text = self._run(["--target", "2026-09-20", "--vault-dir", fx.vault,
+                                      "--reviews-dir", fx.reviews, "--captures", fx.captures,
+                                      "--out", os.path.join(d, "no", "such", "dir", "g.json")])
+            self.assertEqual(rc, 0)
+            self.assertIn("status=error", text)
+            self.assertIn("error=out_", text)
+
+    def test_bad_arguments_still_print_a_status_line_and_exit_zero(self):
+        """argparse は不正な引数で SystemExit(2) を投げる。行が出ないと無人エージェントは
+        status を判定できない。"""
+        for argv in (["--bogus", "1"], ["--limit", "abc"], ["--vault-dir"],
+                     ["--vault-dir", "/tmp/my", "vault"]):
+            with unittest.mock.patch("sys.stderr", io.StringIO()):
+                rc, text = self._run(argv)
+            self.assertEqual(rc, 0, argv)
+            self.assertIn("NOTE_GAPS: target=unknown status=error", text)
+            self.assertIn("error=bad_args", text)
+
+    def test_unreadable_vault_reports_reason(self):
+        with tempfile.TemporaryDirectory() as d:
+            fx = Fixture(d)
+            rc, text = self._run(["--target", "2026-09-20", "--vault-dir", d,
+                                  "--reviews-dir", fx.reviews, "--captures", fx.captures])
+            self.assertIn("status=vault_unreadable gaps=0 selected=0 vault_notes=0 ", text)
+            self.assertIn("reason=no_dir", text)
 
     def test_exception_still_exits_zero_with_empty_out(self):
         with tempfile.TemporaryDirectory() as d:

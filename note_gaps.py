@@ -21,16 +21,24 @@
 #     時点で今夜の reviews は書かれているが、まだ公開されておらず、そのノートは
 #     今夜の通常経路（手順3の選定）が作る。ここで拾うと二重に作る。
 #     --targets（手順3の /tmp/targets.json）に載っている rid も同じ理由で除く。
-#   - Vault が読めない／rd-*.md が MIN_VAULT_NOTES 件未満なら何も選ばない
-#     （読み取りの失敗を「全部ノートが無い」と取り違えて大量に作らない）。
-#   - ノートの有無はファイル名の rd-<rid>- と frontmatter の raindrop_id の両方で
-#     見る（frontmatter が壊れたノートを「無い」と数えて作り直さない）。
+#   - Vault が読めない／rd-*.md が MIN_VAULT_NOTES 件未満／rid をファイル名から取れない
+#     ノートが読めなかった／フォルダの走査に失敗した、のどれかなら何も選ばない
+#     （読み取りの失敗を「全部ノートが無い」と取り違えて大量に作らない）。理由は
+#     NOTE_GAPS 行の reason= に出る（no_dir / too_few:N / read_failed:N）。
+#   - ノートの有無はファイル名の rd-<rid> と frontmatter の raindrop_id の両方で
+#     見る（frontmatter が壊れたノートを「無い」と数えて作り直さない）。見る範囲は
+#     Explore/bookmarks/ の**サブフォルダも含む**（手順7.5 の重複チェックが grep -r で
+#     サブフォルダも見るのに揃える。揃えないと、サブフォルダにあるノートを毎晩 gap と
+#     数えては重複チェックで飛ばし、古い順の5枠を永久に占有して新しい gap が回収されない）。
 #   - GAP_SINCE より前に公開されたカードは数えない。1ブックマーク1ノート制
 #     （2026-08-04 決定）より前に公開された67件（最新は 08-03）は制度の外で、
 #     取りこぼしではない（2026-09-30 ユーザー裁定「08-05 以降」）。
 #   - 1晩の上限 --limit（既定5）。公開日の古い順→rid 順に選ぶ。
-#   - どんな失敗でも exit 0 で NOTE_GAPS 行を出し、--out には records が空の
-#     JSON を必ず書く（select_targets.py と同じく無人Routineを止めない）。
+#   - 例外・不正な引数・--out の書き込み失敗のどれでも exit 0 で NOTE_GAPS 行を出す
+#     （無人Routineを止めない）。例外のときは --out に records が空の JSON を書く。
+#     --out に書けなかったときは古い出力が使われないよう先に消してあり、行は
+#     status=error になる。--out の親フォルダが無い等で行そのものを出せない場合に備えて、
+#     手順書は「行が出ない・exit が0以外」も status=error と同じ扱いにする。
 #
 # 既知の限界:
 #   - Vault で意図的にノートを消すと、翌晩ここで作り直される（2026-09-30 時点で
@@ -45,7 +53,6 @@ import os
 import io
 import re
 import json
-import glob
 import html as html_module
 import argparse
 import traceback
@@ -62,41 +69,61 @@ GAP_SINCE = "2026-08-05"
 DEFAULT_LIMIT = 5
 MIN_VAULT_NOTES = 100
 
-_NAME_RID_RE = re.compile(r"^rd-(-?\d+)-")
-_FM_RID_RE = re.compile(r"^raindrop_id:\s*['\"]?(-?\d+)['\"]?\s*$", re.M)
+_NAME_RID_RE = re.compile(r"^rd-(-?\d+)(?:-|\.md$)")
+_FM_RID_RE = re.compile(r"^raindrop_id:\s*['\"]?(-?\d+)['\"]?[ \t]*(?:#[^\r\n]*)?\s*$", re.M)
 _DIV_CLASS_RE = r"""<div\b[^>]*\bclass\s*=\s*["'][^"']*\b%s\b[^"']*["'][^>]*>(.*?)</div>"""
 _TAG_RE = re.compile(r"<[^>]+>")
 _BUTTON_OPEN_RE = re.compile(r"<button\b[^>]*>")
 
 
 def vault_rids(vault_dir):
-    """Vaultリポの Explore/bookmarks/rd-*.md から rid 集合を作る。
+    """Vaultリポの Explore/bookmarks/（サブフォルダも含む）から rid 集合を作る。
 
-    戻り値: (rids: set[int], note_count: int, ok: bool)
-    ok=False は「読めない／少なすぎて信用できない」＝呼び出し側は何も選ばない。
+    戻り値: (rids: set[int], note_count: int, problem: str | None)
+    problem が None 以外は「読めない／信用できない」＝呼び出し側は何も選ばない。
+      no_dir        vault_dir が無い、または直下に Explore/bookmarks/ が無い
+      read_failed:N rid をファイル名から取れず、中身も読めなかった .md が N 個、
+                    またはフォルダの走査に失敗した（その中に rid が載っているかもしれない）
+      too_few:N     rd-*.md が MIN_VAULT_NOTES 件未満（N は実数）
+    note_count は rd-*.md の件数。ファイル名から rid が取れるノートは、中身が読めなくても
+    ファイル名だけで数える（読み取り失敗にはしない）。
     """
     if not vault_dir:
-        return set(), 0, False
+        return set(), 0, "no_dir"
     bm = os.path.join(vault_dir, "Explore", "bookmarks")
     if not os.path.isdir(bm):
-        return set(), 0, False
-    paths = sorted(glob.glob(os.path.join(bm, "rd-*.md")))
+        return set(), 0, "no_dir"
     rids = set()
-    for p in paths:
-        m = _NAME_RID_RE.match(os.path.basename(p))
-        if m:
-            rids.add(int(m.group(1)))
-        try:
-            with io.open(p, encoding="utf-8") as fh:
-                text = fh.read()
-        except (OSError, UnicodeDecodeError, ValueError):
-            continue  # ファイル名の rid だけで数える
-        if text.startswith("---"):
-            end = text.find("\n---", 3)
-            fm = text[3:end] if end != -1 else ""
-            for fm_m in _FM_RID_RE.finditer(fm):
-                rids.add(int(fm_m.group(1)))
-    return rids, len(paths), len(paths) >= MIN_VAULT_NOTES
+    note_count = 0
+    walk_errors = []
+    read_failed = 0
+    for root, _dirs, files in os.walk(bm, onerror=walk_errors.append):
+        for name in sorted(files):
+            if not name.endswith(".md"):
+                continue
+            if name.startswith("rd-"):
+                note_count += 1
+            m = _NAME_RID_RE.match(name)
+            if m:
+                rids.add(int(m.group(1)))
+            try:
+                with io.open(os.path.join(root, name), encoding="utf-8-sig") as fh:
+                    text = fh.read()
+            except (OSError, UnicodeDecodeError, ValueError):
+                if not m:
+                    read_failed += 1
+                continue  # ファイル名の rid だけで数える
+            if text.startswith("---"):
+                end = text.find("\n---", 3)
+                fm = text[3:end] if end != -1 else ""
+                for fm_m in _FM_RID_RE.finditer(fm):
+                    rids.add(int(fm_m.group(1)))
+    read_failed += len(walk_errors)
+    if read_failed:
+        return rids, note_count, "read_failed:%d" % read_failed
+    if note_count < MIN_VAULT_NOTES:
+        return rids, note_count, "too_few:%d" % note_count
+    return rids, note_count, None
 
 
 def _card_text(card_raw, cls):
@@ -175,11 +202,12 @@ def find_gaps(target, vault_dir, reviews_dir=st.REVIEWS_DIR,
               captures_path=st.CAPTURES, targets_path=None,
               since=GAP_SINCE, limit=DEFAULT_LIMIT):
     """回収対象を選ぶ本体。戻り値は dict（main が JSON化・STATUS整形する）。"""
-    rids_in_vault, note_count, vault_ok = vault_rids(vault_dir)
+    rids_in_vault, note_count, problem = vault_rids(vault_dir)
     base = {"target": target, "since": since, "limit": limit,
             "vault_notes": note_count, "gaps": 0, "records": []}
-    if not vault_ok:
+    if problem:
         base["status"] = "vault_unreadable"
+        base["reason"] = problem
         return base
 
     rid_dates, _url, _pid, unreadable = st.card_index(reviews_dir)
@@ -233,6 +261,8 @@ def _status_line(r, error=None):
             "since=%s limit=%d" % (r.get("target"), r.get("status"), r.get("gaps", 0),
                                    len(r.get("records", [])), r.get("vault_notes", 0),
                                    r.get("since"), r.get("limit", 0)))
+    if r.get("reason"):
+        line += " reason=%s" % r["reason"]
     if r.get("unreadable_reviews"):
         line += " warn=unreadable_reviews:%d" % len(r["unreadable_reviews"])
     if error:
@@ -250,9 +280,24 @@ def main(argv):
     parser.add_argument("--captures", default=st.CAPTURES)
     parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT)
     parser.add_argument("--since", default=GAP_SINCE)
-    args = parser.parse_args(argv)
-    target = args.target or st._default_target()
+    try:
+        args = parser.parse_args(argv)
+    except SystemExit as e:
+        if e.code in (0, None):  # --help
+            raise
+        # 不正な引数（argparse は SystemExit(2) で終わる）。行を出して無人Routineを止めない。
+        print("NOTE_GAPS: target=unknown status=error gaps=0 selected=0 vault_notes=0 "
+              "since=%s limit=0 error=bad_args" % GAP_SINCE)
+        return 0
+    # 形式の違う --target（TARGET_OVERRIDE の打ち間違い等）では、今夜の reviews を
+    # 除外できなくなる。手順1と同じく無視して昨日にする。
+    target = args.target if st.DATE_RE.match(args.target or "") else st._default_target()
     since = args.since if st.DATE_RE.match(args.since or "") else GAP_SINCE
+    if args.out:  # 書けなかったときに前回の出力が使われないよう、先に消す
+        try:
+            os.remove(args.out)
+        except OSError:
+            pass
     try:
         result = find_gaps(target, args.vault_dir, reviews_dir=args.reviews_dir,
                            captures_path=args.captures, targets_path=args.targets,
@@ -267,9 +312,10 @@ def main(argv):
         try:
             _write_out(args.out, {k: result.get(k) for k in
                                   ("target", "status", "since", "limit", "gaps", "records")})
-        except Exception as e:  # 書けなくても STATUS 行は出す
+        except Exception as e:  # 書けなくても STATUS 行は出す。ただし ok とは言わない
             traceback.print_exc(file=sys.stderr)
             error = error or ("out_" + type(e).__name__)
+            result = dict(result, status="error", records=[])
     elif result.get("records"):
         print(json.dumps(result["records"], ensure_ascii=False, indent=1))
     print(_status_line(result, error))
