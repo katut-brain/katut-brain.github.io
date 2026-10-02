@@ -11,6 +11,7 @@ import sys
 import tempfile
 import textwrap
 import unittest
+import unittest.mock
 from contextlib import redirect_stdout
 
 REPO_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -87,7 +88,7 @@ class TestCheckReviewStyle(_Dir):
         fixed = self.read()
         self.assertTrue(self.style_inner(fixed).lstrip().startswith(":root {"))
         self.assertNotIn("`", self.style_inner(fixed))
-        self.assertEqual(check_review_style._norm(self.style_inner(fixed)), check_review_style._norm(_css()))
+        self.assertTrue(check_review_style._same(self.style_inner(fixed), _css()))
         # <style> 要素の外は1バイトも変えない
         m_old = re.search(r"<style>.*?</style>", page, re.S)
         m_new = re.search(r"<style>.*?</style>", fixed, re.S)
@@ -124,15 +125,24 @@ class TestCheckReviewStyle(_Dir):
         self.assertEqual(line, "STYLE_CHECK: date=%s status=fixed reason=inserted" % DATE)
         fixed = self.read()
         self.assertLess(fixed.index("<style>"), fixed.index("</head>"))
-        self.assertEqual(check_review_style._norm(self.style_inner(fixed)), check_review_style._norm(_css()))
+        self.assertTrue(check_review_style._same(self.style_inner(fixed), _css()))
 
     def test_missing_style_without_fix(self):
         self.write(_page(""))
         rc, line = self.run_main()
         self.assertEqual((rc, line), (1, "STYLE_CHECK: date=%s status=mismatch reason=no_style" % DATE))
 
-    def test_no_style_no_head_is_error_and_untouched(self):
+    def test_no_head_but_body_inserts_before_body(self):
         page = "<!doctype html><html><body>x</body></html>\n"
+        self.write(page)
+        rc, line = self.run_main("--fix")
+        self.assertEqual(line, "STYLE_CHECK: date=%s status=fixed reason=inserted" % DATE)
+        fixed = self.read()
+        self.assertLess(fixed.index("<style>"), fixed.index("<body>"))
+        self.assertTrue(fixed.endswith("<body>x</body></html>\n"))
+
+    def test_no_style_no_head_no_body_is_error_and_untouched(self):
+        page = "<!doctype html><html>x</html>\n"
         self.write(page)
         rc, line = self.run_main("--fix")
         self.assertEqual((rc, line), (0, "STYLE_CHECK: date=%s status=error reason=no_style_no_head" % DATE))
@@ -155,11 +165,21 @@ class TestCheckReviewStyle(_Dir):
         self.assertTrue(fixed.endswith(tail))
         self.assertIn("\r\n", fixed)
 
-    def test_before_canonical_is_never_written(self):
-        # 2026-09-22 より前は古いテンプレートの世代。作り直しのランでも書き換えない
+    def _real_old_css(self, date):
+        """リポジトリに実在する古い世代のページから CSS を取り出す。"""
+        with io.open(os.path.join(REPO_DIR, "reviews", date + ".html"), encoding="utf-8", newline="") as fh:
+            t = fh.read()
+        found, _, _ = check_review_style._locate(t)
+        return t[found[1]:found[2]]
+
+    def test_before_canonical_old_generations_are_never_written(self):
+        # 2026-09-22 より前の、実在する2世代の CSS なら作り直しのランでも書き換えない
         old = "2026-09-21"
         path = os.path.join(self.reviews, old + ".html")
-        for page in (_page("<style>.vcard { display: flex; gap: 14px; }</style>"), _page("")):
+        for src in ("2026-06-12", "2026-09-21"):
+            css = self._real_old_css(src)
+            self.assertIn(check_review_style._fingerprint(css), check_review_style.KNOWN_OLD_GENERATIONS)
+            page = _page("<style>%s</style>" % css)
             with io.open(path, "w", encoding="utf-8", newline="") as fh:
                 fh.write(page)
             for extra in (["--fix"], []):
@@ -168,6 +188,153 @@ class TestCheckReviewStyle(_Dir):
                 self.assertEqual(rc, 0 if extra else 1)
                 with io.open(path, encoding="utf-8", newline="") as fh:
                     self.assertEqual(fh.read(), page)
+
+    def test_before_canonical_unknown_css_is_fixed(self):
+        # 線より前の日付でも、古い2世代のどちらでもない CSS（その夜に新しく作ったページ等）は揃える
+        old = "2026-09-20"
+        path = os.path.join(self.reviews, old + ".html")
+        with io.open(path, "w", encoding="utf-8", newline="") as fh:
+            fh.write(_page("<style>.vcard { display: flex; gap: 14px; }</style>"))
+        rc, line = self.run_main("--fix", date=old)
+        self.assertEqual(line, "STYLE_CHECK: date=%s status=fixed reason=replaced" % old)
+
+    def test_extra_style_in_head_is_reported_not_written(self):
+        page = _page("<style>\n%s</style>\n<style>:root { --bg: transparent; }</style>" % _css())
+        self.write(page)
+        for extra in (["--fix"], []):
+            rc, line = self.run_main(*extra)
+            self.assertEqual(line, "STYLE_CHECK: date=%s status=mismatch reason=extra_style:2" % DATE)
+            self.assertEqual(self.read(), page)
+
+    def test_nbsp_at_line_start_is_not_ignored(self):
+        # CSS では NBSP は識別子の文字。行頭の NBSP で規則が効かなくなるので ok にしない
+        css = _css().replace(".wrap {", " .wrap {", 1)
+        self.assertNotEqual(css, _css())
+        self.write(_page("<style>\n%s</style>" % css))
+        rc, line = self.run_main()
+        self.assertEqual(rc, 1)
+
+    def test_style_with_type_attribute_is_ok(self):
+        page = _page('<style type="text/css">\n%s</style>' % _css())
+        self.write(page)
+        rc, line = self.run_main("--fix")
+        self.assertEqual(line, "STYLE_CHECK: date=%s status=ok" % DATE)
+        self.assertEqual(self.read(), page)
+
+    def test_post_write_verification_blocks_a_bad_result(self):
+        # 置き換えた結果を読み直して、正規の <style> が head にちょうど1つ無ければ書かない
+        page = _page("<style>broken</style>")
+        self.write(page)
+        for bad in ("<style>still broken</style>",
+                    "<style>\n%s</style><style>.x{}</style>" % _css(),
+                    "<!-- -->"):
+            with unittest.mock.patch.object(check_review_style, "_element", lambda css, bad=bad: bad):
+                rc, line = self.run_main("--fix")
+            self.assertEqual((rc, line), (0, "STYLE_CHECK: date=%s status=error reason=verify_failed" % DATE), bad)
+            self.assertEqual(self.read(), page)
+
+    def test_os_replace_failure_keeps_file_and_leaves_no_temp(self):
+        # _write_atomic 自体は差し替えず、置き換えの瞬間だけ失敗させる
+        page = _page("<style>broken</style>")
+        self.write(page)
+        with unittest.mock.patch.object(check_review_style.os, "replace", side_effect=OSError("busy")):
+            rc, line = self.run_main("--fix")
+        self.assertEqual((rc, line), (0, "STYLE_CHECK: date=%s status=error reason=OSError" % DATE))
+        self.assertEqual(self.read(), page)
+        self.assertEqual(os.listdir(self.reviews), [DATE + ".html"])
+
+    def test_before_canonical_but_broken_is_fixed(self):
+        # 線より前でも、CSS が無い・地の文や HTML が混入しているなら直す（Codex 指摘 P1）
+        old = "2026-09-21"
+        path = os.path.join(self.reviews, old + ".html")
+        bad = re.search(r"<style>.*?</style>", _old_prompt_excerpt(), re.S).group(0)
+        for page, reason in ((_page(""), "inserted"), (_page(bad), "replaced"),
+                             (_page("<style>   </style>"), "replaced")):
+            with io.open(path, "w", encoding="utf-8", newline="") as fh:
+                fh.write(page)
+            rc, line = self.run_main("--fix", date=old)
+            self.assertEqual(line, "STYLE_CHECK: date=%s status=fixed reason=%s" % (old, reason))
+            with io.open(path, encoding="utf-8", newline="") as fh:
+                self.assertTrue(check_review_style._same(self.style_inner(fh.read()), _css()))
+
+    # --- HTML として読む（コメント・script・属性を本物の要素と取り違えない。Codex 指摘 P0/P1） ---
+
+    def test_canonical_inside_comment_does_not_hide_broken_style(self):
+        page = _page("<!-- <style>\n%s</style> -->\n<style>broken</style>" % _css())
+        self.write(page)
+        rc, line = self.run_main()
+        self.assertEqual((rc, line), (1, "STYLE_CHECK: date=%s status=mismatch" % DATE))
+        self.run_main("--fix")
+        fixed = self.read()
+        self.assertNotIn("broken", fixed)
+        self.assertIn("<!-- <style>\n%s</style> -->" % _css(), fixed)  # コメントは不変
+
+    def test_canonical_inside_script_does_not_hide_broken_style(self):
+        js = '<script>var s = "<style>%s</style>";</script>' % _css().replace("\n", " ")
+        page = _page(js + "\n<style>broken</style>")
+        self.write(page)
+        rc, line = self.run_main()
+        self.assertEqual(rc, 1)
+        self.run_main("--fix")
+        fixed = self.read()
+        self.assertIn(js, fixed)
+        self.assertNotIn("broken", fixed)
+
+    def test_broken_string_in_script_is_not_touched_when_real_style_is_canonical(self):
+        js = '<script>var s = "<style>broken</style>";</script>'
+        page = _page(js + "\n<style>\n%s</style>" % _css())
+        self.write(page)
+        rc, line = self.run_main("--fix")
+        self.assertEqual(line, "STYLE_CHECK: date=%s status=ok" % DATE)
+        self.assertEqual(self.read(), page)
+
+    def test_head_end_inside_script_is_not_the_insert_point(self):
+        js = '<script>var marker = "</head>";</script>'
+        page = _page(js)
+        self.write(page)
+        rc, line = self.run_main("--fix")
+        self.assertEqual(line, "STYLE_CHECK: date=%s status=fixed reason=inserted" % DATE)
+        fixed = self.read()
+        self.assertIn(js, fixed)  # script は不変
+        real_head_end = fixed.index("</head>", fixed.index(js) + len(js))
+        self.assertLess(fixed.index("<style>\n:root"), real_head_end)
+        self.assertGreater(fixed.index("<style>\n:root"), fixed.index(js))
+
+    def test_attribute_with_gt_and_uppercase_tag(self):
+        page = _page('<STYLE data-note="a > b">\n%s</STYLE>' % _css())
+        self.write(page)
+        rc, line = self.run_main()
+        self.assertEqual((rc, line), (0, "STYLE_CHECK: date=%s status=ok" % DATE))
+        page = _page('<STYLE data-note="a > b">broken</STYLE>')
+        self.write(page)
+        self.run_main("--fix")
+        fixed = self.read()
+        self.assertNotIn("broken", fixed)
+        self.assertNotIn("data-note", fixed)  # 素の <style> にする
+
+    def test_style_only_in_body_counts_as_missing_in_head(self):
+        page = _page("", body="<style>.x{}</style><p>本文</p>")
+        self.write(page)
+        rc, line = self.run_main("--fix")
+        self.assertEqual(line, "STYLE_CHECK: date=%s status=fixed reason=inserted" % DATE)
+        fixed = self.read()
+        self.assertLess(fixed.index("<style>\n:root"), fixed.index("</head>"))
+        self.assertIn("<style>.x{}</style><p>本文</p>", fixed)
+
+    def test_unclosed_style_is_error_and_untouched(self):
+        page = '<!doctype html><html><head><style>:root{}\n</head><body><div class="vcard">x</div></body></html>\n'
+        self.write(page)
+        rc, line = self.run_main("--fix")
+        self.assertEqual((rc, line), (0, "STYLE_CHECK: date=%s status=error reason=unclosed_style" % DATE))
+        self.assertEqual(self.read(), page)
+
+    def test_space_inside_a_value_is_compared(self):
+        # 空白を無視するのは行の前後と空行だけ。行の中の空白は CSS の値になりうるので比べる
+        css = _css().replace("font-size: 15px;", "font-size:  15px;", 1)
+        self.assertNotEqual(css, _css())
+        self.write(_page("<style>\n%s</style>" % css))
+        rc, line = self.run_main()
+        self.assertEqual(rc, 1)
 
     def test_canonical_since_boundary_is_fixed(self):
         d = check_review_style.CANONICAL_SINCE
@@ -216,6 +383,66 @@ class TestCheckReviewStyle(_Dir):
         self.assertEqual(os.listdir(self.reviews), [DATE + ".html"])
 
 
+class TestGateAll(_Dir):
+    """公開ゲート（build-feed.yml）用の --all --github。書かない・警告だけ。"""
+
+    def _put(self, date, page):
+        with io.open(os.path.join(self.reviews, date + ".html"), "w", encoding="utf-8", newline="") as fh:
+            fh.write(page)
+        return page
+
+    def _run_all(self, *extra):
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = check_review_style.main(["--all", "--github", "--reviews-dir", self.reviews] + list(extra))
+        return rc, buf.getvalue().splitlines()
+
+    def test_warns_only_for_broken_days_and_never_writes(self):
+        good = self._put("2026-09-30", _page("<style>\n%s</style>" % _css()))
+        broken = self._put("2026-09-29", _page("<style>broken</style>"))
+        old = self._put("2026-06-01", _page("<style>.vcard{}</style>"))  # since より前は見ない
+        rc, lines = self._run_all()
+        self.assertEqual(rc, 1)
+        warns = [l for l in lines if l.startswith("::warning")]
+        self.assertEqual(warns, ["::warning title=review-style::STYLE_CHECK: date=2026-09-29 status=mismatch"])
+        self.assertIn("STYLE_CHECK_SUMMARY: since=2026-09-22 warnings=1", lines)
+        self.assertFalse(any("2026-06-01" in l for l in lines))
+        for d, page in (("2026-09-30", good), ("2026-09-29", broken), ("2026-06-01", old)):
+            with io.open(os.path.join(self.reviews, d + ".html"), encoding="utf-8", newline="") as fh:
+                self.assertEqual(fh.read(), page)
+
+    def test_all_ok_is_exit_0_without_warning(self):
+        self._put("2026-09-30", _page("<style>\n%s</style>" % _css()))
+        rc, lines = self._run_all()
+        self.assertEqual(rc, 0)
+        self.assertFalse(any(l.startswith("::warning") for l in lines))
+
+    def test_since_and_old_generation(self):
+        # --since を下げても、古い2世代の CSS は警告しない（before_canonical）
+        # 06-12 の世代は補修用の2つ目の <style> を元から持つが、それでも警告しない
+        for d in ("2026-06-12", "2026-09-21"):
+            with io.open(os.path.join(REPO_DIR, "reviews", d + ".html"), encoding="utf-8", newline="") as fh:
+                self._put(d, fh.read())
+        rc, lines = self._run_all("--since", "2026-06-01")
+        self.assertEqual(rc, 0, lines)
+        for d in ("2026-06-12", "2026-09-21"):
+            self.assertIn("STYLE_CHECK: date=%s status=mismatch reason=before_canonical" % d, lines)
+
+    def test_all_with_fix_or_date_is_rejected(self):
+        for extra in (["--fix"], ["--date", "2026-09-29"], ["--since", "bad"]):
+            rc, lines = self._run_all(*extra)
+            self.assertEqual(rc, 1, extra)
+            self.assertEqual(lines, ["STYLE_CHECK: date=- status=error reason=bad_args"])
+
+    def test_build_feed_runs_the_gate_as_warning_only(self):
+        with io.open(os.path.join(REPO_DIR, ".github", "workflows", "build-feed.yml"), encoding="utf-8") as fh:
+            yml = fh.read()
+        m = re.search(r"- name: Check review CSS\n\s+continue-on-error: true\n\s+run: (.+)\n", yml)
+        self.assertIsNotNone(m, "build-feed.yml に CSS 検査の警告ステップが無い")
+        self.assertIn("check_review_style.py --all --github", m.group(1))
+        self.assertNotIn("--fix", m.group(1))
+
+
 class TestCanonicalCss(unittest.TestCase):
     def test_css_file_starts_with_light_root(self):
         css = _css()
@@ -242,6 +469,10 @@ class TestRoutinePrompt(unittest.TestCase):
         # 手順書に CSS 本体が残っていると、また抜き出し方の即興が生まれる
         self.assertNotIn("--bg: #ffffff", self.text)
         self.assertNotRegex(self.text, r"(?m)^\s*<style>\s*$")
+
+    def test_prompt_has_no_extractable_style_pair(self):
+        # 2026-09-29 と同じ抜き出し方を今の手順書に当てても、何も取れないこと
+        self.assertIsNone(re.search(r"<style\b[^>]*>.*?</style", self.text, re.S | re.I))
 
     def test_step5_points_to_css_file(self):
         self.assertIn("review_style.css", self._step("5.", "6."))
