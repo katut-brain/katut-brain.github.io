@@ -337,13 +337,14 @@ jobs:
       # 正規表現で CSS を抜き出して地の文が混入）の再発検知。手順7の
       # check_review_style.py --fix が通常は直すので、ここで出るのは手順7を
       # 飛ばした夜など。判定ロジックの正本は check_review_style.py 側（正規の
-      # CSS は review_style.css）。--since の既定は 2026-09-22（今の CSS の世代の
-      # 始まり。それより前は古い世代の指紋に一致すれば警告しない）。
+      # CSS は review_style.css）。--since 2026-06-01 で公開中の全日付を見る
+      # （2026-09-22 より前の日付は、古い2世代の CSS の指紋に一致すれば警告しない。
+      # それより前の日付を作り直して CSS を壊した夜も、ここで拾える）。
       # 警告のみ・公開を止めない（開示チェックのユーザー裁定 2026-09-15 に揃えた）:
       # continue-on-error により、このステップが失敗しても以降は従来どおり進む。
       - name: Check review CSS
         continue-on-error: true
-        run: python check_review_style.py --all --github
+        run: python check_review_style.py --all --since 2026-06-01 --github
 
       # 無人ランの所要時間の異常膨張検知（capture-pipeline 成功条件(b)）。
       # run_timing.py が reviews/*.html に書く run-timing コメントを読み、

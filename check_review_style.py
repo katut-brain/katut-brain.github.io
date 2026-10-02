@@ -20,7 +20,12 @@
 #   正規表現でなく標準ライブラリの html.parser で読む。コメント・<script> の中・属性値に
 #   書かれた "<style>" や "</head>" を本物と取り違えないため（2026-10-02 の Codex 指摘）。
 #   対象は <head> の中（</head> も <body> も無ければ文書全体）で最初の <style> 要素。
+#   <template>・<noscript> の中の <style> は画面に効かないので数えない。<style/> と閉じていない
+#   <style> は、置き換えると本文まで消えうるので書かない（error）。明示的な <head> より前の
+#   <style> は head の中として扱う（HTML の仕様で、そこで head が暗黙に始まり、後の <head> は無視される）。
 #   挿入先は本物の </head> の直前（無ければ <body> の直前）。
+#   中身が正規でも、属性が付いている（type="text/css" だけは可）と ok にしない（media="print"
+#   などで画面に効かないことがある）。--fix で素の <style> に揃える（reason=style_attrs）。
 #
 # 判定:
 #   最初の <style> 要素の中身と review_style.css を、各行の前後の空白と空行だけを無視して
@@ -64,6 +69,7 @@ import os
 import re
 import sys
 import tempfile
+import time
 from html.parser import HTMLParser
 
 REPO_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -105,33 +111,51 @@ def _element(css):
     return "<style>\n" + css.rstrip("\n") + "\n</style>"
 
 
+INERT_TAGS = ("template", "noscript")  # 中の <style> は画面に効かないので数えない
+
+
 class _Locator(HTMLParser):
     """本物の <style> 要素・</head>・<body> の位置を (行, 桁) で記録する。"""
 
     def __init__(self):
         super().__init__(convert_charrefs=False)
-        self.styles = []          # [(開始タグの位置, 開始タグの文字列, 終了タグの位置 or None)]
+        # [開始タグの位置, 開始タグの文字列, 終了タグの位置 or None, 属性]
+        self.styles = []
+        self.self_closed = []     # <style/> の位置（ブラウザは閉じタグまでを CSS とみなす）
         self.head_end = None
         self.body_start = None
         self._open = None
+        self._inert = 0
 
     def handle_starttag(self, tag, attrs):
-        if tag == "style":
-            self._open = [self.getpos(), self.get_starttag_text(), None]
+        if tag in INERT_TAGS:
+            self._inert += 1
+        elif tag == "style" and not self._inert:
+            self._open = [self.getpos(), self.get_starttag_text(), None, attrs]
             self.styles.append(self._open)
         elif tag == "body" and self.body_start is None:
             self.body_start = self.getpos()
 
     def handle_startendtag(self, tag, attrs):
-        if tag == "body" and self.body_start is None:
+        if tag == "style" and not self._inert:
+            self.self_closed.append(self.getpos())
+        elif tag == "body" and self.body_start is None:
             self.body_start = self.getpos()
 
     def handle_endtag(self, tag):
-        if tag == "style" and self._open is not None:
+        if tag in INERT_TAGS:
+            self._inert = max(0, self._inert - 1)
+        elif tag == "style" and self._open is not None:
             self._open[2] = self.getpos()
             self._open = None
         elif tag == "head" and self.head_end is None:
             self.head_end = self.getpos()
+
+
+def _attrs_ok(attrs):
+    """画面に効く素の <style> か（属性なし、または type="text/css" だけ）。"""
+    norm = [(k.lower(), (v or "").strip().lower()) for k, v in attrs]
+    return not norm or norm == [("type", "text/css")]
 
 
 class _Unclosed(Exception):
@@ -148,8 +172,10 @@ def _offsets(text):
 def _locate(text):
     """head の中の <style> を探す。
 
-    戻り値: (最初の style の (開始, 中身の開始, 中身の終了, 要素の終了) or None,
+    戻り値: (最初の style の (開始, 中身の開始, 中身の終了, 要素の終了, 属性) or None,
              挿入位置 or None, head の中の style 要素の数)
+    <template>・<noscript> の中の style は数えない。<style/> と閉じていない <style> は
+    _Unclosed を投げる（置き換えると本文まで消えうるので触らない）。
     """
     p = _Locator()
     p.feed(text)
@@ -160,19 +186,22 @@ def _locate(text):
         limit = off(p.head_end)
     elif p.body_start is not None:
         limit = off(p.body_start)
+    for pos in p.self_closed:
+        if limit is None or off(pos) < limit:
+            raise _Unclosed()
     found = None
     count = 0
-    for start_pos, start_text, end_pos in p.styles:
+    for start_pos, start_text, end_pos, attrs in p.styles:
         s = off(start_pos)
         if limit is not None and s >= limit:
             break
-        if end_pos is None:  # 閉じていない <style>。置き換えると本文まで消えるので触らない
+        if end_pos is None:
             raise _Unclosed()
         count += 1
         if found is None:
             e = off(end_pos)
             close = text.find(">", e)
-            found = (s, s + len(start_text), e, (close + 1) if close != -1 else len(text))
+            found = (s, s + len(start_text), e, (close + 1) if close != -1 else len(text), attrs)
     return found, limit, count
 
 
@@ -195,10 +224,13 @@ def check(path, date, fix):
     if count > 1:
         # 2つ目の <style> が正規の規則を上書きしうる。どれを残すかは機械で決めない
         return "mismatch", "extra_style:%d" % count, None
-    if current is not None and _same(current, css):
+    attrs_ok = found is None or _attrs_ok(found[4])
+    if current is not None and _same(current, css) and attrs_ok:
         return "ok", None, None
     if not fix:
-        return "mismatch", (None if current is not None else "no_style"), None
+        if current is None:
+            return "mismatch", "no_style", None
+        return "mismatch", (None if attrs_ok else "style_attrs"), None
     if found:
         new_text, reason = text[:found[0]] + _element(css) + text[found[3]:], "replaced"
     elif insert_at is not None:
@@ -210,9 +242,23 @@ def check(path, date, fix):
         again, _, again_count = _locate(new_text)
     except _Unclosed:
         again, again_count = None, 0
-    if not again or again_count != 1 or not _same(new_text[again[1]:again[2]], css):
+    if (not again or again_count != 1 or not _attrs_ok(again[4])
+            or not _same(new_text[again[1]:again[2]], css)):
         return "error", "verify_failed", None
     return "fixed", reason, new_text
+
+
+def _replace_with_retry(src, dst, attempts=5):
+    # Windows では書いた直後のファイルをウイルス対策ソフト等が掴み、置き換えが一時的に
+    # PermissionError になることがある（2026-10-02 実測・300回中102回）。数回だけやり直す
+    for i in range(attempts):
+        try:
+            os.replace(src, dst)
+            return
+        except PermissionError:
+            if i == attempts - 1:
+                raise
+            time.sleep(0.05 * (i + 1))
 
 
 def _write_atomic(path, text):
@@ -221,7 +267,7 @@ def _write_atomic(path, text):
     try:
         with io.open(fd, "w", encoding="utf-8", newline="") as fh:
             fh.write(text)
-        os.replace(tmp, path)
+        _replace_with_retry(tmp, path)
     except BaseException:
         if os.path.exists(tmp):
             os.remove(tmp)

@@ -227,6 +227,7 @@ class TestCheckReviewStyle(_Dir):
         self.write(page)
         for bad in ("<style>still broken</style>",
                     "<style>\n%s</style><style>.x{}</style>" % _css(),
+                    '<style media="print">\n%s</style>' % _css(),
                     "<!-- -->"):
             with unittest.mock.patch.object(check_review_style, "_element", lambda css, bad=bad: bad):
                 rc, line = self.run_main("--fix")
@@ -301,8 +302,16 @@ class TestCheckReviewStyle(_Dir):
         self.assertGreater(fixed.index("<style>\n:root"), fixed.index(js))
 
     def test_attribute_with_gt_and_uppercase_tag(self):
+        # 大文字のタグも、引用符の中の ">" も正しく読む（中身は正規と判定される）。
+        # ただし属性付きは画面に効かないことがあるので ok にせず、--fix で素の <style> に揃える
         page = _page('<STYLE data-note="a > b">\n%s</STYLE>' % _css())
         self.write(page)
+        rc, line = self.run_main()
+        self.assertEqual((rc, line), (1, "STYLE_CHECK: date=%s status=mismatch reason=style_attrs" % DATE))
+        rc, line = self.run_main("--fix")
+        self.assertEqual(line, "STYLE_CHECK: date=%s status=fixed reason=replaced" % DATE)
+        self.assertNotIn("data-note", self.read())
+        self.write(_page('<STYLE>\n%s</STYLE>' % _css()))
         rc, line = self.run_main()
         self.assertEqual((rc, line), (0, "STYLE_CHECK: date=%s status=ok" % DATE))
         page = _page('<STYLE data-note="a > b">broken</STYLE>')
@@ -311,6 +320,72 @@ class TestCheckReviewStyle(_Dir):
         fixed = self.read()
         self.assertNotIn("broken", fixed)
         self.assertNotIn("data-note", fixed)  # 素の <style> にする
+
+    def test_media_print_and_inert_containers_are_not_ok(self):
+        # media="print" の <style>、<template>・<noscript> の中の <style> は画面に効かない
+        # （2周目の指摘: Codex P0・Claude P2）
+        canon = "<style>\n%s</style>" % _css()
+        cases = [
+            ('<style media="print">\n%s</style>' % _css(), "replaced"),
+            ("<template>%s</template>" % canon, "inserted"),
+            ("<noscript>%s</noscript>" % canon, "inserted"),
+        ]
+        for head, reason in cases:
+            page = _page(head)
+            self.write(page)
+            rc, line = self.run_main()
+            self.assertEqual(rc, 1, head[:30])
+            self.run_main("--fix")
+            fixed = self.read()
+            rc, line = self.run_main()
+            self.assertEqual(line, "STYLE_CHECK: date=%s status=ok" % DATE, head[:30])
+            if reason == "inserted":
+                self.assertIn(head, fixed)  # 中身の効かない要素は残したまま、本物を足す
+            else:
+                self.assertNotIn('media="print"', fixed)
+
+    def test_broken_style_inside_template_is_ignored(self):
+        page = _page("<template><style>broken</style></template>\n<style>\n%s</style>" % _css())
+        self.write(page)
+        rc, line = self.run_main("--fix")
+        self.assertEqual(line, "STYLE_CHECK: date=%s status=ok" % DATE)
+        self.assertEqual(self.read(), page)
+
+    def test_self_closed_style_is_error_and_untouched(self):
+        # ブラウザは <style/> を開始タグとみなし、閉じタグまでを CSS にする。触らない
+        page = _page("<style/>\n<style>\n%s</style>" % _css())
+        self.write(page)
+        rc, line = self.run_main("--fix")
+        self.assertEqual((rc, line), (0, "STYLE_CHECK: date=%s status=error reason=unclosed_style" % DATE))
+        self.assertEqual(self.read(), page)
+
+    def test_style_before_explicit_head_counts_as_head(self):
+        # HTML の仕様: <head> より前の <style> で head が暗黙に始まり、後の <head> は無視される。
+        # なのでその <style> は head の中として扱って正しい（2周目 Codex P1 は採らない）
+        page = "<!doctype html><html><style>broken</style><head><title>t</title></head><body>x</body></html>\n"
+        self.write(page)
+        rc, line = self.run_main("--fix")
+        self.assertEqual(line, "STYLE_CHECK: date=%s status=fixed reason=replaced" % DATE)
+        self.assertTrue(self.read().startswith("<!doctype html><html><style>\n:root {"))
+
+    def test_permission_error_on_replace_is_retried(self):
+        page = _page("<style>broken</style>")
+        self.write(page)
+        real = check_review_style.os.replace
+        calls = []
+
+        def flaky(src, dst):
+            calls.append(1)
+            if len(calls) < 3:
+                raise PermissionError("locked")
+            return real(src, dst)
+
+        with unittest.mock.patch.object(check_review_style.os, "replace", flaky), \
+                unittest.mock.patch.object(check_review_style.time, "sleep", lambda s: None):
+            rc, line = self.run_main("--fix")
+        self.assertEqual(line, "STYLE_CHECK: date=%s status=fixed reason=replaced" % DATE)
+        self.assertEqual(len(calls), 3)
+        self.assertEqual(os.listdir(self.reviews), [DATE + ".html"])
 
     def test_style_only_in_body_counts_as_missing_in_head(self):
         page = _page("", body="<style>.x{}</style><p>本文</p>")
@@ -439,7 +514,7 @@ class TestGateAll(_Dir):
             yml = fh.read()
         m = re.search(r"- name: Check review CSS\n\s+continue-on-error: true\n\s+run: (.+)\n", yml)
         self.assertIsNotNone(m, "build-feed.yml に CSS 検査の警告ステップが無い")
-        self.assertIn("check_review_style.py --all --github", m.group(1))
+        self.assertIn("check_review_style.py --all --since 2026-06-01 --github", m.group(1))
         self.assertNotIn("--fix", m.group(1))
 
 
