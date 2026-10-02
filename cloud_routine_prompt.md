@@ -564,20 +564,17 @@
    - 共通: 送信が一時失敗しても、自分で打つ `git push` にも `push_files` にも**戻らない**。`push_via_branch.sh` を2回まで、それでもダメならその夜は諦める（`WRITE_COMMIT: <sha>` が出た後は再実行しない）。**押せなかった日の保存は、翌晩の手順3 が同じ保存をまた選ぶ**（reviews が公開されていないので「どの reviews にも載っていない保存」のまま。`captures.json` に保存があるのに reviews が無い日は手順2.1 が検出するが、手順2.1 自体は回収しない）。
 8.5. **公開（Vaultリポへ・ブックマークノート）**（手順7.5でノートを新規作成した場合のみ実行）：対象は `katut-brain/obsidian-vault` リポ（手順8の `katut-brain.github.io` とは別リポ）。
    - 押すファイルは、手順7.5でスキーマ検証に**合格**し新規作成した `Explore/bookmarks/rd-*.md` のみ（検証落ちのファイル・既存ファイルは含めない）。
-   - ⚠️ **今夜は書き込み経路を変えない。従来どおり `push_files` で押す**（2026-09-09 の裁定）。Vaultリポに `gh api` が届くかがまだ確認できていないため、確認が取れるまで動かさない。
-   - **ただし、届くかどうかだけ先に測る**（読み取りのみ・何も書かない）：
+   - **押し方は `push_files`**（Vaultリポには手順8の `push_via_branch.sh` に当たる経路が無い。API 経由の書き込みはプロキシに拒否される＝2026-09-14）。
+   - **押した後に必ず照合する**（2026-10-02 変更）。Vaultリポのクローンで main を取り込み直し、main に載った実体と手元のファイルをバイト単位で比べる：
      ```bash
-     bash push_via_api.sh --verify-only katut-brain/obsidian-vault RULES.md
+     python3 verify_vault_push.py --repo-dir <Vaultリポのディレクトリ> <押したパス> [<押したパス> ...]
      ```
-     `RULES.md` はクローンにあり今回のランで触っていないので、ローカルとリモートが一致するはず。
-     - `verify=match` → **Vaultリポにも API が届く**。次のセッションで手順8.5 を手順8と同じ経路へ切り替えられる
-     - `verify=unreadable` → 届かない（公式仕様の「セッションに紐付いていないリポには 403」に該当する可能性が高い）
-     - **どちらでも手順は止めない。** これは測るだけの行で、結果はログに残せばよい
-   - 押した後は、手順8と同じく `--verify-only` で照合する：
-     ```bash
-     bash push_via_api.sh --verify-only katut-brain/obsidian-vault <押したパス>
-     ```
-     `verify=match` なら完了。`MISMATCH` なら押し直して再照合し、2回目も駄目なら諦めて `WRITE_PATH: <パス> fallback=push_files verify=GIVEUP` を残す。`unreadable` なら照合できないので `verify=UNCHECKED` と残す（成功と書かない）。
+     - **`<Vaultリポのディレクトリ>`** は手順7.5 でノートを書いたのと同じクローンのルート。**`<押したパス>`** はそのルートからの相対パス（`Explore/bookmarks/rd-<rid>-<slug>.md` の形）で、今夜押したノートを全部並べる。`<` `>` は置き換える記法なので、そのまま打たない。パスは `--repo-dir` から解決するので、このコマンドは公開リポのディレクトリのまま実行してよい。
+     - 1ファイル1行の `WRITE_PATH: <パス> verify=...` と、最後に `VERIFY_SUMMARY:` の1行が出る。**全件 `verify=match` で exit 0 のときだけ完了**。`WRITE_PATH:` と `VERIFY_SUMMARY:` の行は削らずランのログに残す。
+     - `verify=MISMATCH` または `verify=missing_remote`（main にそのパスが無い）の件は、**その件だけ** `push_files` で押し直し、同じコマンドで再照合する。2回目も駄目なら諦めて `WRITE_PATH: <パス> fallback=push_files verify=GIVEUP` を残す。
+     - `verify=skipped reason=local_file_missing` または `reason=outside_repo` は、パスの書き方の誤り（ルートからの相対パスになっていない・別のディレクトリを指している）。パスを直して1回だけ呼び直す。
+     - `verify=unreadable`（`reason=fetch_failed`＝main を取り込めなかった／`reason=not_a_repo`＝`--repo-dir` がクローンでない）なら照合できないので、`verify=UNCHECKED` と残す（成功と書かない）。`not_a_repo` のときだけ、ディレクトリを確かめて1回だけ呼び直してよい。
+     - 旧版はここで `push_via_api.sh --verify-only` を使っていたが、あのスクリプトは照合元のファイルを**実行したディレクトリから**探すので、公開リポで実行すると Vault のパスは必ず `local_file_missing` になり、2026-09-29〜10-01 の3晩とも照合が成立していなかった。同じ理由で一度も測れていなかった読み取りの疎通確認（`RULES.md`）は、切り替え先の API 書き込み経路が無いと分かっている（2026-09-14）ので廃止した。
    - コミットメッセージは `bookmark notes: <TARGET> (N件)` 形式。
    - ⚠️ **Vaultリポ側には Actions の検証ゲートが1本も無い**（`total_count: 0`・2026-09-08 実測）。公開リポと違って、壊れたノートを押しても誰も止めない。しかもローカルVaultへは Obsidian Git プラグインが10分以内に取り込む。**照合を省くとそのまま外部脳に入る**ので、上の照合は必ず行うこと。
    - push 対象ノートが0件（新規0件・全件重複スキップ・全件検証落ちのいずれか）の場合は、このpushを行わない。
