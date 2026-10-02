@@ -569,14 +569,18 @@
      ```bash
      python3 verify_vault_push.py --repo-dir <Vaultリポのディレクトリ> <押したパス> [<押したパス> ...]
      ```
-     - **`<Vaultリポのディレクトリ>`** は手順7.5 でノートを書いたのと同じクローンのルート。**`<押したパス>`** はそのルートからの相対パス（`Explore/bookmarks/rd-<rid>-<slug>.md` の形）で、今夜押したノートを全部並べる。`<` `>` は置き換える記法なので、そのまま打たない。パスは `--repo-dir` から解決するので、このコマンドは公開リポのディレクトリのまま実行してよい。
-     - 1ファイル1行の `WRITE_PATH: <パス> verify=...` と、最後に `VERIFY_SUMMARY:` の1行が出る。**全件 `verify=match` で exit 0 のときだけ完了**。`WRITE_PATH:` と `VERIFY_SUMMARY:` の行は削らずランのログに残す。
-     - `verify=MISMATCH` または `verify=missing_remote`（main にそのパスが無い）の件は、**その件だけ** `push_files` で押し直し、同じコマンドで再照合する。2回目も駄目なら諦めて `WRITE_PATH: <パス> fallback=push_files verify=GIVEUP` を残す。
-     - `verify=skipped reason=local_file_missing` または `reason=outside_repo` は、パスの書き方の誤り（ルートからの相対パスになっていない・別のディレクトリを指している）。パスを直して1回だけ呼び直す。
-     - `verify=unreadable`（`reason=fetch_failed`＝main を取り込めなかった／`reason=not_a_repo`＝`--repo-dir` がクローンでない）なら照合できないので、`verify=UNCHECKED` と残す（成功と書かない）。`not_a_repo` のときだけ、ディレクトリを確かめて1回だけ呼び直してよい。
-     - 旧版はここで `push_via_api.sh --verify-only` を使っていたが、あのスクリプトは照合元のファイルを**実行したディレクトリから**探すので、公開リポで実行すると Vault のパスは必ず `local_file_missing` になり、2026-09-29〜10-01 の3晩とも照合が成立していなかった。同じ理由で一度も測れていなかった読み取りの疎通確認（`RULES.md`）は、切り替え先の API 書き込み経路が無いと分かっている（2026-09-14）ので廃止した。
+     - **実行するのは公開リポのディレクトリ**（手順8と同じ場所。`verify_vault_push.py` は公開リポ直下にある）。手順7.5 の重複チェックなどで Vault のクローンに `cd` したままなら、先に公開リポへ戻る。パスは `--repo-dir` から解決するので、Vault 側のパスは公開リポにいても正しく照合できる。
+     - **`<Vaultリポのディレクトリ>`** は手順7.5 でノートを書いたのと同じクローンのルート（`Explore/bookmarks` ではなく、その2つ上）。**`<押したパス>`** はそのルートからの相対パス（`Explore/bookmarks/rd-<rid>-<slug>.md` の形）で、今夜押したノートを全部並べる。`<` `>` は置き換える記法なので、そのまま打たない。
+     - 渡したパス1つにつき1行の `WRITE_PATH: <パス> verify=...` と、最後に `VERIFY_SUMMARY:` の1行が出る。**完了と言えるのは、全件が `verify=match`・`VERIFY_SUMMARY: status=ok`・exit 0 の3つが揃ったときだけ**（1件でも match 以外なら `status=failed` になる）。`WRITE_PATH:` と `VERIFY_SUMMARY:` の行は削らずランのログに残す。
+     - 照合できなかった件・諦めた件は、スクリプトの行を書き換えずに、**その後ろへ次の書式の行を足して**残す（成功と書かない）：`WRITE_PATH: <パス> verify=UNCHECKED reason=<理由>`／`WRITE_PATH: <パス> fallback=push_files verify=GIVEUP`。
+     - `verify=MISMATCH` または `verify=missing_remote`（main にそのパスのファイルが無い）の件は、**その件だけ** `push_files` で押し直し、**今夜押したノート全部**を並べた同じコマンドで再照合する（今夜この手順7.5 で自分が新規作成したファイルの押し直しなので、手順7.5 の安全制約「既存ファイルの編集をしない」には当たらない）。2回目も駄目なら諦めて GIVEUP の行を残す。
+     - `verify=skipped reason=local_file_missing` または `reason=outside_repo` は、パスか `--repo-dir` の書き方の誤り（ルートからの相対パスになっていない・別のディレクトリを指している）。直して1回だけ呼び直し、それでも同じなら `verify=UNCHECKED reason=local_file_missing` を残す。`reason=symlink` はそのパス（か途中のディレクトリ）がシンボリックリンクで、照合しない（手順7.5 はリンクを作らないので、出たら `verify=UNCHECKED reason=symlink` を残す）。
+     - `verify=unreadable` は照合できなかった件。`reason=fetch_failed`（main を取り込めなかった）と `reason=not_a_repo`（`--repo-dir` がクローンでない＝ディレクトリを確かめる）のときは1回だけ呼び直してよい。それでも駄目なら、または `reason=local_read_failed`・`reason=cat_file_failed`（その件だけ読めなかった）なら、その件に `verify=UNCHECKED reason=<同じ理由>` を残す。
+     - **`VERIFY_SUMMARY:` の行が出ない・`status=error`・exit 2（`python3: can't open file` を含む）のときは、押した全パスに `verify=UNCHECKED reason=verify_not_run` を残す**（実行場所を確かめて1回だけ呼び直してよい）。
+     - **最終報告に `GIVEUP` と `UNCHECKED` の件数を必ず書く**（0件でも「0件」と書く）。照合は**検知するだけ**で、GIVEUP した件の化けたノートは main に残り、ローカルの Vault にも取り込まれる（直す仕組みは無い。翌朝に人がこの件数を見て直す）。
+     - 旧版はここで `push_via_api.sh --verify-only` を使っていたが、あのスクリプトは照合元のファイルを**実行したディレクトリから**探すので、公開リポで実行すると Vault のパスは必ず `local_file_missing` になる。2026-09-29・09-30 は照合自体を省き（09-30 は終了時の後片付けで偶然 `git fetch` と `cmp` を使って一致を見ていた）、10-01 はこの空振りで、3晩とも手順8.5 の照合は成立していなかった。同じ理由で一度も測れていなかった読み取りの疎通確認（`RULES.md`）は、切り替え先の API 書き込み経路が無いと分かっている（2026-09-14）ので廃止した。
    - コミットメッセージは `bookmark notes: <TARGET> (N件)` 形式。
-   - ⚠️ **Vaultリポ側には Actions の検証ゲートが1本も無い**（`total_count: 0`・2026-09-08 実測）。公開リポと違って、壊れたノートを押しても誰も止めない。しかもローカルVaultへは Obsidian Git プラグインが10分以内に取り込む。**照合を省くとそのまま外部脳に入る**ので、上の照合は必ず行うこと。
+   - ⚠️ **Vaultリポ側には Actions の検証ゲートが1本も無い**（`total_count: 0`・2026-09-08 実測）。公開リポと違って、壊れたノートを押しても誰も止めない。しかもローカルVaultへは Obsidian Git プラグインが10分以内に取り込む。**照合を省くと、化けたことにすら気づけない**ので、上の照合は必ず行うこと（照合は防ぐのではなく見つけるだけ）。
    - push 対象ノートが0件（新規0件・全件重複スキップ・全件検証落ちのいずれか）の場合は、このpushを行わない。
    - 送信が一時失敗しても生 `git push` には戻らない（403ループ防止）。1〜2回だけ試し、ダメなら諦めて翌ランに回す（取りこぼしたブックマークのノートは、次に reviews を作る夜の手順7.5「取りこぼしの回収」が `note_gaps.py` で拾う。手順8で公開済みなので手順3の選定には入らない＝旧版の「翌晩以降の手順7.5で改めて対象になる」は 2026-09-22 の選定方式の変更以降は成り立っていなかった。重複チェックにより既存ノートは壊されない）。
 
