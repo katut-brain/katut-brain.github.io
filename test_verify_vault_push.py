@@ -247,10 +247,11 @@ class TestVerify(_Repos):
         outside = os.path.join(self.root, "elsewhere.md")
         with open(outside, "w", encoding="utf-8") as fh:
             fh.write("x\n")
-        for p in (outside, "../elsewhere.md"):
+        # 絶対パスでルートの外 → outside_repo。`..` で外へ出る形は、その前に dot_segment で弾く
+        for p, reason in ((outside, "outside_repo"), ("../elsewhere.md", "dot_segment")):
             rc, out, _ = self.run_cli("--repo-dir", self.vault, p)
             self.assertEqual(rc, 1, p)
-            self.assertIn("verify=skipped reason=outside_repo", out)
+            self.assertIn("verify=skipped reason=%s" % reason, out)
 
     def test_mixed_results_fail_overall(self):
         b = BODY.encode("utf-8")
@@ -335,6 +336,79 @@ class TestVerify(_Repos):
             self.assertEqual(rc, 1, linked)
             self.assertIn("WRITE_PATH: %s verify=skipped reason=symlink" % NOTE, out)
             self.assertEqual(self.summary(out)["status"], "failed")
+
+    def test_dot_segments_are_rejected_before_normalizing(self):
+        # `link/..` を正規化で消すと途中のリンクを見逃す（2周目 Codex 指摘 P0）。正規化の前に弾く
+        b = BODY.encode("utf-8")
+        self.push(NOTE, b)
+        self.local(NOTE, b)
+        for p in ("Explore/link/../bookmarks/" + os.path.basename(NOTE), "./" + NOTE,
+                  "Explore/./bookmarks/" + os.path.basename(NOTE),
+                  os.path.join(self.vault, "Explore", "x", "..", "bookmarks", os.path.basename(NOTE))):
+            rc, out, _ = self.run_cli("--repo-dir", self.vault, p)
+            self.assertEqual(rc, 1, p)
+            self.assertIn("verify=skipped reason=dot_segment", out)
+            self.assertNotIn("verify=match", out)
+
+    def test_symlink_then_dotdot_is_rejected(self):
+        b = BODY.encode("utf-8")
+        self.push(NOTE, b)
+        self.local(NOTE, b)
+        real = os.path.join(self.root, "elsewhere")
+        os.makedirs(real)
+        self._symlink_or_skip(real, os.path.join(self.vault, "Explore", "link"), is_dir=True)
+        rc, out, _ = self.run_cli("--repo-dir", self.vault,
+                                  "Explore/link/../bookmarks/" + os.path.basename(NOTE))
+        self.assertEqual(rc, 1)
+        self.assertNotIn("verify=match", out)
+
+    def test_duplicate_path_is_not_counted_twice(self):
+        # 同じノートを2回渡すと、渡し漏れがあっても件数が合ってしまう
+        b = BODY.encode("utf-8")
+        self.push(NOTE, b)
+        self.local(NOTE, b)
+        rc, out, _ = self.run_cli("--repo-dir", self.vault, NOTE, NOTE.replace("/", "\\"))
+        self.assertEqual(rc, 1)
+        self.assertIn("WRITE_PATH: %s verify=skipped reason=duplicate" % NOTE, out)
+        s = self.summary(out)
+        self.assertEqual((s["status"], s["total"], s["match"], s["skipped"]), ("failed", "2", "1", "1"))
+
+    def test_symlink_entry_on_main_is_not_a_match(self):
+        # main 側がシンボリックリンク（mode 120000）で、リンク先の文字列が手元と同じ
+        b = BODY.encode("utf-8")
+        h = subprocess.run(["git", "-C", self.pusher, "hash-object", "-w", "--stdin"], input=b,
+                           capture_output=True, env=self.env).stdout.decode().strip()
+        self._git(self.pusher, "update-index", "--add", "--cacheinfo", "120000,%s,%s" % (h, NOTE))
+        self._git(self.pusher, "commit", "--quiet", "-m", "link")
+        self._git(self.pusher, "push", "--quiet", "origin", "main")
+        self.local(NOTE, b)
+        rc, out, _ = self.run_cli("--repo-dir", self.vault, NOTE)
+        self.assertEqual(rc, 1)
+        self.assertIn("WRITE_PATH: %s verify=MISMATCH reason=not_regular_file mode=120000" % NOTE, out)
+
+    def test_executable_file_on_main_is_still_compared(self):
+        b = BODY.encode("utf-8")
+        h = subprocess.run(["git", "-C", self.pusher, "hash-object", "-w", "--stdin"], input=b,
+                           capture_output=True, env=self.env).stdout.decode().strip()
+        self._git(self.pusher, "update-index", "--add", "--cacheinfo", "100755,%s,%s" % (h, NOTE))
+        self._git(self.pusher, "commit", "--quiet", "-m", "exec")
+        self._git(self.pusher, "push", "--quiet", "origin", "main")
+        self.local(NOTE, b)
+        rc, out, _ = self.run_cli("--repo-dir", self.vault, NOTE)
+        self.assertEqual(rc, 0, out)
+
+    def test_windows_junction_counts_as_link(self):
+        b = BODY.encode("utf-8")
+        self.push(NOTE, b)
+        self.local(NOTE, b)
+
+        def fake_isjunction(p):
+            return str(p).replace("\\", "/").endswith("Explore/bookmarks")
+
+        with unittest.mock.patch.object(verify_vault_push.os.path, "isjunction", fake_isjunction, create=True):
+            rc, out = self.run_inproc("--repo-dir", self.vault, NOTE)
+        self.assertEqual(rc, 1)
+        self.assertIn("verify=skipped reason=symlink", out)
 
     def _fresh_vault(self, *clone_args):
         v = os.path.join(self.root, "vault2")
@@ -481,7 +555,10 @@ class TestRoutinePrompt(unittest.TestCase):
         # 照合できなかった件を残す書式・スクリプトが走らなかったときの扱い・最終報告
         self.assertIn("verify=UNCHECKED reason=<理由>", self.step)
         self.assertIn("verify=UNCHECKED reason=verify_not_run", self.step)
-        self.assertIn("最終報告に `GIVEUP` と `UNCHECKED` の件数を必ず書く", self.step)
+        self.assertIn("最終報告に、押したノートの数・照合した数（`total=`）・`GIVEUP` と `UNCHECKED` の件数を必ず書く", self.step)
+        # 渡し漏れの検知: total と押した数の突き合わせ
+        self.assertIn("`total=` が今夜 `push_files` で押したノートの数", line)
+        self.assertIn("verify=UNCHECKED reason=not_listed", self.step)
         self.assertIn("実行するのは公開リポのディレクトリ", self.step)
 
     def test_step_8_5_no_longer_uses_cwd_relative_verify(self):

@@ -4,8 +4,8 @@
 #   python3 verify_vault_push.py --repo-dir <Vaultリポのクローン> <パス> [<パス> ...]
 #
 #   <パス> はクローンのルートからの相対パス（例: Explore/bookmarks/rd-123-slug.md）。
-#   ルートの中を指す絶対パスも受け付ける。どのディレクトリで実行しても結果は変わらない
-#   （パスは --repo-dir から解決する）。
+#   ルートの中を指す絶対パスも受け付ける（`.` や `..` の要素は受け付けない）。どのディレクトリで
+#   実行しても結果は変わらない（パスは --repo-dir を含むクローンのルートから解決する）。
 #
 # なぜこれが要るか（2026-10-02）:
 #   手順8.5 の照合は `push_via_api.sh --verify-only` で行う手順だったが、あのスクリプトは
@@ -30,8 +30,9 @@
 #   渡したパス1つにつき必ず1行:
 #     WRITE_PATH: <パス> verify=match bytes=N
 #     WRITE_PATH: <パス> verify=MISMATCH local_bytes=N remote_bytes=M
+#     WRITE_PATH: <パス> verify=MISMATCH reason=not_regular_file mode=<M> （main 側がリンク等）
 #     WRITE_PATH: <パス> verify=missing_remote        （main にそのパスのファイルが無い）
-#     WRITE_PATH: <パス> verify=skipped reason=local_file_missing|outside_repo|symlink
+#     WRITE_PATH: <パス> verify=skipped reason=local_file_missing|outside_repo|symlink|dot_segment|duplicate
 #     WRITE_PATH: <パス> verify=unreadable reason=not_a_repo|fetch_failed|local_read_failed|cat_file_failed
 #   最後に1行:
 #     VERIFY_SUMMARY: status=ok|failed|error total=N match=N mismatch=N missing_remote=N skipped=N unreadable=N head=<sha>
@@ -96,11 +97,24 @@ def _rel(top, path):
     return None
 
 
+def _has_dot_segment(path):
+    """`.` や `..` の要素を含むか。正規化で `link/..` が消えると途中のリンクを見逃すので、
+    正規化する前に弾く（手順8.5 のパスにこれらは要らない）。"""
+    return any(part in (".", "..") for part in path.replace("\\", "/").split("/"))
+
+
+def _is_link(path):
+    if os.path.islink(path):
+        return True
+    isjunction = getattr(os.path, "isjunction", None)  # Windows のジャンクション（3.12〜）
+    return bool(isjunction and isjunction(path))
+
+
 def _has_symlink(top, rel):
     cur = top
     for part in rel.split("/"):
         cur = os.path.join(cur, part)
-        if os.path.islink(cur):
+        if _is_link(cur):
             return True
     return False
 
@@ -109,11 +123,17 @@ def _sha256(data):
     return hashlib.sha256(data).hexdigest()
 
 
-def _verify_one(top, head, p):
+def _verify_one(top, head, p, seen):
     """(判定行, 集計キー) を返す。例外は投げない。"""
+    if _has_dot_segment(p):
+        return "WRITE_PATH: %s verify=skipped reason=dot_segment" % p, "skipped"
     rel = _rel(top, p)
     if rel is None:
         return "WRITE_PATH: %s verify=skipped reason=outside_repo" % p, "skipped"
+    if rel in seen:
+        # 同じノートを2回数えると、渡し漏れがあっても件数が合ってしまう
+        return "WRITE_PATH: %s verify=skipped reason=duplicate" % rel, "skipped"
+    seen.add(rel)
     if _has_symlink(top, rel):
         return "WRITE_PATH: %s verify=skipped reason=symlink" % rel, "skipped"
     local_path = os.path.join(top, rel)
@@ -129,8 +149,13 @@ def _verify_one(top, head, p):
         if t.returncode != 0:
             return "WRITE_PATH: %s verify=unreadable reason=cat_file_failed" % rel, "unreadable"
         entry = t.stdout.decode("utf-8", "replace").strip()
-        if not entry or entry.split(None, 2)[1:2] != ["blob"]:
+        fields = entry.split(None, 2)
+        if not entry or fields[1:2] != ["blob"]:
             return "WRITE_PATH: %s verify=missing_remote" % rel, "missing_remote"
+        if fields[0] not in ("100644", "100755"):
+            # main 側がシンボリックリンク（120000）等。中身の文字列が一致しても通常のファイルではない
+            return ("WRITE_PATH: %s verify=MISMATCH reason=not_regular_file mode=%s"
+                    % (rel, fields[0]), "mismatch")
         r = _git(top, ["cat-file", "blob", "%s:%s" % (head, rel)])
     except (OSError, subprocess.SubprocessError, IndexError):
         return "WRITE_PATH: %s verify=unreadable reason=cat_file_failed" % rel, "unreadable"
@@ -174,8 +199,9 @@ def verify(repo_dir, paths, remote="origin", branch="main"):
         counts["unreadable"] = len(paths)
         return lines, counts, head
 
+    seen = set()
     for p in paths:
-        line, key = _verify_one(top, head, p)
+        line, key = _verify_one(top, head, p, seen)
         lines.append(line)
         counts[key] += 1
     return lines, counts, head
