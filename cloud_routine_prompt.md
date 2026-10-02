@@ -219,82 +219,10 @@
      - このコマンドが非ゼロで終わった場合（`MERGE_STATUS: ... mode=error`）、`reviews/<TARGET>.html` は**一切変更されていない**（`merge_review.py` は失敗時に既存ファイルへ書き込まない設計）。手順を止めず、`/tmp/review_new.html` の内容が失われたことをログに残した上で手順6以降へ進む。**この夜 `reviews/<TARGET>.html` が実行前の時点でどうだったかで、この後の分岐が変わる**（手順7 の `card_parse_failed` 対応・手順8の(a)(b)(c)分岐と矛盾しないよう、ここで明示する）：
        - **実行前に `reviews/<TARGET>.html` が既に存在していた**（＝この夜は追記のはずだった。統合前検証で既存側が壊れていると判明した等）場合: 既存ファイルはそのまま残る。手順6以降は「`reviews/<TARGET>.html` が存在する」前提で通常どおり進む（手順7の `card_parse_failed` 対応を参照。今夜の新規分は反映されないだけで、ファイル自体は消えない）。手順8は (a) 相当（`reviews/<TARGET>.html` を含めて push）になる。
        - **実行前に `reviews/<TARGET>.html` が存在しなかった**（＝この夜が初回のはずだった。新規HTML自体の構造検証で弾かれた等）場合: `reviews/<TARGET>.html` は作られないまま。手順3の選定が1件以上でもこの夜は reviews を作れなかったことになるので、手順7・7.5は「手順5で reviews を作った場合」に該当せずスキップし、手順8は (b) または (c) 相当（`fetch_facts/` 配下の変更有無で判定。手順3の選定が1件以上あった扱いは変えないが、reviews が無いのでpush対象にreviews/<TARGET>.htmlは含まれない）として扱う。翌晩以降、同じ選定内容が select_targets.py によって再度候補に上がるので取りこぼしではない。
-   - **スタイル**：以下の `<style>` ブロックをそのまま使う（CSS変数・ダーク対応込み）。`<title><TARGET> の振り返り</title>`。
-     ```html
-     <style>
-       :root {
-         --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
-         --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
-         --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
-         --chip: #f5f5f7; --accent: #0071e3;
-       }
-       @media (prefers-color-scheme: dark) {
-         :root {
-           --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
-           --text: #f5f5f7; --sub: #98989d; --ter: #636366;
-           --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
-           --chip: #1c1c1e; --accent: #0a84ff;
-         }
-       }
-       * { box-sizing: border-box; }
-       html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
-         font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
-         -webkit-font-smoothing: antialiased; font-size: 15px; }
-       .wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
-       a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
-       a.back:hover { text-decoration: underline; }
-       h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
-       .meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
-       h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
-
-       .summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
-       .summary h2 { margin-top: 0; }
-       .summary p { margin: 0 0 12px; }
-       .summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
-       .summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
-       .summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
-       .q { font-size: 13px; color: var(--sub); margin-top: 12px; }
-       .q b { color: var(--text); }
-
-       .notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
-       .ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
-         color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
-       .ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
-       .ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
-       .ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
-       .qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
-       .ilist b, .qlist b { color: var(--text); }
-       .ilist span, .qlist span { color: var(--sub); }
-       .ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
-       .ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
-
-       .cards { display: grid; gap: 12px; }
-       .vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
-         border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
-       .vcard:hover { border-color: var(--border-s); }
-       .vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
-       .vcard:hover .vlink { transform: translateY(-1px); }
-       .thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
-         display: flex; align-items: center; justify-content: center; }
-       .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-       .thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
-       .vbody { padding: 12px 14px 12px 0; min-width: 0; }
-       .vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
-       .vdesc { color: var(--sub); font-size: 12.5px; }
-       .vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
-       .deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
-         border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
-         font-family: inherit; }
-       .deepdive:hover { border-color: var(--accent); color: var(--accent); }
-       @media (max-width: 460px) {
-         .vlink { flex-direction: column; }
-         .thumb { width: 100%; height: 150px; }
-         .vbody { padding: 0 14px 14px; }
-         .deepdive { display: none; }
-       }
-       footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
-     </style>
-     ```
+   - **スタイル**：`<head>` の中に `<style>` 要素を1つ置き、その中身は**公開リポ直下の `review_style.css` をそのまま**使う（CSS変数・ダーク対応込み）。`<title><TARGET> の振り返り</title>`。
+     - CSS は**手で書き写さず、ファイルから読み込んで埋め込む**（例: HTML を組む Python の中で `open('review_style.css', encoding='utf-8').read()`）。
+     - **この手順書や過去の `reviews/*.html` から正規表現で抜き出さない**（2026-10-02 変更）。2026-09-29 の夜、手順書から `<style>.*?</style>` で抜き出したら、本物の CSS より前にあった地の文の「`<style>` ブロック」に一致し、手順書の文が CSS の先頭に混入した。ライトモードの色の定義がまるごと無効になり、面の色とカードの枠が消えた。それ以降 CSS 本体は手順書に置いていない。
+     - ずれていても手順7の `check_review_style.py --fix` が `review_style.css` の中身に揃えるので、CSS の出来ばえを自分で確かめ直す必要は無い。
    - **本文構造**（このタグ・class 名を厳守。`_build_feed.py` が regex で抽出するため）：
      ```html
      <div class="wrap">
@@ -389,6 +317,15 @@
    - Actions 側には検証ゲートがあり、生成物が truncate・PLACEHOLDER混入・短すぎのいずれかならコミットせずに落ちる（＝壊れたものは公開されず、直前の正常な `index.html` が残る）。
 7. （先に `python3 run_timing.py mark step7 --run-id <8桁>`）**自己検証**（手順5で reviews を作った場合）：**`reviews/<TARGET>.html` そのもの**を読み返し、`_build_feed.py` が実際に抽出する要素（テーマ＝**`<div class="meta">`**、まとめ文＝`.summary p`、気づき＝`.notes` 内の `li`、カード＝`.vcard`）が入っているか確認する。※2026-08-31訂正: 旧版はテーマを `.theme` と書いていたが、`.theme` というクラスは reviews のテンプレートにも `_build_feed.py` にも存在せず、実際の抽出元は `<div class="meta">`。この誤りのせいで正しい出力を「テーマ欠落」と誤判定しうる状態だった。欠けていれば構造ズレなので `reviews/<TARGET>.html` を直す。
    - ⚠️ **`index.html` を見て確認しようとしないこと**（2026-08-31 変更）。`index.html` はあなたが push したあとに GitHub Actions が作るので、この時点ではまだ更新されていない。**派生物ではなく材料の側を検証する**のが正しい。**加えて、手順4.5でテーマを1つ以上選んだのに「深掘り」節が無い場合は、実際に `WebSearch` を呼び出したかを振り返る**。呼び出していなければ今からでも手順4.5を実行してから `reviews/<TARGET>.html` に反映し、この手順7の確認をやり直す（手順6は index.html を触らない手順なのでやり直す対象が無い）。
+   - **CSS の検査（機械判定・2026-10-02 追加）**：`reviews/<TARGET>.html` の `<style>` が正規の CSS（`review_style.css`）と同じかを確かめ、違えば揃える。次を1回実行するだけでよい：
+     ```bash
+     TARGET=${TARGET_OVERRIDE:-$(TZ=Asia/Tokyo date -d yesterday +%F)}
+     python3 check_review_style.py --date "$TARGET" --fix
+     ```
+     - 出力は `STYLE_CHECK: date=<TARGET> status=...` の1行。**この行は削らずランのログに残す**。`status=ok`（正規と同じ）・`status=fixed reason=replaced|inserted`（揃えた）はどちらも正常で、そのまま先へ進む。
+     - `status=error` のときも手順は止めない（`reason=` を添えてログに残すだけ）。`status=no_review` は reviews を作らなかった夜なので、ここに来ること自体が無い。
+     - `status=mismatch reason=before_canonical` は、2026-09-22 より前の日付を作り直した夜にだけ出る（その頃のページは CSS のテンプレートが古い世代で、今の CSS に置き換えると見た目が変わるので、スクリプトは書き換えない）。正常なので、そのまま先へ進む。
+     - 比べるのは最初の `<style>` 要素の中身だけで、空白の違いは無視する。書き換えるのもその要素だけで、本文やカードには触れない。CSS を直したくなったら `review_style.css` を直す（この手順書には CSS を書かない）。
    - **開示チェック（機械判定・2026-09-15 追加、同日3周目差し戻しでマーカー方式へ作り替え）**：上の構造チェック（`.meta`/`.summary p`/`.notes`/`.vcard` の有無）は要素の有無しか見ておらず、動画・視覚コンテンツを未取得なのに開示していないカード（手順4/4.2で `missing` に記録される）を検出できない。指示文言だけに頼ると実際に書き漏らす（2026-09-04 Reel 3件・2026-09-14 Reel 1件・2026-09-08 Threads 3件など、指示はあったのに漏れた実例がある）ため、ここは機械判定で確認する。判定は自由文を読んで解釈するのではなく、上の手順4で書いた固定マーカー文（「※動画の内容は未取得」等）の**有無だけ**を見る。**この仕組みは手順7の実行自体を強制しない**（無人ランがここを飛ばしても手順は止まらない）。公開ゲート（build-feed.yml）側も検知・通知（`::warning`・サマリー表示）までで、違反があっても公開は止めない（ユーザー裁定 2026-09-15：警告のみ）。
      1. `python3 check_disclosure.py --date $TARGET --fix` を実行する（スクリプトが不足しているマーカーだけを該当カードの `.vdesc` 末尾に自動追記する。マーカーはスクリプト側の固定定数から確定的に決まるため、LLMによる文面の書き直しは不要）。
      2. 同じコマンドを `--fix` なしで再実行し、`violation=0` であることを確認する。
