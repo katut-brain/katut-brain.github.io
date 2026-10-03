@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026-10-02 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style></head><body>
+<div class="wrap">
+<a class="back" href="../index.html">← 戻る</a>
+<h1>2026-10-02 の振り返り</h1>
+<div class="meta">「AIに長く自律で働かせる指示」と「実用プロンプト・無料API」の保存が3件</div>
+
+<section class="summary">
+<h2>まとめ</h2>
+<p>3件に共通するのは、AIの出力そのものより「どんな指示文（プロンプト）を渡すか」に価値を置く姿勢だった。寝る前に残タスクを丸ごと預ける8時間プロンプトと、直前航空券を探す日本語化プロンプトは、どちらも条件・進め方・報告の仕方まで書き込んだ“指示書”の共有であり、もう1件は高価な地図APIを無料で置き換えられるという道具側の話。今日は「作りたい」より「知る・使いこなす」軸が活性化した。</p>
+<ul class="pts">
+<li><b>通奏低音</b>：指示文は個人の暗黙知を他人が再利用できる形にした成果物、という含意がある。</li>
+<li><b>誠実さの条項</b>：8時間プロンプトは「実行していない検証を完了と報告しない」と明記しており、無人運用で最も効くルールだという示唆がある。</li>
+<li><b>コスト構造</b>：航空券もMap APIも「高い」を下げる話で、情報の非対称性をAIで崩す関心が続いている。</li>
+</ul>
+<div class="q"><b>次に考える問い：</b>無人で長時間走らせるとき、「完了と報告してよい条件」をどこまで指示文に書き切れるか。</div>
+<p>前日以前の保存0件。2026-10-03 JST に保存された1件を含む。</p>
+</section>
+
+<h2>🔎 深掘り（関連記事）</h2>
+<section class="notes">
+<div class="ntag">長時間・無人で動かすエージェント</div>
+<ul class="ilist">
+<li><a href="https://smartscope.blog/generative-ai/claude/claude-agent-sdk-long-running-implementation/" target="_blank" rel="noopener"><b>Claude Agent SDK長時間稼働の設計パターン</b></a> <span>→ 会話状態・業務状態・成果物を分けて保存し、調査→計画→実装→検証のように再実行できるフェーズへ分割する。削除・公開・送信は人間承認を必須にして暴走を防ぐ、という設計が、8時間プロンプトの「承認範囲で進める・報告を偽らない」と同じ発想だった。</span></li>
+</ul>
+</section>
+
+<h2>🤖 AIエージェント・自動化（1件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/haru_maki_ch/status/2105686755261514171?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/media/HTjm8WWaAAA-Soo?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">AI</span></div>
+<div class="vbody"><div class="vtitle">「8時間お願いプロンプト」改造版：寝ている間にAIを走らせる指示書</div><div class="vdesc">スクリーンショットはAIアシスタント「サーシャ」への指示文で、各セッションの残タスクを承認済みの範囲で自律的に進める／行き詰まったら原因と試した方法を記録して別解へ切り替える／重要な変化だけ通知する／「実行していない操作や検証を完了したように報告しない」と明記する構成。設計業務では複数ペルソナによるレビュー→修正→再レビューも指示している。</div><div class="vsaved">保存 10/2 07:31</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/haru_maki_ch/status/2105686755261514171?s=12" data-title="「8時間お願いプロンプト」改造版：寝ている間にAIを走らせる指示書" data-rid="1873230130">💬 AIと話す</button>
+</div>
+</div>
+<h2>✈️ プロンプト・実用（1件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/ny_ruisu/status/2105583765099864086?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2105583765099864086" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Claudeで直前航空券を安く探すプロンプトを日本語化・加筆</div><div class="vdesc">海外でバズったプロンプトを翻訳・加筆し条件を追加したもの。添付画像は東京→バリ島の「ラストミニット予約プレイブック」で、現実的な目標は往復5〜9万円、最安は予約の約40〜60日前、60〜90日前にクオータ切り替え、LCCは約40日前に在庫放出、火〜水出発が最安（火−8%）、月・金は+15〜22%といった分析が並ぶ。</div><div class="vsaved">保存 10/2 08:18</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ny_ruisu/status/2105583765099864086?s=12" data-title="Claudeで直前航空券を安く探すプロンプトを日本語化・加筆" data-rid="1873254666">💬 AIと話す</button>
+</div>
+</div>
+<h2>🛠 ツール（1件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/hideki_climax/status/2105910006172225791?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fhideki_climax%2Fstatus%2F2105910006172225791%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">APIキー不要・無料・商用利用可の地図API（Google Maps代替）に驚き</div><div class="vdesc">Google MapのAPIは料金が高くてまともに使えないため、APIキー不要・無料・商用利用可というだけで「あまりにも神」と大興奮の投稿（いいね3,500超）。具体的なサービス名は本文からは読み取れていない。</div><div class="vsaved">保存 10/3 14:04</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/hideki_climax/status/2105910006172225791?s=12" data-title="APIキー不要・無料・商用利用可の地図API（Google Maps代替）に驚き" data-rid="1875306725">💬 AIと話す</button>
+</div>
+</div>
+
+<footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-10-02 run_id=4be563e7 saves=3 step1_s=10 step2_s=15 step2_5_s=364 step3_s=5 step4_s=21 step4_5_s=42 step5_s=6 step7_s=0 total_s=463 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body></html>
