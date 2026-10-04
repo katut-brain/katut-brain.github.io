@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-10-04 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-10-04 の振り返り</h1>
+  <div class="meta">Claude Code・Codex・ChatGPT Dots周辺の「AIを回す道具立て」が24件中ほぼ全部を占めた日</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存は、AIそのものの性能より「AIエージェントを日常で回すための周辺装置」に集中した。SKILL.md・i-have-adhd・consulting-pptx-skillのような<b>スキル</b>、Jevbox・Clefのような<b>判断・検索基盤</b>、そしてToken Dashboard・cc-calendar・dots用カンバンのような<b>可視化</b>という3層で、共通する問いは「人間はエージェントのどこを見張り、どこを任せるか」だった。ChatGPT Dotsの夜間レビュー図解は「下書きまで・送信は承認制」と線引きし、ダッシュボード系は人間側に残る監視の置き場所を物理ディスプレイにまで広げている。</p>
+    <p>ドメインをまたぐ接続としては、Revit MCPでClaudeが家具配置を担う建築の話や、積み重ね式収納VAULTのような3Dプリント・ものづくりが混ざり、「知る/紹介する」軸に加えて「作る」軸（ダッシュボード自作、3Dプリンタ）もかなり活性化した。サカナクション「縦・横・球体・霧」の音楽論は、AI一色の中でカテゴリを自分の言葉で作る面白さが際立つ1件だった。noteの記入は無し。前日以前ではなく10/5未明保存の13件（日付が10/5のもの）を含む。</p>
+    <ul class="pts">
+      <li><b>スキル化</b>：担当別SKILL.mdや「結論→次→手順」スキルなど、振る舞いをファイルで固定する発想が複数出た</li>
+      <li><b>可視化</b>：トークン残量・セッション・タスク状態を、机上ディスプレイやカレンダー、カンバンに載せる動きという含意がある</li>
+      <li><b>承認の線引き</b>：Dotsは読む・下書きは自動、送信・返信は承認という権限設計を図で示している</li>
+      <li><b>建築×AI</b>：Revit MCPで部屋ごとでなく全体を一括でレイアウトする点が新しい</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>エージェントの権限を「数日は読み込ませてから広げる」とき、何を観測できたら承認制を一段緩めてよいと言えるか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">AIの利用量ダッシュボード</div>
+    <ul class="ilist">
+      <li><a href="https://www.toriihq.com/articles/five-claude-code-usage-dashboards-and-monitoring-tools" target="_blank" rel="noopener"><b>5 Claude Code Usage Dashboards and Monitoring Tools for 2026</b></a> <span>→ ローカルJSONLを解析するccusageやClaude Code Usage Monitor（5時間ブロックの枯渇予測）、組織単位のTorii、ゲートウェイのLiteLLMなど、個人の机上メーターから予算強制まで層が分かれていることが分かる。Token Dashboardは最も手元の層に当たる。</span></li>
+    </ul>
+  </section>
+
+      <h2>🤖 AIエージェント・開発ツール（13件）</h2>
+      <div class="cards">
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/bond_ai1/status/2106250139849687188?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://jf.x.com/images/media-preview/2106250139849687188" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">Claude Codeの調査力を広げるGitHub無料ツール3選</div><div class="vdesc">𝕏・YouTube・Reddit・入口のないサイトからもデータを引ける無料ツールを3つ紹介する投稿で、1つ目はAgent-Reach。リサーチ時間90%短縮をうたう。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/4 14:34</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/bond_ai1/status/2106250139849687188?s=12" data-title="Claude Codeの調査力を広げるGitHub無料ツール3選" data-rid="1876138822">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/journalapple/status/2106525553973149734?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fjournalapple%2Fstatus%2F2106525553973149734%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">Apple Watchを終日AIレコーダーにする「Auday」</div><div class="vdesc">長時間録音して文字起こし・AI要約・過去の会話の自然文検索ができ、心拍数・HRV・睡眠・歩数と会話を紐付けられるというApple Watchアプリ。単なるボイスレコーダーではない点が売り。</div><div class="vsaved">保存 10/4 14:36</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/journalapple/status/2106525553973149734?s=12" data-title="Apple Watchを終日AIレコーダーにする「Auday」" data-rid="1876139175">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/honeshabri/status/2106615516773150831?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fhoneshabri%2Fstatus%2F2106615516773150831%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">AIエージェントとの会話用イヤホンは役割を分けるべき</div><div class="vdesc">Hermesで同様の運用をしている投稿者が、AIとの会話用はShokz、YouTubeや音楽用は普通のイヤホンに分けるよう提案。AI用ならOpenRun Pro 2よりOpenComm2が強いと推す。</div><div class="vsaved">保存 10/4 16:47</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/honeshabri/status/2106615516773150831?s=12" data-title="AIエージェントとの会話用イヤホンは役割を分けるべき" data-rid="1876202859">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/makeai_ceo/status/2106213587966705962?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://jf.x.com/images/media-preview/2106213587966705962" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">「今マジでOrcaが来てる」：Codex・Claude・Cursorより良いかも</div><div class="vdesc">MakeAI CEOが、Codex・Claude・CursorよりOrcaの方が良いかもしれないと熱量高く推す投稿。具体的な機能は本文に出てこない。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/4 18:03</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/makeai_ceo/status/2106213587966705962?s=12" data-title="「今マジでOrcaが来てる」：Codex・Claude・Cursorより良いかも" data-rid="1876244514">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/sahenjpn/status/2106616746836914406?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/card_img/2105167712033116160/piUvkC2z?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">i-have-adhdスキルでAIの長文回答を「結論→次の手順」に整える</div><div class="vdesc">GitHubのスキルi-have-adhd（Star 5.3万超）を入れると、AIが結論→次にやること→必要な手順の順で返すようになる。ADHD向けを名乗りつつ、読みにくいAI出力に困る人全般に効くと推す。</div><div class="vsaved">保存 10/4 18:04</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/sahenjpn/status/2106616746836914406?s=12" data-title="i-have-adhdスキルでAIの長文回答を「結論→次の手順」に整える" data-rid="1876245469">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/taziku_co/status/2106315410102693908?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://jf.x.com/images/media-preview/2106315410102693908" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">社内RAGにベクトルDBは要るのか：階層探索のJevbox</div><div class="vdesc">文書をアップロードするとJevが内容を判断して自動でフォルダ整理し、検索はエンベディングでなく「フォルダ→文書→セクション」の階層探索で進むオープンソースのドキュメントドライブ。動画では3D空間での文書ブラウジングと、出典付きで回答するチャットを実演。</div><div class="vsaved">保存 10/4 18:05</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/taziku_co/status/2106315410102693908?s=12" data-title="社内RAGにベクトルDBは要るのか：階層探索のJevbox" data-rid="1876245969">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/sh1ma/status/2106656051655557125?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/card_img/2105138372956315648/_dcY_eJ7?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">TwitterのAPIなしでリアルタイムにツイートを取れるAngelic-Angel</div><div class="vdesc">ブラウザのWeb Pushをエミュレートすることで、APIやスクレイピングを使わずにツイートをストリーミングするサーバー（sh1ma/Angelic-Angel）の公開報告。</div><div class="vsaved">保存 10/4 21:57</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/sh1ma/status/2106656051655557125?s=12" data-title="TwitterのAPIなしでリアルタイムにツイートを取れるAngelic-Angel" data-rid="1876437355">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/domain_orank/status/2106693518739784141?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/media/HTx6Um3bYAAawxg?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">Claude Codeでユーザー操作を補助するポップアップを付けられる</div><div class="vdesc">Claude Codeで操作をアシストするポップアップを付けられる発見の共有。画像で具体例が示されているが、投稿本文は仕事がなくなりそうだと冗談めかす程度。</div><div class="vsaved">保存 10/5 00:40</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/domain_orank/status/2106693518739784141?s=12" data-title="Claude Codeでユーザー操作を補助するポップアップを付けられる" data-rid="1876576721">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/ut_codex/status/2106643075905048745?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://jf.x.com/images/media-preview/2106643075905048745" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">CodexにショートSKILL.mdを持たせるとYouTubeショート量産が強い</div><div class="vdesc">「構成」「素材集め」「音声と書き出し」など担当別のSKILL.mdをフォルダに作ってCodexに常駐させ、人間は「このテーマでTOP3を作って」と頼むだけにする運用。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/5 00:43</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ut_codex/status/2106643075905048745?s=12" data-title="CodexにショートSKILL.mdを持たせるとYouTubeショート量産が強い" data-rid="1876577832">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/gozengogo_/status/2106688280301564215?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/card_img/2104344080541220864/77oSYyhG?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">コンサル用パワポスキル：62型のスライド型カタログ</div><div class="vdesc">Claude Code用スキルconsulting-pptx-skillの紹介。スライド規約と62型のスライド型カタログ（SlideSpec 36型＋自由記述27パーツ）、生成パイプライン、機械チェックを備え、ClaudeCode・Codex・Jinbaで使える。</div><div class="vsaved">保存 10/5 00:47</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/gozengogo_/status/2106688280301564215?s=12" data-title="コンサル用パワポスキル：62型のスライド型カタログ" data-rid="1876579872">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/am09_21/status/2106759182678638997?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fam09_21%2Fstatus%2F2106759182678638997%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">ClaudeのCache保持は1時間、GPTは30分</div><div class="vdesc">サブスクでは出力終了から1時間（Claude）・30分（GPT）以内に続きを送らないと使用量が多く消費される。ただし自律ループで回し続けるなら気にしなくてよい、という但し書き付き。</div><div class="vsaved">保存 10/5 00:48</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/am09_21/status/2106759182678638997?s=12" data-title="ClaudeのCache保持は1時間、GPTは30分" data-rid="1876581240">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/miyataarchack/status/2106624221711663478?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://jf.x.com/images/media-preview/2106624221711663478" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">Jevの対抗馬、Cloudflareの判断AI「Clef」</div><div class="vdesc">文章ではなく型付きの質問から回答の確率を返す判断AIで、Jevと同じAPI形式でWorkers AIから使える。問い合わせの判断→担当振り分けを動く図解にしている。</div><div class="vsaved">保存 10/5 00:49</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/miyataarchack/status/2106624221711663478?s=12" data-title="Jevの対抗馬、Cloudflareの判断AI「Clef」" data-rid="1876582849">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/codestudiopjbk/status/2106335202738135041?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://jf.x.com/images/media-preview/2106335202738135041" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">動画制作アプリRemocn Studio：言葉で頼むと動画ができる</div><div class="vdesc">Codex/Claude Codeなどのエージェントを使うmacOS向けの無料オープンソース動画制作アプリ。Codex CLIにログイン済みならAPIキー不要。動画ではAfter Effects中心の時代から、AIで動画を生成・編集する流れへの転換を語る。</div><div class="vsaved">保存 10/5 00:50</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/codestudiopjbk/status/2106335202738135041?s=12" data-title="動画制作アプリRemocn Studio：言葉で頼むと動画ができる" data-rid="1876583639">💬 AIと話す</button>
+        </div>
+      </div>
+
+      <h2>🤖 ChatGPT Dots・AIダッシュボード（7件）</h2>
+      <div class="cards">
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/codexneo4/status/2106280087712895468?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/media/HTm1gCoaEAERvHP?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">OpenAI CEOのChatGPT Dots活用法を図解したまとめ</div><div class="vdesc">画像は、Dotsを専用クラウドPC上の常時稼働エージェントと説明し、夜間に届いたメール・カレンダー・Slackを緊急度順に整理→返信は下書きまで→朝は緊急のものだけ通知する、という「夜間レビュー」の5ステップ設定を図解。送信・返信は承認制にし、数日は指示を学ばせてから権限を広げる流れ。</div><div class="vsaved">保存 10/4 18:04</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/codexneo4/status/2106280087712895468?s=12" data-title="OpenAI CEOのChatGPT Dots活用法を図解したまとめ" data-rid="1876245041">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/nuits_jp/status/2106686059509883050?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/media/HTxW583bQAA8Twu?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">AI専用ダッシュボードの作り方：トークン残量を机上に常時表示</div><div class="vdesc">Cursor・Claude Code・Codex・Geminiの消費量と利用枠の残量を、TURZXの9.2インチ横長USBディスプレイに並べる「Token Dashboard」の作り方。材料費は8,000円弱で、丸型ディスプレイで計器風にする案もある。</div><div class="vsaved">保存 10/5 00:31</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/nuits_jp/status/2106686059509883050?s=12" data-title="AI専用ダッシュボードの作り方：トークン残量を机上に常時表示" data-rid="1876571067">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/kensuu/status/2106700101444157573?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://jf.x.com/images/media-preview/2106700101444157573" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">フロントがほぼAIなら、大胆なUIの管理画面を作ってもいい？</div><div class="vdesc">けんすう氏が、フロントエンドの大半をAIが使うなら人間向けの管理画面は大胆なUIにしてよいのではと考え始めた、という投稿。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/5 00:36</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kensuu/status/2106700101444157573?s=12" data-title="フロントがほぼAIなら、大胆なUIの管理画面を作ってもいい？" data-rid="1876574799">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/ogatomo21/status/2106606175752225269?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/media/HTwqHAMbYAAAHoq?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">Home Assistantにデジタル庁デザインシステムを食わせて見やすい画面に</div><div class="vdesc">画像はHome Assistantのダッシュボードで、天気予報、玄関ロック、照明、エアコン操作、温湿度グラフ、端末のバッテリー残量が淡色のカードに整理されている。</div><div class="vsaved">保存 10/5 00:40</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ogatomo21/status/2106606175752225269?s=12" data-title="Home Assistantにデジタル庁デザインシステムを食わせて見やすい画面に" data-rid="1876576795">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/dandelion1124/status/2106544426302718204?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/card_img/2106544430098657280/7d_065dx?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">Claude Codeのセッションをカレンダー表示するcc-calendar</div><div class="vdesc">Google Calendar風の週ビューでClaude Codeのセッションを、ローカル・ライブ・読み取り専用で眺めるツール（atinfinity/cc-calendar）。tokkyoさんのツールに着想を得てスクラッチで自作された。</div><div class="vsaved">保存 10/5 00:48</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/dandelion1124/status/2106544426302718204?s=12" data-title="Claude Codeのセッションをカレンダー表示するcc-calendar" data-rid="1876581371">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/tetumemo/status/2106655078320930838?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://jf.x.com/images/media-preview/2106655078320930838" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">英語AIメルマガの「試す時間がない」をdotsに肩代わりさせる</div><div class="vdesc">情報収集の中で読んだ内容やプロンプトを試す時間がない人向けに、その指示をdotsに任せる使い方の提案。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/5 00:49</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/tetumemo/status/2106655078320930838?s=12" data-title="英語AIメルマガの「試す時間がない」をdotsに肩代わりさせる" data-rid="1876581782">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/tetumemo/status/2106374605762118011?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/media/HTtWz2kaMAATluB?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">dots用ダッシュボードで、セッションなきタスクの混沌を可視化</div><div class="vdesc">dotsにはセッションの概念がないためタスクが混沌としがち。トヨタのカンバン方式の簡易版として受付・待機・作業中・確認・障害・完了を見える化する案。AIには不要でも人間には必要、という視点。</div><div class="vsaved">保存 10/5 00:59</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/tetumemo/status/2106374605762118011?s=12" data-title="dots用ダッシュボードで、セッションなきタスクの混沌を可視化" data-rid="1876589511">💬 AIと話す</button>
+        </div>
+      </div>
+
+      <h2>🏗️ 建築・3D・ものづくり（2件）</h2>
+      <div class="cards">
+        <div class="vcard">
+          <a class="vlink" href="https://www.instagram.com/reel/Dd5m7I4Ryr6/?stkn=OXQ4eThwajBxMXhn" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.82787-15/830701514_17933295519400733_5848195677881137324_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=105&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=6qvN6kqyeP4Q7kNvwGnjsyo&amp;_nc_oc=AdrsB2W6PXtpVoLoImy47GNC1ArSAnCQfSJMzL-nSNfxRWfSK8a23RdVdDDH4ADgKU4&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-1.cdninstagram.com&amp;_nc_gid=Fu_m-X8P-u3Ksj99jNt2ZA&amp;_nc_ss=7b60f&amp;oh=00_AQOB93x8cs9v1zuvANamOs5aRry4b-C9fLprRnGkuH49lA&amp;oe=6AC7A4B3" onerror="this.remove()"><span class="ph">Instagram</span></div>
+            <div class="vbody"><div class="vtitle">Claude×Revit MCPで間取り全体の家具配置を一括生成</div><div class="vdesc">AI Architecture Labが、Claudeが平面図から各部屋の寸法・比率を読み取り、適した家具レイアウトを考えてRevitモデルへ直接配置するワークフローを紹介。全室を一括処理して3Dで確認でき、レイアウト案の差し替えも可能。今回は動画の内容を取得できなかった（キャプションのみ反映）。※動画の内容は未取得</div><div class="vsaved">保存 10/4 12:18</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Dd5m7I4Ryr6/?stkn=OXQ4eThwajBxMXhn" data-title="Claude×Revit MCPで間取り全体の家具配置を一括生成" data-rid="1876058632">💬 AIと話す</button>
+        </div>
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/bunkaich/status/2106691838992351601?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://jf.x.com/images/media-preview/2106691838992351601" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">3Dプリントで作り続けたい、Gridfinity系の積み重ね式収納VAULT</div><div class="vdesc">モデルデータは有料でKickstarterで支援募集中の収納システム。引き出しを積み重ねてハンドルで持ち運べ、前面のダイヤルで連動ロック、内部は仕切りを自由に配置でき、動画ではギア機構の断面CGまで見せる。ガジェットや工具の整理に困っていた投稿者に刺さったという。</div><div class="vsaved">保存 10/4 21:59</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/bunkaich/status/2106691838992351601?s=12" data-title="3Dプリントで作り続けたい、Gridfinity系の積み重ね式収納VAULT" data-rid="1876443191">💬 AIと話す</button>
+        </div>
+      </div>
+
+      <h2>🎨 アート・文化（1件）</h2>
+      <div class="cards">
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/stargazingmario/status/2106246681612403065?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://pbs.twimg.com/card_img/2106246478339690496/gZr-BUvC?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">サカナクションは「横」、くるりは「ばらの花」だけ「横」という音楽論</div><div class="vdesc">音楽を「縦」「横」「球体」「霧」の4要素のブレンドとして解釈する個人概念のnote。仲間に話すと分かる人と分からない人に分断が生じたと言い、音楽理論に明るい人の応答を求めている。</div><div class="vsaved">保存 10/4 14:34</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/stargazingmario/status/2106246681612403065?s=12" data-title="サカナクションは「横」、くるりは「ばらの花」だけ「横」という音楽論" data-rid="1876138905">💬 AIと話す</button>
+        </div>
+      </div>
+
+      <h2>🗂️ その他（1件）</h2>
+      <div class="cards">
+        <div class="vcard">
+          <a class="vlink" href="https://x.com/kikko10k/status/2106666589248766309?s=12" target="_blank" rel="noopener">
+            <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fkikko10k%2Fstatus%2F2106666589248766309%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+            <div class="vbody"><div class="vtitle">1株投資の裏ワザ（本文は冒頭のみ）</div><div class="vdesc">「1株投資の裏ワザが面白い」という一文のみが取得でき、具体的な中身は取得できていない。</div><div class="vsaved">保存 10/4 21:58</div></div>
+          </a>
+          <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kikko10k/status/2106666589248766309?s=12" data-title="1株投資の裏ワザ（本文は冒頭のみ）" data-rid="1876440137">💬 AIと話す</button>
+        </div>
+      </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-10-04 run_id=5ccd031d saves=24 step1_s=10 step2_s=18 step2_5_s=17 step3_s=10 step4_s=84 step4_5_s=79 step5_s=0 step7_s=0 total_s=218 -->
+<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（1件中0件成功・内訳: bad_content_type 1件）。中継サービスの死亡を疑うこと</p>
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
