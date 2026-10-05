@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-10-05 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-10-05 の振り返り</h1>
+  <div class="meta">AIに自宅の道具（3DCAD・自宅PC）を操作させる2件（Instagram Reel）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存は、どちらも「AIを自分の手元の道具につなぐ」話だった。ひとつはChatGPTに3DCAD（Rhinoceros）を操作させてビスをモデリングする例、もうひとつは自宅PCで動くAI執事をスマホのPWAから呼び出す例。AIが答えるだけの段階から、手元の環境で実際に手を動かす段階への移行が共通する通奏低音になっている。</p>
+    <p>活性化したのは「作りたい」軸。どちらも作り手が自分の環境にAIを接続して試している投稿で、建築・ものづくりの現場でも同じ接続が成り立つという含意がある。</p>
+    <ul class="pts">
+      <li><b>3DCADをAIが直接操作</b>：32mmのコーススレッドが約5分で完成し、規格寸法もAIが自分で調べるという実測が示された</li>
+      <li><b>宅内限定の安全設計</b>：PIN・HTTPS・外部公開なしという線引きで、自宅PCをスマホから使う現実的な形になっている</li>
+      <li><b>利用枠が先に尽きる</b>：5時間分を1時間で消費したという点が、遊び半分の試行でも運用上の制約になることを示す</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>AIに3DCADの操作を任せたとき、図面を描く判断はどこまで人に残るのか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">自宅PCのAIをスマホから使う</div>
+    <ul class="ilist">
+      <li><a href="https://zenn.dev/nogu66/articles/claudecodeui" target="_blank" rel="noopener"><b>Claude Code UI（Zenn）</b></a> <span>→ Cloudflare Tunnelでローカルのブラウザ UI を公開する方式で、初期状態は全ツール無効にして必要なものだけ許可する。宅内限定と外部公開の線引きは、設計の核心になる。</span></li>
+    </ul>
+    <div class="ntag">AIによる3DCAD操作</div>
+    <ul class="ilist">
+      <li><a href="https://github.com/jingcheng-chen/rhinomcp" target="_blank" rel="noopener"><b>rhinomcp（GitHub）</b></a> <span>→ AI → MCP → Python → TCP → Rhinoプラグインという構造で、チャットの平文指示から形状作成やGrasshopper定義の構築まで行える。ChatGPTから使うには遠隔MCPが必要なため、手元の接続は手間になりやすい。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI×ものづくり（2件）</h2>
+  <div class="cards">
+      <div class="vcard">
+        <a class="vlink" href="https://www.instagram.com/reel/DeEXZbDKW38/?stkn=MW5vNTkya2YzNXIxYg==" target="_blank" rel="noopener">
+          <div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.82787-15/836663565_18432480586178044_2512548830658683367_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=110&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=jfAR5zIIMU4Q7kNvwGjWIds&amp;_nc_oc=Adqnmv9gOhUWcLl7CRU9q0uBLJ2DWZuExBLMWlErBqVhblHRjlRzqu1fZDceo4cK5Co&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-1.cdninstagram.com&amp;_nc_gid=uepLAVUW8x4SRZK8zLyk6g&amp;_nc_ss=7ba02&amp;oh=00_AQN2_46iODwHeeRSku5EfgVmiBOhyajGju691F7R9_qg6Q&amp;oe=6AC9651B" onerror="this.remove()"><span class="ph">Instagram Reel</span></div>
+          <div class="vbody"><div class="vtitle">ChatGPT（GPT-6 Astra）に3DCAD操作を任せてコーススレッドを自動モデリング</div><div class="vdesc">Rhinocerosに接続したChatGPTへ「32mmのコーススレッドをモデリングして」と頼むと約5分で完成、頭のサイズなど規格値も自分で調べる。ビスが板に入る動画も作らせ、下穴4mmでは頭まで入らないと自分で判断して少し出したと驚く投稿。遊びすぎて5時間分の利用枠を1時間で使い切ったというオチ付き。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/5 20:15</div></div>
+        </a>
+        <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DeEXZbDKW38/?stkn=MW5vNTkya2YzNXIxYg==" data-title="ChatGPT（GPT-6 Astra）に3DCAD操作を任せてコーススレッドを自動モデリング" data-rid="1877521658">💬 AIと話す</button>
+      </div>
+      <div class="vcard">
+        <a class="vlink" href="https://www.instagram.com/reel/DeDm9ngoiY4/?stkn=aXlwZzQydXA0dDFj" target="_blank" rel="noopener">
+          <div class="thumb"><img src="https://scontent-fra3-2.cdninstagram.com/v/t51.82787-15/836703108_18189837511404448_8223598115197082594_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=107&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=B1HeKMplo8MQ7kNvwEufXzw&amp;_nc_oc=Adr-M-LcZjst4T4sdogkBTq-StJfwkhcCMgkTAjmo_rvyMIJeJqOra4JCwV_6JE7ZLQ&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-2.cdninstagram.com&amp;_nc_gid=ZG8m_PH9ckvMWZ0ObmYVwQ&amp;_nc_ss=7b60f&amp;oh=00_AQMS00r6VQ1EHUTx46uTed1nFX-nTUODGLFmo5yXp9OWUA&amp;oe=6AC94FF0" onerror="this.remove()"><span class="ph">Instagram Reel</span></div>
+          <div class="vbody"><div class="vtitle">自宅PCのAI執事「ジャービス」がスマホ対応、PIN＋HTTPSで宅内限定</div><div class="vdesc">ホーム画面に追加してPWAとして起動し、押して話すとAIが答えて読み上げ、更新ボタンで資産・売上を自動集計。自宅Wi-Fi内だけ・外部公開なしでPINロックとHTTPSを掛け、全部Claudeに作らせたという自作アプリの報告。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/5 20:22</div></div>
+        </a>
+        <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DeDm9ngoiY4/?stkn=aXlwZzQydXA0dDFj" data-title="自宅PCのAI執事「ジャービス」がスマホ対応、PIN＋HTTPSで宅内限定" data-rid="1877526681">💬 AIと話す</button>
+      </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-10-05 run_id=d6235131 saves=2 step1_s=8 step2_s=16 step2_5_s=42 step3_s=5 step4_s=84 step4_5_s=34 step5_s=4 step7_s=0 total_s=193 -->
+<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（1件中0件成功・内訳: exception:ServerError 1件）。Gemini側の一過性エラーを疑うこと</p>
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
