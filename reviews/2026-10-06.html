@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026-10-06 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="../index.html">← 戻る</a>
+<h1>2026-10-06 の振り返り</h1>
+<div class="meta">「スライドを生成するSkill／仕組み」が3件並んだ日（保存8件）</div>
+
+<section class="summary">
+<h2>まとめ</h2>
+<p>通奏低音は「AIに作らせる工程のどこを人が握るか」という問いだ。Opus 5.5のスライド生成図は構成案の承認と最終確認だけを人に残し、スライドSkillの整理は規約・視覚QA・レビューまでSkill化され始めていると指摘し、KarpathyはLLMの出力を人が読み解く側の技術（制限言語で書かせる）を挙げる。作る側の自動化と、読む側の理解の工夫が同じ日に並んだ。</p>
+<p>ドメインをまたぐ接続としては、株分析画像の自動生成ツールや日英混在入力のMeltypeといった「作らせて使う」個人ツール群と、ホテル平面図PDFのような建築の一次資料庫が並ぶ。今日は「作りたい」軸（AI活用）が強く、建築は「知る」側の資料収集にとどまった。保存にnote（コメント）は無かった。</p>
+<ul class="pts">
+<li><b>型から生成へ</b>：「型に中身を入れる」から「中身に合わせて型を生成する」への転換という含意があり、型の設計権が人からモデルへ移りつつある。</li>
+<li><b>Skill化の範囲拡大</b>：規約→生成→視覚QA→レビューまでSkill化され、品質保証もAIの工程になるという含意がある。</li>
+<li><b>制限言語という読み方</b>：ASD-STE100のように語彙と文長を縛ると、出力の検証コストが下がるのかを問う。</li>
+</ul>
+<div class="q"><b>次に考える問い：</b>変換と照合を「LLMを呼ばない通常のコード」に任せる設計は、スライド以外の制作（図面・ダイアグラム）でも成立するか。</div>
+</section>
+
+<h2>🔎 深掘り（関連記事）</h2>
+<section class="notes">
+<div class="ntag">スライド生成Skillの選び方</div>
+<ul class="ilist">
+<li><a href="https://opendesigner.io/blog/claude-ppt-skills" target="_blank" rel="noopener"><b>Claude PPT Skills: Native PPTX vs HTML</b></a> <span>→ HTML型（frontend-slidesなど）はデザインの自由度と画面での発表向き、ネイティブPPTX型は非技術者が後から編集する場面向きで、万能な正解はないと整理。保存した「3系統」図の使い分け基準として読める。</span></li>
+</ul>
+</section>
+
+<h2>🎞 AIスライド生成・スキル（3件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/kenichiota0711/status/2106704711663636795?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/media/HTyEj82bwAAJxzh?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Opus 5.5によるスライド自動生成の仕組み</div><div class="vdesc">図解の中身は「型に中身を入れる」から「中身に合わせて型を生成する」への転換。原稿化→構成案の承認→Opus 5.5がページ別にレイアウト生成→HTMLからPPTX変換→Google Slidesで納品→人が一覧で確認、の流れで、人が決めるのは構成案と最終確認の2点だけ。変換と照合は通常のコードでLLMを呼ばない設計。</div><div class="vsaved">保存 10/6 08:16</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kenichiota0711/status/2106704711663636795?s=12" data-title="Opus 5.5によるスライド自動生成の仕組み" data-rid="1878186299">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/haru_maki_ch/status/2107123054799360416?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/media/HT3_wBAagAADMyB?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">「スライドSkill」3系統のグラレコ整理</div><div class="vdesc">スライド系Skillを①ネイティブPPTX型②HTML/Web型③HTML→PPTXハイブリッド型に分類。共通ポイントは規約を先に読ませる・タイトルは結論・視覚QAをループに入れる・ブランドは別Skillで上乗せ、など6点。代表例にAnthropic公式pptx、frontend-slides、DADS slides等を並べた図。</div><div class="vsaved">保存 10/6 19:52</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/haru_maki_ch/status/2107123054799360416?s=12" data-title="「スライドSkill」3系統のグラレコ整理" data-rid="1878828586">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/karpathy/status/2105819303471976479?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/media/HTlaHqgbwAAS1lv?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Karpathy：LLMの出力を理解する時間が増える</div><div class="vdesc">文章面のコツとして、LLMにASD-STE100（航空整備由来の制限言語・約900語の承認語彙・手順文は20語以内）で説明させる手法を紹介。添付図はその仕様の構造・動詞形・語数上限を整理したもので、曖昧さを削る書き方の型として読める。</div><div class="vsaved">保存 10/6 21:08</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/karpathy/status/2105819303471976479?s=12" data-title="Karpathy：LLMの出力を理解する時間が増える" data-rid="1878926876">💬 AIと話す</button>
+</div>
+</div>
+<h2>🛠 AI活用・ツール（3件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/shoskirinukisan/status/2106920071826411947?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fshoskirinukisan%2Fstatus%2F2106920071826411947%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">株価分析画像を全自動で作るPythonツール（note記事）</div><div class="vdesc">銘柄コードを入れるだけで約10秒、1920×1080の分析画像（2軸折れ線・数値カード・基準値の横棒）を自動生成。約1,000行のコード全文とAIへの指示文テンプレ4種付きで、「記事を丸ごとAIに貼って作らせる」前提の有料note。毎回同じ結果にはならないと正直に明記している点が特徴。</div><div class="vsaved">保存 10/6 08:15</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/shoskirinukisan/status/2106920071826411947?s=12" data-title="株価分析画像を全自動で作るPythonツール（note記事）" data-rid="1878183825">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/yksr_melt/status/2107061826911703272?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2107061826911703272" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">半角/全角キー不要の日英混在日本語入力「Meltype」</div><div class="vdesc">「kyouhagithubnipushshita」と打てば「今日はgithubにpushした」に自動で打ち分ける日本語入力。無料・OSSでWindows対応、Mac・Linuxはプレビュー版。v1.0.1ではMac版の起動直後クラッシュなどを修正。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/6 09:41</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/yksr_melt/status/2107061826911703272?s=12" data-title="半角/全角キー不要の日英混在日本語入力「Meltype」" data-rid="1878243395">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/shotovim/status/2107417030970446062?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fshotovim%2Fstatus%2F2107417030970446062%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">チーム共有の方法メモ</div><div class="vdesc">投稿本文は「チーム共有これでよさそう」の一文のみで、具体的な中身は取得できた範囲では不明。</div><div class="vsaved">保存 10/7 00:22</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/shotovim/status/2107417030970446062?s=12" data-title="チーム共有の方法メモ" data-rid="1879109281">💬 AIと話す</button>
+</div>
+</div>
+<h2>🏛 建築・デザイン（2件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/tsutsujimorimo/status/2107147816690978979?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Ftsutsujimorimo%2Fstatus%2F2107147816690978979%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">ホテル平面図（PDF）を集めた「神サイト」</div><div class="vdesc">むさしの手配センターの宿泊施設平面図一覧。東京・神奈川・静岡・山梨・長野など都道府県別に、収容人数・部屋数つきで旅館やホテルの平面図PDFが並ぶ。建築学生にとって実例の平面を横断して見られる資料庫。</div><div class="vsaved">保存 10/6 09:40</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/tsutsujimorimo/status/2107147816690978979?s=12" data-title="ホテル平面図（PDF）を集めた「神サイト」" data-rid="1878243184">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/DeF9-_qIwqL/?stkn=MTFzcnY0ZjR0ZTljeg==" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.82787-15/836703106_18141136147539708_6634814329568189733_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=101&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=cxF2Eh6RWToQ7kNvwHx2sla&amp;_nc_oc=AdozZFBXPzjk3w4egzyveXvd0OvobDi9R7PR42S8aZic7r8ChHYlDU0g6dZrwY3NVv8&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-1.cdninstagram.com&amp;_nc_gid=p78Ppb8yyrIMNgE8ypMVOA&amp;_nc_ss=7ba02&amp;oh=00_AQO5khakmzJQ94f3WSzPZwb5CvDMTQx2kjy34dfzm1Nxhw&amp;oe=6ACB090E" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">sitedia｜敷地分析ダイアグラム（Reel）</div><div class="vdesc">建築の敷地分析ダイアグラムを扱うアカウントのReel。今回はInstagram側の429エラーで取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/7 02:36</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DeF9-_qIwqL/?stkn=MTFzcnY0ZjR0ZTljeg==" data-title="sitedia｜敷地分析ダイアグラム（Reel）" data-rid="1879206961">💬 AIと話す</button>
+</div>
+</div>
+
+<footer>毎朝の同期で自動生成 ｜ katut-brain<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（1件中0件成功・内訳: gemini_unavailable 1件）。Gemini側の問題を疑うこと</p>
+<!-- run-timing schema=v2 status=complete target=2026-10-06 run_id=b70b6fb3 saves=8 step1_s=36 step2_s=17 step2_5_s=6 step3_s=10 step4_s=37 step4_5_s=50 step5_s=10 step7_s=6 total_s=172 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
