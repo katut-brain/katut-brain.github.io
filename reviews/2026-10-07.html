@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026-10-07 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style></head><body>
+<div class="wrap">
+<a class="back" href="../index.html">← 戻る</a>
+<h1>2026-10-07 の振り返り</h1>
+<div class="meta">Claudeを「作る道具・業務の裏方」として使う実例が並んだ日（9件）</div>
+
+<section class="summary">
+<h2>まとめ</h2>
+<p>この日の保存9件を貫くのは、「Claudeを設計・事務の現場に差し込むと、どこまで人の手が減るのか」という問いだ。Revit→Illustrator→Photoshopの自動展開、Rhino/Grasshopperでの接合部生成、LINE→台帳→月報の自動化はいずれも、AIを単体のチャットではなく既存ツールをつなぐ配線として使う例で、設計も事務も「手順の定義」が価値の中心になるという含意がある。</p>
+<p>ドメインをまたぐ接続では、建築・パラメトリック設計の3件とAI活用の5件が同じ構図（MCP・プラグイン・API）で重なった。活性化したのは「作りたい」軸よりも「知る／紹介したい」軸で、名古屋城の清須越のように、都市が丸ごと移動した歴史を3Dで伝える表現にも目が向いている。なお動画7件は今回、動画の内容を取得できておらず、キャプションに基づく整理である。</p>
+<ul class="pts">
+<li><b>配線としてのAI</b>：Revit・Illustrator・Photoshop／LINE・スプレッドシート・Claude APIと、既存ツールの間をClaudeがつなぐ事例が複数出た。</li>
+<li><b>人が確認する出口の設計</b>：LINE自動化は「迷うものは要確認へ」と分岐を用意しており、全自動より信頼できる運用の形を示している。</li>
+<li><b>選ぶAIの時代</b>：Decisions APIとJevは、文章を生成せず候補から選ぶという別の使い方を提示した。</li>
+<li><b>都市の記憶の可視化</b>：名古屋城の清須越は、建築史を地形・配置の動く地図で語る手法として参考になる。</li>
+</ul>
+<div class="q"><b>次に考える問い：</b>設計の手順をMCPで自動化したとき、設計者の判断はどの工程に残るのか。</div>
+</section>
+
+<h2>🔎 深掘り（関連記事）</h2>
+<section class="notes">
+<div class="ntag">Claudeを既存ツールの中で使う（Google Workspace）</div>
+<ul class="ilist">
+<li><a href="https://support.claude.com/en/articles/16951679-use-claude-in-google-docs-sheets-and-slides" target="_blank" rel="noopener"><b>Use Claude in Google Docs, Sheets, and Slides（Claudeサポート）</b></a> <span>→ ベータはPro/Max/Team/Enterprise向けで、開いているファイル内のみ読み書きでき変更は版履歴に残る。1操作6分上限・チャートは静的画像など制約も明記されており、「配線」型の利用でも守備範囲を決める設計が要になると分かる。</span></li>
+</ul>
+</section>
+
+<h2>🏗️ AI×設計・建築（3件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/DeKDsrIoKdR/" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.82787-15/840229849_17967039498198852_5662998575206150942_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=103&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=-2SR9zhGnuAQ7kNvwFV7Rpf&amp;_nc_oc=AdoyIu_ERhap1LAgubWjrSdEq083f6gKQR1pAZnmsCA41Fdbs-_Jt5v4Q68npxyOplQ&amp;_nc_zt=23&amp;_nc_ht=scontent-ord5-2.cdninstagram.com&amp;_nc_gid=cXmMBtGRbQSVtKE4udNV8w&amp;_nc_ss=7b60f&amp;oh=00_AQNy7kuojs3wnCRCnZ68nGJs1vUkrnTMNwoecnI-EoSCjQ&amp;oe=6ACC6351" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">Rhino+Grasshopper用プラグイン「Raven」新版を試した記録（Instagram Reel）</div><div class="vdesc">パラメトリック設計ツールRavenの新バージョンで何ができるかを試した投稿。「Rhino＋Grasshopperを使うなら試す価値あり」と勧める。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/7 11:55</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DeKDsrIoKdR/" data-title="Rhino+Grasshopper用プラグイン「Raven」新版を試した記録（Instagram Reel）" data-rid="1879530800">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/DeFPdZ8zQwY/" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.71878-15/837837409_1611753660674395_1806717779429356246_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=103&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=paPuysq7fGoQ7kNvwGnr5pt&amp;_nc_oc=Ado4-cKlkuC-9U6hkpeuEOOTBKKI5H1KtCezm6LPWjqLCZbQNV1RmRZCsPXAqxRqJOY&amp;_nc_zt=23&amp;_nc_ht=scontent-ord5-2.cdninstagram.com&amp;_nc_gid=Yx-UpRpICBt4_oV4u1Netw&amp;_nc_ss=7b60f&amp;oh=00_AQNdrnYk9UBeAUzqfsonc0zmQYq2nMUfeddhNiibmdrBlg&amp;oe=6ACC7A8E" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">H形鋼の接合部ジェネレーター（せん断・モーメント接合）をAIで作成</div><div class="vdesc">Gemini・ChatGPTを併用しRhino 8上でH形鋼のせん断接合とモーメント接合を自動生成するツールを作ったという制作例。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/7 11:59</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DeFPdZ8zQwY/" data-title="H形鋼の接合部ジェネレーター（せん断・モーメント接合）をAIで作成" data-rid="1879531600">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/DeJSmTdBPkV/" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-ord5-1.cdninstagram.com/v/t51.82787-15/834834364_17934234876400733_795712914810432953_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=110&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=9eRpQQ17CF8Q7kNvwFzMqX8&amp;_nc_oc=AdrwiAfN3fXtynPXJ-VpqEM39arf5zZwHq4EHq_2v-ls9EjPTdshxzkWVKxgTYpTK5w&amp;_nc_zt=23&amp;_nc_ht=scontent-ord5-1.cdninstagram.com&amp;_nc_gid=pdTzLaIivlDyM7ydqDz-nA&amp;_nc_ss=7b60f&amp;oh=00_AQPn77p-bytKN5IVHwwpJkemXOkMWzcG2fnTTWKkXAmm7w&amp;oe=6ACC61D4" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">ClaudeがRevitの平面図をIllustrator・Photoshopへ自動展開</div><div class="vdesc">Revitから部屋名・面積・用途を書き出し、用途別の色分け平面（凡例・スケールバー・方位付き）をIllustratorで、床材・影・家具を重ねたレンダリングをPhotoshopでレイヤー構築。3つのMCP連携で全てClaudeデスクトップから動く。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/7 17:08</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DeJSmTdBPkV/" data-title="ClaudeがRevitの平面図をIllustrator・Photoshopへ自動展開" data-rid="1879664790">💬 AIと話す</button>
+</div>
+</div>
+<h2>🤖 AI・Claude活用（5件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/tetumemo/status/2107627471566942477?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2107626661193916416/img/A_LiGgvhe1FRmEui.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Anthropicが「Claude for Google Workspace」を公開ベータ開始</div><div class="vdesc">Docs・Sheets・Slidesの横にClaudeを開き、資料を読ませながら直接編集させられるようになった。投稿者は、そのリリース情報自体をスライド化して試している。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/7 14:03</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/tetumemo/status/2107627471566942477?s=12" data-title="Anthropicが「Claude for Google Workspace」を公開ベータ開始" data-rid="1879583924">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/DeGWjL5zCUl/" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-ord5-1.cdninstagram.com/v/t51.71878-15/836870495_956568100837451_3433517803644373914_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=111&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=UXNcMAuzeIoQ7kNvwGIBscL&amp;_nc_oc=Adq2Wt6Ty0WwKhIj04w-YTzjqFxuiYD67RlTZE7OKNKFf1hqYQoFwnBv4DXnroXyHtQ&amp;_nc_zt=23&amp;_nc_ht=scontent-ord5-1.cdninstagram.com&amp;_nc_gid=iZmiPi5yewmHkPDdrNLS2g&amp;_nc_ss=7b60f&amp;oh=00_AQM9R77sGvUzfZgSvEQFAb_5UAbkL_lU8_T5SY9aeKvRnA&amp;oe=6ACC6C76" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">Claude Codeに入れたい4プラグイン：Ponytail・OmniRoute・Graphify・AgentSkills</div><div class="vdesc">余計なコードを削るPonytail、上限到達時に別AIへ切り替えるOmniRoute、コード全体を地図化して読み直しを減らすGraphify、計画からテスト・公開までを呼び出すAgentSkillsの4つ。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/7 17:03</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DeGWjL5zCUl/" data-title="Claude Codeに入れたい4プラグイン：Ponytail・OmniRoute・Graphify・AgentSkills" data-rid="1879663089">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/DeLqmf4GUyU/" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-ord5-1.cdninstagram.com/v/t51.82787-15/834902912_17903316648597438_4608579647648972744_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=111&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=o0ME_T9dUkYQ7kNvwGtZkHh&amp;_nc_oc=AdpUhJjKSDjNd9roq1L-W8pShjGG9mqxk4fPMbdjODoAN1wWrIbQNGghBvmqRauiiLw&amp;_nc_zt=23&amp;_nc_ht=scontent-ord5-1.cdninstagram.com&amp;_nc_gid=HMcJjy_bj1ywR4qhubTC1g&amp;_nc_ss=7b60f&amp;oh=00_AQOaxx_5QTiYf1RlvZ0zse_qTCPg5vsB_e0vpnkqBPOq4w&amp;oe=6ACC7729" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">OpenAI「Decisions API」とTypeSafe「Jev」の5つの違い</div><div class="vdesc">文章を書かず候補から1つ選ぶ両者を比較：画像を判断材料にできるのはDecisions API、料金（入力100万トークン$0.042）と正解率（約68%）を公開しているのはJev。画像判断なら待つ価値、テキストなら今すぐJev、という結論。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/7 17:06</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DeLqmf4GUyU/" data-title="OpenAI「Decisions API」とTypeSafe「Jev」の5つの違い" data-rid="1879664441">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/miya_dilx/status/2107671240194593278?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/media/HT_z0kCaYAAMZ1o.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">LINEグループに「記録係」公式LINEを入れ、Claude APIで顧客台帳と月報を自動化</div><div class="vdesc">画像から読み取れた中身：LINEの発言を公式LINEが受信→GASで生ログ化→雑談を除外→Claude APIが名前・流入経路・状況・金額を抽出→確信のあるものは台帳へ、迷うものは「要確認」へ→月報に集計。構成はLINE公式アカウント＋スプレッドシート＋Claude APIで、運用費は月1,200〜2,700円。支援先は地方のリフォーム・塗装会社が最多。</div><div class="vsaved">保存 10/7 20:00</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/miya_dilx/status/2107671240194593278?s=12" data-title="LINEグループに「記録係」公式LINEを入れ、Claude APIで顧客台帳と月報を自動化" data-rid="1879737693">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/ugaya/status/2107725368555946322?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fugaya%2Fstatus%2F2107725368555946322%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">「Claudeに頼めば日本の本が全て無料で読める」と日販を批判する投稿</div><div class="vdesc">Anthropicのクロードを使えば日本の書籍が無料で読める、と皮肉まじりに日販を罵る短文。出版流通とAI学習・利用をめぐる不満が根にあるが、具体的な根拠は本文に示されていない。</div><div class="vsaved">保存 10/7 20:22</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ugaya/status/2107725368555946322?s=12" data-title="「Claudeに頼めば日本の本が全て無料で読める」と日販を批判する投稿" data-rid="1879746510">💬 AIと話す</button>
+</div>
+</div>
+<h2>🏯 歴史・文化（1件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/DeAi-mUMUAc/" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.82787-15/834333759_18377630749234328_7330709465122411005_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=103&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=M1KsQ-hAT8gQ7kNvwGMwfMZ&amp;_nc_oc=AdoLzC2tnD6o1M5K3w6YaTIrYWF5VUOKFX5j_t6xIRNdtvILmNkjBSfeE58_uCvHnGw&amp;_nc_zt=23&amp;_nc_ht=scontent-ord5-2.cdninstagram.com&amp;_nc_gid=85-bf3S0Fjfsoq4EVaQxvg&amp;_nc_ss=7b60f&amp;oh=00_AQM89hApTYfBAnc-u-vxUayd7vclbxpm3q-HpolhMjd_kA&amp;oe=6ACC5110" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">名古屋城は「町ごと引っ越してきた城」──清須越と戦災からの復元</div><div class="vdesc">1610年に20大名が石垣を築き、清須から約6万人・約100の寺社・67の町が移転（清須越）。1945年の空襲で天守・本丸御殿は焼けたが石垣と避難済みの障壁画が残り、2018年に本丸御殿が復元。碁盤目の町割りは今も道に残る。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/7 21:54</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DeAi-mUMUAc/" data-title="名古屋城は「町ごと引っ越してきた城」──清須越と戦災からの復元" data-rid="1879833135">💬 AIと話す</button>
+</div>
+</div>
+
+<footer>毎朝の同期で自動生成 ｜ katut-brain<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（9件中0件成功・内訳: gemini_unavailable 8件, instagram_relay_not_video 1件）。gemini_unavailable が支配的なのでGemini側（APIキー・枠）の問題を疑うこと</p>
+<!-- run-timing schema=v2 status=complete target=2026-10-07 run_id=60463a43 saves=9 step1_s=9 step2_s=16 step2_5_s=32 step3_s=5 step4_s=27 step4_5_s=49 step5_s=4 step7_s=5 total_s=147 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body></html>
