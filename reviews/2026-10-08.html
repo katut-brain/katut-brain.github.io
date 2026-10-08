@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026-10-08 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+</style></head><body>
+<div class="wrap">
+<a class="back" href="../index.html">← 戻る</a>
+<h1>2026-10-08 の振り返り</h1>
+<div class="meta">AIに「手元の作業」を丸ごと任せる実例が2件並んだ日（2件）</div>
+
+<section class="summary">
+<h2>まとめ</h2>
+<p>この日の保存は2件とも、AIが人の代わりにアプリを操作して仕事を完結させる話だった。Harkは汎用の個人秘書としてNotionへのログインから招待確認まで自走し、AI Architecture LabのReelはClaudeがRhino→Illustrator→Photoshopを横断して建築平面図を仕上げる。前者は「何でも任せる」、後者は「専門ツールの連携で任せる」という対照的な方向だ。</p>
+<ul class="pts">
+<li><b>汎用エージェントの台頭</b>：Hark（Brett Adcock氏率いるHark Labs）は記憶・先回り・ブラウザ操作を柱とする個人向けAIで、権限委譲の覚悟が使う側に問われるという含意がある</li>
+<li><b>建築ワークフローのAI化</b>：Rhino MCPとAdobe連携で作図工程を自動化。Rhinoが部屋情報を持たない限界まで示されており、どの工程を任せられるかの線引きが見える</li>
+<li><b>軸</b>：どちらも「知る/紹介したい」軸が中心。作りたい意図のnoteは無かった</li>
+</ul>
+<div class="q"><b>次に考える問い：</b>平面図の「部屋」のような意味情報をモデル側が持たないとき、AIの自動作図はどこまで信頼して任せられるか？</div>
+</section>
+
+<h2>🔎 深掘り（関連記事）</h2>
+<section class="notes">
+<div class="ntag">Hark（汎用パーソナルAI）</div>
+<ul class="ilist">
+<li><a href="https://testingcatalog.com/figure-plans-to-release-hark-ai-assistant-this-week" target="_blank" rel="noopener"><b>Figure plans to release Hark AI assistant this week</b></a> <span>→ Harkは「チャットボットではなくpersonal intelligence」を掲げ、記憶・日次ブリーフ・ブラウザ操作（Handoff）・MCPコネクタを備える計画。ただし開発中の資料に基づく報道で、公式発表ではない点に注意。</span></li>
+</ul>
+<div class="ntag">Rhino × Claude（MCP連携）</div>
+<ul class="ilist">
+<li><a href="https://shyft.ai/mcp/rhino-mcp-server" target="_blank" rel="noopener"><b>rhino mcp server</b></a> <span>→ RhinoプラグインとMCPサーバーを入れ、Claude Desktopの設定に追加するとRhinoの3D操作を自然言語で指示できる。Adobe連携側の裏取りは検索では取れず未確認。</span></li>
+</ul>
+</section>
+
+<h2>🤖 AIエージェント（2件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/studio_yebisu/status/2108068606215074146?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2108068606215074146" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Hark：メール・カレンダー・予約・ログインまで任せる「スマートエージェント」</div><div class="vdesc">@studio_yebisu：GrokBot・Dots・Museの上位互換で「完璧な秘書を雇える感」と評価（309いいね）。添付のスクショでは、Harkがユーザーの許可でNotionへログインして招待を確認し、認証コード送信とEnter操作まで自走していた。ただしあらゆる権限を渡す前提の製品</div><div class="vsaved">保存 10/8 15:50</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/studio_yebisu/status/2108068606215074146?s=12" data-title="Hark：メール・カレンダー・予約・ログインまで任せる「スマートエージェント」" data-rid="1880596866">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/DeOTBKBRfh1/" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.82787-15/843103978_17934519621400733_7515798788855662149_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=106&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=NvhXsUJfQm0Q7kNvwE8ze_Y&amp;_nc_oc=AdopN5gqUNS7CTH-ZSEgf7lqxXC4Kq5bD_B2NB5GQ8mJsPprvbqJE5p2jYJCmS-jU2I&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-1.cdninstagram.com&amp;_nc_gid=TX8emxw08XC7-KRWaMonCg&amp;_nc_ss=7ba02&amp;oh=00_AQNWfuQJI4pGveiiKD156W8tllNRQupWv4Vg1-1W7iFVPw&amp;oe=6ACD2F3A" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">ClaudeでRhinoの平面図をIllustrator/Photoshopの作図へ（AI Architecture Lab）</div><div class="vdesc">Rhinoで開いたモデルからClaudeが作図案を提示し、DWG書き出し→線の整理・レイヤー分け→用途別の色分け平面図（凡例・スケールバー・方位付き）→PhotoshopでのレンダリングまでをMCP経由で実行する流れ。Rhinoは部屋の概念を持たずRevitのほうが向く、という限界も明記。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/8 16:19</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DeOTBKBRfh1/" data-title="ClaudeでRhinoの平面図をIllustrator/Photoshopの作図へ（AI Architecture Lab）" data-rid="1880607713">💬 AIと話す</button>
+</div>
+</div>
+
+<footer>毎朝の同期で自動生成 ｜ katut-brain<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（1件中0件成功・内訳: gemini_unavailable 1件）。Gemini側の問題を疑うこと</p>
+<!-- run-timing schema=v2 status=complete target=2026-10-08 run_id=61ef3e4d saves=2 step1_s=75 step2_s=16 step2_5_s=0 step3_s=8 step4_s=40 step4_5_s=0 step5_s=19 step7_s=5 total_s=163 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body></html>
