@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-10-10 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="../index.html">← 戻る</a>
+<h1>2026-10-10 の振り返り</h1>
+<div class="meta">AIを「安く・手軽に使い倒す」ための保存が2件</div>
+
+<section class="summary">
+<h2>まとめ</h2>
+<p>この日の保存は2件とも、AIツールを低コストで使いこなす実践知でした。通奏低音は「高価なモデルに頼らず、どこまで自分の手元で回せるか」という問いです。無料LLM APIの一覧は選択肢の幅を、Claudeで画像生成という投稿は既存ツールの使い方を広げる方向で、どちらもnoteは無いものの、知る・集める軸が活性化した日と読めます。</p>
+<ul class="pts">
+<li><b>無料枠の一覧化</b>：452本超・31プロバイダーを設定つきで束ねる整理は、選ぶ手間の削減が価値という含意がある</li>
+<li><b>使い方の配布</b>：手順をDMで渡す導線は、情報がコメント数と引き換えに流通する構造を映す</li>
+</ul>
+<div class="q"><b>次に考える問い：</b>無料枠の寄せ集めで組んだ環境は、制限や廃止が頻繁に起きる中でどこまで日常の制作を支えられるか？</div>
+</section>
+
+<h2>🔎 深掘り（関連記事）</h2>
+<section class="notes">
+<div class="ntag">無料LLM APIの一覧</div>
+<ul class="ilist">
+<li><a href="https://github.com/open-free-llm-api/awesome-freellm-apis" target="_blank" rel="noopener"><b>awesome freellm apis（GitHub）</b></a> <span>→ データはfreellm.netから毎日更新され、レート制限は変わり無料枠が終わることもあると明記されている。便利だが、実際に使う前に公式ページで条件を確かめる前提で使うべき一覧。</span></li>
+</ul>
+</section>
+
+<h2>🤖 AI・ツール（2件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/p/DeB_xCxDT_F/?img_index=3&amp;exln=MTBqNmZyY24xc29xaQ==" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.82787-15/833333644_17912487642496661_6402336323582483351_n.jpg?stp=c218.0.655.655a_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=100&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0FST1VTRUxfSVRFTS5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&amp;_nc_ohc=bw5jTqp45A0Q7kNvwGwjKtG&amp;_nc_oc=AdrIjo5C_DD12RzI38FgdsKqzbd_IiZo9yA7WphIMvhyUV3Aq6tgp2aNG509atazkDQ&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-1.cdninstagram.com&amp;_nc_gid=fy7sfGWScdVmkbxKkDbIhA&amp;_nc_ss=7b60f&amp;oh=00_AQM3vToIXdJ7t3prSCr6v7KDyD3QojqciZV3IddmYWDpow&amp;oe=6ACFE689" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">無料LLM API 452本を一覧化したディレクトリ「awesome-freellm-apis」</div><div class="vdesc">NVIDIA NIM・Gemini・Groq・Cloudflare・OpenRouterなど31プロバイダー・452本超の無料LLM APIを、ベースURL・モデルID・設定つきで整理したMITのリポジトリ。Claude Code・Cursor・Codex・Aider向けのワンクリック設定があり、多くはメール登録だけで使えるという。</div><div class="vsaved">保存 10/10 18:44</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/p/DeB_xCxDT_F/?img_index=3&amp;exln=MTBqNmZyY24xc29xaQ==" data-title="無料LLM API 452本を一覧化したディレクトリ「awesome-freellm-apis」" data-rid="1883280433">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/DeRlbzwC2ys/?cplk=cDZhMHRzZDR4ODcw" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-fra3-2.cdninstagram.com/v/t51.82787-15/843048626_18073753442721144_1572850819946332864_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=107&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=Tte6FQq-_skQ7kNvwEI6C3x&amp;_nc_oc=AdoklbqEtpIO1ZHeJeIL0yvn6zdm_5GxpGKProp4uzLppQKMonH3zjv5-kfFKcn9TJc&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-2.cdninstagram.com&amp;_nc_gid=qW7_mL1emOyxtDVoyqKe_w&amp;_nc_ss=7b60f&amp;oh=00_AQNBiaNjyxMzhGfXUSBp8bJCcMyGEop7jT-rRq9pi5jcdg&amp;oe=6ACFE999" onerror="this.remove()"><span class="ph">Instagram Reel</span></div>
+<div class="vbody"><div class="vtitle">「画像生成はClaudeにはできない」を覆すやり方まとめ</div><div class="vdesc">Claudeでも画像生成ができるというやり方を、コメントで「画像」と送ればDMで届ける形で配布する投稿。キャプションから分かるのはここまでで、手順そのものは投稿内にない。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/10 18:47</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DeRlbzwC2ys/?cplk=cDZhMHRzZDR4ODcw" data-title="「画像生成はClaudeにはできない」を覆すやり方まとめ" data-rid="1883281375">💬 AIと話す</button>
+</div>
+</div>
+
+<footer>毎朝の同期で自動生成 ｜ katut-brain<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（1件中0件成功・内訳: gemini_unavailable 1件）。Gemini側の問題を疑うこと</p>
+<!-- run-timing schema=v2 status=complete target=2026-10-10 run_id=83f30cba saves=2 step1_s=11 step2_s=14 step2_5_s=4 step3_s=5 step4_s=10 step4_5_s=35 step5_s=4 step7_s=6 total_s=89 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
