@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026-10-11 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style></head><body>
+<div class="wrap">
+<a class="back" href="../index.html">← 戻る</a>
+<h1>2026-10-11 の振り返り</h1>
+<div class="meta">敷地分析の自動化・非平面3Dプリント・AI動画の用語集――「作る手順を名前で呼べるようにする」3件</div>
+
+<section class="summary">
+<h2>まとめ</h2>
+<p>今日の3件は、手作業で往復していた工程を「ツール化」または「言葉で指定できる状態」に変える話で揃っている。sitediaは敷地ダイアグラム作成のQGIS↔Illustrator往復を住所検索1回に畳み、Unlayered Slicerはスライサーの前提（平面レイヤー）を外してサポート材そのものを減らす。Threadsのカメラワーク集は、AIへの指示を「おしゃれに」から固有の名称へ置き換える試みだ。</p>
+<p>建築・デザイン・3D・AI活用の軸がまたいで「知る/紹介したい」側に活性化した日で、作りたいというより、道具の前提を疑う視点を集めた印象がある。</p>
+<ul class="pts">
+<li><b>工程の圧縮</b>：敷地分析が住所入力だけで23枚出る＝設計初期の時間配分が変わるという含意がある。</li>
+<li><b>前提を外す</b>：非平面スライスはサポート不要・強度向上を狙い、「積層は平面」という常識を問う。</li>
+<li><b>語彙が出力を決める</b>：名称を知っていることがAIへの演出指示の精度になる。</li>
+</ul>
+<div class="q"><b>次に考える問い：</b>敷地ダイアグラムが1クリックで出るようになったとき、設計者が手で描く価値はどこに残るのか？</div>
+</section>
+
+<h2>🔎 深掘り（関連記事）</h2>
+<section class="notes">
+<div class="ntag">非平面・多軸3Dプリント</div>
+<ul class="ilist">
+<li><a href="https://arxiv.org/abs/2404.15061" target="_blank" rel="noopener"><b>Neural Slicer for Multi-Axis 3D Printing</b></a> <span>→ ニューラルネットでモデル周囲のスカラー場を学習し、その等値面から曲面レイヤーを取り出す手法。サポート不要で強度を補強する造形を謳い、Unlayered Slicerのような非平面化が研究側でも進んでいることが分かる。</span></li>
+</ul>
+</section>
+
+<h2>🛠 ツール・AI活用（3件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/DeUFHJMo7-A/?exln=MWxuZzg4M3o5NXN1NQ==" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-ord5-2.cdninstagram.com/v/t51.82787-15/841865634_18142694515539708_2863240855315305849_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=102&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=ONiInxO800wQ7kNvwGm775O&amp;_nc_oc=AdrREl5_Iws1nIK2JXVtb5HqGJp7iWj3ye3irzMX7_MmaPpz6t1J6l8UzKw-7ple1Sc&amp;_nc_zt=23&amp;_nc_ht=scontent-ord5-2.cdninstagram.com&amp;_nc_gid=TeW-WrdB9Zytw7-_apKurg&amp;_nc_ss=7b60f&amp;oh=00_AQOzJ2aUTNXvfVNjx8LOiAkTmPAn0wk5DhFxx7AGbOosSw&amp;oe=6AD1BB79" onerror="this.remove()"><span class="ph">Instagram Reel</span></div>
+<div class="vbody"><div class="vtitle">sitedia：敷地分析ダイアグラムを住所検索から自動生成</div><div class="vdesc">住所を検索するだけで敷地ダイアグラム23枚を生成（例は秋葉原駅周辺・半径800m）。QGISとIllustratorを往復する手間を省くツールで、PNGは無料、SVG・DXF・3DはPro。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/11 18:48</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DeUFHJMo7-A/?exln=MWxuZzg4M3o5NXN1NQ==" data-title="sitedia：敷地分析ダイアグラムを住所検索から自動生成" data-rid="1884857460">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/DeToSP9AwFv/?srtk=MTM4NXpweTFhc3c5dg==" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-ord5-1.cdninstagram.com/v/t51.82787-15/842977512_17891900994616687_4543987589487177708_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=106&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=SQ5YJ-CzT6oQ7kNvwHsmyLd&amp;_nc_oc=AdoLQWPD6w9692XnUK92uEHfdnA13SJuGDpqKZbEHIHgLmWMw19oyXP4xadvGSBa3a8&amp;_nc_zt=23&amp;_nc_ht=scontent-ord5-1.cdninstagram.com&amp;_nc_gid=am-1vCUJQkjUnLfTTzRHwg&amp;_nc_ss=7b60f&amp;oh=00_AQNR2zRD4hPAs-ZP4Yi1I9sTUpHkw0rVAaitSZWGNRml5w&amp;oe=6AD1AD15" onerror="this.remove()"><span class="ph">Instagram Reel</span></div>
+<div class="vbody"><div class="vtitle">Unlayered Slicer：非平面・多平面3Dプリント用スライサー</div><div class="vdesc">Orca/Prusa/Bambuスライサーのフォークで、非平面・多平面造形によりサポート減・表面品質向上・方向強度の改善を狙う。どの3Dプリンタでも使えると説明。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/11 18:53</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DeToSP9AwFv/?srtk=MTM4NXpweTFhc3c5dg==" data-title="Unlayered Slicer：非平面・多平面3Dプリント用スライサー" data-rid="1884867950">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://www.threads.com/share/_ez6WiyfZ/" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-ord5-2.xx.fbcdn.net/v/t39.92108-6/843891918_1413448900257831_7430509113653205122_n.jpg?_nc_cat=102&amp;ccb=1-7&amp;_nc_sid=554f3c&amp;_nc_ohc=i9X6-qfAVhkQ7kNvwHKKKaB&amp;_nc_oc=AdpAzs5ts2_d8ld9uHcYIakEDBuolcOnoWBazpO349vBQPHSnbe63x2L7gEAZ0R3haI&amp;_nc_zt=14&amp;_nc_ht=scontent-ord5-2.xx&amp;_nc_gid=qdid6hBO24mDi7Hddt5nAA&amp;_nc_ss=7b100&amp;oh=00_AQOYcziQSF3ANRzrd09N0jJzzw23T-oS81_eHLik_IgrpA&amp;oe=6AD1C90F" onerror="this.remove()"><span class="ph">Threads</span></div>
+<div class="vbody"><div class="vtitle">AI動画生成向け：カメラワークと切り替えの名称集</div><div class="vdesc">「いい感じに」ではなく「FPV」「ラックフォーカス」「ホイップパン」など名前で指示すれば狙った演出が出る、というClaude/Codexでの動画制作向けまとめ。本文のみ取得。※画像の内容は未取得 ※音声の内容は未取得</div><div class="vsaved">保存 10/11 18:57</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.threads.com/share/_ez6WiyfZ/" data-title="AI動画生成向け：カメラワークと切り替えの名称集" data-rid="1884869987">💬 AIと話す</button>
+</div>
+</div>
+
+<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（2件中0件成功・内訳: gemini_unavailable 2件）。Gemini側の問題を疑うこと</p>
+<footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-10-11 run_id=4fac220e saves=3 step1_s=10 step2_s=14 step2_5_s=4 step3_s=6 step4_s=17 step4_5_s=21 step5_s=24 step7_s=5 total_s=101 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body></html>
