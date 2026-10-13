@@ -143,6 +143,7 @@ def _rid_source_of(rec):
 # ⚠️ この表は「再取得する価値があるか」の判定であって、道徳的な恒久性ではない。
 # gemini_unavailable(APIキー未設定)は設定を直せば解決するが、直すまでは何度取り直しても
 # 同じなので permanent 側に置く。分類は毎回「最新レコード」から導出し直すので固定化しない。
+# ただし GEMINI_OUTAGE_DAYS の期間だけは例外（下の _is_gemini_outage を見ること）。
 _VIDEO_REASON_KIND = {
     "instagram_reel_abandoned": "permanent",   # 2026-08-23 の構造的断念（設計値）。
     # 2026-09-20 以降は新規発行されない歴史的コード。既存レコードが持つ歴史的コードで、
@@ -168,11 +169,28 @@ _VIDEO_REASON_KIND = {
 }
 
 
+# 2026-10-06〜10-13 の夜は、クラウドで google-genai の import が失敗していた（pip と
+# python3 が別インタプリタ）ため、キーはあったのに全件 gemini_unavailable になった。
+# 10-14 に修正済み。この期間の記録だけは「環境側の障害」で、取り直す価値があるので
+# transient 扱いにし、試行回数にも数えない（数えると、同期間前の ServerError と合わせて
+# 3回に達した件が即 exhausted になり、回収できない）。期間外の gemini_unavailable
+# （本当にキーが無い夜）は従来どおり permanent のまま＝毎晩の無駄撃ちは起きない。
+# 期間は _day（fetch_facts の日付ファイル名）で比べる。
+GEMINI_OUTAGE_DAYS = ("2026-10-06", "2026-10-13")
+
+
+def _is_gemini_outage(rec):
+    return (rec.get("video_reason") == "gemini_unavailable"
+            and GEMINI_OUTAGE_DAYS[0] <= (rec.get("_day") or "") <= GEMINI_OUTAGE_DAYS[1])
+
+
 def _video_reason_kind(rec):
     """video_reason コードから恒久/一過性を引く。未知コード・未記録は None（＝判定不能）。"""
     code = rec.get("video_reason") or ""
     if not code:
         return None
+    if _is_gemini_outage(rec):
+        return "transient"
     if code in _VIDEO_REASON_KIND:
         return _VIDEO_REASON_KIND[code]
     if code.startswith("exception:"):
@@ -318,7 +336,9 @@ def _build_groups(records, max_attempts=DEFAULT_MAX_ATTEMPTS):
         # 残るのは最後の1レコードだけなので len() では回数を取りこぼす。
         # fetch_content 側が引き継いでいる attempt_seq を足して実試行回数にする
         # （attempt_seq を持たない旧レコードは1回とみなす）。
-        attempt_count = sum(_attempt_seq_of(r) for r in recs_sorted)
+        # 環境障害の期間の gemini_unavailable は試行に数えない（GEMINI_OUTAGE_DAYS 参照）。
+        attempt_count = sum(_attempt_seq_of(r) for r in recs_sorted
+                            if not _is_gemini_outage(r))
         exhausted = state == "open" and attempt_count >= max_attempts
         summary[key] = {
             "key": key,
@@ -477,8 +497,7 @@ def _print_group(g):
     print("  missing: %s" % latest.get("missing"))
     if latest.get("video_reason"):
         code = latest["video_reason"]
-        kind = _VIDEO_REASON_KIND.get(code) or (
-            "transient" if code.startswith("exception:") else "不明")
+        kind = _video_reason_kind(latest) or "不明"
         print("  video_reason: %s [%s]" % (code, kind))
     print("  reason: %s" % latest.get("reason"))
     print("history (fetched_at, depth, ok):")

@@ -185,5 +185,78 @@ class TestSummaryLegacyUnresolved(LedgerTestBase):
             fetch_content._RID_INDEX_CACHE = orig_cache
 
 
+class TestGeminiOutageWindow(LedgerTestBase):
+    """2026-10-06〜10-13 の gemini_unavailable（import 失敗という環境障害）だけを
+    取り直し対象にする。期間外・既存の permanent は変えない。"""
+
+    URL = "https://x.com/a/status/1"
+
+    def _rec(self, day, rid=11, reason="gemini_unavailable", url=None, route="x",
+             missing=("video_content",), ok=True, depth="partial"):
+        url = url or self.URL
+        return {url: {
+            "url": url, "route": route, "ok": ok, "depth": depth,
+            "missing": list(missing), "video_reason": reason,
+            "fetched_at": "%sT19:00:00Z" % day, "raindrop_id": rid,
+            "rid_source": "exact", "attempt_seq": 1,
+        }}
+
+    def _cands(self):
+        return [g["key"][1] for g in ledger.backfill_candidates("2026-10-20")]
+
+    def test_outage_days_are_transient_and_candidates(self):
+        for day in ("2026-10-06", "2026-10-13"):          # 窓の両端を含む
+            self._write_day(day, self._rec(day, rid=int(day[-2:]),
+                                           url=self.URL + day))
+        self.assertEqual(sorted(self._cands()), [6, 13])
+
+    def test_outside_window_stays_permanent(self):
+        for day, rid in (("2026-10-05", 5), ("2026-10-14", 14)):    # 窓のすぐ外
+            self._write_day(day, self._rec(day, rid=rid, url=self.URL + day))
+        self.assertEqual(self._cands(), [])
+        g = ledger._build_groups(ledger._load_all_records())[("rid", 5)]
+        self.assertEqual(g["reason_kind"], "permanent")
+
+    def test_outage_attempts_do_not_count_toward_exhausted(self):
+        # ServerError 2回 + 窓内の gemini_unavailable 1回: 数えると3回で exhausted になる。
+        self._write_day("2026-10-04", self._rec("2026-10-04", reason="exception:ServerError"))
+        self._write_day("2026-10-05", self._rec("2026-10-05", reason="exception:ServerError"))
+        self._write_day("2026-10-06", self._rec("2026-10-06"))
+        g = ledger._build_groups(ledger._load_all_records())[("rid", 11)]
+        self.assertEqual(g["attempt_count"], 2)
+        self.assertFalse(g["exhausted"])
+        self.assertEqual(self._cands(), [11])
+
+    def test_real_exhaustion_still_applies(self):
+        for d in ("2026-10-02", "2026-10-03", "2026-10-04"):
+            self._write_day(d, self._rec(d, reason="exception:ServerError"))
+        self._write_day("2026-10-06", self._rec("2026-10-06"))
+        g = ledger._build_groups(ledger._load_all_records())[("rid", 11)]
+        self.assertTrue(g["exhausted"])
+        self.assertEqual(self._cands(), [])
+
+    def test_instagram_reel_in_window_is_candidate(self):
+        url = "https://www.instagram.com/reel/AbC/"
+        self._write_day("2026-10-07", self._rec("2026-10-07", url=url, route="instagram"))
+        self.assertEqual(self._cands(), [11])
+
+    def test_existing_permanents_unchanged(self):
+        # 窓内でも gemini_unavailable 以外の permanent コードは変わらない。
+        self._write_day("2026-10-07", self._rec("2026-10-07", rid=1, reason="too_large",
+                                                url=self.URL + "tl"))
+        # 理由コードを持たない旧 Instagram Reel の構造的断念。
+        reel = "https://www.instagram.com/reel/Old/"
+        self._write_day("2026-09-01", self._rec("2026-09-01", rid=2, url=reel,
+                                                route="instagram", reason=""))
+        # 構造的な穴だけの欠損。
+        self._write_day("2026-10-08", self._rec("2026-10-08", rid=3, reason="",
+                                                url="https://example.com/p", route="web",
+                                                missing=("image_content",)))
+        groups = ledger._build_groups(ledger._load_all_records())
+        for rid in (1, 2, 3):
+            self.assertEqual(groups[("rid", rid)]["reason_kind"], "permanent", rid)
+        self.assertEqual(self._cands(), [])
+
+
 if __name__ == "__main__":
     unittest.main()
