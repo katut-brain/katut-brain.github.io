@@ -44,14 +44,13 @@
      コマンド行へ毎回書き下すものは従来どおりでよい。
    - **計測が失敗しても手順は止めない**。`run_timing.py` はどんな例外でも exit 0 で終わる設計なので、
      このコマンドがエラーを出しても次へ進んでよい（振り返り本体には影響しない）。
-1.5. **依存インストールと点検**：次の3行をこの順に実行する（`pip` ではなく **`python3 -m pip`**＝後続の `python3` と同じインタプリタに入れる。YouTube字幕取得用 `youtube-transcript-api`、X動画・Instagram Reel動画理解用 `google-genai`）。
+1.5. **依存インストールと点検**：次の1行を実行する（`python3 -m pip` で後続の `python3` と同じインタプリタに入れる。YouTube字幕取得用 `youtube-transcript-api`、X動画・Instagram Reel動画理解用 `google-genai`）。
    ```bash
-   python3 -m pip install --quiet -r requirements.txt > /tmp/pip_install.log 2>&1; PIP_EXIT=$?
-   [ "$PIP_EXIT" -ne 0 ] && tail -5 /tmp/pip_install.log
-   PIP_EXIT=$PIP_EXIT python3 check_deps.py
+   python3 check_deps.py --install
    ```
-   - 失敗しても止めない（`fetch_content.py` はこれらのパッケージが無くても他の取得は正常動作する graceful degradation設計。ただしYouTube動画は字幕なし・X動画/Instagram Reel動画は音声/映像理解なしのタイトルのみに落ちる）。`check_deps.py` は常に exit 0。
-   - **出力の `DEPS_STATUS:` 行（`python=… genai=ok|fail(…) yt_transcript=ok|fail(…) pip_exit=…`）を隠さずログに残し、最終報告にそのまま1行貼る**。`genai=fail` なら、その夜の X動画・Reel は `video_reason=gemini_unavailable` になる（原因は fetch_facts の `video_reason_detail` にも残る）。
+   - 中身は「`python3 -m pip install --quiet -r requirements.txt` → 失敗時だけ出力末尾5行を表示 → 失敗がPEP 668（`externally-managed-environment`）なら `--break-system-packages` で1回だけ入れ直す → import点検」。**どう連結しても常に exit 0** で、`DEPS_STATUS:` 行が必ず出る。
+   - 失敗しても止めない（`fetch_content.py` はこれらのパッケージが無くても他の取得は正常動作する graceful degradation設計。ただしYouTube動画は字幕なし・X動画/Instagram Reel動画は音声/映像理解なしのタイトルのみに落ちる）。
+   - **出力の `DEPS_STATUS:` 行（`python=… genai=ok|fail(…) yt_transcript=ok|fail(…) gemini_key=set|unset pip_exit=… pip_retry=none|bsp`）を隠さずログに残し、最終報告にそのまま1行貼る**。`genai=fail` または `gemini_key=unset` なら、その夜の X動画・Reel は `video_reason=gemini_unavailable` になる（原因は fetch_facts の `video_reason_detail` にも残る）。
 2. （先に `python3 run_timing.py mark step2 --run-id <8桁>`）`python3 _build_graph.py` を実行。Raindrop の新規を `captures.json` に取り込み、既存レコードも冪等に更新する（失敗してもログして続行）。
    - **出力の `IMPORT_STATUS:` 行を必ず読む**。`INCOMPLETE` だった場合は Raindrop を全件取得できておらず、**その日の振り返りが欠損しうる**。この場合は手順5の `reviews/<TARGET>.html` の `</footer>` 直前に `<p class="notegen-warn">⚠️ 取り込み不完全: Raindrop取得エラー N件。欠けている保存がある可能性あり</p>` を1行足して、欠損の可能性を残す（黙って完走しない）。import は冪等なので翌ランで自動的に回復する。
    - この行を見落として「正常に完走した」と扱わないこと。無人運用ではログを誰も読まないため、**成果物側に痕跡を残すことが唯一の検知手段**になる。
@@ -198,7 +197,7 @@
    - **「今回取得できず」と「構造的に取得不可」を書き分ける**：前者は一過性（タイムアウト・レート制限・瞬断）で、翌晩には取れる可能性がある。後者は仕様上取れない（Threadsの画像内容、字幕の無いYouTube、凍結アカウントなど）。この2つを同じ文言で書くと、**一過性の失敗が恒久的な取得不可としてノートに焼き付く**（実測: 「本文・画像とも取得できず」と書かれた2件を後日再取得したら両方とも取れた）。一過性側は「今回は取得できなかった」と書く。
    - **Threads**：`missing` に `"visual_content"` または `"audio_content"` が入る場合（Threadsは画像・動画・音声の中身を取得しない構造的な制約）、**`.vdesc` の末尾に、`missing` に入っている欠損キーそれぞれの固定マーカー文を必ず書く**（`visual_content` → 「※画像の内容は未取得」、`audio_content` → 「※音声の内容は未取得」。両方欠損していれば両方書く）。本文（テキスト）の取得限界（「本文の続きは取得できていない」等）だけを書いて済ませないこと——それは視覚/音声コンテンツの開示にはならない（2026-09-08 に開示ゼロの実例あり）。手順7の機械判定はこのマーカー文字列の有無だけを見る。自由な言い回し（「画像・動画・音声の内容は未取得」等）では判定されない。
    - **`.vdesc`（一言）生成の共通原則（全コンテンツ種別に適用）**：`captures.json` の `text`（記事本文・YouTube字幕・X/Instagram動画理解結果）に既に具体的な手順・数値・固有名詞（ツール名・価格・作業ステップ・数量など）が含まれている場合は、それを**最優先で一言に反映する**。タイトルの言い換えや「〜を解説」「〜が話題」のような**宣伝文句レベルの一般化に縮退させない**——取得済みの一次情報（具体的なTips・実装内容・数字）があるなら、その中身そのものを書く（例：「7つのTipsを紹介」ではなく実際のTipの内容を、「アプリを開発」ではなく決済実装・ストア配信など実務の核心を書く）。**文末表現は多様にする**：「〜と紹介」等の同じ結び方を2件連続で使わない。体言止め・数字の言い切り・「〜が判明」等を使い分ける。
-4.2. **取得の生の事実の記録（スクリプトが自動で行う。エージェントは環境変数を1つ設定するだけ）**：`fetch_content.py` は取得のたびに `facts`（`fetched_at` / `route` / `ok` / `http_status` / `depth` / `missing` / `raindrop_id` / `rid_source` / `text_chars` / `text_sha1` / `body_chars` / `desc_chars` / `body_truncated` / `image_count` / `has_video` / `video_understood` / `video_reason` / `fail_reason` / `attempt_seq` / `elapsed_ms` / `reason` / `fetcher_version`）を `fetch_facts/<日付>.json` へ自動で追記する。**エージェントがこのファイルを手で書く必要はない。**
+4.2. **取得の生の事実の記録（スクリプトが自動で行う。エージェントは環境変数を1つ設定するだけ）**：`fetch_content.py` は取得のたびに `facts`（`fetched_at` / `route` / `ok` / `http_status` / `depth` / `missing` / `raindrop_id` / `rid_source` / `text_chars` / `text_sha1` / `body_chars` / `desc_chars` / `body_truncated` / `image_count` / `has_video` / `video_understood` / `video_reason` / `video_reason_detail`（`gemini_unavailable` の原因: `import_error:<型>:<msg>` か `no_api_key`。他は空） / `fail_reason` / `attempt_seq` / `elapsed_ms` / `reason` / `fetcher_version`）を `fetch_facts/<日付>.json` へ自動で追記する。**エージェントがこのファイルを手で書く必要はない。**
    - ⚠️ **手順4のすべての `fetch_content.py` 呼び出しで `FACTS_DATE=$TARGET` を環境変数として渡すこと。** これを忘れると実行日（＝TARGETの翌日）の名前でファイルが作られ、手順8で push するファイル名と食い違う。
      - グループA: `FACTS_DATE=$TARGET timeout 480 python3 fetch_content.py <単一URL>`
      - グループB: `FACTS_DATE=$TARGET python3 fetch_content.py <url1> <url2> ...`
