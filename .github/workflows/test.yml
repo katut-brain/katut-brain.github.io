@@ -143,3 +143,8 @@ jobs:
       # （2026-09-24 legacy-rid-migration Task追加）。
       - name: Run ledger tests
         run: python -m unittest -v test_ledger.py
+
+      # 手順1.5 の依存点検(check_deps.py)と、gemini_unavailable の原因補足
+      # (fetch_facts の video_reason_detail)の回帰テスト（2026-10-13 追加）。
+      - name: Run deps-check tests
+        run: python -m unittest -v test_check_deps.py

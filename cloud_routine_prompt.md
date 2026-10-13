@@ -44,7 +44,14 @@
      コマンド行へ毎回書き下すものは従来どおりでよい。
    - **計測が失敗しても手順は止めない**。`run_timing.py` はどんな例外でも exit 0 で終わる設計なので、
      このコマンドがエラーを出しても次へ進んでよい（振り返り本体には影響しない）。
-1.5. **依存インストール**：`pip install --quiet -r requirements.txt`（YouTube字幕取得用 `youtube-transcript-api`、X動画・Instagram Reel動画理解用 `google-genai`）。失敗しても止めない（`fetch_content.py` はこれらのパッケージが無くても他の取得は正常動作する graceful degradation設計。ただしYouTube動画は字幕なし・X動画/Instagram Reel動画は音声/映像理解なしのタイトルのみに落ちる）。
+1.5. **依存インストールと点検**：次の3行をこの順に実行する（`pip` ではなく **`python3 -m pip`**＝後続の `python3` と同じインタプリタに入れる。YouTube字幕取得用 `youtube-transcript-api`、X動画・Instagram Reel動画理解用 `google-genai`）。
+   ```bash
+   python3 -m pip install --quiet -r requirements.txt > /tmp/pip_install.log 2>&1; PIP_EXIT=$?
+   [ "$PIP_EXIT" -ne 0 ] && tail -5 /tmp/pip_install.log
+   PIP_EXIT=$PIP_EXIT python3 check_deps.py
+   ```
+   - 失敗しても止めない（`fetch_content.py` はこれらのパッケージが無くても他の取得は正常動作する graceful degradation設計。ただしYouTube動画は字幕なし・X動画/Instagram Reel動画は音声/映像理解なしのタイトルのみに落ちる）。`check_deps.py` は常に exit 0。
+   - **出力の `DEPS_STATUS:` 行（`python=… genai=ok|fail(…) yt_transcript=ok|fail(…) pip_exit=…`）を隠さずログに残し、最終報告にそのまま1行貼る**。`genai=fail` なら、その夜の X動画・Reel は `video_reason=gemini_unavailable` になる（原因は fetch_facts の `video_reason_detail` にも残る）。
 2. （先に `python3 run_timing.py mark step2 --run-id <8桁>`）`python3 _build_graph.py` を実行。Raindrop の新規を `captures.json` に取り込み、既存レコードも冪等に更新する（失敗してもログして続行）。
    - **出力の `IMPORT_STATUS:` 行を必ず読む**。`INCOMPLETE` だった場合は Raindrop を全件取得できておらず、**その日の振り返りが欠損しうる**。この場合は手順5の `reviews/<TARGET>.html` の `</footer>` 直前に `<p class="notegen-warn">⚠️ 取り込み不完全: Raindrop取得エラー N件。欠けている保存がある可能性あり</p>` を1行足して、欠損の可能性を残す（黙って完走しない）。import は冪等なので翌ランで自動的に回復する。
    - この行を見落として「正常に完走した」と扱わないこと。無人運用ではログを誰も読まないため、**成果物側に痕跡を残すことが唯一の検知手段**になる。

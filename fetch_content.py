@@ -37,11 +37,13 @@ except ImportError:
     _YT_TRANSCRIPT_AVAILABLE = False
 
 # google-genai（オプション依存。X動画の音声+映像理解に使う。GEMINI_API_KEY環境変数も必要）
+_GEMINI_IMPORT_ERROR = ""   # ImportError の型とメッセージ（gemini_unavailable の原因切り分け用。キーは含めない）
 try:
     from google import genai as _genai
     _GEMINI_AVAILABLE = True
-except ImportError:
+except ImportError as _e:
     _GEMINI_AVAILABLE = False
+    _GEMINI_IMPORT_ERROR = "%s:%s" % (type(_e).__name__, " ".join(str(_e).split())[:120])
 _GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 
 BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -1328,6 +1330,20 @@ def _resolve_rid(url):
         return None, "no_captures"
 
 
+def _video_reason_detail(video_reason):
+    """video_reason=="gemini_unavailable" の原因を区別する補足文字列。それ以外は ""。
+
+    理由コード自体は変えない（ledger.py が参照）。補足は fetch_facts の別フィールドに置く。
+      import_error:<型>:<メッセージ> = google-genai の import 失敗 / no_api_key = GEMINI_API_KEY 未設定
+    APIキーの値は決して含めない。
+    """
+    if video_reason != "gemini_unavailable":
+        return ""
+    if not _GEMINI_AVAILABLE:
+        return "import_error:" + (_GEMINI_IMPORT_ERROR or "unknown")
+    return "no_api_key"
+
+
 def _facts(url, started, result):
     """取得の「生の事実」を組み立てる。
 
@@ -1379,6 +1395,8 @@ def _facts(url, started, result):
         # どの経路で動画理解を諦めたかの生の理由コード。恒久/一過性のラベルは
         # ここに焼き付けず、照会側(ledger.py)がこのコードから導出する。
         "video_reason": result.get("video_reason", ""),
+        # video_reason=="gemini_unavailable" の原因（import_error:<型>:<msg> / no_api_key）。それ以外は ""。
+        "video_reason_detail": _video_reason_detail(result.get("video_reason", "")),
         "reason": result.get("reason", ""),
         # 取得失敗(ok:false)の機械可読な理由コード。恒久/一過性の分類はここに焼き付けず、
         # 照会側(ledger.py)がこのコードから導出する(video_reasonと同じ流儀)。
