@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-10-13 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-10-13 の振り返り</h1>
+  <div class="meta">11件：AIに「履歴と文脈」を溜める実践と、建築家・山本理顕の市長選への挑戦</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存を貫くのは、「AIとのやりとりを使い捨てにせず資産にする」という問い意識だった。全文脈を録音して渡すマイク、入出力履歴の保存の呼びかけ、数GBのセッションログからスキルを作る実践、落合陽一流の「道具まで作らせる」使い方は、どれも会話の記録を次の仕事の材料に変える話として一本につながる。</p>
+    <p>もう一つの軸は建築。山本理顕の横浜市長選立候補を、藤村龍至がボエリやレルネルと並べて論じており、建築の構想が制度に翻訳される条件への関心が見える。「作りたい」より「知る・紹介したい」軸が強く活性化した日で、AI活用とアートの接続よりも、AI活用の実装の細部と建築×政治という二本立てだった。</p>
+    <ul class="pts">
+      <li><b>履歴は資産</b>：録音、入出力ログ、セッションログと、残したものを後でスキルや道具に変える流れが複数の保存に共通している。</li>
+      <li><b>道具まで作らせる</b>：落合陽一の事例は、調査の分担から自分用環境の構築までAIに任せる範囲を広げており、人間の仕事は基準資料の提示と検証に移るという含意がある。</li>
+      <li><b>建築家の市政進出</b>：山本理顕の「400世帯」という住まいの単位が、市の政策の単位としても通用するかが論点になる。</li>
+      <li><b>無料・割引の情報</b>：X Ultraの1年0円表示とCursor Pro 1年無料は、どちらも条件の確認が先で、鵜呑みにしない読み方が要る。</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>山本理顕の「400世帯」という住まいの単位は、市政の政策に翻訳されたとき、建築で考えた意味を保てるのか。</div>
+  </section>
+
+<h2>🏛️ 建築・都市（3件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/ryuji_fujimura/status/2109759154386796931?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/card_img/2109685163810803712/dPI6YhMM?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">山本理顕の横浜市長選公約を、ボエリの「都市内連邦主義」と比較</div><div class="vdesc">藤村龍至氏の投稿。山本理顕氏の公約を2010年のミラノ市長選に向けたステファノ・ボエリの「都市内連邦主義」と比べ、建築家の構想を自治体政策へ転換する際の論点がいくつか浮かんだと述べ、詳細をnote記事に書いている。</div><div class="vsaved">保存 10/13 19:13</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ryuji_fujimura/status/2109759154386796931?s=12" data-title="山本理顕の横浜市長選公約を、ボエリの「都市内連邦主義」と比較" data-rid="1887653764">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://note.com/ryujifujimura/n/n08171216ea63?sub_rt=share_pb" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://assets.st-note.com/production/uploads/images/323481647/rectangle_large_type_2_ffc5da755f15e47f27a06f765fef7729.jpeg?fit=bounds&amp;quality=85&amp;width=1280" onerror="this.remove()"><span class="ph">note</span></div>
+<div class="vbody"><div class="vtitle">建築家と市長｜Ryuji Fujimura</div><div class="vdesc">山本理顕は10月4日に横浜市長選へ立候補。公約は住む権利の保障、約400世帯・1300人単位の「町内会サロン」、市民無料のミニバス網、観光収入5000億円から1兆円への倍増の4本柱。クリチバのレルネルやボエリの予備選（40.16%で敗北）と並べ、建築の専門性を市政に接続できるかを論じる。</div><div class="vsaved">保存 10/13 19:21</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://note.com/ryujifujimura/n/n08171216ea63?sub_rt=share_pb" data-title="建築家と市長｜Ryuji Fujimura" data-rid="1887657534">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://maps.app.goo.gl/Ets6JBoPehHAw4Nj7?g_st=io.raindrop.ios.share" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://dimg-pa.googleapis.com/ic/CsYBaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2dyYXNzLWNzL0FBQmttTGRLM01uYWM1QnEySWxjZDNVaWdMangtZEptbk0wRDNxd0JHM2h2YWJIMUVma3E2Mk1hMGRIek9reEdwcUxNYnZlclVQTGlJWHpyME5OLTZENEtDQVdaNGo0S1plUEI2WW5LXzN6eHhuNDlZdHVyX2VVeDAtMWo1Z3JFc21RdW9yYkw0aEtaPXcyMDMtaDEzNS1rLW5vCs0BaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2dyYXNzLWNzL0FBQmttTGNqLW12QnhDdWxHcHp2Yi1DUUxiZ01LNVpQWWlYX2dtQ0k5dUlBTVRaTDh2WlBzZnI1X3pwNk1uZWczVWtTenhnRlR1NEdaeERJRXZETkhwakF4SUVCRmFKTWM1UU5EdW5QaTRwREgwLTE3RkFnUVBxQUxaNW1uSHp0MGRjTU9CQVpPd3BlMEZQWkFjST13MjAzLWgzNjAtay1ubwrOAWh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9ncmFzcy1jcy9BQUJrbUxmUVo1dlU5SlA1ZTFqSmhhSHpCYk43UUNPM2N3dnNQc3h1NG9KcmJZajRCbF9zRmdXdEc1QkJIb3Jwd0JTQ0dOUkJjSWRNZUpXVld3RjRCYzNacExYZXhyajBTUTBIaUlSMGs4ckVhV25RWkxUSmszczVtQnBjVHlYT2VqT0lvNE42SDNQbUdHelhpZFhlPXcyMDMtaDE1Mi1rLW5vCkdodHRwczovL3d3dy5nc3RhdGljLmNvbS9tYXBzL3NoYXJpbmcvZ3JpZF9wcmV2aWV3L3NlZV9tb3JlX3F1YWRyYW50LnBuZyCEByiEBw==.png?sig=AN2pC3WtuLbDxlDCBg5GoHJOCMiZ&amp;lc=false&amp;sk=GathvzXtQk0%3D&amp;key=AIzaSyCkxh2o-kzOhtsG5ZdGEwQc8Vab9b0bTUg" onerror="this.remove()"><span class="ph">Googleマップ</span></div>
+<div class="vbody"><div class="vtitle">Googleマップの共有スポット</div><div class="vdesc">Googleマップの共有リンク。今回は場所名などの内容を取得できなかった。</div><div class="vsaved">保存 10/13 20:56</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://maps.app.goo.gl/Ets6JBoPehHAw4Nj7?g_st=io.raindrop.ios.share" data-title="Googleマップの共有スポット" data-rid="1887716858">💬 AIと話す</button>
+</div>
+</div>
+<h2>🤖 AI活用（8件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/djrio_vr/status/2109604380739862738?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fdjrio_vr%2Fstatus%2F2109604380739862738%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">小型録音マイクSoundcore Workで「全文脈」をAIに共有</div><div class="vdesc">Ankerの小型録音マイクSoundcore Workを買ったのは、AIに全文脈を渡すため。公式アプリは機能が多すぎて使いにくく、無料プランは文字起こし量に制限があるので、同期・文字起こし用のアプリをGPT6 Astraで自作したという。</div><div class="vsaved">保存 10/13 08:49</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/djrio_vr/status/2109604380739862738?s=12" data-title="小型録音マイクSoundcore Workで「全文脈」をAIに共有" data-rid="1887099478">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/am09_21/status/2109670432676921537?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fam09_21%2Fstatus%2F2109670432676921537%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">AI Agentの入出力履歴は保存しておくべき、という呼びかけ</div><div class="vdesc">変な用途・役に立たない用途で使う人、毎日怒りながら使う人、web検索を頻繁にさせる人こそ聞いてほしい、として入出力履歴の保存を求める投稿。取得できたのは冒頭部分のみで、理由の続きは読めていない。</div><div class="vsaved">保存 10/13 19:12</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/am09_21/status/2109670432676921537?s=12" data-title="AI Agentの入出力履歴は保存しておくべき、という呼びかけ" data-rid="1887653690">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/izutorishima/status/2109794886409212002?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fizutorishima%2Fstatus%2F2109794886409212002%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">数GB級のセッションログを漁らせてドメイン知識をスキル化</div><div class="vdesc">「これわかる」と共感しつつ、不定期に過去の数GB分のセッションログをAIに読ませ、ドメイン知識をスキルにまとめさせていると明かす。履歴の保存が次の資産になる具体例。</div><div class="vsaved">保存 10/13 19:26</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/izutorishima/status/2109794886409212002?s=12" data-title="数GB級のセッションログを漁らせてドメイン知識をスキル化" data-rid="1887659350">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/ai_ai_ailover/status/2109589626445082919?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/media/HUaSiMVbwAAMXXM?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">落合陽一流のClaude Code活用術（X Article）</div><div class="vdesc">2026年9月に6体の調査エージェントを並列で動かし、主張ごとにURL・確認日・検証状態を付けて照合した事例が軸。人が基準資料を渡す、読み手別に書き分ける、確かめたい動きだけ試作する、自分用の道具を作らせるなど、仕事に取り入れる手順まで書かれる。「努力の回転数」は筆者の表現で、本人の方法論ではないと断っている。</div><div class="vsaved">保存 10/13 19:31</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ai_ai_ailover/status/2109589626445082919?s=12" data-title="落合陽一流のClaude Code活用術（X Article）" data-rid="1887662473">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/ai_ai_ailover/status/2109813061460910173?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2109813061460910173" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">落合陽一、複数台のPCでChatGPT・Gemini・Claude・エージェントを回し続ける</div><div class="vdesc">複数台のPCでChatGPT、Gemini、Claude、エージェント系AIを並行稼働させている様子を「エグい」と驚く投稿。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/13 19:30</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ai_ai_ailover/status/2109813061460910173?s=12" data-title="落合陽一、複数台のPCでChatGPT・Gemini・Claude・エージェントを回し続ける" data-rid="1887662131">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/oikon48/status/2109821373770293289?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/media/HUeXHNTaoAAx1iW?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">X Ultraの年間契約「100%オフ1年」は実質タダ？</div><div class="vdesc">添付画像はXの料金プラン画面で、Superは月14,834円（年178,000円）、Ultraは「100%オフ1年」で月0円、その後は年348,000円。投稿者は、年間契約してすぐ解約すれば1年間最高プランを無料で使えるのかと疑問を投げる。</div><div class="vsaved">保存 10/13 19:32</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/oikon48/status/2109821373770293289?s=12" data-title="X Ultraの年間契約「100%オフ1年」は実質タダ？" data-rid="1887662590">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/anag2bgod/status/2109773413397221439?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2109773413397221439" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">15歳が作った、Macで高速な画像生成「Iris-3B Metal」</div><div class="vdesc">画像生成AI「Iris-3B」をMacで高速・省メモリに動かすオープンソースアプリ。10ステップの推論が本家346秒に対し42秒。動画では多様な画風の生成、4倍のアップスケール、外部サーバーを使わない完全ローカル処理が紹介されている。</div><div class="vsaved">保存 10/13 19:48</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/anag2bgod/status/2109773413397221439?s=12" data-title="15歳が作った、Macで高速な画像生成「Iris-3B Metal」" data-rid="1887676508">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/ayi_ainotes/status/2109621079501320541?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2109621079501320541" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Cursor Pro 1年無料キャンペーン（締切10月15日）</div><div class="vdesc">年240ドル相当のCursor Proが1年間無料になるという中国語の投稿。学生証も教育メールも不要で世界中の誰でも対象、締切は10月15日とされる。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/13 21:36</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ayi_ainotes/status/2109621079501320541?s=12" data-title="Cursor Pro 1年無料キャンペーン（締切10月15日）" data-rid="1887744053">💬 AIと話す</button>
+</div>
+</div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=incomplete target=2026-10-13 run_id=623ee3f8 saves=11 step1_s=14 step2_s=20 step2_5_s=1 step3_s=18 step5_s=5 step7_s=0 reason=missing-step4_5 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
