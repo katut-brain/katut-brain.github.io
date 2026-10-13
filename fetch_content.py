@@ -42,9 +42,12 @@ try:
     from google import genai as _genai
     _GEMINI_AVAILABLE = True
 except Exception as _e:   # ImportError 以外（AttributeError等）でも fetch_content 自体は落とさない
-    from check_deps import redact as _redact
     _GEMINI_AVAILABLE = False
-    _GEMINI_IMPORT_ERROR = "%s:%s" % (type(_e).__name__, _redact(_e, 120))
+    try:
+        from check_deps import redact as _redact
+        _GEMINI_IMPORT_ERROR = "%s:%s" % (type(_e).__name__, _redact(_e, 120))
+    except Exception:   # 伏せ字関数が使えないなら、鍵を含みうる生メッセージは出さず型名だけ残す
+        _GEMINI_IMPORT_ERROR = "%s:redact_unavailable" % type(_e).__name__
 _GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 
 BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "

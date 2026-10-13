@@ -89,6 +89,14 @@ class CheckDepsTest(unittest.TestCase):
         self.assertIn("l8", buf.getvalue())
         self.assertNotIn("l3", buf.getvalue())
 
+    def test_install_timeout_is_rc124_and_reaches_status(self):
+        exc = subprocess.TimeoutExpired(["pip"], 300)
+        with patch.object(subprocess, "run", side_effect=exc) as m:
+            rc, retry = check_deps.install()
+        self.assertEqual((rc, retry), (124, "none"))
+        self.assertEqual(m.call_args.kwargs.get("timeout"), 300)
+        self.assertIn("pip_exit=124 ", check_deps.status_line(rc, retry))
+
     def test_install_pip_cannot_start(self):
         with patch.object(subprocess, "run", side_effect=OSError("nope")):
             rc, retry = check_deps.install()
@@ -182,6 +190,19 @@ class VideoReasonDetailTest(unittest.TestCase):
                 self.assertFalse(fetch_content._GEMINI_AVAILABLE)
                 self.assertEqual(d, "import_error:%s:%s" % (type(exc).__name__, exc))
         finally:
+            importlib.reload(fetch_content)
+
+    def test_redact_import_failure_does_not_crash_or_leak(self):
+        import importlib
+        key = "AIza" + "Q1w2E3r4T5y6U7i8O9p0A1s2"
+        real = sys.modules.pop("check_deps")
+        try:
+            with patch.dict(sys.modules, {"check_deps": None}),                  patch.dict(os.environ, {"GEMINI_API_KEY": key}):
+                d = self._reload_with_google_raising(RuntimeError("leak " + key))
+            self.assertEqual(d, "import_error:RuntimeError:redact_unavailable")
+            self.assertNotIn(key, d)
+        finally:
+            sys.modules["check_deps"] = real
             importlib.reload(fetch_content)
 
     def test_import_error_secret_redacted_in_detail(self):
