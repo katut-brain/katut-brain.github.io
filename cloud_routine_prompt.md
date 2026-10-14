@@ -154,6 +154,7 @@
      `python3 ledger.py <rid>`（個別 history）で変わらない。**これは無人ランの実行指示ではない。**）
 2.6. **公開済みカードの書き直し（手順2.5で動画理解が取れた分）**：次の1コマンドを実行する。LLM は本文に触れない（スクリプトだけが `.vdesc` の中身を置換する）。
    ```bash
+   : > /tmp/card_refresh_files.txt
    FETCH_FACTS_DIR="$PWD/fetch_facts" python3 refresh_cards.py --apply --limit 5
    ```
    - 出力は `CARD_REFRESH: mode=apply candidates=<N> skipped=<N> limit=5 rewritten=<N> cards=<N> errors=<N> rids=<…> files=<…>` の1行。**この行を削らずランのログに残し、最終報告にそのまま1行貼る**。`candidates` は「取り直しに成功したのに公開済みカードに『※動画の内容は未取得』が残っている rid 数」、`skipped` はそのうち書き直せない形（HTMLタグ入りなど）で触らなかった数（上限を食わない）、`rewritten` は書き直した rid 数（`--limit 5` は rid 単位。同じ rid のカードは全部書き直す）。`candidates=0` が普通。失敗しても（`CARD_REFRESH_ERROR:`・`errors>0`）手順を止めず、手順3へ進む。

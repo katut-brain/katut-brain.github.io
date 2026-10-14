@@ -1368,7 +1368,9 @@ def _video_summary(result):
     video_understood が偽なら空。fetch_x / fetch_instagram とも動画理解を text の最後に足す。"""
     if not result.get("video_understood"):
         return ""
-    tail = (result.get("text") or "").rpartition("\n\n動画の内容: ")[2]
+    _head, sep, tail = (result.get("text") or "").rpartition("\n\n動画の内容: ")
+    if not sep:
+        return ""   # 区切りが無い text は要約を捏造しない
     return clean_video_summary(tail)
 
 

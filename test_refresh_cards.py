@@ -194,7 +194,7 @@ class RefreshTest(Base):
         out = self.run_main()
         self.assertEqual(out["candidates"], "1")
         self.assertEqual(self.read(p), old)
-        self.assertFalse(os.path.exists(self.fo))
+        self.assertEqual(self.read(self.fo), "")   # 検出のみでも一覧は空にする
 
     def test_summary_length_capped(self):
         p = self.review("2026-10-04.html", page(card(1, "本文。" + DISC)))
@@ -217,6 +217,25 @@ class RefreshTest(Base):
         self.review("2026-10-04.html", page(card(1, "本文。")))
         self.run_main("--apply")
         self.assertEqual(self.read(self.fo), "")
+
+    def test_marker_inside_summary_is_not_written(self):
+        old = page(card(1, "本文。" + DISC))
+        p = self.review("2026-10-04.html", old)
+        self.facts(rec(1, True, "※動画の内容は未取得です"))
+        out = self.run_main("--apply")
+        self.assertEqual(self.read(p), old)
+        self.assertEqual(out["skipped"], "1")
+
+    def test_stale_default_files_out_is_cleared_first(self):
+        stale = os.path.join(self.d, "default_files.txt")
+        with open(stale, "w", encoding="utf-8") as f:
+            f.write("reviews/stale.html\n")
+        with mock.patch.object(refresh_cards, "DEFAULT_FILES_OUT", stale):
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                rc = refresh_cards.main(["--limit", "x"])   # 引数エラーでも先に空にする
+        self.assertEqual(rc, 0)
+        self.assertEqual(self.read(stale), "")
 
     def test_replace_failure_is_contained(self):
         old = page(card(1, "本文。" + DISC))
@@ -268,6 +287,27 @@ class DisclosureAfterRefreshTest(Base):
         self.assertEqual((r.violation, r.excluded), (0, 1))
         self.assertEqual(r.excluded_records[0]["reason"], "recovered")
 
+    def test_recovered_but_card_has_neither_content_nor_marker_is_a_violation(self):
+        # 書き直しが skipped・要約なし・上限待ちで開示も内容も無いカードは、無開示の違反を隠さない
+        self.facts(rec(1, True, "内容。"))
+        self.review("2026-10-04.html", page(card(1, "本文A。")))
+        self.assertEqual(self.violations(), (1, 0, 1, 0))
+
+    def test_recovered_with_marker_pending_is_excluded(self):
+        self.facts(rec(1, True, "内容。"))
+        self.assertEqual(self.violations(), (0, 0, 0, 1))
+
+    def test_broken_records_do_not_stop_the_check(self):
+        # fetched_at が数値と文字列で混在 → ledger の並べ替えが落ちる。検査は従来どおり走る
+        self.facts(dict(rec(1, True, "内容。"), fetched_at=12345), day="2026-10-14")
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = check_disclosure.main(["--all", "--facts-dir", self.ff, "--reviews-dir", self.rv])
+        self.assertEqual(rc, 0)
+        out = buf.getvalue()
+        self.assertIn("DISCLOSURE_WARN: recovered_unavailable (TypeError)", out)
+        self.assertIn("DISCLOSURE_CHECK: date=2026-10-04 duty=1 disclosed=1 violation=0", out)
+
     def test_unrecovered_missing_marker_is_still_a_violation(self):
         # 回収済みでない rid のカードからマーカーが消えていれば、従来どおり違反
         self.review("2026-10-04.html", page(card(1, "本文A。")))
@@ -299,6 +339,9 @@ class FactsPersistenceTest(Base):
         ledger.FACTS_DIR = d
         recs = ledger._load_all_records()
         self.assertEqual(recs[0]["video_summary"], facts["video_summary"])
+        # 区切りの無い text は空（本文全体を要約として保存しない）
+        res3 = dict(res, text="キャプションだけ")
+        self.assertEqual(fetch_content._video_summary(res3), "")
         # 動画なしは空
         res2 = dict(res, video_understood=False)
         self.assertEqual(fetch_content._facts(url, time.time(), res2)["video_summary"], "")

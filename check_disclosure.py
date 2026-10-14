@@ -435,6 +435,14 @@ def build_global_index(reviews_dir):
 
 # --- 1日分の処理 ------------------------------------------------------------
 
+REFRESHED_PREFIX = "動画の内容："   # refresh_cards.py が書き直したカードに入れる見出し
+
+
+def _has_video_content_or_marker(card_raw):
+    t = vdesc_text(card_raw)
+    return REFRESHED_PREFIX in t or _marker_disclosed(t, MARKERS["video_content"])
+
+
 def recovered_rids(facts_dir):
     """{rid(str): 最新レコード}。ledger の最新レコードで動画が取れている rid
     （video_understood かつ missing に video_content なし）。取り直しの成功は旧日付ではなく
@@ -543,12 +551,6 @@ def process_date(date, facts_dir, reviews_dir,
                 continue
             rid = rec.get("raindrop_id")
             rid_str = str(rid) if rid is not None else None
-            if kind in ("x_video", "reel") and rid_str in recovered:
-                result.excluded += 1
-                result.excluded_records.append(
-                    {"rid": rid_str, "url": url, "reason": "recovered"}
-                )
-                continue
             reason, is_backfill = _classify_missing_card(
                 date, rid_str, url, aux_rid_dates, aux_url_dates,
             )
@@ -581,16 +583,6 @@ def process_date(date, facts_dir, reviews_dir,
 
         rid = rec.get("raindrop_id")
         rid_str = str(rid) if rid is not None else None
-        # 後日の取り直しで動画が取れた rid は開示義務なし（recovered）。
-        if kind in ("x_video", "reel") and rid_str in recovered:
-            result.excluded += 1
-            result.excluded_records.append(
-                {"rid": rid_str, "url": url, "reason": "recovered"}
-            )
-            continue
-
-        result.duty += 1
-
         # 同じ rid/URL に対応するカードが対象日の reviews に複数あることが
         # あり得るので、候補は1枚に絞らず全部見る。
         candidates = []
@@ -600,6 +592,19 @@ def process_date(date, facts_dir, reviews_dir,
             u = normalize_url(url)
             if u in by_url:
                 candidates = by_url[u]
+
+        # 後日の取り直しで動画が取れた rid は開示義務なし（recovered）。ただし全候補カードに
+        # 動画の内容が入っている（書き直し済み）か開示マーカーが付いているときだけ。
+        # 書き直しが skipped・要約なし・上限待ちで、開示も内容も無いカードは従来どおり義務の対象。
+        if (kind in ("x_video", "reel") and rid_str in recovered and candidates
+                and all(_has_video_content_or_marker(c["raw"]) for c in candidates)):
+            result.excluded += 1
+            result.excluded_records.append(
+                {"rid": rid_str, "url": url, "reason": "recovered"}
+            )
+            continue
+
+        result.duty += 1
 
         if not candidates:
             reason, is_backfill = _classify_missing_card(
@@ -874,7 +879,11 @@ def _main(argv):
         return 0
 
     aux_rid_dates, aux_url_dates = build_global_index(reviews_dir)
-    recovered = recovered_rids(facts_dir)
+    try:
+        recovered = recovered_rids(facts_dir)
+    except Exception as exc:  # noqa: BLE001 - 回収済み判定が壊れても開示検査は従来どおり走らせる
+        recovered = {}
+        print("DISCLOSURE_WARN: recovered_unavailable (%s)" % type(exc).__name__)
 
     since = args.since
     results = []

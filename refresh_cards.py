@@ -50,7 +50,7 @@ def new_inner(inner, summary):
     if not s:
         return None
     s = html.escape(s, quote=True)
-    out = base + "動画の内容：" + s + ("" if s.endswith(("。", "…")) else "。")
+    out = base + cd.REFRESHED_PREFIX + s + ("" if s.endswith(("。", "…")) else "。")
     return None if MARKER in out else out
 
 
@@ -117,7 +117,17 @@ def _write_files_out(path, files):
         print("CARD_REFRESH_WARN: files-out を書けない: %s" % e)
 
 
+def _truncate(path):
+    """前の夜の一覧が残って誤って送られないよう、最初に空にする（書けなくても止めない）。"""
+    try:
+        with open(path, "w", encoding="utf-8"):
+            pass
+    except OSError:
+        pass
+
+
 def main(argv=None):
+    _truncate(DEFAULT_FILES_OUT)
     p = argparse.ArgumentParser()
     p.add_argument("--apply", action="store_true", help="書き直す（既定は検出のみ）")
     p.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help="rid 単位の上限")
@@ -129,6 +139,7 @@ def main(argv=None):
     except SystemExit:
         print("CARD_REFRESH_ERROR: 引数が不正")
         return 0
+    _truncate(a.files_out)
     limit = max(a.limit, 0)
     candidates = skipped = rewritten_rids = cards_written = errors = 0
     files = []
