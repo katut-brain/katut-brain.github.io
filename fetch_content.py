@@ -1348,6 +1348,18 @@ def _video_reason_detail(video_reason):
     return "no_api_key"
 
 
+VIDEO_SUMMARY_MAX = 600
+
+
+def _video_summary(result):
+    """動画理解の本文（text 末尾の「動画の内容: ...」）を最大 VIDEO_SUMMARY_MAX 字で返す。
+    video_understood が偽なら空。fetch_x / fetch_instagram とも動画理解を text の最後に足す。"""
+    if not result.get("video_understood"):
+        return ""
+    tail = (result.get("text") or "").rpartition("\n\n動画の内容: ")[2]
+    return tail.strip()[:VIDEO_SUMMARY_MAX]
+
+
 def _facts(url, started, result):
     """取得の「生の事実」を組み立てる。
 
@@ -1396,6 +1408,9 @@ def _facts(url, started, result):
         "image_count": images,
         "has_video": bool(result.get("has_video")),
         "video_understood": bool(result.get("video_understood")),
+        # 動画理解で得た内容そのもの（refresh_cards.py が公開済みカードの「※動画の内容は未取得」
+        # を書き直すのに使う。これが無いと取り直しに成功しても内容がどこにも残らない）。
+        "video_summary": _video_summary(result),
         # どの経路で動画理解を諦めたかの生の理由コード。恒久/一過性のラベルは
         # ここに焼き付けず、照会側(ledger.py)がこのコードから導出する。
         "video_reason": result.get("video_reason", ""),

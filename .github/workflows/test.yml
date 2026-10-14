@@ -148,3 +148,9 @@ jobs:
       # (fetch_facts の video_reason_detail)の回帰テスト（2026-10-13 追加）。
       - name: Run deps-check tests
         run: python -m unittest -v test_check_deps.py
+
+      # 公開済みカードの「※動画の内容は未取得」を取り直し成功分で書き直す
+      # （refresh_cards.py。手順2.6）の回帰テスト。開示が消えて内容が入ること・他の
+      # カードとページが不変・未回収 rid に触れない・1回の上限を超えないこと（2026-10-14 追加）。
+      - name: Run card-refresh tests
+        run: python -m unittest -v test_refresh_cards.py
