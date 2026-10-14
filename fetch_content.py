@@ -1348,16 +1348,28 @@ def _video_reason_detail(video_reason):
     return "no_api_key"
 
 
-VIDEO_SUMMARY_MAX = 600
+VIDEO_SUMMARY_MAX = 100   # カードに載る長さ。公開リポに出す本文もここまでに収める
+
+
+def clean_video_summary(text):
+    """動画理解の本文を、公開カードに載せる短い1〜2文にする（エスケープ前）。冪等。"""
+    s = re.sub(r"[*#`>_|]", "", text or "")
+    s = re.sub(r"\s+", " ", s).strip()
+    s = re.sub(r"^この動画(では|には|は)、?", "", s)
+    if len(s) <= VIDEO_SUMMARY_MAX:
+        return s
+    cut = s[:VIDEO_SUMMARY_MAX]
+    i = cut.rfind("。")
+    return cut[:i + 1] if i > 0 else cut + "…"
 
 
 def _video_summary(result):
-    """動画理解の本文（text 末尾の「動画の内容: ...」）を最大 VIDEO_SUMMARY_MAX 字で返す。
+    """動画理解の本文（text 末尾の「動画の内容: ...」）を整形して VIDEO_SUMMARY_MAX 字以内で返す。
     video_understood が偽なら空。fetch_x / fetch_instagram とも動画理解を text の最後に足す。"""
     if not result.get("video_understood"):
         return ""
     tail = (result.get("text") or "").rpartition("\n\n動画の内容: ")[2]
-    return tail.strip()[:VIDEO_SUMMARY_MAX]
+    return clean_video_summary(tail)
 
 
 def _facts(url, started, result):

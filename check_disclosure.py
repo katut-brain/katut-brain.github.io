@@ -63,6 +63,7 @@ from urllib.parse import urlsplit
 # sys.path[0] にこのファイルのディレクトリを入れるためそのまま import できる。
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import select_targets  # noqa: E402
+import ledger  # noqa: E402
 
 # --- 判定語（正本はここ一箇所） -------------------------------------------
 
@@ -434,6 +435,26 @@ def build_global_index(reviews_dir):
 
 # --- 1日分の処理 ------------------------------------------------------------
 
+def recovered_rids(facts_dir):
+    """{rid(str): 最新レコード}。ledger の最新レコードで動画が取れている rid
+    （video_understood かつ missing に video_content なし）。取り直しの成功は旧日付ではなく
+    別日の fetch_facts に入るので、旧日付の missing=[video_content] は義務の根拠にならない
+    （refresh_cards.py が書き直した後に偽の違反が出るのを防ぐ）。"""
+    old = ledger.FACTS_DIR
+    ledger.FACTS_DIR = facts_dir
+    try:
+        groups = ledger._build_groups(ledger._load_all_records())
+    finally:
+        ledger.FACTS_DIR = old
+    out = {}
+    for key, g in groups.items():
+        r = g["latest"]
+        if (key[0] == "rid" and r.get("video_understood") is True
+                and "video_content" not in (r.get("missing") or [])):
+            out[str(key[1])] = r
+    return out
+
+
 class DateResult(object):
     def __init__(self, date):
         self.date = date
@@ -483,7 +504,8 @@ def _write_review_atomic(review_path, content):
 
 
 def process_date(date, facts_dir, reviews_dir,
-                  aux_rid_dates, aux_url_dates, fix=False):
+                  aux_rid_dates, aux_url_dates, fix=False, recovered=None):
+    recovered = recovered or {}
     result = DateResult(date)
     facts_path = os.path.join(facts_dir, "%s.json" % date)
     if not os.path.isfile(facts_path):
@@ -521,6 +543,12 @@ def process_date(date, facts_dir, reviews_dir,
                 continue
             rid = rec.get("raindrop_id")
             rid_str = str(rid) if rid is not None else None
+            if kind in ("x_video", "reel") and rid_str in recovered:
+                result.excluded += 1
+                result.excluded_records.append(
+                    {"rid": rid_str, "url": url, "reason": "recovered"}
+                )
+                continue
             reason, is_backfill = _classify_missing_card(
                 date, rid_str, url, aux_rid_dates, aux_url_dates,
             )
@@ -551,9 +579,17 @@ def process_date(date, facts_dir, reviews_dir,
             result.out_of_scope += 1
             continue
 
-        result.duty += 1
         rid = rec.get("raindrop_id")
         rid_str = str(rid) if rid is not None else None
+        # 後日の取り直しで動画が取れた rid は開示義務なし（recovered）。
+        if kind in ("x_video", "reel") and rid_str in recovered:
+            result.excluded += 1
+            result.excluded_records.append(
+                {"rid": rid_str, "url": url, "reason": "recovered"}
+            )
+            continue
+
+        result.duty += 1
 
         # 同じ rid/URL に対応するカードが対象日の reviews に複数あることが
         # あり得るので、候補は1枚に絞らず全部見る。
@@ -838,6 +874,7 @@ def _main(argv):
         return 0
 
     aux_rid_dates, aux_url_dates = build_global_index(reviews_dir)
+    recovered = recovered_rids(facts_dir)
 
     since = args.since
     results = []
@@ -845,7 +882,7 @@ def _main(argv):
         try:
             r = process_date(
                 date, facts_dir, reviews_dir,
-                aux_rid_dates, aux_url_dates, fix=args.fix,
+                aux_rid_dates, aux_url_dates, fix=args.fix, recovered=recovered,
             )
         except Exception as exc:  # noqa: BLE001
             r = DateResult(date)

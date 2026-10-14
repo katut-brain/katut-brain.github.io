@@ -155,10 +155,9 @@
 2.6. **公開済みカードの書き直し（手順2.5で動画理解が取れた分）**：次の1コマンドを実行する。LLM は本文に触れない（スクリプトだけが `.vdesc` の中身を置換する）。
    ```bash
    FETCH_FACTS_DIR="$PWD/fetch_facts" python3 refresh_cards.py --apply --limit 5
-   git status --porcelain -- reviews/
    ```
-   - 出力は `CARD_REFRESH: mode=apply candidates=<N> limit=5 rewritten=<N> rids=<…> files=<…>` の1行。**この行を削らずランのログに残し、最終報告にそのまま1行貼る**。`candidates=0` が普通（取り直しが成功し、かつ公開済みカードに「※動画の内容は未取得」が残っている rid だけが数えられる）。失敗しても（`CARD_REFRESH_ERROR:`）手順を止めず、手順3へ進む。
-   - 続く `git status --porcelain -- reviews/` に出た `reviews/<日付>.html` を覚えておく。**手順8でそのファイルを押すファイルに加える**（手順5より前なので、ここに出るのはこの手順の書き直しだけ）。
+   - 出力は `CARD_REFRESH: mode=apply candidates=<N> skipped=<N> limit=5 rewritten=<N> cards=<N> errors=<N> rids=<…> files=<…>` の1行。**この行を削らずランのログに残し、最終報告にそのまま1行貼る**。`candidates` は「取り直しに成功したのに公開済みカードに『※動画の内容は未取得』が残っている rid 数」、`skipped` はそのうち書き直せない形（HTMLタグ入りなど）で触らなかった数（上限を食わない）、`rewritten` は書き直した rid 数（`--limit 5` は rid 単位。同じ rid のカードは全部書き直す）。`candidates=0` が普通。失敗しても（`CARD_REFRESH_ERROR:`・`errors>0`）手順を止めず、手順3へ進む。
+   - 書き直した `reviews/<日付>.html` の一覧は `/tmp/card_refresh_files.txt` に1行1ファイルで書かれる（書き直しが無い夜は空のファイル）。**手順8がこのファイルを読んで機械的に送る**ので、あなたが覚えたり書き写したりしない。
 3. （先に `python3 run_timing.py mark step3 --run-id <8桁>`）**対象の選定**：`select_targets.py` を実行し、
    まだどの `reviews/*.html` にも載っていない保存すべて（`date >= 2026-06-14`、過去日も含む・上限なし）を対象にする。
    `TARGET` は既存の書き方（手順1・手順7の `reel_health.py` 呼び出し）と同じく、別シェル呼び出しになるたびに
@@ -451,7 +450,7 @@
    - ⚠️ **自分で `git push` を打たない**。`main` への push はプロキシに拒否される（2026-06-21 に 403 を観測）。git で送ってよいのは `push_via_branch.sh` が作る `claude/publish-*` ブランチだけで、それはスクリプトがやる。`git add` / `git commit` も自分でしない（スクリプトは作業ツリーと index に触らずにコミットを作るので、`captures.json` 等の未コミット変更は巻き込まれない）。
    - 🚫 **`index.html` は push しない**（2026-08-31 変更・手順6を参照）。GitHub Actions が自動で再生成するので、あなたが触ると壊す側にしかならない。`index.html` を push 対象に入れたくなったら、それは手順6を読み飛ばしている。
    - **`captures.json` / `data.js` は push しない**：captures.json のRaindrop取り込みは冪等（`_build_graph.py` が既存レコードも毎回更新するので翌ランで再現される。2026-08-23に冪等化済み）、data.js は退役ファイル。大きいファイルを読むと文脈が膨らみ自動圧縮で迷子になるため、**触らない・読み込まない**。
-   - **手順2.6で書き直した `reviews/<日付>.html` がある夜は、(a)(b)(c) のどの分岐でも、そのファイルを押すファイルに加える**（`fetch_facts/` に差分が無く reviews も作らない夜でも (c) に入らない。書き直しだけの夜は `bash push_via_branch.sh "update: <TARGET> (card refresh)" <書き直したファイル> [fetch_facts の実在するもの]` で送る）。
+   - **手順2.6で書き直したファイルは、`/tmp/card_refresh_files.txt` から下のコマンド内で機械的に `$FILES` に足される**（あなたが読んで足すのではない）。書き直しだけの夜（その日の reviews も `fetch_facts/` の差分も無い夜）も、(b) に入って送る。
    - **この手順は次の3分岐のどれか1つだけを行う**（reviews の有無と fetch_facts の有無で分岐する。手順2.5のバックフィルが reviews 無しの日にも `fetch_facts/<TARGET>.json` を作りうるため、分岐を誤ると「存在しない reviews を扱おうとして失敗する」または「push すべき fetch_facts を見落とす」のどちらかが起きる）：
 
    **(a) reviews あり（手順5で `reviews/<TARGET>.html` を作った場合）**：
@@ -460,6 +459,9 @@
      FILES=""
      for f in fetch_facts/$TARGET.json fetch_facts/runs/$TARGET.json reviews/$TARGET.html; do
        [ -f "$f" ] && FILES="$FILES $f"
+     done
+     for f in $(cat /tmp/card_refresh_files.txt 2>/dev/null); do
+       [ -f "$f" ] && case " $FILES " in *" $f "*) ;; *) FILES="$FILES $f";; esac
      done
      if [ -z "$FILES" ]; then echo "PUSH_SKIPPED: no files"; else
        bash push_via_branch.sh "update: $TARGET" $FILES
@@ -479,8 +481,8 @@
    - 送る前に、**ファイルが本物であることだけ**確認する（中身を書き写すのではなく、ファイルに対して確認する）：`head -c 20 reviews/<TARGET>.html` が `<!doctype html>` で始まり、`tail -c 20` が `</html>` で終わり、`grep -c PLACEHOLDER reviews/<TARGET>.html` が 0 であること。
    - **照合は Actions が main に載せる前にやる**（manifest の SHA-256 と実ファイルの完全一致）。`WRITE_COMMIT: <sha> ... branch=...` が出ていればブランチまで届いており、`PUBLISHED: yes` なら公開まで完了。`note=main_untouched` が出ていたら**何も届いていない**ので、**もう一度同じコマンドを実行する**。**2回目も駄目なら、その夜は押さずに終える。フォールバックはしない**（手順8には `push_files` へ落ちる経路は存在しない。下の手順8.5に出てくるフォールバックは Vaultリポ専用であって、ここには適用しない）。
 
-   **(b) reviews 無し・今回のランで `fetch_facts/` に差分が生じた場合（手順2.5のバックフィルだけが書いた日）**：
-   - ⚠️ **(b) に入る判定条件は `git status --porcelain -- fetch_facts/` の出力が空でないこと、これ1つだけ**にする（2026-09-18 に対象を `fetch_facts/<TARGET>.json` 単体から `fetch_facts/` 配下全体へ広げた。手順2.5 の証跡 `fetch_facts/runs/<TARGET>.json` は、当日ファイルに差分が無い夜でも**通常は**増えるため（初期化前の停止・証跡書込み失敗では増えない。手順2.5 の注記を見ること）。ここを広げないと**証跡だけの夜が push されず、実行したこと自体が翌晩の新規cloneで消える**）。
+   **(b) reviews 無し・今回のランで `fetch_facts/` に差分が生じた、または手順2.6が既存カードを書き直した場合（手順2.5のバックフィル・手順2.6の書き直しだけがあった日）**：
+   - ⚠️ **(b) に入る判定条件は「`git status --porcelain -- fetch_facts/` の出力が空でない」または「`[ -s /tmp/card_refresh_files.txt ]`（手順2.6の書き直しがある）」の2つだけ**にする（後者は2026-10-14 に追加。以下の `fetch_facts/` の説明は前者についての理由）（2026-09-18 に対象を `fetch_facts/<TARGET>.json` 単体から `fetch_facts/` 配下全体へ広げた。手順2.5 の証跡 `fetch_facts/runs/<TARGET>.json` は、当日ファイルに差分が無い夜でも**通常は**増えるため（初期化前の停止・証跡書込み失敗では増えない。手順2.5 の注記を見ること）。ここを広げないと**証跡だけの夜が push されず、実行したこと自体が翌晩の新規cloneで消える**）。
      `BACKFILL_STATUS:` の内訳（`attempted`/`stub_written`/`rid_mismatch`等）は「今夜バックフィルが何をしたかを読むための情報」であり、(b)へ分岐するかどうかの判定条件には使わない。
      ⚠️ **`attempted` だけを条件にしてはいけない**（2026-09-04 output-verifier指摘で撤回）: stub書き込みだけの夜（`attempted=0 stub_written=1`）や
      `backfill_rid` タグ付けだけの夜（`rid_mismatch=1`）は `attempted=0` のままだが、どちらも `fetch_facts/<TARGET>.json` に実ファイル差分を生じさせている。
@@ -494,8 +496,11 @@
      for f in fetch_facts/$TARGET.json fetch_facts/runs/$TARGET.json reviews/$TARGET.html; do
        [ -f "$f" ] && FILES="$FILES $f"
      done
+     for f in $(cat /tmp/card_refresh_files.txt 2>/dev/null); do
+       [ -f "$f" ] && case " $FILES " in *" $f "*) ;; *) FILES="$FILES $f";; esac
+     done
      if [ -z "$FILES" ]; then echo "PUSH_SKIPPED: no files"; else
-       bash push_via_branch.sh "update: $TARGET (backfill only)" $FILES
+       bash push_via_branch.sh "update: $TARGET (backfill only / card refresh)" $FILES
      fi
      ```
      ⚠️ **存在するものだけを渡す**（`push_via_branch.sh` は存在しないパスを渡されると何も送らず exit 2 で終わる）。
@@ -510,7 +515,7 @@
    - 送る前に、**渡す JSON それぞれ**が本物のJSONであることを確認する：`for f in $FILES; do case "$f" in *.json) python3 -c "import json,sys; json.load(open(sys.argv[1],encoding='utf-8'))" "$f" || echo "BAD_JSON: $f";; esac; done` が何も出さないこと（存在しないファイルを開こうとしない）。
    - 照合は Actions が main に載せる前に SHA-256 でやる。`WRITE_COMMIT: <sha> ... branch=...` ならブランチまで完了。失敗したときは上の「失敗したときにやること」の①〜③に従う（**フォールバックはしない**）。
 
-   **(c) reviews 無し・`fetch_facts/` にも差分が無い（`git status --porcelain -- fetch_facts/` が空＝今回のランで変更が無い）**：
+   **(c) reviews 無し・`fetch_facts/` にも差分が無く、手順2.6の書き直しも無い（`git status --porcelain -- fetch_facts/` が空、かつ `[ -s /tmp/card_refresh_files.txt ]` が偽）**：
    - 何も push せず正常終了する（台帳は手順2.1 で押し終えている）。
 
    - 共通: `index.html` の出来ばえは確認しなくてよい（Actions 側の検証ゲートが担当する）。**`index.html` を GitHub から読みに行かないこと** — 122KB を読むと文脈が膨らんで自動圧縮で迷子になる。
@@ -554,8 +559,8 @@
 
 ## 成功条件（手順8の3分岐に対応）
 - (a) 手順3の選定が1件以上 → `reviews/<TARGET>.html` を生成し、`fetch_facts/<TARGET>.json` とあわせて `main` に push。**`index.html` は push しない**（GitHub Actions が自動再生成する・手順6）。
-- (b) 手順3の選定が0件（対象が無い日）だが、**今回のランで `fetch_facts/` 配下に変更が生じた**（`git status --porcelain -- fetch_facts/` で差分あり。改善(attempted)・スタブ書き込み(stub_written)・backfill_ridタグ付け(rid_mismatch)のほか、**手順2.5 の証跡 `fetch_facts/runs/<TARGET>.json` だけが増えた夜も含む**） → reviews は作らず、`fetch_facts/` 配下の実在するものを push する（コミットメッセージ `update: <TARGET> (backfill only)`）。
-- (c) 手順3の選定が0件かつ、今回のランでの `fetch_facts/` 配下への変更も無い（`git status --porcelain -- fetch_facts/` が空） → 何も push せず正常終了する。**手順2.5 が最初の証跡書き込みに成功していれば証跡が増えるので、通常この分岐には入らない**。入った場合は「手順2.5 を飛ばした」「最初の書き込みに到達する前に止まった」「証跡の書き込みに失敗した（`BACKFILL_EVIDENCE: write_failed`）」のどれかなので、**ランのログと併せて判定する**（分岐そのものは (c) で正しい＝押すものが無いなら押さない）。
+- (b) 手順3の選定が0件（対象が無い日）だが、**手順2.6が既存カードを書き直した夜も (b)**（書き直したファイルを送る。）、または**今回のランで `fetch_facts/` 配下に変更が生じた**（`git status --porcelain -- fetch_facts/` で差分あり。改善(attempted)・スタブ書き込み(stub_written)・backfill_ridタグ付け(rid_mismatch)のほか、**手順2.5 の証跡 `fetch_facts/runs/<TARGET>.json` だけが増えた夜も含む**） → reviews は作らず、`fetch_facts/` 配下の実在するものを push する（コミットメッセージ `update: <TARGET> (backfill only)`）。
+- (c) 手順3の選定が0件かつ、今回のランでの `fetch_facts/` 配下への変更も無い（`git status --porcelain -- fetch_facts/` が空）かつ手順2.6の書き直しも無い（`/tmp/card_refresh_files.txt` が空） → 何も push せず正常終了する。**手順2.5 が最初の証跡書き込みに成功していれば証跡が増えるので、通常この分岐には入らない**。入った場合は「手順2.5 を飛ばした」「最初の書き込みに到達する前に止まった」「証跡の書き込みに失敗した（`BACKFILL_EVIDENCE: write_failed`）」のどれかなので、**ランのログと併せて判定する**（分岐そのものは (c) で正しい＝押すものが無いなら押さない）。
 - 手順3の選定が1件以上あった日は、重複チェックでスキップされなかった各レコードについて、スキーマ検証に合格したノートが Vaultリポ `Explore/bookmarks/` に作成され `main` へ push される（1件も新規作成対象が無ければ手順8.5のpushは行わない＝これも正常終了）。
 - 2026-08-05 以降に公開済みで Vault にノートが無いブックマークは、次に reviews を作る夜（手順3の選定が1件以上あり、手順5で reviews を作った夜）に、手順7.5「取りこぼしの回収」（`note_gaps.py`・1晩5件まで）でノートが作られ、同じ手順8.5 の push に入る。`NOTE_GAPS:` が `status=ok` 以外（行が出ない・exit が0以外を含む）の夜は回収0件で正常終了。
 - ⚠️ **例外**: 手順3の選定が1件以上でも、手順5の `merge_review.py` が `mode=error`（かつ実行前に `reviews/<TARGET>.html` が存在しなかった＝新規HTML自体の構造検証で弾かれた）だった夜は、`reviews/<TARGET>.html` が作られない。この夜は「選定1件以上」であっても (a) ではなく、`fetch_facts/` 配下の変更有無で (b)/(c) と同じ基準を適用する（reviews が無いので push 対象に含めようがないため）。選定内容は捨てられたわけではなく、翌晩以降 select_targets.py が同じレコードを再度候補にする。
