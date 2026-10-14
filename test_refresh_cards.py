@@ -273,7 +273,7 @@ class DisclosureAfterRefreshTest(Base):
         self.assertEqual(self.violations(), (1, 1, 0, 0))
 
     def test_after_refresh_no_false_violation(self):
-        self.facts(rec(1, True, "机で組み立てる様子。", day="2026-10-14"), day="2026-10-14")
+        self.facts(rec(1, True, "**机で**組み立てる様子。", day="2026-10-14"), day="2026-10-14")
         self.run_main("--apply")
         self.assertNotIn(MARK, self.read(self.p))
         self.assertEqual(self.violations(), (0, 0, 0, 1))
@@ -292,6 +292,23 @@ class DisclosureAfterRefreshTest(Base):
         self.facts(rec(1, True, "内容。"))
         self.review("2026-10-04.html", page(card(1, "本文A。")))
         self.assertEqual(self.violations(), (1, 0, 1, 0))
+
+    def test_unrelated_heading_text_does_not_count_as_content(self):
+        # 見出しだけ（無関係な文）では内容ありとみなさない
+        self.facts(rec(1, True, "机の上で組み立てる様子。"))
+        self.review("2026-10-04.html", page(card(1, "本文A。動画の内容：未確認")))
+        self.assertEqual(self.violations(), (1, 0, 1, 0))
+
+    def test_one_of_several_cards_refreshed_still_a_violation(self):
+        # 同じ rid のカードが同日に2枚。1枚だけ書き直し済みで他は無開示 → 違反のまま
+        self.facts(rec(1, True, "机の上で組み立てる様子。"))
+        self.review("2026-10-04.html", page(card(1, "本文A。動画の内容：机の上で組み立てる様子。"),
+                                            card(1, "本文A2。")))
+        self.assertEqual(self.violations(), (1, 0, 1, 0))
+        # 2枚とも書き直し済みなら除外
+        self.review("2026-10-04.html", page(card(1, "本文A。動画の内容：机の上で組み立てる様子。"),
+                                            card(1, "本文A2。動画の内容：机の上で組み立てる様子。")))
+        self.assertEqual(self.violations(), (0, 0, 0, 1))
 
     def test_recovered_with_marker_pending_is_excluded(self):
         self.facts(rec(1, True, "内容。"))

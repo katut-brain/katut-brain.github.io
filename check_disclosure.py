@@ -64,6 +64,7 @@ from urllib.parse import urlsplit
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import select_targets  # noqa: E402
 import ledger  # noqa: E402
+import fetch_content  # noqa: E402
 
 # --- 判定語（正本はここ一箇所） -------------------------------------------
 
@@ -438,9 +439,24 @@ def build_global_index(reviews_dir):
 REFRESHED_PREFIX = "動画の内容："   # refresh_cards.py が書き直したカードに入れる見出し
 
 
-def _has_video_content_or_marker(card_raw):
+FRAGMENT_CHARS = 20   # カードに入っているはずの要約の先頭のうち、照合する字数
+
+
+def refreshed_fragment(summary):
+    """refresh_cards が作る「動画の内容：<整形後の要約>」の先頭部分（vdesc_text と同じエスケープ解除後）。
+    要約が空に整形されるなら None。整形は fetch_content.clean_video_summary を refresh_cards と共有する。"""
+    clean = fetch_content.clean_video_summary(summary)
+    return (REFRESHED_PREFIX + clean[:FRAGMENT_CHARS]) if clean else None
+
+
+def _has_video_content_or_marker(card_raw, latest):
+    """カードに、その rid の最新レコードの要約から作った内容が入っているか、開示マーカーがあるか。
+    「動画の内容：」という見出しだけでは内容ありとみなさない（無関係な文の混入を通さない）。"""
     t = vdesc_text(card_raw)
-    return REFRESHED_PREFIX in t or _marker_disclosed(t, MARKERS["video_content"])
+    if _marker_disclosed(t, MARKERS["video_content"]):
+        return True
+    frag = refreshed_fragment((latest or {}).get("video_summary"))
+    return frag is not None and frag in t
 
 
 def recovered_rids(facts_dir):
@@ -597,7 +613,7 @@ def process_date(date, facts_dir, reviews_dir,
         # 動画の内容が入っている（書き直し済み）か開示マーカーが付いているときだけ。
         # 書き直しが skipped・要約なし・上限待ちで、開示も内容も無いカードは従来どおり義務の対象。
         if (kind in ("x_video", "reel") and rid_str in recovered and candidates
-                and all(_has_video_content_or_marker(c["raw"]) for c in candidates)):
+                and all(_has_video_content_or_marker(c["raw"], recovered[rid_str]) for c in candidates)):
             result.excluded += 1
             result.excluded_records.append(
                 {"rid": rid_str, "url": url, "reason": "recovered"}
