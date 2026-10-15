@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-10-15 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="../index.html">← 戻る</a>
+<h1>2026-10-15 の振り返り</h1>
+<div class="meta">AIが設計・研究の現場に入り込む様子を5件保存（X 3件・Instagram Reel 2件）</div>
+
+<section class="summary">
+<h2>まとめ</h2>
+<p>この日の保存を貫くのは「AIが道具の接点を握ったとき、専門職の価値はどこに残るか」という問いだ。建築をAIで動かすVibe Modelingの論考、画像対応で物体検知が一気に身近になるjev、松尾研がLLM開発の手の内を動画で無料公開した件は、いずれも「作業そのもの」がAIに渡る速度を示している。一方で保存の後半は、QGISの地図づくりや敷地分析ツール8選という、建築側の実務的な知識だった。</p>
+<p>「作りたい」より「知る・紹介したい」軸が活性化した日で、AI×建築という自分の関心軸が両側から確認された。</p>
+<ul class="pts">
+<li><b>設計の入口はツールの接点</b>：MCPで設計ソフトがAIとつながると、作業過程がすべて「AIの餌」になるという含意がある。</li>
+<li><b>知の公開が加速</b>：松尾研はGPU規模や学習データの作り方まで報告会で公開しており、手法の差は「公開された後に何を育てるか」へ移る。</li>
+<li><b>敷地分析にもAI</b>：Ainoのような分析ツールが従来の無料ツール群に並び始めている。</li>
+</ul>
+<div class="q"><b>次に考える問い：</b>全員が同じAIを使うようになったとき、設計者の差を生む「餌の質」とは具体的に何か。</div>
+</section>
+
+<h2>🤖 AI・設計の最前線（3件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/taku_sid/status/2110579872661909787?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/post/2110579872661909787.png" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">jevが画像対応、ゼロショット物体検知が実現</div><div class="vdesc">以前『画像対応したら革命が起きる』と予想していたjevが本当に画像対応し、BBOX（バウンディングボックス）出力にまで対応していたと驚く投稿。引用元はゼロショット物体検知への期待。</div><div class="vsaved">保存 10/15 19:11</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/taku_sid/status/2110579872661909787?s=12" data-title="jevが画像対応、ゼロショット物体検知が実現" data-rid="1890442736">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/shion_takk/status/2110043978775359658?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/media/HUcQOv0aYAA920-?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">AIは建築業界を崩壊させるか、革新させるか</div><div class="vdesc">豊田啓介氏の「設計も施工も数年後には今の業態を維持できない」という投稿を受け、Vibe Modeling実践者が6章で整理。MCPでRhino等の設計ツールがAIの接点になり、設計報酬は半減以下、建築家は「羊」を育てる羊飼いになるという見立て。</div><div class="vsaved">保存 10/15 19:15</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/shion_takk/status/2110043978775359658?s=12" data-title="AIは建築業界を崩壊させるか、革新させるか" data-rid="1890443978">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/hayatasuuu/status/2110490863981986151?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2110490863981986151" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">東大松尾研LLM開発コンペ、上位チームの手法が無料公開</div><div class="vdesc">約360人・12チーム、H100 36基×約30日で既存LLMを事後学習し、Humanity&#x27;s Last Examで評価。添付画像から決勝戦報告会Vol.1（優勝：チームRAMEN、53分）とVol.2（準優勝：チームPont Neuf、38分）の動画と分かる。</div><div class="vsaved">保存 10/15 19:36</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/hayatasuuu/status/2110490863981986151?s=12" data-title="東大松尾研LLM開発コンペ、上位チームの手法が無料公開" data-rid="1890454771">💬 AIと話す</button>
+</div>
+</div>
+<h2>🏙 建築・都市のツール（2件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/Dee26PtiF7f/?vrfl=emc1YnRxZzkzc3lz" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.82787-15/847791372_17911622466470709_6378785046569294745_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=105&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=Sxth0oweenEQ7kNvwGNGko0&amp;_nc_oc=AdrQxMLaW6Wg-gzfPtPJG88Eukc_RmVAvwC_dOzEDe8ZgfxAB1efpwJpZesBsLImquE&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-1.cdninstagram.com&amp;_nc_gid=-iAtMDogATcmRinFyJpqEw&amp;_nc_ss=7b60f&amp;oh=00_AQO6HUPbkOBal3yGZgGVecwPT3oCgfNEfszMcmCYJukSOA&amp;oe=6AD67A8C" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">QGISとIllustratorで作る都市地図（QuickOSM）</div><div class="vdesc">@wefarchによるQGIS×Illustratorのチュートリアル。QuickOSMのデータクエリ集はコメントで配布、QGIS動画講座も準備中という告知。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/15 20:15</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Dee26PtiF7f/?vrfl=emc1YnRxZzkzc3lz" data-title="QGISとIllustratorで作る都市地図（QuickOSM）" data-rid="1890474439">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/Deequ7zuHBE/?xtok=emV0cXVheGVvdG15" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.71878-15/848370743_1161880879544691_1319684922745175341_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=1&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=J0JBrB_78jIQ7kNvwFZcMpf&amp;_nc_oc=AdqYIv5y_fK6zcPg3FfWyDxFiW3D7Ts8wNhoVVvt20KAX05iXBOvj2qGxVgFjOWs4TA&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-1.cdninstagram.com&amp;_nc_gid=syepnYbajshIS927aTteOg&amp;_nc_ss=7b60f&amp;oh=00_AQNYPEjFdxhN5c8DWHd5aoGHvW1eVrnecpxVreYdN7pY5A&amp;oe=6AD69AFE" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">敷地分析ツール8選</div><div class="vdesc">ShadeMap（建物の影）、Streetmix（道路断面）、SunCalc（太陽軌道）、Climate Central（沿岸洪水リスク）、Ventusky（風・天気）、OpenStreetMap（道路と周辺）、Cadmapper（CADの敷地データ）、Aino（AI敷地分析）を列挙。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/15 20:20</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Deequ7zuHBE/?xtok=emV0cXVheGVvdG15" data-title="敷地分析ツール8選" data-rid="1890478052">💬 AIと話す</button>
+</div>
+</div>
+
+<footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-10-15 run_id=bada97d7 saves=5 step1_s=38 step2_s=28 step2_5_s=607 step3_s=603 step4_s=45 step4_5_s=42 step5_s=4 step7_s=2 total_s=1369 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body>
+</html>
