@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026-10-24 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style></head><body>
+<div class="wrap">
+<a class="back" href="../index.html">← 戻る</a>
+<h1>2026-10-24 の振り返り</h1>
+<div class="meta">AIを「どう束ねるか」（スキル・記憶・単一ループ）と、建築・3Dの実務への接続（14件）</div>
+<section class="summary">
+<h2>まとめ</h2>
+<p>この日の保存は14件で、通奏低音は「AIを増やすより、手元の道具と記憶をどう揃えるか」という問いだった。Subagentを減らして単一ループ＋Skillsへ寄せる報告、どのエージェントから再開しても同じ情報を持てる状態、imozuruやyomiyasuのようなスキル化、名著10冊に自分の方針書を足す使い方は、いずれも「AIの数」ではなく「文脈の持たせ方」に軸足がある。</p>
+<p>ドメインをまたぐ接続としては、RhinoMCPの2本（共有前チェックと雑務14例）と丸亀製麺のBIM導入が、AI×建築・設計を「設計の外の雑務」から入る実務の話として並んだ。一方、お堀電車の3D再現とUnlayered Slicerの非平面造形は、データから地形や形を立ち上げる3D側の関心を示す。全体として「作りたい」より「知る・紹介したい」軸が強く活性化した日で、Instagramの2件を除く12件がXからの保存だった。</p>
+<ul class="pts">
+<li><b>単一ループ＋Skills</b>：Subagentを減らす助言や、記憶の置き場を揃える発想は、分業より文脈の一貫性を優先するという含意がある。</li>
+<li><b>設計の外から入るAI</b>：Rhinoの雑務自動化とBIM導入は、設計判断ではなく周辺作業から実装が進むという信号。</li>
+<li><b>データから立ち上げる3D</b>：PLATEAUと標高データで失われた風景を再現する手法は、建築の調査・提示にそのまま転用できる。</li>
+</ul>
+<div class="q"><b>次に考える問い：</b>どのエージェントから再開しても同じ文脈を持てる「記憶の置き場」は、設計プロジェクトではどの単位（案件・モデル・スケッチ）で切るべきか。</div>
+</section>
+<h2>🔎 深掘り（関連記事）</h2>
+<section class="notes">
+<div class="ntag">単一エージェントかマルチエージェントか</div>
+<ul class="ilist">
+<li><a href="https://www.claude.com/blog/building-multi-agent-systems-when-and-how-to-use-them" target="_blank" rel="noopener"><b>Building multi-agent systems: When and how to use them</b></a> <span>→ Anthropicの公式見解は「単一エージェントが既定」。コンテキスト汚染・並列化・専門化の3条件に当てはまるときだけ分割し、トークンは3〜10倍になるので、まず最も単純な方法から始める。今日の「Subagentを減らせ」という保存と整合する。</span></li>
+</ul>
+</section>
+<h2>3D・ものづくり（2件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/De2KTyFvJWs/?mdxt=MWN0MWc0MjQ0cGkxMA==" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t15.5256-10/864076555_1104845542431949_813674383809414060_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=110&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=l-6iY2VaDtsQ7kNvwHqFEbY&amp;_nc_oc=AdrakfgOcPghy7NjWWJFeRPpMYIcEDgKtFFA28dGizjrNlir7CLx57CiTcg502qL0z8&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-1.cdninstagram.com&amp;_nc_gid=PmNe-D75G3jPjUEJIP4Lxg&amp;_nc_ss=7b60f&amp;oh=00_AQPLP3cjkiMvvRy9ruxm3O4FhGP_lHcxmLLadC1Piv0a-Q&amp;oe=6AE1ECC8" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">Unlayered Slicer、あらゆる3Dプリンターで非平面造形に対応</div><div class="vdesc">Orca Slicerのフォークで、非平面（ノンプラナー）印刷をどのスライサー・プリンターでも可能にすると紹介。部品が強くなり、サポート材の無駄が減り、表面も滑らかになる。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/24 10:45</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/De2KTyFvJWs/?mdxt=MWN0MWc0MjQ0cGkxMA==" data-title="Unlayered Slicer、あらゆる3Dプリンターで非平面造形に対応" data-rid="1900041007">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/De0tiRIhdGz/?cplk=ZTh3ZTJ4YjFhNjI=" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-fra3-2.cdninstagram.com/v/t51.82787-15/861009639_17865838137692122_3234594906047115688_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=111&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=b94jAUUMKiUQ7kNvwF1Hu8q&amp;_nc_oc=AdqGpTRHD1ttaAKDOIZ8_3uPBZ3Kqpw8KZwr5i4XXl57RGR5Xcy5P9AT4PJyw8oJQNo&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-2.cdninstagram.com&amp;_nc_gid=l47xNmC3ykbJBx9qeDoKog&amp;_nc_ss=7ba02&amp;oh=00_AQOMX62-fdngCdu8QXw6RuGMe1GqWa49UHfJAbpaHehEwQ&amp;oe=6AE1DF39" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">名古屋城のお堀を走った電車「お堀電車」を3D模型でたどる</div><div class="vdesc">1911〜1976年、名鉄瀬戸線の前身・瀬戸電が名古屋城の外堀の底を走っていた。焼き物を堀川駅で舟に積み替え、本町橋の下では複線を重ね、直角カーブは時速20kmで通過。PLATEAUの3D都市モデルと標高データで再現し、1978年の栄町乗り入れまでを追う。</div><div class="vsaved">保存 10/24 11:43</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/De0tiRIhdGz/?cplk=ZTh3ZTJ4YjFhNjI=" data-title="名古屋城のお堀を走った電車「お堀電車」を3D模型でたどる" data-rid="1900074532">💬 AIと話す</button>
+</div>
+</div>
+<h2>AI活用・エージェント（9件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/ai_jitan/status/2113748689068167266?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/media/HVWGAz0aMAATOti?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Gemini Notebookに名著10冊を入れ、著者から助言をもらう</div><div class="vdesc">『7つの習慣』『エッセンシャル思考』『生き方』など10冊をFast Researchで取り込み、自分の方針書を1枚足す。「いま何をやめるべきか」と聞くと「睡眠7時間を先に固定」「断る基準を文字にして即答を避ける」が返ってきたという。「本に自分を読ませる」発想。</div><div class="vsaved">保存 10/24 12:43</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ai_jitan/status/2113748689068167266?s=12" data-title="Gemini Notebookに名著10冊を入れ、著者から助言をもらう" data-rid="1900098294">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/sora_biz/status/2113515874149666939?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/card_img/2113261522038185984/iabKmwSo?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Claude Code用スキル「imozuru（芋づる）」のネーミングに脱帽</div><div class="vdesc">未知の分野の用語・研究者から、参考文献、引用先、著者の別論文へと調査を芋づる式に広げるスキル。投稿者は「ここまではスキル化するほどではない」と言い、面白さはその先にあると予告している（続きの中身は本文からは取れていない）。</div><div class="vsaved">保存 10/24 12:43</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/sora_biz/status/2113515874149666939?s=12" data-title="Claude Code用スキル「imozuru（芋づる）」のネーミングに脱帽" data-rid="1900098330">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/cu30rry_/status/2113591766184317130?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/card_img/2108679445632393216/aWocVMz-?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">「至高のGrok Bot 10選」：1つの作業に絞ったBot集</div><div class="vdesc">「これは入れるべき」と厳選した10種のGrok Bot集（随時更新）。1番手は、質問に答えるだけで用途を1つに絞った質の高いBotを設計してくれる「dr eggbot」。残り9件の中身は取得できた範囲には含まれていない。</div><div class="vsaved">保存 10/24 12:45</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/cu30rry_/status/2113591766184317130?s=12" data-title="「至高のGrok Bot 10選」：1つの作業に絞ったBot集" data-rid="1900098832">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/codex_jisen/status/2110333938568667370?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2110333938568667370" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">AI画像生成は「構図の名前」で頼むと早い</div><div class="vdesc">「いい感じの構図に」では伝わらないので、三分割（主役を自然に目立たせる）・対角線（動きと躍動感）・額縁（視線を主役へ）・余白（すっきり見せる）と構図名で指定する。画像2枚付きの投稿だが画像の中身は読んでいない。</div><div class="vsaved">保存 10/24 14:33</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/codex_jisen/status/2110333938568667370?s=12" data-title="AI画像生成は「構図の名前」で頼むと早い" data-rid="1900148277">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/yeq6x/status/2113837645143126225?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fyeq6x%2Fstatus%2F2113837645143126225%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">秘書エージェントが乱立する時代の備え：どこから再開しても同じ情報</div><div class="vdesc">Grok bot・Muse・dots・Claude Codeのどこから再開しても同じ情報を持てる状態にしておくことが、一番やっておいて良かったこと。ツールではなく記憶の置き場を揃える発想。</div><div class="vsaved">保存 10/24 16:58</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/yeq6x/status/2113837645143126225?s=12" data-title="秘書エージェントが乱立する時代の備え：どこから再開しても同じ情報" data-rid="1900300554">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/oga_aiichiro/status/2113812798413398299?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2113812798413398299" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">推敲スキル「yomiyasu」v2.3.0とmini・pocketを同時公開</div><div class="vdesc">AIの日本語を読みやすく直すスキルが3本同時に登場。v2.3.0に加え、スキル容量に上限があるAI向けのmini、カスタム指示向けのpocketで、スキルを入れられない環境でも推敲できるようになった。動画はロゴが順に現れる告知映像。</div><div class="vsaved">保存 10/24 16:58</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/oga_aiichiro/status/2113812798413398299?s=12" data-title="推敲スキル「yomiyasu」v2.3.0とmini・pocketを同時公開" data-rid="1900300709">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/xudong07452910/status/2113800139005460534?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/card_img/2113315834936606720/szcFtlnH?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Anthropicが「Subagentを減らせ」と助言、単一ループ+Skillsが優位との報告</div><div class="vdesc">複数の企業案件で、複雑なマルチエージェントより単一Agent+Skillsのほうが良い結果が多く、単一ループに戻した顧客は実行が約2倍速くなったという（投稿者による紹介）。専門Agentを主ループへ統合し直す流れ。</div><div class="vsaved">保存 10/24 18:58</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/xudong07452910/status/2113800139005460534?s=12" data-title="Anthropicが「Subagentを減らせ」と助言、単一ループ+Skillsが優位との報告" data-rid="1900381194">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/dreamtgn/status/2113691863467376677?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/media/HVVXikRawAARL40?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Kimi K3.1 Pro、コーディングを超え業界ツール内の実務へ</div><div class="vdesc">投稿によると、Terminal-Bench 4.0で65.7%（GPT-6 Astraを上回る）、ツール付きBenchCADで92.7%、コンテキスト1M token。プロジェクト丸ごとの構築を狙う。数値は投稿者の主張で、画像（表）は未確認。</div><div class="vsaved">保存 10/24 20:52</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/dreamtgn/status/2113691863467376677?s=12" data-title="Kimi K3.1 Pro、コーディングを超え業界ツール内の実務へ" data-rid="1900458846">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/hayatasuuu/status/2113752335881240807?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2113752335881240807" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Googleの無料45分コース「機械学習を使う前に考えること」</div><div class="vdesc">まずゴールを機械学習抜きで言語化し、そもそもMLが必要かを見極める。予測と生成AIの使い分け、データの条件、予測を行動につなげられるか、分類・回帰・生成から出力を決める、までを扱う。</div><div class="vsaved">保存 10/24 14:45</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/hayatasuuu/status/2113752335881240807?s=12" data-title="Googleの無料45分コース「機械学習を使う前に考えること」" data-rid="1900154018">💬 AIと話す</button>
+</div>
+</div>
+<h2>建築・設計×AI（3件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/allelishi/status/2113601329952157846?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2113601329952157846" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Rhinoの雑務をAIに頼む14の実例（RhinoMCP）</div><div class="vdesc">設計そのものではなく周辺作業を任せる記事。キャプチャ撮影、図面の柱径修正、建具の拾い出し、書き出し画像の整理、DWG出力など、Claudeに頼んだ14例をまとめている。</div><div class="vsaved">保存 10/24 14:35</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/allelishi/status/2113601329952157846?s=12" data-title="Rhinoの雑務をAIに頼む14の実例（RhinoMCP）" data-rid="1900148970">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/allelishi/status/2113238952266092805?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2113238952266092805" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Rhinoデータの共有前チェックをAIに任せる（RhinoMCP）</div><div class="vdesc">協力事務所へ渡す前の、重なった線・閉じていない線・不要物の確認をAIに依頼。標準コマンドの数字だけでは直す箇所が分からない点をAIが補う、という前作。1件目の記事（10/22公開）。</div><div class="vsaved">保存 10/24 17:00</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/allelishi/status/2113238952266092805?s=12" data-title="Rhinoデータの共有前チェックをAIに任せる（RhinoMCP）" data-rid="1900301367">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/mepbim_gsan/status/2113783731651768822?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/card_img/2113523403688935425/_U6jR-ca?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">丸亀製麺にBIM導入、トリドールHDがトランスコスモスと連携</div><div class="vdesc">店舗開発・建設業務の高度化が目的で、BIMデータ化、ルール作成、人材育成を支援。設計会社向けの「BIM習得プログラム」も受付開始。保存者は施主側のほうが目的が明確で使いやすいのではと見る。</div><div class="vsaved">保存 10/24 19:02</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/mepbim_gsan/status/2113783731651768822?s=12" data-title="丸亀製麺にBIM導入、トリドールHDがトランスコスモスと連携" data-rid="1900386715">💬 AIと話す</button>
+</div>
+</div>
+<footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-10-24 run_id=d26056db saves=14 step1_s=16 step2_s=13 step2_5_s=233 step3_s=7 step4_s=343 step4_5_s=20 step5_s=36 step7_s=1 total_s=669 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body></html>
