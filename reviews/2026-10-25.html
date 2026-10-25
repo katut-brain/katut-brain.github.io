@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>2026-10-25 の振り返り</title><style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style></head><body>
+<div class="wrap">
+<a class="back" href="../index.html">← 戻る</a>
+<h1>2026-10-25 の振り返り</h1>
+<div class="meta">AIエージェントの運用術と建築×AIが並んだ日（6件）</div>
+<section class="summary">
+<h2>まとめ</h2>
+<p>この日の保存を貫くのは「AIが作業を安くした後、人は何を決めるのか」という問いだ。Kindleで読んだ「安いコード、値千金の判断」という章、DeepSeekで1本0.03円まで下がった論文要約、定期実行は変化があるときだけ報告させるという運用の型は、どれも実行コストが下がった分だけ設計と判断が重くなるという含意を持つ。</p>
+<p>もう一方の軸は建築×AI。図面42枚から40階建てをモデリングする実測と、建築向けClaude Code Skills配布の2件は、BIM領域でも「型にして再利用する」流れが進んでいることを示す。「作りたい」より「知る・紹介したい」軸が活性化した日だった。</p>
+<ul class="pts">
+<li><b>判断の希少化</b>：実装が安くなるほど、何を作るかを決める力の価値が上がるという含意がある。</li>
+<li><b>自動化の順序</b>：手作業→型→自動化。壊れたやり方を毎日自動で繰り返さない。</li>
+<li><b>建築の再現性</b>：柱93/93、部屋名188/200という数字で精度を語る姿勢が信号になる。</li>
+</ul>
+<div class="q"><b>次に考える問い：</b>建築の設計で、AIに任せず自分が握り続ける判断とは何か。</div>
+</section>
+<h2>🔎 深掘り（関連記事）</h2>
+<section class="notes">
+<div class="ntag">建築×Claude Code</div>
+<ul class="ilist">
+<li><a href="https://archgyan.com/claude-code-for-architects-guide/" target="_blank" rel="noopener"><b>How to Use Claude Code for Architects</b></a> <span>→ Revitの部屋書き出しやBIMデータ監査をスクリプト化できる一方、Revit本体は直接操作できず、バージョン指定とバックアップ検証が前提。Skills化は小さく始めて育てるのが筋という視点。</span></li>
+</ul>
+<div class="ntag">マルチエージェントのコスト</div>
+<ul class="ilist">
+<li><a href="https://blockchain.news/flashnews/chinese-ai-models-cut-multi-agent-token-costs" target="_blank" rel="noopener"><b>Chinese AI models cut multi-agent token costs</b></a> <span>→ マルチエージェント開発は1日数億トークンを消費しうるとして、DeepSeek等が代替になるという主張。個人の見解で数値の裏付けは無く、検証は別途必要。</span></li>
+</ul>
+</section>
+<h2>🤖 AIエージェント・活用（3件）</h2>
+<div class="cards">
+<div class="vcard"><a class="vlink" href="https://x.com/rabspice/status/2114068399106224623?s=12" target="_blank" rel="noopener"><div class="thumb"><img src="https://pbs.twimg.com/media/HVauATRboAA9mGV?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div><div class="vbody"><div class="vtitle">GrokBotでKindle本を作らせる使い方</div><div class="vdesc">ツイートは一言だが添付はKindleで読むAI解説書の写真。章の主張は「コードが安くなるほど、何を作るかを決める判断の価値が上がる」で、AIで書籍まで作る流れを示す。</div><div class="vsaved">保存 10/25 14:11</div></div></a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/rabspice/status/2114068399106224623?s=12" data-title="GrokBotでKindle本を作らせる使い方" data-rid="1901322331">💬 AIと話す</button></div>
+<div class="vcard"><a class="vlink" href="https://x.com/simo4mo314/status/2113984073572213219?s=12" target="_blank" rel="noopener"><div class="thumb"><img src="https://jf.x.com/images/media-preview/2113984073572213219" onerror="this.remove()"><span class="ph">X</span></div><div class="vbody"><div class="vtitle">ORRERY×DeepSeekで論文要約が1本0.03円</div><div class="vdesc">DeepSeek対応でマルチエージェントを回してもトークン切れを恐れず、論文まとめファイル1本あたり約0.03円と数字で言い切る。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/25 14:13</div></div></a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/simo4mo314/status/2113984073572213219?s=12" data-title="ORRERY×DeepSeekで論文要約が1本0.03円" data-rid="1901322656">💬 AIと話す</button></div>
+<div class="vcard"><a class="vlink" href="https://x.com/smark_x/status/2114138062007709720?s=12" target="_blank" rel="noopener"><div class="thumb"><img src="https://jf.x.com/images/media-preview/2114138062007709720" onerror="this.remove()"><span class="ph">X</span></div><div class="vbody"><div class="vtitle">Grok Botの乗り遅れを1日で巻き返す記事</div><div class="vdesc">添付画像は【保存版】ブックマーク記事。「手作業→型にする→自動化」の順を飛ばさない原則4と、変化がなければ送らない定期実行・平日8:30の朝のまとめのコピペ用プロンプトが読める。</div><div class="vsaved">保存 10/25 14:43</div></div></a><button class="deepdive" onclick="openChat(this)" data-url="https://x.com/smark_x/status/2114138062007709720?s=12" data-title="Grok Botの乗り遅れを1日で巻き返す記事" data-rid="1901333152">💬 AIと話す</button></div>
+</div>
+<h2>🏛 建築×AI・Threads（3件）</h2>
+<div class="cards">
+<div class="vcard"><a class="vlink" href="https://www.instagram.com/reel/Dex-BCKjzlf/?mdxt=MWx5ODNxeDBnZHRtdQ==" target="_blank" rel="noopener"><div class="thumb"><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.71878-15/856712608_5607732006117759_3687838732330958545_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=108&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=gBnEH-_67BoQ7kNvwHPd4WI&amp;_nc_oc=Adpy4DuYEncPFbI2vtj0Tn8mrGK8RmLKpUwmTfYnQgbNwBywNl_t3cZf0QzO1i2Xuzc&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-1.cdninstagram.com&amp;_nc_gid=KcsN4rD8kPpu-mSkEPTlcg&amp;_nc_ss=7b60f&amp;oh=00_AQNxG-QJ0dbi_fDP61cK95nht4NApxq0Bfr9m1-4PXks0w&amp;oe=6AE399B0" onerror="this.remove()"><span class="ph">Instagram</span></div><div class="vbody"><div class="vtitle">図面画像42枚からAIが40階建てをモデリング</div><div class="vdesc">柱93/93・部屋名188/200・階高42/42という1回の実測値を提示。PLATEAUのポートシティ竹芝LOD4を使った再現練習で、本編はYouTube公開。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/25 16:29</div></div></a><button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Dex-BCKjzlf/?mdxt=MWx5ODNxeDBnZHRtdQ==" data-title="図面画像42枚からAIが40階建てをモデリング" data-rid="1901369798">💬 AIと話す</button></div>
+<div class="vcard"><a class="vlink" href="https://www.instagram.com/reel/DeWQZRztN0u/?exln=cmV0dGJvdXB3Y2N6" target="_blank" rel="noopener"><div class="thumb"><img src="https://scontent-fra3-2.cdninstagram.com/v/t51.82787-15/842915168_17934998895400733_5985045329317343569_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=104&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=4PQ9hS55VmwQ7kNvwEaiQJe&amp;_nc_oc=AdqSesRtj5GAD-HpjpjK1keNYcPFfBTqWNCtA1anmmhFXlifcRMmYVUwVcmQwL7qA-k&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-2.cdninstagram.com&amp;_nc_gid=-A8bSZJAgoTnbbOKZSX5Cg&amp;_nc_ss=7b60f&amp;oh=00_AQOTmxx30-8VTTg-FjLCZYlIAnHv4UOb-51ecsO40n2oJQ&amp;oe=6AE3895C" onerror="this.remove()"><span class="ph">Instagram</span></div><div class="vbody"><div class="vtitle">建築向けClaude Codeワークフロー150時間の成果</div><div class="vdesc">プラン審査・設計クリティーク・法規チェック・図面QA・BIM調整・RFIまでを再利用可能なSkills/Agents/Commandsで無料配布、DL1.4万超と主張。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/25 16:31</div></div></a><button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DeWQZRztN0u/?exln=cmV0dGJvdXB3Y2N6" data-title="建築向けClaude Codeワークフロー150時間の成果" data-rid="1901370207">💬 AIと話す</button></div>
+<div class="vcard"><a class="vlink" href="https://www.threads.com/share/_q_gmaUB1/" target="_blank" rel="noopener"><div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.71878-15/860064189_29233885509577574_2801607748441084440_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=110&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiRkVFRC5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&amp;_nc_ohc=_6Yt6w0GJOoQ7kNvwHBbzN2&amp;_nc_oc=Adodv0YRifDcwDQ6yNLEc4Na8_V_Efuqsz1mvJKzBFhLHpPGLRGVeq4ife6Jm0IGSOw&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-1.cdninstagram.com&amp;_nc_gid=YAE98rghWXV7osWzKnJBCg&amp;_nc_ss=7f20f&amp;oh=00_AQOgrLXcD2soJqt_ovY0uUo1VuObEJbJrTG6CqDJo_Liiw&amp;oe=6AE3C6B6" onerror="this.remove()"><span class="ph">Threads</span></div><div class="vbody"><div class="vtitle">AI組織に「Muse」が入社</div><div class="vdesc">もこもこヘッドホンのAIメンバーMuseが入社したという投稿で、こうしたAI組織を作ってほしい人を募る。本文は短く、続きは取得できていない。※画像の内容は未取得 ※音声の内容は未取得</div><div class="vsaved">保存 10/25 20:16</div></div></a><button class="deepdive" onclick="openChat(this)" data-url="https://www.threads.com/share/_q_gmaUB1/" data-title="AI組織に「Muse」が入社" data-rid="1901515376">💬 AIと話す</button></div>
+</div>
+<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（3件中0件成功・内訳: bad_content_type 3件）。中継サービスの死亡を疑うこと</p>
+<footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-10-25 run_id=6ec5c6c0 saves=6 step1_s=16 step2_s=13 step2_5_s=7 step3_s=5 step4_s=35 step4_5_s=40 step5_s=6 step7_s=5 total_s=127 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+</body></html>
