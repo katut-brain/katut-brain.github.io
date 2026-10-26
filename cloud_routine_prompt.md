@@ -72,6 +72,15 @@
      - 押す夜と押さない夜があるので、Actions は夜あたり1〜2回発火する。
    - 非ゼロで終わっても**手順を止めない**（台帳が壊れている等。その場合は台帳を書き換えないので `git status` に差分も出ず、手順8の push 対象にも入らない）。
 
+2.2. **深掘り済みの一覧の更新**（2026-10-27 追加）：
+   ```bash
+   python3 deepdive_state.py
+   if git status --porcelain -- deepdive_state.json | grep -q .; then PUSH_VIA_BRANCH_WAIT=0 bash push_via_branch.sh "deepdive: <TARGET>" deepdive_state.json; fi
+   ```
+   - Vaultリポ（`Explore/bookmarks/` を含む別リポ）の `rd-*.md` のうち `## …深掘り` の見出しを持つものの `raindrop_id` を `deepdive_state.json` に書く。公開ページの `deepdive-mark.js` がこれを読み、深掘り済みのカードを薄くする。**公開されるのは rid の数字だけ**（本文・題名は含めない）。
+   - 出力の `DEEPDIVE_STATE:` 行はログにそのまま残す。`status=skipped` は Vault が読めない・ノートが少なすぎる・一覧が急に減る、のいずれか＝**何も書かずに前回のまま**（印が一晩古くなるだけ）。非ゼロで終わっても**手順を止めない**。
+   - 手順2.1 の台帳と同じ理由で、**手順8にまとめない**・失敗しても2回まで試して諦める。差分が無い夜は何も押さない。
+
 2.5. **バックフィル（過去に取得できなかった rid 持ちレコードの再取得）**：
    （先に `python3 run_timing.py mark step2_5 --run-id <8桁>`）
    `FETCH_FACTS_DIR="$PWD/fetch_facts" FACTS_DATE=$TARGET timeout 1200 python3 backfill.py --target $TARGET --limit 5 --timeout 480 --max-total 1140` を実行する。
@@ -306,7 +315,9 @@
        location.href = link;
      }
      </script>
+     <script src="../deepdive-mark.js" defer></script>
      ```
+   - **`<script src="../deepdive-mark.js" defer></script>` は`openChat()`の`<script>`の直後に1行、そのまま書く**（2026-10-27）。深掘り済みのカードを薄くしてボタンを「続きを話す」にする静的ファイルで、一覧は手順2.2 が作る `deepdive_state.json`。この1行を落としても振り返り本体は壊れない（その日のページに印が付かないだけ）。**カードの`data-rid`・ボタンの文言（`💬 AIと話す`）は変えない**（印はブラウザ側で付く）。
    - **各カードの`.vcard`は`<div>`＋内側の`.vlink`（サムネ・タイトル・説明への外部リンク、従来と同じ見た目）＋`.deepdive`ボタン（AIチャット起動）という構造**。ボタンの`data-url`・`data-title`には、そのカードの`.vlink`に使ったのと同じ`URL`・`日本語タイトル`をそのまま入れる（別の値を作らない・捏造しない）。`data-rid`には、そのカードに対応する **手順3の選定JSON（`/tmp/targets.json` の `records`）に入っている `rid` をそのまま**（引用符なしの数値として、属性値としては文字列だが加工・推測せず逐語）入れる。`rid` を持たない保存は `select_targets.py`（`synthetic_rid()`）が安定した**負数**を振って選定対象に含めているため、`data-rid` は負の値になることがある（2026-09-22 追加。rid無しの保存を永久に選定対象から除外しないための仕様。`captures.json` の `rid` に独自の値を作らないこと——選定JSONの `rid` を書き写すだけでよい）。`openChat()`関数は`.wrap`の外、ページ末尾に一度だけ書く。
    - ⚠️ `data-title`（および`data-url`）はHTML属性値なので、タイトルに`"`（ダブルクォート）が含まれる場合は`&quot;`にエスケープしてから埋め込む（属性が途中で終わってHTMLが壊れるのを防ぐため）。`data-rid`は数値のみ（負号を含みうる）なのでエスケープ不要。
    - ⚠️ **`.deepdive`ボタンのプロンプトは、`data-url`・`data-title`・`data-rid`の3つだけから機械的に組み立てる固定テンプレート**。手順4.5で生成した深掘り記事の内容やまとめ文、手順7.5のノート生成で書いた内容理解など、AIが自由に書いた文章は絶対に混ぜない（未知の第三者サイトを読んだ内容が、公開ページ上のこのボタンの中身に混入する経路を断つため）。
@@ -442,7 +453,7 @@
      - スクリプトはその後、Actions が main に取り込むのを最大5分待ち、main 上のファイルが原本とバイト単位で一致したら `PUBLISHED: yes main=<sha>` を出す。`PUBLISHED: pending` はブランチまでは届いているが時間内に取り込みを確認できなかった状態で、**再実行しない**（Actions が処理中か、検証に落ちている。どちらも人が翌朝メールと Actions で分かる）。
      - **`WRITE_PATH:` `WRITE_COMMIT:` `PUBLISHED:` の行は削らず、そのままランのログに残す**。
      - **複数ファイルは1コミットにまとまる**。渡す順は問わない。
-     - 送れるのは `reviews/<日付>.html`・`fetch_facts/<日付>.json`・`fetch_facts/runs/<日付>.json`・`capture_index.json` だけ。それ以外を渡すと何も送らず exit 2 になる。
+     - 送れるのは `reviews/<日付>.html`・`fetch_facts/<日付>.json`・`fetch_facts/runs/<日付>.json`・`capture_index.json`・`deepdive_state.json` だけ。それ以外を渡すと何も送らず exit 2 になる。
    - 🚫 **`push_files` を使わない。フォールバック経路は廃止した**（2026-09-08）。本文を文字列で運ぶ経路は、**今直したはずの破損そのもの**であり、化けを検出できても押した後では `main` に壊れた版が残る。**「その日が公開されない」は許容するが、「検証に落ちた中身が `main` に載る」は許容しない。**
    - **失敗したときにやること（この3つだけ）**：
      - ① `WRITE_COMMIT: none ... note=main_untouched`（終了コード1）なら、**何も届いていない**。同じコマンドをもう一度実行する。**2回までで打ち切る。**

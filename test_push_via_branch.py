@@ -119,6 +119,13 @@ class PushViaBranchTest(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stdout)
         self.assertIn("WRITE_PATH: fetch_facts/runs/2026-09-13.json", r.stdout)
 
+    def test_allows_deepdive_state(self):
+        """深掘り済み一覧 deepdive_state.json は単独で送れる（2026-10-27 追加）。"""
+        self.write("deepdive_state.json", '{"done": [1, 2]}\n')
+        r = self.script("deepdive", "deepdive_state.json")
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertIn("WRITE_PATH: deepdive_state.json", r.stdout)
+
     def test_rejects_other_paths_under_runs(self):
         """許可を広げたのは runs/<日付>.json だけ。拡張子違い・入れ子・.. は通さない。"""
         for path, body in (

@@ -6,7 +6,7 @@
 # そこで Routine は push_via_branch.sh で claude/publish-* に送り、main への取り込みはここで行う。
 #
 # 守ること:
-#   - 取り込んでよいのは reviews/<日付>.html・fetch_facts/<日付>.json・fetch_facts/runs/<日付>.json・capture_index.json だけ。
+#   - 取り込んでよいのは reviews/<日付>.html・fetch_facts/<日付>.json・fetch_facts/runs/<日付>.json・capture_index.json・deepdive_state.json だけ。
 #     ブランチに他の変更が1つでも混じっていたら何も取り込まず失敗する。
 #   - .publish/manifest.json の SHA-256 と実ファイルが1つでも違えば失敗する（伝送中の破損を検出）。
 #   - 失敗したら main は動かさず、ブランチは調査用に残す。ワークフローの失敗は GitHub から
@@ -47,7 +47,7 @@ jobs:
           import hashlib, html.parser, json, os, re, subprocess, sys
 
           sha = os.environ["GITHUB_SHA"]
-          ALLOW = re.compile(r"^(reviews/\d{4}-\d\d-\d\d\.html|fetch_facts/\d{4}-\d\d-\d\d\.json|fetch_facts/runs/\d{4}-\d\d-\d\d\.json|capture_index\.json)$")
+          ALLOW = re.compile(r"^(reviews/\d{4}-\d\d-\d\d\.html|fetch_facts/\d{4}-\d\d-\d\d\.json|fetch_facts/runs/\d{4}-\d\d-\d\d\.json|capture_index\.json|deepdive_state\.json)$")
           MANIFEST = ".publish/manifest.json"
 
           def git(*a):
@@ -140,6 +140,31 @@ jobs:
                   fail("review card(s) would be lost (add [allow-review-shrink] to the commit message if intentional): " + " | ".join(shrink_errors))
               elif shrink_errors:
                   print(f"review card(s) shrink allowed via [allow-review-shrink]: {shrink_errors}")
+
+          # 深掘り済み一覧は急に減らない（deepdive_state.py の MAX_DROP と同じ5件。
+          # 読み取り失敗の空リストが全カードの印を消すのを main に載せる前に止める）。
+          if "deepdive_state.json" in files:
+              # 検査コードは検証対象のブランチからでなく、信頼済みの origin/main から読む
+              # （ブランチ側の deepdive_state.py を差し替えて検査を素通りさせる経路を作らない）。
+              import importlib.util, tempfile
+              src = subprocess.run(["git", "show", "origin/main:deepdive_state.py"], capture_output=True, text=True)
+              if src.returncode != 0:
+                  fail("deepdive_state.py is missing on origin/main (cannot validate deepdive_state.json)")
+              trusted = os.path.join(tempfile.mkdtemp(), "dds_trusted.py")
+              with open(trusted, "w", encoding="utf-8") as fh:
+                  fh.write(src.stdout)
+              spec = importlib.util.spec_from_file_location("dds_trusted", trusted)
+              dds = importlib.util.module_from_spec(spec)
+              spec.loader.exec_module(dds)
+              state = json.load(open("deepdive_state.json", encoding="utf-8"))
+              why = dds.validate(state)
+              if why:
+                  fail(f"deepdive_state.json: {why}")
+              old = subprocess.run(["git", "show", "origin/main:deepdive_state.json"], capture_output=True, text=True)
+              if old.returncode == 0 and old.stdout.strip():
+                  dropped = set(json.loads(old.stdout).get("done", [])) - set(state["done"])
+                  if len(dropped) > 5:
+                      fail(f"deepdive_state.json would drop {len(dropped)} entries")
 
           with open(os.environ["GITHUB_OUTPUT"], "a") as out:
               out.write("files=" + " ".join(files) + "\n")
