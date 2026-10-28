@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026-10-28 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style></head><body>
+<div class="wrap">
+<a class="back" href="../index.html">← 戻る</a>
+<h1>2026-10-28 の振り返り</h1>
+<div class="meta">AIデザインの「回転数」と「AIっぽさ」の言語化が主役の6件</div>
+<section class="summary">
+<h2>まとめ</h2>
+<p>この日の保存を貫くのは、「AIの出力をどう人間の目で選び直すか」という問いだった。落合陽一流のデザイン術は一発生成を捨てて試作と選別の回転数に価値を置き、Claude CodeでUIが似通う問題の動画は「違和感を言葉にして直す」手本として保存されている。どちらも、AIの平均値への収束を人間の判断で崩す話だ。</p>
+<p>ノートの添え書きは無いが、保存の中心は「作る」軸のAI活用で、残りはX API・投資助言動画など軽く共有された話題だった。</p>
+<ul class="pts">
+<li><b>回転数が品質を決める</b>：5段階を速く回し違和感で選ぶ、という設計は、AIデザインを「生成」でなく「選別」の仕事に変えるという含意がある。</li>
+<li><b>収束への対抗</b>：UIが似るのはモデルが多数派の選択に寄るため。具体的な禁止事項や設計変数を渡すのが有効。</li>
+<li><b>Reelの動画は未取得</b>：KIMI×Blenderの投稿は今回動画内容を取れなかった。</li>
+</ul>
+<div class="q"><b>次に考える問い：</b>自分が「違和感」を言葉にできる語彙は、AIの平均値に抗うのに足りているか？</div>
+</section>
+<h2>🔎 深掘り（関連記事）</h2>
+<section class="notes">
+<div class="ntag">AI生成UIが似通う理由と対策</div>
+<ul class="ilist">
+<li><a href="https://claude.com/resources/articles/improving-frontend-design-through-skills" target="_blank" rel="noopener"><b>Improving frontend design through Skills</b></a> <span>→ 似る原因はモデルが学習データ上の多数派（Inter、白地に紫グラデ）へ寄る「分布の収束」。フロントエンド設計のスキルで書体・色・動きの指針を必要時だけ読み込ませて対抗する。</span></li>
+</ul>
+</section>
+<h2>🤖 AIデザイン・UI（3件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/kimuai08/status/2079212341250724250?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/media/HNrX5cRasAAOCzX.jpg:large" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">落合陽一流AIデザイン術：一発生成ではなく5段階を高速で回す</div><div class="vdesc">発想の外在化→構造化→多形式で大量試作→違和感を選ぶ→実媒体で検証、の回転数がプロと素人を分けるという7原理の解説。「高級感」ではなく主役の物体・矛盾・視線の順序といった設計変数を渡せと説く。</div><div class="vsaved">保存 10/28 15:39</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kimuai08/status/2079212341250724250?s=12" data-title="落合陽一流AIデザイン術：一発生成ではなく5段階を高速で回す" data-rid="1904879021">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/sora_biz/status/2115168914565169171?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fsora_biz%2Fstatus%2F2115168914565169171%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Claude CodeのUIが同じ見た目になる問題を、海外ユーザーの動画で学ぶ</div><div class="vdesc">「AIっぽさ」を一つずつ直していく動画を紹介。「ここに違和感があった」「こう直してと言えばいい」と言語化の手本になるという。</div><div class="vsaved">保存 10/28 21:05</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/sora_biz/status/2115168914565169171?s=12" data-title="Claude CodeのUIが同じ見た目になる問題を、海外ユーザーの動画で学ぶ" data-rid="1905066342">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/De9EWbmPAd-/?srtk=MWs4MGVnOGFzaGhmaQ==" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.82787-15/867926845_1095858229878936_2370383814156403725_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=108&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=IGez4p35CaMQ7kNvwHXtQPR&amp;_nc_oc=AdpkYjJ8trIyXktFsZdmiyWWhCz5xIj2hsgFCucn-haRSVjxKwxGRFMjv-AlE7io0gc&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-1.cdninstagram.com&amp;_nc_gid=aDnxfcIn79Ll4cpFkZTe1w&amp;_nc_ss=7b60f&amp;oh=00_AQRcDuXli0BAQd8w7vR3klTlNkpcyAykdTpD1P37SchkWA&amp;oe=6AE71EBC" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">【広告】KIMI K3.1pro×Blenderで果物をモデリング、CG×AIの入門</div><div class="vdesc">CG制作で最もハードルの高いモデリングをAIが担い、初心者でも挑戦しやすくなったと語る投稿（PR表記あり）。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/28 11:41</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/De9EWbmPAd-/?srtk=MWs4MGVnOGFzaGhmaQ==" data-title="【広告】KIMI K3.1pro×Blenderで果物をモデリング、CG×AIの入門" data-rid="1904718700">💬 AIと話す</button>
+</div>
+</div>
+<h2>📰 その他の共有（3件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/sora_biz/status/2114976834073088379?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/media/HVnn6YJbMAAfFTZ?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">X APIキーを作らなくてよくなった、と歓迎する投稿</div><div class="vdesc">APIキー発行の手間が不要になったと770いいねで共有された一件。画像の中身は未確認で、具体的な仕組みまでは本文から読み取れない。</div><div class="vsaved">保存 10/28 11:49</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/sora_biz/status/2114976834073088379?s=12" data-title="X APIキーを作らなくてよくなった、と歓迎する投稿" data-rid="1904722340">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/f10dfjtu/status/2115280816544821714?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2115280816544821714" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">「良すぎんか？？？震えてます」と引用共有された投稿</div><div class="vdesc">本文は感嘆のみで、引用先の画像の内容は取得できなかったため中身は不明。728いいね。</div><div class="vsaved">保存 10/28 16:54</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/f10dfjtu/status/2115280816544821714?s=12" data-title="「良すぎんか？？？震えてます」と引用共有された投稿" data-rid="1904918238">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/suid_afrika/status/2115070521356485052?s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fsuid_afrika%2Fstatus%2F2115070521356485052%3Fs%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">テスタ氏が高3で資産100万円の子に助言する動画を「再現性ある考え方」と紹介</div><div class="vdesc">引用元は若いうちに見ておくべきと勧められた投資助言動画。本文は銘柄名の羅列タグが中心で、動画自体の内容は見ていない。2,041いいね。</div><div class="vsaved">保存 10/28 16:58</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/suid_afrika/status/2115070521356485052?s=12" data-title="テスタ氏が高3で資産100万円の子に助言する動画を「再現性ある考え方」と紹介" data-rid="1904921243">💬 AIと話す</button>
+</div>
+</div>
+<footer>毎朝の同期で自動生成 ｜ katut-brain<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（2件中0件成功・内訳: bad_content_type 1件, exception:ServerError 1件）。中継サービスの死亡を疑うこと</p>
+<!-- run-timing schema=v2 status=complete target=2026-10-28 run_id=13fec638 saves=6 step1_s=60 step2_s=20 step2_5_s=10 step3_s=5 step4_s=47 step4_5_s=41 step5_s=4 step7_s=14 total_s=201 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+<script src="../deepdive-mark.js" defer></script>
+</body></html>
