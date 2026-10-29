@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026-10-29 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style></head><body>
+<div class="wrap">
+<a class="back" href="../index.html">← 戻る</a>
+<h1>2026-10-29 の振り返り</h1>
+<div class="meta">MuseとClaude Duet、パーソナルエージェント競争を追った日（8件）</div>
+
+<section class="summary">
+<h2>まとめ</h2>
+<p>この日の保存を貫くのは「常時動くエージェントに何を任せ、何を任せないか」という問いだ。Museには日本株のIRを5分ごとに無料で監視させる投稿が2件、Claude Duetには海外ユーザーの高評価の紹介が1件。一方で、ダウンロードフォルダ経由でAIエージェントが乗っ取られうるという警告も保存しており、便利さと攻撃面が同時に広がるという含意がある。</p>
+<p>もう一本の軸は建築・空間の表現。OHPフィルムで重ねるGISのオーバーレイ解析、瞬時に等時間日影を出すAddon、刺繍の展示、建築ダイアグラムと、「知る・紹介したい」軸が強く、保存時のコメントは「OHPフィルムでこの表現できそうだね」の1件で、作りたい欲求はこの1件に集中した。</p>
+<ul class="pts">
+<li><b>無料で常時監視</b>：証券会社の有料ツールが担っていた領域が、無料のエージェントに移るという含意がある。</li>
+<li><b>Duetの自走性</b>：最も賢く最もおせっかいという評価は、「任せる範囲」の設計が競争軸になることを示す。</li>
+<li><b>起動場所のリスク</b>：エージェントは起動フォルダの指示ファイルを規則として読むため、作業フォルダの衛生が防御線になる。</li>
+<li><b>アナログ→計算の接続</b>：重ね合わせの発想を日影の最適化にどう接続するかを考えたくなる。</li>
+</ul>
+<div class="q"><b>次に考える問い：</b>OHPフィルムの重ね合わせ（オーバーレイ）を、日影計算の結果の見せ方にどう使えるか。</div>
+</section>
+
+<h2>やりたい・気になったこと</h2>
+<section class="notes">
+<div class="ntag">やりたい</div>
+<ul class="ilist">
+<li><a href="https://www.instagram.com/reel/DfCs-8yAEq2/?dlrf=eGZ6amowM2I4NWc5" target="_blank" rel="noopener"><b>OHPフィルムでオーバーレイ解析の表現をやる</b></a> <span>→ 敷地・樹木・等高線などをレイヤー別に刷って重ねる試作</span></li>
+</ul>
+</section>
+
+<h2>🔎 深掘り（関連記事）</h2>
+<section class="notes">
+<div class="ntag">Claude Duetの実際の評価</div>
+<ul class="ilist">
+<li><a href="https://every.to/vibe-check/vibe-check-duet-anthropic-s-always-on-agent" target="_blank" rel="noopener"><b>Vibe check: Duet, Anthropic's always-on agent</b></a> <span>→ Dan Shipperは初めて「プロの道具」と呼べる個人エージェントとみる一方、Claudeセッションを指示できない、メール下書きが前の主力に劣る、本格的な音声モードがない点を弱みに挙げる。</span></li>
+</ul>
+</section>
+
+<h2>🤖 AIエージェント・ツール（4件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/axecm/status/2115591756100280342?a=pog2sJA764jows3juv4&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2115591756100280342" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Museが株価・開示の監視を無料で実現</div><div class="vdesc">株価や指数の変動、開示のスクレイピングと自動プッシュを、証券会社の有料ツールや月1万円超のAIプランなしで無料で実現できると驚く投稿（1,865いいね）。</div><div class="vsaved">保存 10/29 18:57</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/axecm/status/2115591756100280342?a=pog2sJA764jows3juv4&amp;s=12" data-title="Museが株価・開示の監視を無料で実現" data-rid="1906406882">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/so_ainsight/status/2115687576401293609?a=hVAyBlIvuoNjuYlLB5g&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2115687576401293609" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Claude Duetを使い倒した海外ユーザーの評価</div><div class="vdesc">AlexFinnによるAnthropicのパーソナルエージェントの感想紹介。推しは「最も賢い（Opus 5.5）」と「最もおせっかい（次の提案が自走して出る）」の2点。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/29 19:08</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/so_ainsight/status/2115687576401293609?a=hVAyBlIvuoNjuYlLB5g&amp;s=12" data-title="Claude Duetを使い倒した海外ユーザーの評価" data-rid="1906413696">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/29meat_ai/status/2115381123660546295?a=73NGbLejtZgtMbT66HA&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2115381123660546295" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">日本株のIRを5分ごとに監視するMuse</div><div class="vdesc">「強烈なIRが出たら教えて」と指示するだけで5分ごとに監視してくれる、しかも無料という驚きの投稿（2,268いいね）。</div><div class="vsaved">保存 10/29 19:45</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/29meat_ai/status/2115381123660546295?a=73NGbLejtZgtMbT66HA&amp;s=12" data-title="日本株のIRを5分ごとに監視するMuse" data-rid="1906428001">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/DfCq3drJrAR/?cplk=MWx0bGx3cHR5bmgzdg==" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.82787-15/857798492_17969535732193730_2708251082336192534_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=102&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=7fa_FkeHKw0Q7kNvwHD056C&amp;_nc_oc=Adrj1suad14Ec7Ll8lwYqdZLzKgrXXUiG1X3FY9_sqgG8-yvVK2xStp3Gi6we6MLWYg&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-1.cdninstagram.com&amp;_nc_gid=pRoKM-LPCK8vUTnUSE9uGQ&amp;_nc_ss=7ba02&amp;oh=00_AQR9i0Baq8TZRHwLKiwqsv3OwvXFx_WQkCpZe9K0v10dTA&amp;oe=6AE87ADD" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">ダウンロードフォルダでAIエージェントを起動する危険</div><div class="vdesc">Forever Securityの報告：ダウンロードフォルダに置かれた1枚の指示ファイルでAIエージェントが乗っ取られうる。顧客企業の約半数がこのフォルダからAIを起動していたとのこと。作業用フォルダに必要分だけ移し、見覚えのない指示ファイルを確認してから起動するよう勧める。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/29 10:05</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DfCq3drJrAR/?cplk=MWx0bGx3cHR5bmgzdg==" data-title="ダウンロードフォルダでAIエージェントを起動する危険" data-rid="1905874723">💬 AIと話す</button>
+</div>
+</div>
+<h2>🏛️ 建築・空間・表現（4件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/DfCs-8yAEq2/?dlrf=eGZ6amowM2I4NWc5" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.82787-15/870176218_2082982199028908_6976587492312269591_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=110&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=Lx9tGN3nK9UQ7kNvwEI2kTB&amp;_nc_oc=AdopVzwjxsOFqyPEsCfClKHPbg6KEpJcIfaJSHEYewYccv8f8PkhV6yWW2LK01CeQec&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-1.cdninstagram.com&amp;_nc_gid=A9xxju2LCvmhPHCQRXxmMA&amp;_nc_ss=7ba02&amp;oh=00_AQR6vqx0a5_ylJlzn_D8-RvMLo-dKQpH5IlvjBjMJzPWUA&amp;oe=6AE90A57" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">透明フィルムの裏表を間違えて刷るとGISがクラッシュした感覚に</div><div class="vdesc">Superbloom Geographics：オーバーレイ解析はGISの元になったアナログ手法。敷地境界・植栽・既存樹木・GCP・等高線・オルソ画像をOHPフィルムで重ねて見せる。北方位や縮尺を省いて地図屋に怒られそう、というオチ付き。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/29 19:49</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DfCs-8yAEq2/?dlrf=eGZ6amowM2I4NWc5" data-title="透明フィルムの裏表を間違えて刷るとGISがクラッシュした感覚に" data-rid="1906429760">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/you_dae/status/2115723659965010388?a=WdSRzUyHwzTcVdf_rSI&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2115723659965010388" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">瞬時に等時間日影を計算するAddon</div><div class="vdesc">AIでの日影計算は当たり前になった中、等時間日影を即時計算する要素を加えたAddonを制作。この速さなら最適化計算にも持ち込めるという含意。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 10/29 20:14</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/you_dae/status/2115723659965010388?a=WdSRzUyHwzTcVdf_rSI&amp;s=12" data-title="瞬時に等時間日影を計算するAddon" data-rid="1906438585">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/08n1196429/status/2115398491010990123?a=fYFWZOfLskQFh-OxNso&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2115398491010990123" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">刺繍でエアコンの省エネ等級まで再現した展示（韓国語投稿）</div><div class="vdesc">「伝説そのもの、ぜひ見に行って」と、エアコンやエネルギー消費等級まで刺繍で表現した作品に驚嘆する投稿（23,291いいね）。画像の内容は未確認。</div><div class="vsaved">保存 10/29 20:20</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/08n1196429/status/2115398491010990123?a=fYFWZOfLskQFh-OxNso&amp;s=12" data-title="刺繍でエアコンの省エネ等級まで再現した展示（韓国語投稿）" data-rid="1906440928">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://youtube.com/shorts/9UfN6zVKZOM?si=Fu5tMrWP1Fi8HPID" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://i.ytimg.com/vi/9UfN6zVKZOM/oar2.jpg?sqp=-oaymwEnCJUDENAFSFqQAgHyq4qpAxYIARUAAAAAJQAAyEI9AICiQ3gBwAIB&amp;rs=AOn4CLC2q6Bi48DGHavPA47gmu4cTzveWw" onerror="this.remove()"><span class="ph">YouTube</span></div>
+<div class="vbody"><div class="vtitle">建築家が使うべき3種類のダイアグラム</div><div class="vdesc">Show It Betterのショート動画。タイトルのみ取得（字幕なし）で、3種類の中身は未確認。</div><div class="vsaved">保存 10/30 00:40</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://youtube.com/shorts/9UfN6zVKZOM?si=Fu5tMrWP1Fi8HPID" data-title="建築家が使うべき3種類のダイアグラム" data-rid="1906634726">💬 AIと話す</button>
+</div>
+</div>
+
+<footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-10-29 run_id=aa93dd6c saves=8 step1_s=42 step2_s=20 step2_5_s=18 step3_s=6 step4_s=589 step4_5_s=20 step5_s=34 step7_s=2 total_s=731 -->
+<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（3件中0件成功・内訳: exception:ServerError 2件, exception:RemoteProtocolError 1件）。中継サービスの死亡を疑うこと</p>
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+<script src="../deepdive-mark.js" defer></script>
+</body></html>
