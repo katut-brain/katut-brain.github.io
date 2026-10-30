@@ -421,7 +421,7 @@ def _read_marker():
         with open(_PRIMARY_DOWN_FILE, encoding="utf-8") as f:
             parts = f.read().split(None, 1)
         if time.time() < float(parts[0]):
-            return True, (parts[1].strip() if len(parts) > 1 else "")
+            return True, (parts[1].strip() if len(parts) > 1 else "") or "legacy_marker"
     except Exception:
         pass
     return False, ""
@@ -476,7 +476,8 @@ def _gemini_generate(contents, deadline=None):
             primary_err = e
             _last["primary_reason"] = _exception_reason(e)
             if quota:
-                if "PerMinute" not in str(e):
+                # 表記ゆれ(per minute / per_minute / perminute)を吸収してから判定する
+                if "perminute" not in re.sub(r"[^a-z]", "", str(e).lower()):
                     _mark_primary_down(_PRIMARY_QUOTA_SECONDS, _last["primary_reason"])
             elif attempts == 2 and _is_timeout_or_5xx(e):
                 _mark_primary_down(reason=_last["primary_reason"])

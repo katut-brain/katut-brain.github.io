@@ -42,7 +42,10 @@ def _serve(script, models=None):
             if step == "cut":
                 self.connection.close()
                 return
-            code, body = (200, OK_BODY) if step == "ok" else (step, {"error": {"code": step, "message": "x", "status": "S"}})
+            msg = "x"
+            if isinstance(step, tuple):   # (ステータス, メッセージ) で本文を指定できる
+                step, msg = step
+            code, body = (200, OK_BODY) if step == "ok" else (step, {"error": {"code": step, "message": msg, "status": "S"}})
             raw = json.dumps(body).encode()
             try:
                 self.send_response(code)
@@ -145,6 +148,25 @@ class GeminiRetryTest(_MarkerMixin):
         self.assertEqual(models, ["gemini-flash-lite-latest"])          # 主は呼ばない
         self.assertTrue(fetch_content._last["primary_skipped"])
         self.assertEqual(fetch_content._last["primary_reason"], "exception:ClientError:429")
+
+    def test_per_minute_429_falls_back_without_marker(self):
+        """分あたりの429は表記ゆれ(per minute / per_minute)でも印を付けず、予備を1回だけ。"""
+        for msg in ["Quota exceeded: GenerateRequestsPerMinutePerProject", "rate limit per minute",
+                    "quota_id: generate_requests_per_minute"]:
+            if os.path.exists(self.marker):
+                os.remove(self.marker)
+            resp, err, models = self._run([(429, msg), "ok"])
+            self.assertIsNone(err, msg)
+            self.assertEqual(models, ["gemini-flash-latest", "gemini-flash-lite-latest"], msg)
+            self.assertFalse(os.path.exists(self.marker), msg)
+
+    def test_legacy_marker_reports_reason(self):
+        """旧形式(期限だけ)の印でも primary_reason を空にしない。"""
+        with open(self.marker, "w") as f:
+            f.write(str(time.time() + 600))
+        resp, err, models = self._run(["ok"])
+        self.assertEqual(models, ["gemini-flash-lite-latest"])
+        self.assertEqual(fetch_content._last["primary_reason"], "legacy_marker")
 
     def test_both_429_is_quota(self):
         _, err, models = self._run([429])
