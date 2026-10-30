@@ -423,6 +423,7 @@ def classify(url, channels):
 
 def run_method(name, url):
     """手段を1つ実行し、中身の検査まで通ったものだけ返す。失敗は FetchError。"""
+    _check_public(url)  # 取得も健康診断も必ずここを通る。内部アドレスを中継・プラグイン・yt-dlp に渡さない
     data = METHODS[name](url)
     if len((data.get("text") or "").strip()) < MIN_CHARS.get(name, DEFAULT_MIN_CHARS):
         raise FetchError("本文が短すぎる／空")

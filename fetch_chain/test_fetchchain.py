@@ -372,6 +372,23 @@ class SafetyTest(unittest.TestCase):
         with self.assertRaises(fc.FetchError):
             fc.web_jina("http://127.0.0.1/admin")
 
+    def test_canary_with_internal_url_reaches_no_method(self):
+        # 健康診断の見本が内部アドレスでも、どの手段（oEmbed・yt-dlp・プラグイン）にも渡らない
+        reg = {"channels": {"youtube": {"match": ".*", "methods": ["yt_oembed", "yt_dlp_subs"],
+                                        "canary": {"url": "http://127.0.0.1/admin", "expect": "x"}}}}
+        reg_path = self.tmp / "sources.json"
+        reg_path.write_text(json.dumps(reg), encoding="utf-8")
+        seen = []
+        orig = (fc.REGISTRY, fc._ytdlp)
+        fc.REGISTRY, fc._ytdlp = reg_path, (lambda: seen.append("yt-dlp") or None)
+        fc.http_get = lambda url, **kw: (seen.append(url), (200, "{}"))[1]
+        try:
+            rep = fc.canary()
+        finally:
+            fc.REGISTRY, fc._ytdlp = orig
+        self.assertEqual(seen, [])
+        self.assertEqual(rep["channels"]["youtube"]["level"], "down")
+
     def test_health_record_never_contains_urls(self):
         fc.log_health("fetch", "web", "web_direct", False, 1, "http/https 以外は取らない: file:///home/u/secret.txt")
         fc.log_health("fetch", "web", "web_direct", False, 1, "公開ホストでない（intranet.example → 10.0.0.1）")
