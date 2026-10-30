@@ -723,6 +723,11 @@ def _fetch_instagram_reel_video_url(url, timeout=12, retry_delay=2):
                 return None, "instagram_relay_not_video"
             host = _host_of(location)
             if any(_host_matches(host, h) for h in _INSTAGRAM_VIDEO_ALLOWED_HOSTS):
+                # 動画の取れないリールでは中継が最初のコマのサムネJPEGへ飛ばす(.jpg / stp=dst-jpg)。
+                # 成功例は .mp4。パス(クエリ除く)が .mp4 でなければ CDN に取りに行かない。
+                # 署名付きURLは理由コードにも残さない。
+                if not urllib.parse.urlsplit(location).path.lower().endswith(".mp4"):
+                    return None, "instagram_relay_thumbnail_only"
                 return location, ""
             # 中継は応答したが転送先がfbcdn系のmp4でない(本家instagram.comへ
             # 送り返された等)。恒久的な失敗ではなく「その中継応答が動画でなかった」事実。

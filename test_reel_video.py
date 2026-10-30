@@ -8,6 +8,7 @@
 
 import http.client
 import io
+import json
 import os
 import sys
 import unittest
@@ -62,6 +63,28 @@ class ReelVideoUrlTest(unittest.TestCase):
         self.assertEqual(reason, "")
         self.assertEqual(opener.calls, 1)
         mock_sleep.assert_not_called()
+
+    def test_relay_thumbnail_jpg_location_is_thumbnail_only(self):
+        """動画の取れないリール: 中継が fbcdn のサムネJPEGへ飛ばす。CDN に取りに行かず、
+        署名付きURLを理由コードにも残さない。"""
+        thumb = "https://scontent-nrt1-1.cdninstagram.com/v/t51/abc_n.jpg?stp=dst-jpg_e35&sig=SECRET"
+        opener = FakeOpener([_http_error_with_location(thumb)])
+        with patch("urllib.request.build_opener", return_value=opener),              patch("fetch_content.time.sleep") as mock_sleep:
+            url, reason = fetch_content._fetch_instagram_reel_video_url(
+                "https://www.instagram.com/reel/ABC123/")
+        self.assertIsNone(url)
+        self.assertEqual(reason, "instagram_relay_thumbnail_only")
+        self.assertNotIn("SECRET", reason)
+        mock_sleep.assert_not_called()
+
+    def test_relay_signed_mp4_with_jpg_looking_query_still_succeeds(self):
+        """パスが .mp4 なら、クエリに jpg が混じっていても従来どおり成功。"""
+        mp4 = "https://instagram.fisb6-2.fna.fbcdn.net/o1/v/t2/f2/m69/XYZ.mp4?efg=x&sig=abc.jpg"
+        opener = FakeOpener([_http_error_with_location(mp4)])
+        with patch("urllib.request.build_opener", return_value=opener):
+            url, reason = fetch_content._fetch_instagram_reel_video_url(
+                "https://www.instagram.com/reel/ABC123/")
+        self.assertEqual((url, reason), (mp4, ""))
 
     def test_relay_sends_back_to_instagram_official(self):
         """中継は応答したが転送先が本家instagram.com（fbcdn系のmp4ではない）。"""
@@ -386,6 +409,12 @@ class ReasonKindClassificationTest(unittest.TestCase):
         rec = self._reel_rec(video_reason="instagram_relay_not_video")
         self.assertEqual(ledger._reason_kind(rec), "transient")
 
+    def test_instagram_relay_thumbnail_only_is_permanent(self):
+        """サムネしか返らないリールは毎晩の取り直しを止める。bad_content_type 自体は transient のまま。"""
+        rec = self._reel_rec(video_reason="instagram_relay_thumbnail_only")
+        self.assertEqual(ledger._reason_kind(rec), "permanent")
+        self.assertEqual(ledger._reason_kind(self._reel_rec(video_reason="bad_content_type")), "transient")
+
     def test_legacy_abandoned_code_stays_permanent(self):
         """既存レコードの据え置き: 歴史的コードを持つレコードは permanent のまま。"""
         rec = self._reel_rec(video_reason="instagram_reel_abandoned")
@@ -426,6 +455,17 @@ class FetchInstagramCaptionFallbackTest(unittest.TestCase):
         self.assertEqual(result["missing"], ["video_content"])
         self.assertNotIn("動画の内容:", result["text"])
         self.assertIn("Sites for designers", result["text"])
+
+    def test_thumbnail_only_never_calls_gemini(self):
+        """.jpg Location は fetch_instagram 全体で _gemini_video_understanding を呼ばず、理由が残る。"""
+        thumb = "https://scontent.cdninstagram.com/v/abc_n.jpg?stp=dst-jpg&sig=SECRET"
+        opener = FakeOpener([_http_error_with_location(thumb)])
+        with patch("fetch_content._get", return_value=(200, self._OG_HTML)),              patch("urllib.request.build_opener", return_value=opener),              patch("fetch_content._gemini_video_understanding") as mock_gvu:
+            result = fetch_content.fetch_instagram("https://www.instagram.com/reel/ABC123/")
+        mock_gvu.assert_not_called()
+        self.assertEqual(result["video_reason"], "instagram_relay_thumbnail_only")
+        self.assertEqual(result["missing"], ["video_content"])
+        self.assertNotIn("SECRET", json.dumps(result, ensure_ascii=False))
 
     def test_relay_success_with_gemini_understanding_yields_full_depth(self):
         mp4 = "https://instagram.fisb6-2.fna.fbcdn.net/o1/v/t2/f2/m69/XYZ.mp4?sig=abc"
