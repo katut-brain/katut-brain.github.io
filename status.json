@@ -1,0 +1,91 @@
+{
+  "checked_at": "2026-10-30T06:55:46+00:00",
+  "env": "gha",
+  "channels": {
+    "x_post": {
+      "level": "ok",
+      "methods": [
+        {
+          "method": "x_fxtwitter",
+          "ok": true,
+          "ms": 275,
+          "error": ""
+        },
+        {
+          "method": "x_syndication",
+          "ok": true,
+          "ms": 325,
+          "error": ""
+        },
+        {
+          "method": "x_vxtwitter",
+          "ok": true,
+          "ms": 222,
+          "error": ""
+        }
+      ]
+    },
+    "youtube": {
+      "level": "ok",
+      "methods": [
+        {
+          "method": "yt_dlp_subs",
+          "ok": null,
+          "ms": 0,
+          "error": "yt-dlp が無い（…）"
+        },
+        {
+          "method": "yt_oembed",
+          "ok": true,
+          "ms": 56,
+          "error": ""
+        }
+      ]
+    },
+    "instagram": {
+      "level": "ok",
+      "methods": [
+        {
+          "method": "ig_oembed",
+          "ok": true,
+          "ms": 262,
+          "error": ""
+        },
+        {
+          "method": "og_meta",
+          "ok": true,
+          "ms": 488,
+          "error": ""
+        }
+      ]
+    },
+    "threads": {
+      "level": "ok",
+      "methods": [
+        {
+          "method": "og_meta",
+          "ok": true,
+          "ms": 842,
+          "error": ""
+        }
+      ]
+    },
+    "web": {
+      "level": "ok",
+      "methods": [
+        {
+          "method": "web_direct",
+          "ok": true,
+          "ms": 216,
+          "error": ""
+        },
+        {
+          "method": "web_jina",
+          "ok": true,
+          "ms": 688,
+          "error": ""
+        }
+      ]
+    }
+  }
+}
