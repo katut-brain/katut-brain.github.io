@@ -1,2 +1,2 @@
 youtube-transcript-api
-google-genai
+google-genai==2.34.0

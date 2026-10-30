@@ -75,14 +75,24 @@ def _host_matches(host, domain):
     return host == domain or host.endswith("." + domain)
 
 
-def _get(url, ua, timeout=12, max_bytes=600_000):
-    """HTTP GET。(status, text) を返す。失敗は (None, "") 。"""
+def _get(url, ua, timeout=12, max_bytes=600_000, deadline=None):
+    """HTTP GET。(status, text) を返す。失敗は (None, "") 。
+    deadline(monotonic)を渡すと、タイムアウトは min(既定値, 残り)、読み込み中も締切を見る
+    (件単位の時間予算。少しずつ送る相手でソケットのタイムアウトをすり抜けて粘れない)。"""
     # Accept-Language は en 固定（IG/X のog/ラッパー文を英語に揃えてパースを安定させる。
     # 投稿本文・キャプションは投稿者の言語のまま返るので日本語は失われない）。
     req = urllib.request.Request(url, headers={"User-Agent": ua, "Accept-Language": "en-US,en;q=0.9"})
     try:
+        if deadline is not None:
+            rem = _remaining(deadline)
+            if rem <= 0:
+                return None, ""
+            timeout = min(timeout, rem)
         with urllib.request.urlopen(req, timeout=timeout) as r:
-            raw = r.read(max_bytes)
+            if deadline is None:
+                raw = r.read(max_bytes)
+            else:
+                raw = _read_limited(r, max_bytes, deadline)[:max_bytes]
             return r.status, raw.decode("utf-8", "replace")
     except urllib.error.HTTPError as e:
         return e.code, ""
@@ -110,12 +120,16 @@ def _meta(htmltext, prop):
     return ""
 
 
-def _expand_tco(url):
+def _expand_tco(url, deadline=None):
     """t.co URL を展開して最終 URL を返す。失敗は '' を返す。
-    t.co はJSリダイレクトを使うため、HTMLからURLを抽出する。"""
+    t.co はJSリダイレクトを使うため、HTMLからURLを抽出する。
+    deadline を渡すとタイムアウトは min(8秒, 残り)。"""
     try:
         req = urllib.request.Request(url, headers={"User-Agent": BROWSER_UA})
-        with urllib.request.urlopen(req, timeout=8) as r:
+        t = 8 if deadline is None else min(8, _remaining(deadline))
+        if t <= 0:
+            return ""
+        with urllib.request.urlopen(req, timeout=t) as r:
             body = r.read(2000).decode("utf-8", "replace")
             # JS: location.replace("https://...")
             m = re.search(r'location\.replace\("(https?://[^"]+)"', body)
@@ -166,14 +180,14 @@ def _is_x_article_url(url):
     return bool(_ARTICLE_PATH_RE.search(url))
 
 
-def _fetch_x_article(tid):
+def _fetch_x_article(tid, deadline=None):
     """X「Article」(長文記事)の本文を FxEmbed(旧FixTweet)の公開API経由で取得。無料・無認証。
     tid には Article内部ID(x.com/i/article/<ID>)ではなく、その記事を貼った**告知ツイート自体のstatus ID**
     を渡すこと(実測で両者は別の数値。Article内部IDをそのまま渡すと404になる)。
     api.fxtwitter.com はレート制限が緩く(1000req/min/IP)無認証で使えるが、非公式の埋め込み修正サービスの
     副産物APIであり、X側の仕様変更で予告なく壊れる可能性がある点は運用上留意する。
     """
-    st, txt = _get("https://api.fxtwitter.com/i/status/%s" % tid, BROWSER_UA)
+    st, txt = _get("https://api.fxtwitter.com/i/status/%s" % tid, BROWSER_UA, deadline=deadline)
     if st != 200 or not txt.strip():
         return None
     try:
@@ -297,9 +311,10 @@ def _is_quota_error(e):
 _GEMINI_MODEL = "gemini-flash-latest"
 _GEMINI_FALLBACK_MODEL = "gemini-flash-lite-latest"   # 無料キーで使えることを 2026-10-30 に実測
 _GENERATE_TIMEOUT_S = 75
+_LINK_RESERVE_S = 60
 _ITEM_BUDGET_S = 440   # 1件(fetch_x / リール)の締切。手順書の timeout 480 から余裕を引いた値
 _MIN_CALL_S = 15       # 残りがこれ未満なら新しい Gemini 呼び出しを始めない
-_PRIMARY_DOWN_SECONDS = 1800
+_PRIMARY_DOWN_SECONDS = 900
 _PRIMARY_DOWN_FILE = os.path.join(tempfile.gettempdir(), "katut_gemini_primary_down")
 _last = {}   # 直近の _gemini_generate の記録(model / primary_skipped / primary_reason / fallback_reason)
 
@@ -357,15 +372,46 @@ def _gemini_client(timeout_ms=90_000, attempts=1):
         return _genai.Client(api_key=_GEMINI_API_KEY)
 
 
-def _is_transient_failure(e):
-    """予備モデルに回してよい一過性の失敗か。5xx・408・タイムアウト・接続断(httpx/OSError)だけ。
-    429 と他の 4xx(400/401/403/404)は別モデルでも同じなので回さない。"""
-    code = getattr(e, "code", None)
-    if isinstance(code, int) and not isinstance(code, bool):
-        return code >= 500 or code == 408
-    if isinstance(e, (TimeoutError, ConnectionError, OSError)):
+def _http_status_of(e):
+    """例外から HTTP ステータスを取り出す(e.code / e.status_code / e.response.status_code)。無ければ None。"""
+    for get in (lambda: e.code, lambda: e.status_code, lambda: e.response.status_code):
+        try:
+            v = get()
+        except Exception:
+            continue
+        if isinstance(v, int) and not isinstance(v, bool):
+            return v
+    return None
+
+
+# httpx / httpcore の一過性の例外(タイムアウト系・接続系・プロトコル切断)。HTTPStatusError などは含めない。
+_TRANSIENT_NET_NAMES = {"TimeoutException", "NetworkError", "RemoteProtocolError"}
+
+
+def _is_net_transient(e):
+    if isinstance(e, (TimeoutError, ConnectionError)):
         return True
-    return any(c.__module__.split(".")[0] in ("httpx", "httpcore") for c in type(e).__mro__)
+    return any(c.__module__.split(".")[0] in ("httpx", "httpcore") and c.__name__ in _TRANSIENT_NET_NAMES
+               for c in type(e).__mro__)
+
+
+def _is_transient_failure(e):
+    """予備モデルに回してよい一過性の失敗か。ステータスが取れればそれで決める(5xx と 408 だけ)。
+    429 と他の 4xx は別モデルでも同じなので回さない。ステータスが無い例外は、タイムアウト・接続系だけ。"""
+    st = _http_status_of(e)
+    if st is not None:
+        return st >= 500 or st == 408
+    return _is_net_transient(e)
+
+
+def _is_timeout_or_5xx(e):
+    """主モデルの『死んでいる印』を付けてよい失敗か。接続断(RemoteProtocolError 等)1回では付けない。"""
+    st = _http_status_of(e)
+    if st is not None:
+        return st >= 500
+    return isinstance(e, TimeoutError) or any(
+        c.__module__.split(".")[0] in ("httpx", "httpcore") and c.__name__ == "TimeoutException"
+        for c in type(e).__mro__)
 
 
 def _primary_down():
@@ -389,7 +435,7 @@ def _gemini_generate(contents, deadline=None):
     """generate_content。主モデルは1回75秒(残りが短ければ短縮)・最大2回(SDK再試行)。
     一過性の失敗(_is_transient_failure)で駄目なら予備モデル(lite)で1回。
     429 と 4xx は予備に回さず投げる(429 は呼び出し側が gemini_quota にする)。
-    主が2回とも一過性で駄目だったら 30分間、後続の呼び出しは主を飛ばして予備から始める(印ファイル)。
+    主が2回とも一過性で駄目だったら 15分間、後続の呼び出しは主を飛ばして予備から始める(印ファイル)。
     残りが _MIN_CALL_S 未満なら呼び出しを始めず _DeadlineSkipped。
     最悪: 主 2x75+6 + 予備 75 だが、各呼び出しのタイムアウトは残り時間で頭打ち。
     投げる例外は主モデルのもの(主を飛ばしたときは予備のもの)。"""
@@ -415,7 +461,7 @@ def _gemini_generate(contents, deadline=None):
                 raise
             primary_err = e
             _last["primary_reason"] = _exception_reason(e)
-            if attempts == 2:
+            if attempts == 2 and _is_timeout_or_5xx(e):
                 _mark_primary_down()
     rem = _remaining(deadline)
     if rem < _MIN_CALL_S:
@@ -684,7 +730,9 @@ def _fetch_x_embedded_link(expanded, timeout=45):
 
 
 def fetch_x(url, follow_links=True, understand_video=True):
-    deadline = _new_deadline()   # 件単位の締切。動画・画像の Gemini 処理が共有する
+    deadline = _new_deadline()   # 件全体の締切(440秒)。最初の取得・t.co展開・埋め込みリンクが使う
+    gdeadline = deadline - _LINK_RESERVE_S   # Gemini(動画・画像)が使ってよいのは開始から 380 秒まで
+    skipped = []                 # 時間切れで飛ばした段(facts の deadline_skipped)
     _last.clear()
     m = re.search(r"/status/(\d+)", url)
     if not m:
@@ -703,7 +751,7 @@ def fetch_x(url, follow_links=True, understand_video=True):
                 "fail_reason": "x_tweet_id_unparsable"}
     tid = m.group(1)
     api = "https://cdn.syndication.twimg.com/tweet-result?id=%s&token=%s&lang=en" % (tid, _tweet_token(tid))
-    st, txt = _get(api, BROWSER_UA)
+    st, txt = _get(api, BROWSER_UA, deadline=deadline)
     if st != 200 or not txt.strip():
         return {"ok": False, "type": "x", "reason": "syndication 空/失敗 (status=%s)" % st,
                 "url": url, "fallback": "twitterapi.io",
@@ -756,7 +804,7 @@ def fetch_x(url, follow_links=True, understand_video=True):
         mp4s = [v for v in variants if v.get("content_type") == "video/mp4" and v.get("url")]
         if mp4s:
             best = min(mp4s, key=lambda v: v.get("bitrate", 0))
-            video_understanding, video_reason = _gemini_video_understanding(best["url"], deadline=deadline)
+            video_understanding, video_reason = _gemini_video_understanding(best["url"], deadline=gdeadline)
             video_model = _last.get("model", "") if video_understanding else ""
             meta = _gemini_meta(meta)
         else:
@@ -769,7 +817,7 @@ def fetch_x(url, follow_links=True, understand_video=True):
     image_reason = ""          # 画像が無い/読めた場合は空のまま
     image_model = ""
     if photos and understand_video:
-        image_understanding, image_reason = _gemini_image_understanding(photos[:4], deadline=deadline)
+        image_understanding, image_reason = _gemini_image_understanding(photos[:4], deadline=gdeadline)
         image_model = _last.get("model", "") if image_understanding else ""
         meta = _gemini_meta(meta)
 
@@ -783,11 +831,17 @@ def fetch_x(url, follow_links=True, understand_video=True):
     if tco_matches:
         try:
             # 全リンクを展開し、X Articleへのリンクが(先頭以外にあっても)無いか優先的に探す
-            expanded_list = [_expand_tco(u) for u in tco_matches]
+            expanded_list = []
+            for tu in tco_matches:   # u は投稿者 dict なので使わない
+                if _remaining(deadline) < 5:
+                    skipped.append("tco_expand")
+                    expanded_list.append("")
+                else:
+                    expanded_list.append(_expand_tco(tu, deadline))
             article_expanded = next((e for e in expanded_list if e and _is_x_article_url(e)), None)
             if article_expanded:
                 # X Article: 元ツイートのtid(Article内部IDではない)でFxEmbed経由取得
-                art = _fetch_x_article(tid)
+                art = _fetch_x_article(tid, deadline=deadline)
                 if art:
                     article_title = art["title"]
                     article_text = art["body"]
@@ -797,8 +851,10 @@ def fetch_x(url, follow_links=True, understand_video=True):
                 # (リンク先のtitleはtext本文には使うが、投稿自体のtitleはツイート本文のまま
                 # 保つ＝ツイート本文が空でリンクだけの投稿以外はツイート側の声を優先する)
                 expanded = expanded_list[0]
-                if expanded:
-                    linked = _fetch_x_embedded_link(expanded)
+                if expanded and _remaining(deadline) < 10:
+                    skipped.append("embedded_link")
+                elif expanded:
+                    linked = _fetch_x_embedded_link(expanded, timeout=min(45, _remaining(deadline)))
                     if linked:
                         article_text = linked["text"]
                         article_label = (linked["label"] + ": " + linked["title"]) if linked["title"] else linked["label"]
@@ -849,6 +905,7 @@ def fetch_x(url, follow_links=True, understand_video=True):
             "image_model": image_model, "video_model": video_model,
             **(meta or {}),
             "image_reason": image_reason,
+            "deadline_skipped": skipped,
             "title": (article_title or re.sub(r"\s+", " ", tweet_text or "").strip())[:80],
             "text": text,
             "author": u.get("name", ""), "handle": u.get("screen_name", ""),
@@ -960,7 +1017,7 @@ def _fetch_instagram_reel_video_url(url, timeout=12, retry_delay=2):
 def fetch_instagram(url):
     deadline = _new_deadline()
     _last.clear()
-    st, txt = _get(url, CRAWLER_UA)
+    st, txt = _get(url, CRAWLER_UA, deadline=deadline)
     # ⚠️ HTTPステータスの判定は本文・og:meta の解析より **前**（2026-09-05 Codex 5周目
     # レビュー指摘。fetch_web / fetch_threads / fetch_youtube と順序を揃える）。
     # 現行の _get() は HTTPError の本文を捨てるので 4xx では txt が空になり、実運用では
@@ -1708,6 +1765,8 @@ def _facts(url, started, result):
         "primary_skipped": bool(result.get("primary_skipped")),
         "primary_reason": result.get("primary_reason", ""),
         "fallback_reason": result.get("fallback_reason", ""),
+        # 件単位の時間予算が尽きて飛ばした段(tco_expand / embedded_link)。無ければ空。
+        "deadline_skipped": result.get("deadline_skipped", []),
         # どの経路で動画理解を諦めたかの生の理由コード。恒久/一過性のラベルは
         # ここに焼き付けず、照会側(ledger.py)がこのコードから導出する。
         "video_reason": result.get("video_reason", ""),

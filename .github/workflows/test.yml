@@ -5,9 +5,10 @@
 # 公開サイトの deploy が止まる事故になる。テストの成否と公開の可否は独立させ、
 # ここでは Pages への書き込み権限も持たせない（permissions: contents: read のみ）。
 #
-# pip install は行わない。test_backfill_recovery.py は標準ライブラリの unittest
-# のみを使う（backfill.py / ledger.py / fetch_content.py 本体も標準ライブラリのみで
-# 動く経路をここで検査する）。
+# ジョブの前半は pip install を行わず、標準ライブラリの unittest のみで動く経路
+# （backfill.py / ledger.py / fetch_content.py 本体）を検査する。ジョブの最後だけ
+# google-genai を requirements.txt と同じ版（==2.34.0）で入れ、SDK 依存のテスト
+# （test_gemini_retry.py / test_x_image_understanding.py）が skip されないようにしている。
 
 name: test
 
@@ -161,7 +162,7 @@ jobs:
 
       # ここから下は google-genai を入れて実物の SDK で動かす(SDK 依存のテストを CI で skip させない)。
       # 他のテストに SDK 有りの環境を持ち込まないよう、必ずジョブの最後に置く。
-      # 版は requirements.txt と揃える(2.34.0。上げるときは両方)。
+      # 版は requirements.txt と同じ(==2.34.0。上げるときは両方)。
       - name: Install google-genai (pinned)
         run: python -m pip install google-genai==2.34.0
 

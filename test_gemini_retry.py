@@ -150,6 +150,18 @@ class GeminiRetryTest(_MarkerMixin):
         resp, err, models = self._run(["cut", "ok"])
         self.assertIsNone(err)
         self.assertEqual(models, ["gemini-flash-latest", "gemini-flash-lite-latest"])
+        self.assertFalse(os.path.exists(self.marker))   # 接続断1回では死んでいる印を付けない
+
+    def test_timeouts_twice_mark_primary_down(self):
+        self._run(["slow", "slow", "ok"], timeout_s=0.3)
+        self.assertTrue(os.path.exists(self.marker))
+
+    def test_marker_lasts_15_minutes(self):
+        self._run([503, 503, "ok"])
+        with open(self.marker) as f:
+            until = float(f.read())
+        self.assertLessEqual(until - time.time(), 900 + 5)
+        self.assertGreater(until - time.time(), 800)
 
     def test_marker_makes_next_call_skip_primary(self):
         self._run([503, 503, "ok"])                      # 主が死ぬ→印
@@ -222,8 +234,9 @@ class ItemBudgetTest(_MarkerMixin):
                  {"content_type": "video/mp4", "url": "https://video.twimg.com/a.mp4", "bitrate": 1}]}}]
              + [{"type": "photo", "media_url_https": "https://pbs.twimg.com/media/%d.jpg" % i} for i in range(4)]}
 
-    def _run(self, video_dl_secs, upload_ok=False):
+    def _run(self, video_dl_secs, upload_ok=False, links=False):
         clock = [0.0]
+        embedded = []   # _fetch_x_embedded_link に渡された timeout
 
         class Models:
             def generate_content(inner, model, contents):
@@ -254,11 +267,22 @@ class ItemBudgetTest(_MarkerMixin):
                 raise TimeoutError("slow")
 
         def fake_urlopen(req, timeout=None):
+            if "t.co" in req.full_url:   # t.co 展開: 持ち時間いっぱい使ってから本物の形の応答を返す
+                clock[0] += timeout
+                resp = _FakeHttpResp(clock, 0, "text/html")
+                resp._chunks = [b'location.replace("https://example.com/a")', b""]
+                resp.url = req.full_url
+                return resp
             return _FakeHttpResp(clock, min(video_dl_secs, timeout))
+
+        def fake_embedded(expanded, timeout=45):
+            embedded.append(timeout)
+            clock[0] += timeout          # 埋め込みリンク取得も持ち時間いっぱい
+            return None
 
         def fake_get(url, ua, **k):
             clock[0] += 12
-            return 200, json.dumps(self.TWEET)
+            return 200, json.dumps(dict(self.TWEET, text="t https://t.co/abc") if links else self.TWEET)
 
         with patch.object(fetch_content, "_now", lambda: clock[0]), \
              patch.object(fetch_content, "_GEMINI_API_KEY", "dummy"), \
@@ -266,8 +290,9 @@ class ItemBudgetTest(_MarkerMixin):
              patch.object(fetch_content, "_get", fake_get), \
              patch("urllib.request.urlopen", fake_urlopen), \
              patch("urllib.request.build_opener", lambda *a: Opener()), \
-             patch.object(fetch_content, "_primary_down", lambda: False),              patch.object(fetch_content, "_mark_primary_down", lambda: None),              patch("fetch_content.time.sleep", lambda s: clock.__setitem__(0, clock[0] + s)):
-            r = fetch_content.fetch_x("https://x.com/h/status/1", follow_links=False)
+             patch.object(fetch_content, "_fetch_x_embedded_link", fake_embedded), patch.object(fetch_content, "_primary_down", lambda: False),              patch.object(fetch_content, "_mark_primary_down", lambda: None),              patch("fetch_content.time.sleep", lambda s: clock.__setitem__(0, clock[0] + s)):
+            r = fetch_content.fetch_x("https://x.com/h/status/1", follow_links=links)
+        self.embedded = embedded
         return clock[0], r
 
     def test_everything_slow_stays_under_480(self):
@@ -288,9 +313,68 @@ class ItemBudgetTest(_MarkerMixin):
         予算が無ければ 12+59+231+80+231=613 秒になるところを 440 秒で頭打ちにする。"""
         total, r = self._run(59, upload_ok=True)
         self.assertLessEqual(total, 480)
-        self.assertGreater(total, 400)               # 予算を使い切るところまで走った(空振りでない)
+        self.assertGreater(total, 360)               # Gemini の持ち時間(380秒)を使い切るところまで走った
         self.assertIn("video_content", r["missing"])
         self.assertIn("image_content", r["missing"])
+
+
+    def test_link_video_images_all_slow_stays_under_480(self):
+        """リンク付き・動画あり・画像4枚あり。初回取得・動画・画像・t.co展開・埋め込みリンクの
+        全部が持ち時間いっぱい粘る最悪ケース。Gemini は開始から380秒で止まり、後半に時間が残る。"""
+        total, r = self._run(59, upload_ok=True, links=True)
+        self.assertLess(total, 480)
+        self.assertGreater(total, 400)               # 予算を使い切るところまで走った
+        self.assertEqual(len(self.embedded), 1)      # 埋め込みリンクまで到達している
+        self.assertLessEqual(self.embedded[0], 45)
+
+    def test_links_skipped_and_recorded_when_budget_is_gone(self):
+        """Gemini が終わった時点で残りが足りなければ、リンク段を飛ばして facts に残す。"""
+        with patch.object(fetch_content, "_LINK_RESERVE_S", -10):   # 後半の予約を無くして予算を食い切らせる
+            total, r = self._run(59, upload_ok=True, links=True)
+        self.assertLess(total, 480)
+        self.assertTrue(set(r["deadline_skipped"]) & {"tco_expand", "embedded_link"})
+        facts = fetch_content._facts("https://x.com/h/status/1", 0, r)
+        self.assertEqual(facts["deadline_skipped"], r["deadline_skipped"])
+
+
+@unittest.skipUnless(fetch_content._GEMINI_AVAILABLE, "google-genai(httpx) 未導入")
+class TransientJudgementTest(unittest.TestCase):
+    """HTTP ステータスを持つ例外は、型が httpx でもステータスで決める(4xx は 408 以外すべて非一過性)。"""
+
+    def _status_error(self, code):
+        import httpx
+        return httpx.HTTPStatusError("x", request=httpx.Request("GET", "http://x"),
+                                     response=httpx.Response(code))
+
+    def test_httpx_status_error_403_is_not_transient(self):
+        self.assertFalse(fetch_content._is_transient_failure(self._status_error(403)))
+        self.assertFalse(fetch_content._is_transient_failure(self._status_error(429)))
+
+    def test_httpx_status_error_503_and_408_are_transient(self):
+        self.assertTrue(fetch_content._is_transient_failure(self._status_error(503)))
+        self.assertTrue(fetch_content._is_transient_failure(self._status_error(408)))
+
+    def test_status_attribute_variants(self):
+        for attr, code, want in (("code", 403, False), ("status_code", 403, False),
+                                 ("code", 502, True), ("status_code", 504, True)):
+            e = Exception("x")
+            setattr(e, attr, code)
+            self.assertEqual(fetch_content._is_transient_failure(e), want, (attr, code))
+
+    def test_no_status_only_timeouts_and_connection_errors(self):
+        import httpx
+        for e in (httpx.ReadTimeout("t"), httpx.ConnectError("c"), httpx.ReadError("r"),
+                  httpx.RemoteProtocolError("p"), TimeoutError(), ConnectionResetError()):
+            self.assertTrue(fetch_content._is_transient_failure(e), type(e).__name__)
+        for e in (ValueError("v"), RuntimeError("r"), FileNotFoundError("f")):
+            self.assertFalse(fetch_content._is_transient_failure(e), type(e).__name__)
+
+    def test_marker_judgement_excludes_plain_connection_errors(self):
+        import httpx
+        self.assertTrue(fetch_content._is_timeout_or_5xx(httpx.ReadTimeout("t")))
+        self.assertTrue(fetch_content._is_timeout_or_5xx(self._status_error(503)))
+        self.assertFalse(fetch_content._is_timeout_or_5xx(httpx.RemoteProtocolError("p")))
+        self.assertFalse(fetch_content._is_timeout_or_5xx(httpx.ConnectError("c")))
 
 
 class ExceptionReasonTest(unittest.TestCase):
@@ -305,3 +389,47 @@ class ExceptionReasonTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class GetDeadlineTest(unittest.TestCase):
+    """_get に件単位の締切を渡すと、タイムアウトは min(既定値, 残り)、締切後は取りに行かない。"""
+
+    def test_timeout_is_clamped_to_remaining(self):
+        seen = {}
+
+        def fake_urlopen(req, timeout=None):
+            seen["t"] = timeout
+            return _FakeHttpResp([0.0], 0, "text/html")
+
+        with patch("urllib.request.urlopen", fake_urlopen), patch.object(fetch_content, "_now", lambda: 100.0):
+            fetch_content._get("https://x.example/", "ua", deadline=103.0)
+        self.assertEqual(seen["t"], 3.0)
+
+    def test_spent_deadline_does_not_fetch(self):
+        with patch("urllib.request.urlopen", side_effect=AssertionError("fetched")), \
+             patch.object(fetch_content, "_now", lambda: 100.0):
+            self.assertEqual(fetch_content._get("https://x.example/", "ua", deadline=99.0), (None, ""))
+
+    def test_slow_trickle_is_cut_by_deadline(self):
+        class Trickle:
+            status = 200
+            headers = {}
+
+            def __init__(self, clock):
+                self.clock = clock
+
+            def read(self, n=-1):
+                self.clock[0] += 5.0      # 1チャンクに5秒かかる相手
+                return b"x"
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
+
+        clock = [0.0]
+        with patch("urllib.request.urlopen", lambda req, timeout=None: Trickle(clock)), \
+             patch.object(fetch_content, "_now", lambda: clock[0]):
+            self.assertEqual(fetch_content._get("https://x.example/", "ua", deadline=12.0), (None, ""))
+        self.assertLess(clock[0], 20)
