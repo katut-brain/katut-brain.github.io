@@ -322,6 +322,7 @@ class YtDlpTest(unittest.TestCase):
 
     def fake_run(self, files, rc=0, stdout="Title\tUploader\t20091025\n"):
         def run(cmd, **kw):
+            self.cmd = cmd
             out = pathlib.Path(cmd[cmd.index("-o") + 1]).parent
             for name, segs in files.items():
                 (out / name).write_text(json.dumps({"events": [{"segs": [{"utf8": t} for t in segs]}]}), encoding="utf-8")
@@ -332,6 +333,11 @@ class YtDlpTest(unittest.TestCase):
         fc.subprocess.run = self.fake_run({"s.en.json3": ["english"], "s.ja-orig.json3": ["にほん", "ご"]})
         d = fc.yt_dlp_subs("https://www.youtube.com/watch?v=x")
         self.assertEqual((d["text"], d["title"], d["author"], d["date"]), ("にほんご", "Title", "Uploader", "20091025"))
+
+    def test_japanese_before_english_and_honest_user_agent(self):
+        fc.subprocess.run = self.fake_run({"s.en.json3": ["english"], "s.ja.json3": ["日本語"]})
+        self.assertEqual(fc.yt_dlp_subs("https://www.youtube.com/watch?v=x")["text"], "日本語")
+        self.assertEqual(self.cmd[self.cmd.index("--user-agent") + 1], fc.UA)  # yt-dlp にも名乗りを偽らせない
 
     def test_original_language_beats_translated_japanese(self):
         # 英語の動画の「機械翻訳の日本語字幕」より、元の英語の字幕を選ぶ
@@ -348,6 +354,63 @@ class YtDlpTest(unittest.TestCase):
 
 
 class SafetyTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = pathlib.Path(tempfile.mkdtemp())
+        self._orig = (fc.HEALTH, fc.STATUS, fc.http_get)
+        fc.HEALTH, fc.STATUS = self.tmp / "health.jsonl", self.tmp / "status.json"
+
+    def tearDown(self):
+        fc.HEALTH, fc.STATUS, fc.http_get = self._orig
+
+    def test_internal_url_never_reaches_a_relay(self):
+        # 内部アドレスの URL は、Jina などの中継にもプラグインにも渡らない（どの手段も呼ばれない）
+        seen = []
+        fc.http_get = lambda url, **kw: (seen.append(url), (200, "x" * 500))[1]
+        out = fc.fetch("http://169.254.169.254/latest/meta-data/")
+        self.assertFalse(out["ok"])
+        self.assertEqual(seen, [])
+        with self.assertRaises(fc.FetchError):
+            fc.web_jina("http://127.0.0.1/admin")
+
+    def test_health_record_never_contains_urls(self):
+        fc.log_health("fetch", "web", "web_direct", False, 1, "http/https 以外は取らない: file:///home/u/secret.txt")
+        fc.log_health("fetch", "web", "web_direct", False, 1, "公開ホストでない（intranet.example → 10.0.0.1）")
+        fc.log_health("fetch", "youtube", "yt_dlp_subs", False, 1, "yt-dlp 失敗: ERROR: [youtube] https://www.youtube.com/watch?v=abc: x")
+        body = fc.HEALTH.read_text(encoding="utf-8")
+        for leaked in ("secret.txt", "file:", "intranet.example", "10.0.0.1", "watch?v=abc", "https://"):
+            self.assertNotIn(leaked, body)
+        self.assertIn("公開ホストでない", body)  # 理由の種類は残す
+
+    def test_http_get_sends_the_honest_user_agent(self):
+        # 送るヘッダそのものを見る（外へは出ない）
+        sent = []
+
+        class FakeResp:
+            status = 200
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
+
+            def read(self, n):
+                return b"ok"
+
+        class FakeOpener:
+            def open(self, req, timeout):
+                sent.append(req.get_header("User-agent"))
+                return FakeResp()
+        orig = (fc._check_public, fc.urllib.request.build_opener)
+        fc._check_public = lambda url: None
+        fc.urllib.request.build_opener = lambda *a: FakeOpener()
+        try:
+            self._orig[2]("https://example.com/")
+        finally:
+            fc._check_public, fc.urllib.request.build_opener = orig
+        self.assertEqual(sent, [fc.UA])
+        self.assertTrue(fc.UA.startswith("fetch-chain/"))
+
     def test_rejects_non_public_and_non_http(self):
         for bad in ("http://127.0.0.1/", "http://localhost/", "file:///etc/passwd", "http://169.254.169.254/"):
             with self.assertRaises(fc.FetchError, msg=bad):

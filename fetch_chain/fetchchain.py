@@ -181,6 +181,7 @@ def web_direct(url):
 
 
 def web_jina(url):
+    _check_public(url)  # 中継に渡す前に、元の URL も公開ホストか確かめる（内部アドレスを外へ渡さない）
     st, txt = http_get("https://r.jina.ai/" + url)
     if st != 200 or not txt.strip():
         raise FetchError("HTTP %s" % st)
@@ -433,12 +434,21 @@ def _now():
     return datetime.datetime.now(datetime.timezone.utc).astimezone().isoformat(timespec="seconds")
 
 
+_URL_RE = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*:/{1,3}\S+")
+
+
+def _scrub(error):
+    """記録用の失敗理由。URL と括弧の中（ホスト名・見本の文字など）を伏せる。"""
+    error = _URL_RE.sub("<url>", error or "")
+    return re.sub(r"[（(][^）)]*[）)]", "（…）", error)[:120]
+
+
 def log_health(kind, channel, method, ok, ms, error=""):
-    # URL は記録しない（PC で何を読んだかを残さない）
+    # URL は記録しない（PC で何を読んだかを残さない）。失敗理由の文に紛れたものも伏せる
     HEALTH.parent.mkdir(parents=True, exist_ok=True)
     with HEALTH.open("a", encoding="utf-8") as f:
         f.write(json.dumps({"ts": _now(), "env": where_am_i(), "kind": kind, "channel": channel, "method": method,
-                            "ok": ok, "ms": ms, "error": error}, ensure_ascii=False) + "\n")
+                            "ok": ok, "ms": ms, "error": _scrub(error)}, ensure_ascii=False) + "\n")
 
 
 def _recent(method):
@@ -478,6 +488,7 @@ def ordered_methods(channel_cfg):
 def fetch(url):
     channels = load_registry()
     try:
+        _check_public(url)  # どの手段（中継・プラグイン・yt-dlp）にも、内部アドレスや http(s) 以外を渡さない
         ch = classify(url, channels)
     except FetchError as e:
         return {"ok": False, "url": url, "error": str(e), "tried": []}
