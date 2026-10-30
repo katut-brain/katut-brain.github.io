@@ -14,7 +14,7 @@
   昇格 = 試用の手段が同じ場所で PROMOTE_AFTER 回続けて canary に通る
 足した手段は STATE/plugins/ に置く（リポジトリの main には書かない。夜間ランが毎晩 push する main とぶつけないため）。
 """
-import sys, os, json, hashlib, pathlib, subprocess, tempfile, datetime, zipfile
+import sys, os, json, hashlib, pathlib, shutil, subprocess, tempfile, datetime, zipfile
 import fetchchain as fc
 import vet
 
@@ -159,7 +159,9 @@ def wheel(name, pip_download=None, make_venv=None, approve=False):
             review = fc.STATE / "review"
             review.mkdir(parents=True, exist_ok=True)
             req = review / ("%s-%s.md" % (cand["package"], cand["version"]))
-            req.write_text(_review_request(cand, rep, whl), encoding="utf-8")
+            kept = review / whl.name   # 読む側が実物を開けるように、ハッシュを確かめた wheel を横に置く
+            shutil.copyfile(whl, kept)
+            req.write_text(_review_request(cand, rep, kept), encoding="utf-8")
             return [_event("wheel_needs_review", name=name, request=req.name)]
         venv = fc.STATE / "venvs" / name
         (make_venv or _make_venv)(venv, whl)
@@ -192,10 +194,12 @@ def _review_request(cand, rep, whl=None):
                                                        _excerpt(whl, f["file"], f["line"]) if whl and f["line"] else f["snippet"])
                      for f in rep["findings"])
     return ("# 入れる前の確認依頼: %s %s（sha256 %s）\n\n"
+            "wheel の実物（zip）はこの依頼と同じフォルダの `%s`（sha256 は上と一致を確認済み）。"
+            "下の抜粋もそこから取った。\n"
             "vet.py が needs_review にした。下の各行を wheel の中で実際に開き、該当のコードを**行ごとに逐語で引用して**、"
             "危険（外部への送信・鍵やブラウザ保存データの読み取り・任意のコマンド実行・常駐）かを判定する。"
             "引用できない主張は書かない。最後に「入れてよい／入れない」と、その理由を1行で。\n\n%s\n"
-            % (cand["package"], cand["version"], cand["sha256"], rows))
+            % (cand["package"], cand["version"], cand["sha256"], pathlib.Path(whl).name if whl else "（無し）", rows))
 
 
 def main(argv):

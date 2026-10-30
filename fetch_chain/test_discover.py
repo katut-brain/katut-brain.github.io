@@ -5,8 +5,6 @@ import fetchchain as fc
 import discover as dc
 import vet
 
-os.environ["FETCHCHAIN_ENV"] = "gha"
-fc.socket.getaddrinfo = lambda host, *a, **k: [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("8.8.8.8", 0))]
 SYND_OK = (200, json.dumps({"text": "just setting up my twttr"}))
 
 
@@ -23,6 +21,9 @@ class Base(unittest.TestCase):
     def setUp(self):
         self.tmp = pathlib.Path(tempfile.mkdtemp())
         self._orig = (fc.STATE, fc.HEALTH, fc.STATUS, fc.AUTO_PLUGINS, fc.http_get, dc.CANDIDATES)
+        self._env, self._gai = os.environ.get("FETCHCHAIN_ENV"), fc.socket.getaddrinfo
+        os.environ["FETCHCHAIN_ENV"] = "gha"
+        fc.socket.getaddrinfo = lambda host, *a, **k: [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("8.8.8.8", 0))]
         fc.STATE, fc.HEALTH, fc.STATUS = self.tmp, self.tmp / "health.jsonl", self.tmp / "status.json"
         fc.AUTO_PLUGINS = self.tmp / "plugins"
         dc.CANDIDATES = self.tmp / "candidates.json"
@@ -31,6 +32,11 @@ class Base(unittest.TestCase):
 
     def tearDown(self):
         fc.STATE, fc.HEALTH, fc.STATUS, fc.AUTO_PLUGINS, fc.http_get, dc.CANDIDATES = self._orig
+        fc.socket.getaddrinfo = self._gai
+        if self._env is None:
+            os.environ.pop("FETCHCHAIN_ENV", None)
+        else:
+            os.environ["FETCHCHAIN_ENV"] = self._env
         fc.load_registry()
         shutil.rmtree(self.tmp, ignore_errors=True)
 
@@ -171,6 +177,8 @@ class WheelTest(Base):
         self.assertIn("逐語で引用", req)
         self.assertIn("pkg/__init__.py:", req)
         self.assertIn("2| subprocess.run(['ls'])", req)   # 該当行の前後のコードが依頼文に入る
+        self.assertTrue((fc.STATE / "review" / "pkg-1.0-py3-none-any.whl").exists())   # 読む側が実物を開ける
+        self.assertIn("pkg-1.0-py3-none-any.whl", req)
 
     def test_person_can_approve_after_reading_the_review(self):
         files = {"pkg/__init__.py": "import subprocess\nsubprocess.run(['ls'])\n"}
