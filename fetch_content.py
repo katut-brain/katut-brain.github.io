@@ -747,16 +747,32 @@ def _fetch_x_embedded_link(expanded, timeout=45):
     return result.get("value")
 
 
+_X_VIDEO_HOSTS = ("twimg.com",)
+
+
 def _chain_tweet(url):
     """syndication が失敗した投稿を fetch-chain（fxtwitter → vxtwitter・名乗りは偽らない）で取り直し、
     syndication と同じ形の dict にそろえて返す。取れなければ (None, 試した手段の要約)。
     2026-10-30 追加（[[2026-10-30-sns-fetch-via-fetch-chain]]）。普段の経路（syndication で取れたとき）は通らない。"""
     try:
-        from fetch_chain import fetchchain as _fc
-        out = _fc.fetch(url, exclude=("x_syndication",))
-    except Exception as e:   # fetch-chain 自体が壊れていても夜間ランは止めない（従来の失敗に戻すだけ）
+        return _chain_tweet_inner(url)
+    except Exception as e:   # fetch-chain 自体・想定外の形の応答で壊れても夜間ランは止めない（従来の失敗に戻すだけ）
         return None, "error:%s" % type(e).__name__
-    tried = ",".join("%s:%s" % (t["method"], "ok" if t["ok"] else "x") for t in out.get("tried", []))
+
+
+def _iso_from_epoch(sec):
+    """syndication の created_at と同じ形（2026-10-01T00:00:00.000Z）。読めなければ ""（後段は日付不明として扱う）。"""
+    try:
+        return datetime.datetime.fromtimestamp(int(sec), datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    except (TypeError, ValueError, OverflowError, OSError):
+        return ""
+
+
+def _chain_tweet_inner(url):
+    from fetch_chain import fetchchain as _fc
+    out = _fc.fetch(url, exclude=("x_syndication",))
+    tried = ",".join("%s:%s" % (t.get("method", "?"), "ok" if t.get("ok") else "x")
+                     for t in out.get("tried", []) if isinstance(t, dict))
     if not out.get("ok"):
         return None, tried
     raw = (out.get("data") or {}).get("raw") or {}
@@ -764,20 +780,21 @@ def _chain_tweet(url):
         t = raw.get("tweet") or {}
         md = []
         for p in (t.get("media") or {}).get("photos") or []:
-            if p.get("url"):
+            if isinstance(p, dict) and p.get("url"):
                 md.append({"type": "photo", "media_url_https": p["url"]})
         for v in (t.get("media") or {}).get("videos") or []:
-            md.append({"type": "video", "media_url_https": v.get("thumbnail_url", ""),
-                       "video_info": {"variants": v.get("variants") or []}})
+            if isinstance(v, dict):
+                md.append({"type": "video", "media_url_https": v.get("thumbnail_url", ""),
+                           "video_info": {"variants": [x for x in v.get("variants") or [] if isinstance(x, dict)]}})
         # raw_text は t.co の短縮リンクが残る形（リンク先を辿るのに要る。text は展開済みで t.co が消える）
         text = ((t.get("raw_text") or {}).get("text")) or t.get("text", "")
         a = t.get("author") or {}
         return {"text": text, "user": {"name": a.get("name", ""), "screen_name": a.get("screen_name", "")},
-                "created_at": t.get("created_at", ""), "favorite_count": t.get("likes"),
+                "created_at": _iso_from_epoch(t.get("created_timestamp")), "favorite_count": t.get("likes"),
                 "mediaDetails": md}, tried
     if out["method"] == "x_vxtwitter":
         md = []
-        for m in raw.get("media_extended") or []:
+        for m in [m for m in raw.get("media_extended") or [] if isinstance(m, dict)]:
             if m.get("type") == "image" and m.get("url"):
                 md.append({"type": "photo", "media_url_https": m["url"]})
             elif m.get("type") in ("video", "gif") and m.get("url"):
@@ -786,10 +803,11 @@ def _chain_tweet(url):
         # vxtwitter の本文は t.co が消えているので、リンク先は辿れない（欠損として残る）
         return {"text": raw.get("text", ""), "user": {"name": raw.get("user_name", ""),
                                                        "screen_name": raw.get("user_screen_name", "")},
-                "created_at": raw.get("date", ""), "favorite_count": raw.get("likes"), "mediaDetails": md}, tried
+                "created_at": _iso_from_epoch(raw.get("date_epoch")), "favorite_count": raw.get("likes"),
+                "mediaDetails": md}, tried
     data = out.get("data") or {}   # 試用中の手段など: 本文と投稿者だけ
     return {"text": data.get("text", ""), "user": {"screen_name": data.get("author", "")},
-            "created_at": data.get("date", ""), "mediaDetails": []}, tried
+            "created_at": "", "mediaDetails": []}, tried   # 日付の形が手段ごとに違うので、ここでは不明にする
 
 
 def fetch_x(url, follow_links=True, understand_video=True):
@@ -876,7 +894,9 @@ def fetch_x(url, follow_links=True, understand_video=True):
         mp4s = [v for v in variants if v.get("content_type") == "video/mp4" and v.get("url")]
         if mp4s:
             best = min(mp4s, key=lambda v: v.get("bitrate", 0))
-            video_understanding, video_reason = _gemini_video_understanding(best["url"], deadline=gdeadline)
+            # fetch-chain 経由（第三者の中継）で得た動画の URL は twimg.com だけを許す（開始もリダイレクト先も）
+            video_understanding, video_reason = _gemini_video_understanding(
+                best["url"], deadline=gdeadline, allowed_hosts=_X_VIDEO_HOSTS if via == "fetch_chain" else None)
             video_model = _last.get("model", "") if video_understanding else ""
             meta = _gemini_meta(meta)
         else:
