@@ -158,3 +158,9 @@ jobs:
       # カードとページが不変・未回収 rid に触れない・1回の上限を超えないこと（2026-10-14 追加）。
       - name: Run card-refresh tests
         run: python -m unittest -v test_refresh_cards.py
+
+      # Gemini 呼び出しの再試行(503×2→成功・429は再試行しない・使い切るとステータス付き理由・
+      # 途中切断)。ダミーHTTPサーバ相手に本物のgoogle-genaiを動かす。この workflow は
+      # pip install しないので CI では SDK 部分は skip になる(手元 venv で実行すること)。
+      - name: Run gemini-retry tests
+        run: python -m unittest -v test_gemini_retry.py

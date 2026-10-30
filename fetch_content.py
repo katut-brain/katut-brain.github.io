@@ -294,6 +294,52 @@ def _is_quota_error(e):
     return False
 
 
+_GEMINI_MODEL = "gemini-flash-latest"
+
+
+def _gemini_client():
+    """Gemini クライアント。動画・画像で共通。
+
+    2026-09-20〜10-29 に動画の読み取りが X82・IG13 件、約2ヶ月 ServerError(503 high demand) で
+    落ちた。再試行が無く、タイムアウトも無かった(切断まで約310秒待たされる)ため。
+    1回の呼び出しは90秒で切り、5xx だけ最大3回(待ち5→10秒)。429 は再試行しない
+    (gemini_quota の判定に任せる)。最悪 generate_content で 3x90+15=285秒 で、
+    cloud_routine_prompt.md の 480秒 に収まる。
+    shortcut: SDK が HttpRetryOptions を持たない古い版では再試行なしで動く(落とさない)。
+    """
+    try:
+        from google.genai import types
+        opts = types.HttpOptions(
+            timeout=90_000,
+            retry_options=types.HttpRetryOptions(
+                attempts=3, initial_delay=5, max_delay=60, exp_base=2,
+                http_status_codes=[500, 502, 503, 504]))
+        return _genai.Client(api_key=_GEMINI_API_KEY, http_options=opts)
+    except (ImportError, AttributeError, TypeError):
+        return _genai.Client(api_key=_GEMINI_API_KEY)
+
+
+def _gemini_generate(client, contents):
+    """generate_content。SDK の再試行は 5xx とタイムアウトだけで、サーバ側の途中切断
+    (httpx.RemoteProtocolError)は拾わないため、そこだけ自前で1回やり直す。
+    shortcut: 最初の試行が100秒以内に切れた場合のみ(480秒の枠を食い潰さない)。"""
+    t0 = time.time()
+    for attempt in (1, 2):
+        try:
+            return client.models.generate_content(model=_GEMINI_MODEL, contents=contents)
+        except Exception as e:
+            if attempt == 2 or type(e).__name__ != "RemoteProtocolError" or time.time() - t0 > 100:
+                raise
+            time.sleep(5)
+
+
+def _exception_reason(e):
+    """例外 → 理由コード "exception:<型名>[:<HTTPステータス>]"。ledger.py は前方一致で transient 扱い。"""
+    code = getattr(e, "code", None)
+    suffix = ":%d" % code if isinstance(code, int) and not isinstance(code, bool) else ""
+    return "exception:" + type(e).__name__[:40] + suffix
+
+
 def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
     """動画(mp4)をダウンロードし、Gemini API(無料枠)で映像+音声の内容を理解して
     日本語要約を返す。X動画・Instagram Reels等、動画の実体URLが手に入るケースで共用する。
@@ -352,7 +398,7 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
         with os.fdopen(fd, "wb") as f:
             f.write(data)
 
-        client = _genai.Client(api_key=_GEMINI_API_KEY)
+        client = _gemini_client()
         uploaded = client.files.upload(file=tmp_path)
         waited = 0
         while getattr(uploaded.state, "name", "") == "PROCESSING" and waited < 100:
@@ -363,10 +409,9 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
             # 長尺動画はGemini側の処理が数分かかる場合がある。無人ジョブの時間予算を優先し、
             # 100秒待って終わらなければ理解を諦める(missing: video_contentで正直に記録)。
             return "", "gemini_timeout"
-        resp = client.models.generate_content(
-            model="gemini-flash-latest",
-            contents=[uploaded, "この動画に映っている内容と、話されている・聞こえる音声の内容を、日本語で具体的に要約して。"],
-        )
+        resp = _gemini_generate(
+            client,
+            [uploaded, "この動画に映っている内容と、話されている・聞こえる音声の内容を、日本語で具体的に要約して。"])
         out = (resp.text or "").strip()[:max_chars]
         # 例外は出ていないが中身が空。Gemini が答えを返さなかったケースを
         # 「成功」と記録すると、後から見て理由が消える。
@@ -378,8 +423,7 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
         # のどれからでも判定できる。2026-09-23 Codex 2周目レビュー P1 対応）。
         if _is_quota_error(e):
             return "", "gemini_quota"
-        name = type(e).__name__
-        return "", "exception:" + name[:40]
+        return "", _exception_reason(e)
     finally:
         if tmp_path and os.path.exists(tmp_path):
             try:
