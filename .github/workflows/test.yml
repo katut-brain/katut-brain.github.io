@@ -65,6 +65,10 @@ jobs:
         working-directory: fetch_chain
         run: python -m unittest -v test_fetchchain test_vet
 
+      # X の syndication が落ちた夜だけ fetch-chain に回す（fetch_content.fetch_x）。外には出ない
+      - name: Run fetch-chain fallback tests
+        run: python -m unittest -v test_fetch_chain_fallback.py
+
       # 所要時間の異常膨張検知（check_run_timing.py。capture-pipeline 成功
       # 条件(b)）の回帰テスト。
       - name: Run run-timing anomaly-check tests

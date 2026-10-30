@@ -747,6 +747,51 @@ def _fetch_x_embedded_link(expanded, timeout=45):
     return result.get("value")
 
 
+def _chain_tweet(url):
+    """syndication が失敗した投稿を fetch-chain（fxtwitter → vxtwitter・名乗りは偽らない）で取り直し、
+    syndication と同じ形の dict にそろえて返す。取れなければ (None, 試した手段の要約)。
+    2026-10-30 追加（[[2026-10-30-sns-fetch-via-fetch-chain]]）。普段の経路（syndication で取れたとき）は通らない。"""
+    try:
+        from fetch_chain import fetchchain as _fc
+        out = _fc.fetch(url, exclude=("x_syndication",))
+    except Exception as e:   # fetch-chain 自体が壊れていても夜間ランは止めない（従来の失敗に戻すだけ）
+        return None, "error:%s" % type(e).__name__
+    tried = ",".join("%s:%s" % (t["method"], "ok" if t["ok"] else "x") for t in out.get("tried", []))
+    if not out.get("ok"):
+        return None, tried
+    raw = (out.get("data") or {}).get("raw") or {}
+    if out["method"] == "x_fxtwitter":
+        t = raw.get("tweet") or {}
+        md = []
+        for p in (t.get("media") or {}).get("photos") or []:
+            if p.get("url"):
+                md.append({"type": "photo", "media_url_https": p["url"]})
+        for v in (t.get("media") or {}).get("videos") or []:
+            md.append({"type": "video", "media_url_https": v.get("thumbnail_url", ""),
+                       "video_info": {"variants": v.get("variants") or []}})
+        # raw_text は t.co の短縮リンクが残る形（リンク先を辿るのに要る。text は展開済みで t.co が消える）
+        text = ((t.get("raw_text") or {}).get("text")) or t.get("text", "")
+        a = t.get("author") or {}
+        return {"text": text, "user": {"name": a.get("name", ""), "screen_name": a.get("screen_name", "")},
+                "created_at": t.get("created_at", ""), "favorite_count": t.get("likes"),
+                "mediaDetails": md}, tried
+    if out["method"] == "x_vxtwitter":
+        md = []
+        for m in raw.get("media_extended") or []:
+            if m.get("type") == "image" and m.get("url"):
+                md.append({"type": "photo", "media_url_https": m["url"]})
+            elif m.get("type") in ("video", "gif") and m.get("url"):
+                md.append({"type": "video", "media_url_https": m.get("thumbnail_url", ""),
+                           "video_info": {"variants": [{"content_type": "video/mp4", "bitrate": 0, "url": m["url"]}]}})
+        # vxtwitter の本文は t.co が消えているので、リンク先は辿れない（欠損として残る）
+        return {"text": raw.get("text", ""), "user": {"name": raw.get("user_name", ""),
+                                                       "screen_name": raw.get("user_screen_name", "")},
+                "created_at": raw.get("date", ""), "favorite_count": raw.get("likes"), "mediaDetails": md}, tried
+    data = out.get("data") or {}   # 試用中の手段など: 本文と投稿者だけ
+    return {"text": data.get("text", ""), "user": {"screen_name": data.get("author", "")},
+            "created_at": data.get("date", ""), "mediaDetails": []}, tried
+
+
 def fetch_x(url, follow_links=True, understand_video=True):
     deadline = _new_deadline()   # 件全体の締切(440秒)。最初の取得・t.co展開・埋め込みリンクが使う
     gdeadline = deadline - _LINK_RESERVE_S   # Gemini(動画・画像)が使ってよいのは開始から 380 秒まで
@@ -770,15 +815,24 @@ def fetch_x(url, follow_links=True, understand_video=True):
     tid = m.group(1)
     api = "https://cdn.syndication.twimg.com/tweet-result?id=%s&token=%s&lang=en" % (tid, _tweet_token(tid))
     st, txt = _get(api, BROWSER_UA, deadline=deadline)
+    d, fail, via, chain_tried = None, None, "x_syndication", ""
     if st != 200 or not txt.strip():
-        return {"ok": False, "type": "x", "reason": "syndication 空/失敗 (status=%s)" % st,
+        fail = {"ok": False, "type": "x", "reason": "syndication 空/失敗 (status=%s)" % st,
                 "url": url, "fallback": "twitterapi.io",
                 "fail_reason": _http_fail_reason("x_syndication", st)}
-    try:
-        d = json.loads(txt)
-    except Exception:
-        return {"ok": False, "type": "x", "reason": "JSON parse 失敗", "url": url,
-                "fail_reason": "x_syndication_bad_json"}
+    else:
+        try:
+            d = json.loads(txt)
+        except Exception:
+            fail = {"ok": False, "type": "x", "reason": "JSON parse 失敗", "url": url,
+                    "fail_reason": "x_syndication_bad_json"}
+    if fail is not None:
+        # syndication がだめなときだけ fetch-chain に回す。全部だめなら従来の失敗のまま（台帳の分類を変えない）
+        d, chain_tried = _chain_tweet(url) if _remaining(deadline) > 60 else (None, "skipped:deadline")
+        if d is None:
+            fail["fetch_chain_tried"] = chain_tried
+            return fail
+        via = "fetch_chain"
     u = d.get("user", {})
     media_details = d.get("mediaDetails", [])
     media = [md.get("media_url_https", "") for md in media_details if md.get("media_url_https")]
@@ -911,6 +965,7 @@ def fetch_x(url, follow_links=True, understand_video=True):
         missing = missing + ["video_content"]
 
     return {"ok": True, "type": "x", "url": url,
+            "fetched_via": via, **({"fetch_chain_tried": chain_tried} if chain_tried else {}),
             # 動画理解の成否は本文の部分文字列で判定しない（本文側に同じ語が
             # 現れれば誤検出するし、キャプションが空だと接頭辞が付かない）。
             "video_understood": bool(video_understanding),
@@ -1794,6 +1849,9 @@ def _facts(url, started, result):
         # 取得失敗(ok:false)の機械可読な理由コード。恒久/一過性の分類はここに焼き付けず、
         # 照会側(ledger.py)がこのコードから導出する(video_reasonと同じ流儀)。
         "fail_reason": result.get("fail_reason", ""),
+        # X の投稿をどこから取ったか（x_syndication／fetch_chain）と、fetch-chain が試した手段（2026-10-30〜）
+        "fetched_via": result.get("fetched_via", ""),
+        "fetch_chain_tried": result.get("fetch_chain_tried", ""),
         # 同じ日に同じURLを何度取り直したか。日別ファイルはURLキーのdictなので
         # 同日2回目は1回目のレコードを上書きしてしまい、回数の痕跡だけが消える
         # （2026-09-02 Codexの敵対的レビューで発見）。ファイル形式を変えずに

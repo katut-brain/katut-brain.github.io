@@ -486,7 +486,8 @@ def ordered_methods(channel_cfg):
 
 
 # ---------- コマンド ----------
-def fetch(url):
+def fetch(url, exclude=()):
+    """exclude: 試さない手段の名前（呼び出し側が自分で試し終えたもの）。"""
     channels = load_registry()
     try:
         _check_public(url)  # どの手段（中継・プラグイン・yt-dlp）にも、内部アドレスや http(s) 以外を渡さない
@@ -494,7 +495,7 @@ def fetch(url):
     except FetchError as e:
         return {"ok": False, "url": url, "error": str(e), "tried": []}
     tried = []
-    for m in ordered_methods(channels[ch]):
+    for m in [m for m in ordered_methods(channels[ch]) if m not in exclude]:
         t0 = time.time()
         try:
             data = run_method(m, url)
