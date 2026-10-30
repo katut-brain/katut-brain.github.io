@@ -23,7 +23,7 @@ TWEET = {
 
 
 def _fetch_x(understand_video=True, tweet=TWEET, image_result=("画像の読み取り結果", "")):
-    with patch("fetch_content._get", return_value=(200, json.dumps(tweet))), \
+    with patch("fetch_content._last_model", "gemini-flash-lite-latest"), patch("fetch_content._get", return_value=(200, json.dumps(tweet))), \
          patch("fetch_content._gemini_image_understanding", return_value=image_result) as m:
         r = fetch_content.fetch_x("https://x.com/h/status/123", follow_links=False,
                                   understand_video=understand_video)
@@ -41,6 +41,7 @@ class FetchXImageTest(unittest.TestCase):
         facts = fetch_content._facts("https://x.com/h/status/123", 0, r)
         self.assertEqual(facts["image_summary"], "画像の読み取り結果")
         self.assertEqual(facts["image_reason"], "")
+        self.assertEqual(facts["image_model"], "gemini-flash-lite-latest")   # 読めたモデルが facts に残る
 
     def test_failure_keeps_image_content_and_records_reason(self):
         r, _ = _fetch_x(image_result=("", "exception:ServerError:503"))
@@ -85,12 +86,12 @@ class ImageUnderstandingUnitTest(unittest.TestCase):
         resp = MagicMock(text="読めた")
         with patch.object(fetch_content, "_GEMINI_API_KEY", "dummy"), \
              patch("urllib.request.urlopen", side_effect=lambda *a, **k: self._resp("image/jpeg", b"\xff\xd8x")), \
-             patch("fetch_content._gemini_client"), \
+\
              patch("fetch_content._gemini_generate", return_value=resp) as gen:
             out = fetch_content._gemini_image_understanding(urls)
         self.assertEqual(out, ("読めた", ""))
         self.assertEqual(gen.call_count, 1)
-        self.assertEqual(len(gen.call_args[0][1]), 4)   # 画像3 + 指示文1
+        self.assertEqual(len(gen.call_args[0][0]), 4)   # 画像3 + 指示文1
 
     def test_non_image_or_failed_downloads_fail_without_calling_gemini(self):
         with patch.object(fetch_content, "_GEMINI_API_KEY", "dummy"), \

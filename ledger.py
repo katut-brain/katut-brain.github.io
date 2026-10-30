@@ -152,8 +152,9 @@ _VIDEO_REASON_KIND = {
     # なかった(HTTPエラー・タイムアウト・Location無し・例外)。中継の一時的な不調の可能性がある。
     "instagram_relay_not_video":   "transient",  # 中継は応答したが転送先がfbcdn系のmp4
     # でない(本家instagram.comへ送り返された等)。そのときの応答であって動画そのものではない。
-    "instagram_relay_thumbnail_only": "permanent",  # 中継がサムネJPEGしか返さない＝動画の
-    # 実体が取れないリール。毎晩取り直しても同じ(2026-10 に約10本が毎晩 bad_content_type で再試行されていた)。
+    "instagram_relay_thumbnail_only": "transient",  # 中継がサムネJPEGしか返さない(動画の実体が
+    # 取れないリール)。bad_content_type と同じ扱い＝既存の試行上限(DEFAULT_MAX_ATTEMPTS=3)で止まる。
+    # 新しい仕組みは作らない(permanent にすると、中継が後日直ったリールも二度と取らなくなる)。
     "host_not_allowed":         "permanent",   # SSRF対策で意図的に拒否
     "too_large":                "permanent",   # 上限超過。同じ動画なら次回も超える
     "no_mp4_variant":           "permanent",   # mp4実体が無い（HLSのみ等）

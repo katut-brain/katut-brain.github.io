@@ -295,42 +295,58 @@ def _is_quota_error(e):
 
 
 _GEMINI_MODEL = "gemini-flash-latest"
+_GEMINI_FALLBACK_MODEL = "gemini-flash-lite-latest"   # 無料キーで使えることを 2026-10-30 に実測
+_GENERATE_TIMEOUT_MS = 75_000
+_last_model = ""   # 直近の generate で読めたモデル(facts の video_model / image_model 用)
 
 
-def _gemini_client():
+def _gemini_client(timeout_ms=90_000, attempts=1):
     """Gemini クライアント。動画・画像で共通。
 
-    2026-09-20〜10-29 に動画の読み取りが X82・IG13 件、約2ヶ月 ServerError(503 high demand) で
-    落ちた。再試行が無く、タイムアウトも無かった(切断まで約310秒待たされる)ため。
-    1回の呼び出しは90秒で切り、5xx だけ最大3回(待ち5→10秒)。429 は再試行しない
-    (gemini_quota の判定に任せる)。最悪 generate_content で 3x90+15=285秒 で、
-    cloud_routine_prompt.md の 480秒 に収まる。
-    shortcut: SDK が HttpRetryOptions を持たない古い版では再試行なしで動く(落とさない)。
+    2026-09-20〜10-29 に動画の読み取りが X82・IG13 件 ServerError(503 high demand)・無応答で
+    落ちた(再試行もタイムアウトも無く、切断まで約310秒待たされた)。
+    attempts>1 のとき 5xx とタイムアウトだけ SDK が再試行する(初期5秒・指数)。429 は再試行しない
+    (gemini_quota の判定に任せる)。
+    shortcut: SDK が HttpRetryOptions を持たない古い版では再試行・タイムアウトなしで動く(落とさない)。
     """
     try:
         from google.genai import types
         opts = types.HttpOptions(
-            timeout=90_000,
+            timeout=timeout_ms,
             retry_options=types.HttpRetryOptions(
-                attempts=3, initial_delay=5, max_delay=60, exp_base=2,
+                attempts=attempts, initial_delay=5, max_delay=60, exp_base=2,
                 http_status_codes=[500, 502, 503, 504]))
         return _genai.Client(api_key=_GEMINI_API_KEY, http_options=opts)
     except (ImportError, AttributeError, TypeError):
         return _genai.Client(api_key=_GEMINI_API_KEY)
 
 
-def _gemini_generate(client, contents):
-    """generate_content。SDK の再試行は 5xx とタイムアウトだけで、サーバ側の途中切断
-    (httpx.RemoteProtocolError)は拾わないため、そこだけ自前で1回やり直す。
-    shortcut: 最初の試行が100秒以内に切れた場合のみ(480秒の枠を食い潰さない)。"""
-    t0 = time.time()
-    for attempt in (1, 2):
+def _gemini_generate(contents, t0=None):
+    """generate_content。主モデルは1回75秒・最大2回(SDK再試行)。それでも読めなければ
+    予備モデル(lite)で1回だけ。RemoteProtocolError(SDKは再試行しない)・無応答もここで予備に回る。
+    429 は予備に回さず投げる(枠切れは別モデルでも同じ扱いにしない→gemini_quota の判定へ)。
+    t0(呼び出し元の開始時刻)から330秒を超えていたら予備は試さない。
+    最悪: 主 2x75+5+jitter1 = 156秒 + 予備 75秒 = 231秒。
+    投げる例外は主モデルのもの(理由コードを主の失敗で残す)。"""
+    global _last_model
+    if t0 is None:
+        t0 = time.time()
+    _last_model = ""
+    try:
+        c1 = _gemini_client(_GENERATE_TIMEOUT_MS, 2)   # 変数で保持(捨てると接続が閉じられる)
+        resp = c1.models.generate_content(model=_GEMINI_MODEL, contents=contents)
+        _last_model = _GEMINI_MODEL
+        return resp
+    except Exception as e:
+        if _is_quota_error(e) or time.time() - t0 > 330:
+            raise
         try:
-            return client.models.generate_content(model=_GEMINI_MODEL, contents=contents)
-        except Exception as e:
-            if attempt == 2 or type(e).__name__ != "RemoteProtocolError" or time.time() - t0 > 100:
-                raise
-            time.sleep(5)
+            c2 = _gemini_client(_GENERATE_TIMEOUT_MS, 1)
+            resp = c2.models.generate_content(model=_GEMINI_FALLBACK_MODEL, contents=contents)
+        except Exception:
+            raise e
+        _last_model = _GEMINI_FALLBACK_MODEL
+        return resp
 
 
 def _exception_reason(e):
@@ -370,6 +386,7 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
             # 開始URL自体が想定外のホスト。安全側に倒して理解を諦める
             return "", "host_not_allowed"
     tmp_path = None
+    t0 = time.time()
     try:
         req = urllib.request.Request(video_url, headers={"User-Agent": BROWSER_UA})
         if allowed_hosts is not None:
@@ -398,7 +415,7 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
         with os.fdopen(fd, "wb") as f:
             f.write(data)
 
-        client = _gemini_client()
+        client = _gemini_client()   # upload/get 用: 90秒・再試行なし
         uploaded = client.files.upload(file=tmp_path)
         waited = 0
         while getattr(uploaded.state, "name", "") == "PROCESSING" and waited < 100:
@@ -410,8 +427,7 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
             # 100秒待って終わらなければ理解を諦める(missing: video_contentで正直に記録)。
             return "", "gemini_timeout"
         resp = _gemini_generate(
-            client,
-            [uploaded, "この動画に映っている内容と、話されている・聞こえる音声の内容を、日本語で具体的に要約して。"])
+            [uploaded, "この動画に映っている内容と、話されている・聞こえる音声の内容を、日本語で具体的に要約して。"], t0)
         out = (resp.text or "").strip()[:max_chars]
         # 例外は出ていないが中身が空。Gemini が答えを返さなかったケースを
         # 「成功」と記録すると、後から見て理由が消える。
@@ -442,6 +458,7 @@ def _gemini_image_understanding(photo_urls, max_chars=4000):
     ダウンロード元は呼び出し側が信頼できるもの(X の syndication が返した pbs.twimg.com)に限る。"""
     if not _GEMINI_AVAILABLE or not _GEMINI_API_KEY:
         return "", "gemini_unavailable"
+    t0 = time.time()
     try:
         from google.genai import types
         parts = []
@@ -457,9 +474,9 @@ def _gemini_image_understanding(photo_urls, max_chars=4000):
                 continue   # 1枚の失敗で全体を捨てない
         if not parts:
             return "", "image_download_failed"
-        resp = _gemini_generate(_gemini_client(), parts + [
+        resp = _gemini_generate(parts + [
             "これらは1つのSNS投稿に添付された画像です。各画像の内容を日本語で具体的に説明して。"
-            "画像に写っている文字・図表の数字は逐語で書き写して。"])
+            "画像に写っている文字・図表の数字は逐語で書き写して。"], t0)
         out = (resp.text or "").strip()[:max_chars]
         return (out, "") if out else ("", "gemini_empty_response")
     except Exception as e:
@@ -581,6 +598,7 @@ def fetch_x(url, follow_links=True, understand_video=True):
     # (output-verifierが発見)。
     video_understanding = ""
     video_reason = ""          # 動画が無い/理解に成功した場合は空のまま
+    video_model = ""           # 読めたモデル(予備に落ちたか facts で分かるように)
     has_video = False
     for md in media_details:
         if md.get("type") != "video":
@@ -596,6 +614,7 @@ def fetch_x(url, follow_links=True, understand_video=True):
         if mp4s:
             best = min(mp4s, key=lambda v: v.get("bitrate", 0))
             video_understanding, video_reason = _gemini_video_understanding(best["url"])
+            video_model = _last_model if video_understanding else ""
         else:
             # 動画はあるが mp4 バリアントが1つも無い（HLSのみ等）。ダウンロードする実体が無い。
             video_reason = "no_mp4_variant"
@@ -604,8 +623,10 @@ def fetch_x(url, follow_links=True, understand_video=True):
     # 添付画像: 引用ツイート取得(understand_video=False)では読まない(動画と同じ理由・45秒の枠)。
     image_understanding = ""
     image_reason = ""          # 画像が無い/読めた場合は空のまま
+    image_model = ""
     if photos and understand_video:
         image_understanding, image_reason = _gemini_image_understanding(photos[:4])
+        image_model = _last_model if image_understanding else ""
 
     # t.co 展開: 本文テキストのリンク先(X Article/YouTube/Instagram/Threads/引用ツイート/一般記事)を取得
     article_text = ""
@@ -679,6 +700,7 @@ def fetch_x(url, follow_links=True, understand_video=True):
             "has_video": bool(has_video),
             # 添付画像の読み取り結果(成功時のみ)と、読めなかった理由(失敗時のみ)。
             "image_summary": image_understanding,
+            "image_model": image_model, "video_model": video_model,
             "image_reason": image_reason,
             "title": (article_title or re.sub(r"\s+", " ", tweet_text or "").strip())[:80],
             "text": text,
@@ -845,11 +867,13 @@ def fetch_instagram(url):
     is_reel = "/reel/" in url
     video_understanding = ""
     video_reason = ""
+    video_model = ""
     if is_reel:
         mp4_url, reason = _fetch_instagram_reel_video_url(url)
         if mp4_url:
             video_understanding, video_reason = _gemini_video_understanding(
                 mp4_url, allowed_hosts=_INSTAGRAM_VIDEO_ALLOWED_HOSTS)
+            video_model = _last_model if video_understanding else ""
         else:
             video_understanding, video_reason = "", reason
         # video_reasonが空文字のままmissing:["video_content"]になる経路を作らない
@@ -876,6 +900,7 @@ def fetch_instagram(url):
             # 付かない。部分文字列判定ではこれを取りこぼすので明示フラグを返す。
             "video_understood": bool(video_understanding),
             "video_reason": video_reason,
+            "video_model": video_model,
             "has_video": bool(is_reel),
             "title": (cap or og_title)[:80], "text": text,
             "author": name, "handle": handle, "date": date,
@@ -1524,6 +1549,9 @@ def _facts(url, started, result):
         # 添付画像の読み取り結果(video_summary と同じ整形・長さ)と、読めなかった理由コード。
         "image_summary": clean_video_summary(result.get("image_summary", "")),
         "image_reason": result.get("image_reason", ""),
+        # 読めたモデル(gemini-flash-latest か予備の gemini-flash-lite-latest)。未読は ""。
+        "video_model": result.get("video_model", ""),
+        "image_model": result.get("image_model", ""),
         # どの経路で動画理解を諦めたかの生の理由コード。恒久/一過性のラベルは
         # ここに焼き付けず、照会側(ledger.py)がこのコードから導出する。
         "video_reason": result.get("video_reason", ""),

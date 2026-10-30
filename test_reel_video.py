@@ -409,11 +409,11 @@ class ReasonKindClassificationTest(unittest.TestCase):
         rec = self._reel_rec(video_reason="instagram_relay_not_video")
         self.assertEqual(ledger._reason_kind(rec), "transient")
 
-    def test_instagram_relay_thumbnail_only_is_permanent(self):
-        """サムネしか返らないリールは毎晩の取り直しを止める。bad_content_type 自体は transient のまま。"""
+    def test_instagram_relay_thumbnail_only_is_transient(self):
+        """既存の試行上限(3回)に乗る。コードを知っている(未知コード扱いで legacy permanent に落ちない)。"""
         rec = self._reel_rec(video_reason="instagram_relay_thumbnail_only")
-        self.assertEqual(ledger._reason_kind(rec), "permanent")
-        self.assertEqual(ledger._reason_kind(self._reel_rec(video_reason="bad_content_type")), "transient")
+        self.assertEqual(ledger._reason_kind(rec), "transient")
+        self.assertIn("instagram_relay_thumbnail_only", ledger._VIDEO_REASON_KIND)
 
     def test_legacy_abandoned_code_stays_permanent(self):
         """既存レコードの据え置き: 歴史的コードを持つレコードは permanent のまま。"""

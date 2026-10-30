@@ -22,7 +22,7 @@ import ledger  # noqa: E402
 OK_BODY = {"candidates": [{"content": {"role": "model", "parts": [{"text": "要約です"}]}}]}
 
 
-def _serve(script):
+def _serve(script, models=None):
     """script = 応答のリスト。int=そのHTTPステータスで空JSON、"ok"=成功、"cut"=本文なしで切断。"""
     hits = []
 
@@ -30,6 +30,8 @@ def _serve(script):
         def do_POST(self):
             self.rfile.read(int(self.headers.get("Content-Length", 0)))
             hits.append(1)
+            if models is not None:
+                models.append(self.path.split("/models/")[1].split(":")[0])
             step = script[min(len(hits) - 1, len(script) - 1)]
             if step == "cut":
                 self.connection.close()
@@ -52,44 +54,59 @@ def _serve(script):
 
 @unittest.skipUnless(fetch_content._GEMINI_AVAILABLE, "google-genai 未導入")
 class GeminiRetryTest(unittest.TestCase):
+    """主モデル(SDK再試行で最大2回)→だめなら予備モデルで1回。何回目の呼び出しがどのモデルかも見る。"""
+
     def _run(self, script):
-        srv, hits = _serve(script)
+        models = []
+        srv, hits = _serve(script, models)
         self.addCleanup(srv.shutdown)
         env = {"GOOGLE_GEMINI_BASE_URL": "http://127.0.0.1:%d" % srv.server_port}
-        with patch.dict(os.environ, env), \
-             patch.object(fetch_content, "_GEMINI_API_KEY", "dummy"), \
-             patch("tenacity.nap.time.sleep"), patch("fetch_content.time.sleep"):   # 待ち時間(5→10秒)は飛ばす
-            client = fetch_content._gemini_client()
+        with patch.dict(os.environ, env),              patch.object(fetch_content, "_GEMINI_API_KEY", "dummy"),              patch("tenacity.nap.time.sleep"), patch("fetch_content.time.sleep"):   # 待ち(5秒)は飛ばす
             try:
-                return fetch_content._gemini_generate(client, "x"), None, hits
+                return fetch_content._gemini_generate("x"), None, models
             except Exception as e:  # noqa: BLE001
-                return None, e, hits
+                return None, e, models
 
-    def test_503_twice_then_success(self):
-        resp, err, hits = self._run([503, 503, "ok"])
+    def test_503_once_then_primary_succeeds(self):
+        resp, err, models = self._run([503, "ok"])
+        self.assertIsNone(err)
+        self.assertEqual(models, ["gemini-flash-latest"] * 2)
+        self.assertEqual(fetch_content._last_model, "gemini-flash-latest")
+
+    def test_primary_exhausted_falls_back_to_lite_once(self):
+        resp, err, models = self._run([503, 503, "ok"])
         self.assertIsNone(err)
         self.assertEqual(resp.text, "要約です")
-        self.assertEqual(len(hits), 3)
+        self.assertEqual(models, ["gemini-flash-latest"] * 2 + ["gemini-flash-lite-latest"])
+        self.assertEqual(fetch_content._last_model, "gemini-flash-lite-latest")
 
-    def test_429_not_retried_and_detected_as_quota(self):
-        _, err, hits = self._run([429, "ok"])
-        self.assertEqual(len(hits), 1)
+    def test_429_not_retried_nor_fallback_and_detected_as_quota(self):
+        _, err, models = self._run([429, "ok"])
+        self.assertEqual(len(models), 1)
         self.assertTrue(fetch_content._is_quota_error(err))
 
-    def test_exhausted_503_reason_has_status(self):
-        _, err, hits = self._run([503])
-        self.assertEqual(len(hits), 3)
+    def test_all_fail_reports_primary_error_with_status(self):
+        _, err, models = self._run([503])
+        self.assertEqual(len(models), 3)    # 主2 + 予備1。それ以上は粘らない
         self.assertFalse(fetch_content._is_quota_error(err))
         reason = fetch_content._exception_reason(err)
         self.assertEqual(reason, "exception:ServerError:503")
-        # 新しい形でも ledger は transient（再取得対象）のまま
         rec = {"video_reason": reason, "missing": ["video_content"], "ok": True, "route": "x"}
         self.assertEqual(ledger._video_reason_kind(rec), "transient")
 
-    def test_connection_cut_is_retried(self):
-        resp, err, hits = self._run(["cut", "ok"])
+    def test_connection_cut_falls_back_to_lite(self):
+        resp, err, models = self._run(["cut", "ok"])
         self.assertIsNone(err)
-        self.assertEqual(len(hits), 2)
+        self.assertEqual(models, ["gemini-flash-latest", "gemini-flash-lite-latest"])
+
+    def test_no_fallback_when_time_budget_spent(self):
+        srv, hits = _serve([503])
+        self.addCleanup(srv.shutdown)
+        env = {"GOOGLE_GEMINI_BASE_URL": "http://127.0.0.1:%d" % srv.server_port}
+        with patch.dict(os.environ, env), patch.object(fetch_content, "_GEMINI_API_KEY", "dummy"),              patch("tenacity.nap.time.sleep"):
+            with self.assertRaises(Exception):
+                fetch_content._gemini_generate("x", t0=0.0)   # 開始が遥か昔＝330秒超過
+        self.assertEqual(len(hits), 2)    # 主2回のみ
 
 
 class ExceptionReasonTest(unittest.TestCase):
