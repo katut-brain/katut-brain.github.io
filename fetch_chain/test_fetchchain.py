@@ -1,7 +1,37 @@
 """切り替えの検査。偽にするのは「外の世界の応答」（http_get）だけ。
 本文の取り出し・失敗判定・並べ替え・記録は本物のコードを通す（fetch-test-double-bypass-trap の教訓）。"""
-import json, os, pathlib, tempfile, unittest
+import json, os, pathlib, shutil, socket, tempfile, unittest
 import fetchchain as fc
+
+# 名前解決も外へ出さない。内部アドレスを表す名前だけ内部の IP、ほかは公開の IP（文書用の 192.0.2.x は is_global でないので使わない）
+_INTERNAL = {"localhost": "127.0.0.1"}
+
+
+def _fake_getaddrinfo(host, *a, **k):
+    try:
+        ip = str(__import__("ipaddress").ip_address(host))
+    except ValueError:
+        ip = _INTERNAL.get(host, "8.8.8.8")
+    return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", (ip, 0))]
+
+
+fc.socket.getaddrinfo = _fake_getaddrinfo
+_TMPS = []
+_mkdtemp = tempfile.mkdtemp
+
+
+def _tracked_mkdtemp(*a, **k):
+    d = _mkdtemp(*a, **k)
+    _TMPS.append(d)
+    return d
+
+
+tempfile.mkdtemp = _tracked_mkdtemp
+
+
+def tearDownModule():
+    for d in _TMPS:
+        shutil.rmtree(d, ignore_errors=True)
 
 os.environ["FETCHCHAIN_ENV"] = "pc"   # 実行場所の自動判定に左右されない
 fc._ytdlp = lambda: None              # 本物の yt-dlp を呼ばない（外の世界に出ない）
@@ -371,6 +401,22 @@ class SafetyTest(unittest.TestCase):
         self.assertEqual(seen, [])
         with self.assertRaises(fc.FetchError):
             fc.web_jina("http://127.0.0.1/admin")
+
+    def test_status_file_never_contains_urls(self):
+        reg = {"channels": {"web": {"match": ".*", "methods": ["web_direct"],
+                                    "canary": {"url": "http://localhost/secret-path", "expect": "x"}}}}
+        reg_path = self.tmp / "sources.json"
+        reg_path.write_text(json.dumps(reg), encoding="utf-8")
+        orig = fc.REGISTRY
+        fc.REGISTRY = reg_path
+        try:
+            fc.canary()
+        finally:
+            fc.REGISTRY = orig
+        body = fc.STATUS.read_text(encoding="utf-8")
+        self.assertIn("公開ホストでない", body)
+        self.assertNotIn("secret-path", body)
+        self.assertNotIn("localhost", body)
 
     def test_canary_with_internal_url_reaches_no_method(self):
         # 健康診断の見本が内部アドレスでも、どの手段（oEmbed・yt-dlp・プラグイン）にも渡らない

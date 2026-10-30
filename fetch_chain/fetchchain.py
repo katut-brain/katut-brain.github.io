@@ -531,10 +531,10 @@ def canary():
                     raise FetchError("取れたが期待する文字列が無い（%s）" % expect)
                 ok, err = True, ""
             except Unavailable as e:
-                res.append({"method": m, "ok": None, "ms": 0, "error": str(e)})
+                res.append({"method": m, "ok": None, "ms": 0, "error": _scrub(str(e))})
                 continue
             except FetchError as e:
-                ok, err = False, str(e)
+                ok, err = False, _scrub(str(e))  # status.json も健康記録と同じく URL を伏せる
             ms = int((time.time() - t0) * 1000)
             log_health("canary", ch, m, ok, ms, err)
             res.append({"method": m, "ok": ok, "ms": ms, "error": err})
