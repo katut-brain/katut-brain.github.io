@@ -126,10 +126,35 @@ class GeminiRetryTest(_MarkerMixin):
         self.assertEqual(fetch_content._exception_reason(err), "exception:ClientError:403")
         self.assertFalse(os.path.exists(self.marker))
 
-    def test_429_not_retried_nor_fallback_and_detected_as_quota(self):
-        _, err, models = self._run([429, "ok"])
-        self.assertEqual(len(models), 1)
+    def test_primary_429_falls_back_once_and_marks_6h(self):
+        """主の1日の枠切れ(429)は、再試行せず予備を1回。6時間の印に理由を残す。"""
+        resp, err, models = self._run([429, "ok"])
+        self.assertIsNone(err)
+        self.assertEqual(models, ["gemini-flash-latest", "gemini-flash-lite-latest"])
+        self.assertEqual(fetch_content._last["model"], "gemini-flash-lite-latest")
+        self.assertEqual(fetch_content._last["primary_reason"], "exception:ClientError:429")
+        with open(self.marker) as f:
+            until, reason = f.read().split(None, 1)
+        self.assertGreater(float(until) - time.time(), 5 * 3600)
+        self.assertEqual(reason, "exception:ClientError:429")
+
+    def test_marker_after_quota_skips_primary_and_keeps_reason(self):
+        self._run([429, "ok"])
+        resp, err, models = self._run(["ok"])
+        self.assertIsNone(err)
+        self.assertEqual(models, ["gemini-flash-lite-latest"])          # 主は呼ばない
+        self.assertTrue(fetch_content._last["primary_skipped"])
+        self.assertEqual(fetch_content._last["primary_reason"], "exception:ClientError:429")
+
+    def test_both_429_is_quota(self):
+        _, err, models = self._run([429])
+        self.assertEqual(models, ["gemini-flash-latest", "gemini-flash-lite-latest"])
         self.assertTrue(fetch_content._is_quota_error(err))
+        self.assertEqual(fetch_content._last["fallback_reason"], "gemini_quota")
+
+    def test_primary_429_then_fallback_503_reports_the_fallback_failure(self):
+        _, err, models = self._run([429, 503])
+        self.assertEqual(fetch_content._exception_reason(err), "exception:ServerError:503")
 
     def test_fallback_429_is_quota(self):
         _, err, models = self._run([503, 503, 429])
@@ -159,7 +184,7 @@ class GeminiRetryTest(_MarkerMixin):
     def test_marker_lasts_15_minutes(self):
         self._run([503, 503, "ok"])
         with open(self.marker) as f:
-            until = float(f.read())
+            until = float(f.read().split()[0])
         self.assertLessEqual(until - time.time(), 900 + 5)
         self.assertGreater(until - time.time(), 800)
 

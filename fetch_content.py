@@ -314,7 +314,8 @@ _GENERATE_TIMEOUT_S = 75
 _LINK_RESERVE_S = 60
 _ITEM_BUDGET_S = 440   # 1件(fetch_x / リール)の締切。手順書の timeout 480 から余裕を引いた値
 _MIN_CALL_S = 15       # 残りがこれ未満なら新しい Gemini 呼び出しを始めない
-_PRIMARY_DOWN_SECONDS = 900
+_PRIMARY_DOWN_SECONDS = 900          # 5xx・タイムアウトで落ちたとき
+_PRIMARY_QUOTA_SECONDS = 6 * 3600     # 1日の枠(無料枠 20回/日/モデル)を使い切ったとき
 _PRIMARY_DOWN_FILE = os.path.join(tempfile.gettempdir(), "katut_gemini_primary_down")
 _last = {}   # 直近の _gemini_generate の記録(model / primary_skipped / primary_reason / fallback_reason)
 
@@ -414,19 +415,27 @@ def _is_timeout_or_5xx(e):
         for c in type(e).__mro__)
 
 
-def _primary_down():
-    """主モデルが一過性の失敗で2回とも駄目だった印が有効か(プロセスをまたぐ)。読めなければ無効扱い。"""
+def _read_marker():
+    """印ファイル "<期限epoch> <理由>" を読む。有効なら (True, 理由)、無効・壊れ・無しなら (False, "")。"""
     try:
         with open(_PRIMARY_DOWN_FILE, encoding="utf-8") as f:
-            return time.time() < float(f.read().strip())
+            parts = f.read().split(None, 1)
+        if time.time() < float(parts[0]):
+            return True, (parts[1].strip() if len(parts) > 1 else "")
     except Exception:
-        return False
+        pass
+    return False, ""
 
 
-def _mark_primary_down():
+def _primary_down():
+    """主モデルを飛ばす印が有効か(プロセスをまたぐ)。読めなければ無効扱い。"""
+    return _read_marker()[0]
+
+
+def _mark_primary_down(seconds=None, reason=""):
     try:
         with open(_PRIMARY_DOWN_FILE, "w", encoding="utf-8") as f:
-            f.write(str(time.time() + _PRIMARY_DOWN_SECONDS))
+            f.write("%s %s" % (time.time() + (seconds or _PRIMARY_DOWN_SECONDS), reason or "unavailable"))
     except Exception:
         pass   # 印が書けなくても続ける
 
@@ -434,8 +443,10 @@ def _mark_primary_down():
 def _gemini_generate(contents, deadline=None):
     """generate_content。主モデルは1回75秒(残りが短ければ短縮)・最大2回(SDK再試行)。
     一過性の失敗(_is_transient_failure)で駄目なら予備モデル(lite)で1回。
-    429 と 4xx は予備に回さず投げる(429 は呼び出し側が gemini_quota にする)。
-    主が2回とも一過性で駄目だったら 15分間、後続の呼び出しは主を飛ばして予備から始める(印ファイル)。
+    主の 429 は1日の枠切れ(無料枠 20回/日/モデル。枠はモデルごとなので予備は別枠)として予備を1回試し、
+    6時間の印を付ける(PerMinute と書かれていれば印なし)。予備も 429 なら gemini_quota。
+    それ以外の 4xx は予備に回さず投げる。
+    主が5xx・タイムアウトで2回駄目だったら 15分間、後続の呼び出しは主を飛ばして予備から始める(印ファイル)。
     残りが _MIN_CALL_S 未満なら呼び出しを始めず _DeadlineSkipped。
     最悪: 主 2x75+6 + 予備 75 だが、各呼び出しのタイムアウトは残り時間で頭打ち。
     投げる例外は主モデルのもの(主を飛ばしたときは予備のもの)。"""
@@ -444,8 +455,10 @@ def _gemini_generate(contents, deadline=None):
         deadline = _new_deadline()
     _last = {"model": "", "primary_skipped": False, "primary_reason": "", "fallback_reason": ""}
     primary_err = None
-    if _primary_down():
+    down, why = _read_marker()
+    if down:
         _last["primary_skipped"] = True
+        _last["primary_reason"] = why
     else:
         rem = _remaining(deadline)
         if rem < _MIN_CALL_S:
@@ -457,12 +470,16 @@ def _gemini_generate(contents, deadline=None):
             _last["model"] = _GEMINI_MODEL
             return resp
         except Exception as e:
-            if not _is_transient_failure(e):
+            quota = _is_quota_error(e)
+            if not quota and not _is_transient_failure(e):
                 raise
             primary_err = e
             _last["primary_reason"] = _exception_reason(e)
-            if attempts == 2 and _is_timeout_or_5xx(e):
-                _mark_primary_down()
+            if quota:
+                if "PerMinute" not in str(e):
+                    _mark_primary_down(_PRIMARY_QUOTA_SECONDS, _last["primary_reason"])
+            elif attempts == 2 and _is_timeout_or_5xx(e):
+                _mark_primary_down(reason=_last["primary_reason"])
     rem = _remaining(deadline)
     if rem < _MIN_CALL_S:
         raise primary_err or _DeadlineSkipped()
@@ -471,8 +488,8 @@ def _gemini_generate(contents, deadline=None):
         resp = c2.models.generate_content(model=_GEMINI_FALLBACK_MODEL, contents=contents)
     except Exception as e2:
         _last["fallback_reason"] = "gemini_quota" if _is_quota_error(e2) else _exception_reason(e2)
-        if _is_quota_error(e2) or primary_err is None:
-            raise
+        if _is_quota_error(e2) or primary_err is None or _is_quota_error(primary_err):
+            raise   # 予備の失敗をそのまま(主が429なら、主の429ではなく予備の失敗が最新の事実)
         raise primary_err
     _last["model"] = _GEMINI_FALLBACK_MODEL
     return resp
