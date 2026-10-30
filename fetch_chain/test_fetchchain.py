@@ -16,6 +16,7 @@ def _fake_getaddrinfo(host, *a, **k):
 
 
 fc.socket.getaddrinfo = _fake_getaddrinfo
+fc.AUTO_PLUGINS = pathlib.Path(tempfile.mkdtemp()) / "auto-plugins"   # 本物の ~/.fetch-chain/plugins を読まない
 _TMPS = []
 _mkdtemp = tempfile.mkdtemp
 

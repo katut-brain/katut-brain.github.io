@@ -32,7 +32,7 @@ jobs:
 
       - name: Unit tests
         working-directory: fetch_chain
-        run: python -m unittest test_fetchchain test_vet
+        run: python -m unittest test_fetchchain test_vet test_discover
 
       - name: Check out the health branch
         run: |
@@ -56,16 +56,29 @@ jobs:
           python fetchchain.py canary | tee ../canary.txt
           echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
 
+      # 壊れた手段（同じ場所で3回続けて失敗）があれば、candidates.json の窓口型の候補を見本で試して試用で足す。
+      # 試用が7回続けて通れば本番に上げる。足した手段は記録用ブランチの plugins/ に置く（main には書かない）
+      - name: Find replacements for broken methods
+        id: discover
+        working-directory: fetch_chain
+        env:
+          FETCHCHAIN_STATE_DIR: ${{ github.workspace }}/state
+          PYTHONIOENCODING: utf-8
+        run: |
+          python discover.py run | tee ../discover.txt
+          if [ -s ../discover.txt ]; then echo "events=1" >> "$GITHUB_OUTPUT"; fi
+
       - name: Save the record to the health branch
         working-directory: state
         run: |
           git add health.jsonl status.json
+          for f in events.jsonl plugins review; do if [ -e "$f" ]; then git add "$f"; fi; done
           git -c user.name=katut-brain -c user.email=katut-brain@users.noreply.github.com \
             commit -qm "canary: gha $(date -u +%FT%TZ) code=${{ steps.canary.outputs.code }}" || exit 0
           git push -q origin HEAD:refs/heads/fetch-chain-health
 
-      - name: Notify Slack when something is broken
-        if: steps.canary.outputs.code != '0'
+      - name: Notify Slack when something is broken or was replaced
+        if: steps.canary.outputs.code != '0' || steps.discover.outputs.events == '1'
         env:
           WEBHOOK: ${{ secrets.FETCHCHAIN_SLACK_WEBHOOK }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -74,7 +87,11 @@ jobs:
           python3 - <<'PY'
           import json, os, urllib.request
           body = open("canary.txt", encoding="utf-8").read()
-          text = "fetch-chain の健康診断で壊れた取り方がある（GitHub Actions）\n```\n%s\n```\n%s" % (body[:3500], os.environ["RUN_URL"])
+          events = open("discover.txt", encoding="utf-8").read() if os.path.exists("discover.txt") else ""
+          text = "fetch-chain の健康診断（GitHub Actions）\n```\n%s\n```\n" % body[:3000]
+          if events.strip():
+              text += "代わりの取り方（追加・昇格・失敗した候補）:\n```\n%s\n```\n" % events[:1500]
+          text += os.environ["RUN_URL"]
           req = urllib.request.Request(os.environ["WEBHOOK"], data=json.dumps({"text": text}).encode(),
                                        headers={"Content-Type": "application/json"})
           urllib.request.urlopen(req, timeout=20).read()

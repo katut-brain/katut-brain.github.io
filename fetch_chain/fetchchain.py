@@ -21,6 +21,7 @@ PLUGINS = HERE / "plugins"       # 自動で足された手段の仕様（1手�
 # 実測の記録はリポジトリの外に置く（PC で読んだ投稿の記録を公開リポに混ぜない）。クラウドの健康診断は記録用ブランチを指す
 STATE = pathlib.Path(os.environ.get("FETCHCHAIN_STATE_DIR") or pathlib.Path.home() / ".fetch-chain")
 HEALTH = STATE / "health.jsonl"  # 追記のみ
+AUTO_PLUGINS = STATE / "plugins"  # discover.py が自動で足した手段（リポジトリの plugins/ と同じ形）
 STATUS = STATE / "status.json"
 
 # 名乗りは偽らない。ブラウザやクローラーを名乗るのは検知の回避になるので使わない（2026-10-30）
@@ -327,6 +328,9 @@ def validate_spec(spec, channels):
                     errs.append("map[%s] の取り出しパスが不正（英数字と . と _ のみ）" % k)
     if "ua" in spec:
         errs.append("ua は指定できない（名乗りは fetch-chain の UA に固定）")
+    where = spec.get("where")
+    if where is not None and (not isinstance(where, list) or not where or set(where) - {"pc", "cloud"}):
+        errs.append('where は ["pc"]・["cloud"]・["pc", "cloud"] のどれか')
     mc = spec.get("min_chars", DEFAULT_MIN_CHARS)
     if not isinstance(mc, int) or isinstance(mc, bool) or not 1 <= mc <= 5000:
         errs.append("min_chars は 1〜5000 の整数")
@@ -385,9 +389,8 @@ def load_plugins(channels):
         METHODS.pop(k, None)
         MIN_CHARS.pop(k, None)
         PLUGIN_STATUS.pop(k, None)
-    if not PLUGINS.is_dir():
-        return skipped
-    for p in sorted(PLUGINS.glob("*.json")):
+    files = [p for d in (PLUGINS, AUTO_PLUGINS) if d.is_dir() for p in sorted(d.glob("*.json"))]
+    for p in files:
         try:
             spec = json.loads(p.read_text(encoding="utf-8"))
         except (OSError, ValueError) as e:
@@ -403,6 +406,8 @@ def load_plugins(channels):
         MIN_CHARS[spec["name"]] = spec.get("min_chars", DEFAULT_MIN_CHARS)
         PLUGIN_STATUS[spec["name"]] = spec["status"]
         channels[spec["channel"]]["methods"].append(spec["name"])
+        if spec.get("where"):  # 見つけた場所でだけ使う（クラウドで見つけた手段を PC で壊れたと数えない）
+            channels[spec["channel"]].setdefault("where", {})[spec["name"]] = spec["where"]
     return skipped
 
 

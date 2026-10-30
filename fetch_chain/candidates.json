@@ -1,0 +1,13 @@
+{
+  "_note": "壊れた系統の代わりとして discover.py が試す候補。kind=http は窓口型（宣言だけ・完全自動で試用に足す）、kind=wheel はプログラム型（版と sha256 を固定・vet.py を通す）。名乗りの指定（ua）は書けない。2026-10-30 に PC から正直な名乗りで通ることを実測した3つで始める",
+  "candidates": [
+    {"name": "x_publish_oembed", "channel": "x_post", "kind": "http", "format": "json",
+     "url": "https://publish.twitter.com/oembed?url={url}",
+     "map": {"text": "html", "author": "author_name"}, "min_chars": 20},
+    {"name": "yt_noembed", "channel": "youtube", "kind": "http", "format": "json",
+     "url": "https://noembed.com/embed?url={url}",
+     "map": {"text": "title", "title": "title", "author": "author_name"}},
+    {"name": "threads_jina", "channel": "threads", "kind": "http", "format": "text",
+     "url": "https://r.jina.ai/{url}", "min_chars": 200}
+  ]
+}

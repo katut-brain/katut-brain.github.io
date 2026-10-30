@@ -33,6 +33,17 @@ python -m unittest test_fetchchain test_vet
 - 実行場所は自動で判定する（`GITHUB_ACTIONS` → gha、`CLAUDE_CODE_REMOTE` → claude-cloud、ほか pc）。`FETCHCHAIN_ENV` で上書きできる
 - 毎日の健康診断は `.github/workflows/fetch-chain-canary.yml`（GitHub Actions・JST 06:37）。記録は記録専用ブランチ `fetch-chain-health` に積み、main には入れない。壊れていたら Secrets の `FETCHCHAIN_SLACK_WEBHOOK` へ通知する
 
+## discover.py（壊れた取り方の代わりを探して足す）
+```
+python discover.py run                  # 毎日の健康診断のあとに動く（Actions）。壊れた系統に候補を試す・試用を本番に上げる
+python discover.py wheel <名前> [--approve]   # プログラム型の候補（PC で人が回す）
+```
+- きっかけ: 同じ場所で3回続けて canary に落ちた手段がある系統
+- 窓口型（`candidates.json` の `kind: http`）は完全自動: 仕様の検査（`validate_spec`・UA は書けない）→ 見本で実測して期待する文字が出る → **試用**として `STATE/plugins/` に足す（見つけた場所の `where` 付き）。次の日から健康診断で測られ、**同じ場所で7回続けて通ったら本番**に上がる。出来事は `STATE/events.jsonl` と Slack に出る
+- プログラム型（`kind: wheel`）: 版と sha256 を固定して wheel だけを落とす（`--only-binary`・`--no-deps`）→ `vet.py` → clean なら隔離 venv（`STATE/venvs/<名前>`・依存を引かない・索引を見ない）に入れる。**needs_review は入れず**、該当行の前後のコードを入れた確認依頼を `STATE/review/` に書く（Codex に読ませる。`codex-relay` か `invoke-codex.ps1 -Purpose review`）。本人が読みを見て `--approve` を付けたときだけ入れる。reject は承認があっても入れない。入れた wheel を手段として使う呼び出し方は、人がコードに書く（自動では配線しない）
+- 足した手段は記録用ブランチ `fetch-chain-health` の `plugins/` にあり、**main には書かない**。夜間ランと PC は、その日の Actions が足した手段をまだ使わない（使うのは Actions の健康診断と、同じ場所で `discover.py run` を回したとき）
+- 2026-10-30 の試験: fxtwitter をわざと壊した使い捨てのコピーで毎日の流れを11回まわし、3回目に X 公式 oEmbed を試用で足し、10回目に本番へ上げた（本物の通信）。`six` 1.16.0 は needs_review（`six.py:87` の動的な `__import__`）になり、入れずに確認依頼を書いた
+
 ## vet.py（他人のプログラムを入れる前の安全確認）
 ```
 python vet.py <パッケージ.whl か展開済みフォルダ>   # 終了コード 0=clean 1=needs_review 2=reject

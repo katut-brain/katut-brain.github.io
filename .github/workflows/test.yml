@@ -63,7 +63,7 @@ jobs:
       # SNS・Web の取り方の切り替え（fetch_chain/）と、入れる前の安全確認（vet.py）。外には出ない
       - name: Run fetch-chain tests
         working-directory: fetch_chain
-        run: python -m unittest -v test_fetchchain test_vet
+        run: python -m unittest -v test_fetchchain test_vet test_discover
 
       # X の syndication が落ちた夜だけ fetch-chain に回す（fetch_content.fetch_x）。外には出ない
       - name: Run fetch-chain fallback tests
