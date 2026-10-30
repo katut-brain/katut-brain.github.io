@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026-10-30 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style></head><body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-10-30 の振り返り</h1>
+  <div class="meta">Museでポイ活を自動化できるか、と AIエージェント競争の見立て（4件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存4件はすべてAI領域で、うち3件がMetaのAIエージェント「Muse」を軸にしている。通奏低音は「エージェントに任せられる作業の境界はどこか」という問いだ。ポイ活の申込をMuseが期限順に準備し、個人情報入力の直前で人間へ引き継ぐ実例と、それを「貧者の錬金術」と見る声が並び、さらにNowledge MemはAIを乗り換えても記憶を持ち運ぶ層を狙っていた。</p>
+    <p>残る1件はOpenAIのdotsを「既存プロダクトに載せただけ」と批判し、各社はエージェントをAI 2.0として別物に作ると論じる。この日は「作りたい」より「知る・見立てる」軸が活性化した日といえる。</p>
+    <ul class="pts">
+      <li><b>人間の関門</b>：Museは申込ページ直前で止まり、ポイント条件の「同一ブラウザ」縛りが引き継ぎの理由になっていた</li>
+      <li><b>無料枠が生む裁定</b>：Museが無料のうちはポイ活の自動化が割に合う、という含意がある</li>
+      <li><b>記憶の持ち運び</b>：乗り換え自由なAI環境では、記憶層が差別化の主戦場になるという見方</li>
+      <li><b>載せるか作り直すか</b>：既存製品への後付けか、エージェント前提の新設計か</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>サービス側が「同一ブラウザ」のような条件でエージェント経由の申込を弾き始めたとき、自動化の価値はどこに残るのか。</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">Museとは何か・どこまで任せられるか</div>
+    <ul class="ilist">
+      <li><a href="https://www.relevantaudience.com/ai/meta-muse-personal-ai-agent-launch/" target="_blank" rel="noopener"><b>Meta launches Muse, an AI agent that books, fills forms and buys</b></a> <span>→ Museは2026年9月8日発表で、メール送信・フォーム入力・購入を代行し、Sentinelエージェントや利用者確認で承認を挟む設計。提供は現時点で米国のみなので、国内ポイ活での利用は公式の想定外と読める。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AIエージェント（4件）</h2>
+  <div class="cards">
+      <div class="vcard">
+        <a class="vlink" href="https://x.com/_ryu15_/status/2115999392759181439?a=ZZi5MPs2yBEh5a2mjjM&amp;s=12" target="_blank" rel="noopener">
+          <div class="thumb"><img src="https://pbs.twimg.com/media/HV2JUw1acAAt7VO?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+          <div class="vbody"><div class="vtitle">Museでポイ活の完全自動化？</div><div class="vdesc">MuseがSBI FXトレード（モッピー経由・7,000P・10/31期限）など期限順に案件を進め、個人情報入力の手前で止めて引き継ぐ流れが画面で判明。「同一ブラウザで申込完了まで」というポイント条件が人間への引き継ぎを要する</div><div class="vsaved">保存 10/30 13:13</div></div>
+        </a>
+        <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/_ryu15_/status/2115999392759181439?a=ZZi5MPs2yBEh5a2mjjM&amp;s=12" data-title="Museでポイ活の完全自動化？" data-rid="1907335102">💬 AIと話す</button>
+      </div>
+      <div class="vcard">
+        <a class="vlink" href="https://x.com/studio_yebisu/status/2116005914729939020?a=TjawCob5l7y0cTXK-xY&amp;s=12" target="_blank" rel="noopener">
+          <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fstudio_yebisu%2Fstatus%2F2116005914729939020%3Fa%3DTjawCob5l7y0cTXK-xY%26s%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+          <div class="vbody"><div class="vtitle">Museが無料ならポイ活は貧者の錬金術</div><div class="vdesc">AIエージェントでの自己アフィリエイト半自動化とフォーム入力自動化を挙げ、Museが無料で使える今なら爆速ポイ活が可能と指摘。自前サーバーや全自動承認は自己責任と釘を刺す</div><div class="vsaved">保存 10/30 13:21</div></div>
+        </a>
+        <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/studio_yebisu/status/2116005914729939020?a=TjawCob5l7y0cTXK-xY&amp;s=12" data-title="Museが無料ならポイ活は貧者の錬金術" data-rid="1907336995">💬 AIと話す</button>
+      </div>
+      <div class="vcard">
+        <a class="vlink" href="https://x.com/nowledgemem/status/2115787506981740871?a=-voP5EQa5odzM_lgLDU&amp;s=12" target="_blank" rel="noopener">
+          <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fnowledgemem%2Fstatus%2F2115787506981740871%3Fa%3D-voP5EQa5odzM_lgLDU%26s%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+          <div class="vbody"><div class="vtitle">Nowledge Mem、MuseからClaude・ChatGPTへ記憶を持ち運ぶ</div><div class="vdesc">Museで始めた文脈をClaude、さらにChatGPTへそのまま引き継げるのがNowledge Memの狙いだと運営が返信。AIを乗り換えても記憶が残る体験を謳う</div><div class="vsaved">保存 10/30 13:21</div></div>
+        </a>
+        <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/nowledgemem/status/2115787506981740871?a=-voP5EQa5odzM_lgLDU&amp;s=12" data-title="Nowledge Mem、MuseからClaude・ChatGPTへ記憶を持ち運ぶ" data-rid="1907337197">💬 AIと話す</button>
+      </div>
+      <div class="vcard">
+        <a class="vlink" href="https://x.com/taishiyade/status/2115876262065705336?a=9xVaL5xbkbjmiRb5oqw&amp;s=12" target="_blank" rel="noopener">
+          <div class="thumb"><img src="https://pbs.twimg.com/media/HV0aPeDbEAAXH83?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+          <div class="vbody"><div class="vtitle">なぜOpenAIはダメ終わりそうか</div><div class="vdesc">dotsは他のAIメガテックと正反対の思想で出して大失敗、各社は既存プロダクトに載せるだけをナンセンスと見てエージェントをAI 2.0として扱うと主張。ChatGPT・Grok・Meta AI・Claudeとその派生を並べた図解付き</div><div class="vsaved">保存 10/30 15:16</div></div>
+        </a>
+        <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/taishiyade/status/2115876262065705336?a=9xVaL5xbkbjmiRb5oqw&amp;s=12" data-title="なぜOpenAIはダメ終わりそうか" data-rid="1907395296">💬 AIと話す</button>
+      </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=incomplete target=2026-10-30 run_id=af8f2f98 saves=4 step1_s=58 step2_s=20 step2_5_s=164 step3_s=3 step5_s=3 step7_s=1 reason=missing-step4_5 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+<script src="../deepdive-mark.js" defer></script>
+</body></html>
