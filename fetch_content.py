@@ -432,6 +432,42 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
                 pass
 
 
+_IMAGE_MAX_BYTES = 10_000_000   # 1枚あたり。Xの large は通常 数百KB〜数MB
+
+
+def _gemini_image_understanding(photo_urls, max_chars=4000):
+    """画像(複数)をダウンロードし、1回の generate_content にまとめて inline で渡して日本語で読み取る。
+    戻り値は (要約, 理由コード)。成功時の理由コードは ""。動画(_gemini_video_understanding)と同じく
+    キー無し/SDK無しは ("", "gemini_unavailable")。取れなかった画像は飛ばし、1枚も読めなければ失敗。
+    ダウンロード元は呼び出し側が信頼できるもの(X の syndication が返した pbs.twimg.com)に限る。"""
+    if not _GEMINI_AVAILABLE or not _GEMINI_API_KEY:
+        return "", "gemini_unavailable"
+    try:
+        from google.genai import types
+        parts = []
+        for u in photo_urls:
+            try:
+                req = urllib.request.Request(u, headers={"User-Agent": BROWSER_UA})
+                with urllib.request.urlopen(req, timeout=60) as r:
+                    ctype = r.headers.get("Content-Type", "").split(";")[0].strip()
+                    data = r.read(_IMAGE_MAX_BYTES + 1)
+                if ctype.startswith("image/") and 0 < len(data) <= _IMAGE_MAX_BYTES:
+                    parts.append(types.Part.from_bytes(data=data, mime_type=ctype))
+            except Exception:
+                continue   # 1枚の失敗で全体を捨てない
+        if not parts:
+            return "", "image_download_failed"
+        resp = _gemini_generate(_gemini_client(), parts + [
+            "これらは1つのSNS投稿に添付された画像です。各画像の内容を日本語で具体的に説明して。"
+            "画像に写っている文字・図表の数字は逐語で書き写して。"])
+        out = (resp.text or "").strip()[:max_chars]
+        return (out, "") if out else ("", "gemini_empty_response")
+    except Exception as e:
+        if _is_quota_error(e):
+            return "", "gemini_quota"
+        return "", _exception_reason(e)
+
+
 def _fetch_x_embedded_link_inner(expanded):
     """_fetch_x_embedded_link() の実処理本体(タイムアウトガードの内側で動く)。"""
     host = _host_of(expanded)
@@ -565,6 +601,12 @@ def fetch_x(url, follow_links=True, understand_video=True):
             video_reason = "no_mp4_variant"
         break
 
+    # 添付画像: 引用ツイート取得(understand_video=False)では読まない(動画と同じ理由・45秒の枠)。
+    image_understanding = ""
+    image_reason = ""          # 画像が無い/読めた場合は空のまま
+    if photos and understand_video:
+        image_understanding, image_reason = _gemini_image_understanding(photos[:4])
+
     # t.co 展開: 本文テキストのリンク先(X Article/YouTube/Instagram/Threads/引用ツイート/一般記事)を取得
     article_text = ""
     article_title = ""
@@ -610,11 +652,13 @@ def fetch_x(url, follow_links=True, understand_video=True):
     # 図解・スクリーンショットが主役の投稿では、本文だけでは情報の大半が落ちる。
     # 画像を読むのは Routine 側（手順4: 画像をダウンロードして Read で見る）の仕事なので、
     # ここでは「まだ読まれていない画像がある」ことを欠損として正直に残す。
-    if photos:
+    if photos and not image_understanding:
         if depth == "full":
             depth = "partial"
         if "image_content" not in missing:
             missing = missing + ["image_content"]
+    if image_understanding:
+        text = text + "\n\n添付画像の内容: " + image_understanding
 
     if video_understanding:
         text = text + "\n\n動画の内容: " + video_understanding
@@ -633,6 +677,9 @@ def fetch_x(url, follow_links=True, understand_video=True):
             # 恒久/一過性の分類はここでは決めず、照会側が導出する。
             "video_reason": video_reason,
             "has_video": bool(has_video),
+            # 添付画像の読み取り結果(成功時のみ)と、読めなかった理由(失敗時のみ)。
+            "image_summary": image_understanding,
+            "image_reason": image_reason,
             "title": (article_title or re.sub(r"\s+", " ", tweet_text or "").strip())[:80],
             "text": text,
             "author": u.get("name", ""), "handle": u.get("screen_name", ""),
@@ -1474,6 +1521,9 @@ def _facts(url, started, result):
         # 動画理解で得た内容そのもの（refresh_cards.py が公開済みカードの「※動画の内容は未取得」
         # を書き直すのに使う。これが無いと取り直しに成功しても内容がどこにも残らない）。
         "video_summary": _video_summary(result),
+        # 添付画像の読み取り結果(video_summary と同じ整形・長さ)と、読めなかった理由コード。
+        "image_summary": clean_video_summary(result.get("image_summary", "")),
+        "image_reason": result.get("image_reason", ""),
         # どの経路で動画理解を諦めたかの生の理由コード。恒久/一過性のラベルは
         # ここに焼き付けず、照会側(ledger.py)がこのコードから導出する。
         "video_reason": result.get("video_reason", ""),

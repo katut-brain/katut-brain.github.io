@@ -164,3 +164,8 @@ jobs:
       # pip install しないので CI では SDK 部分は skip になる(手元 venv で実行すること)。
       - name: Run gemini-retry tests
         run: python -m unittest -v test_gemini_retry.py
+
+      # X 添付画像の Gemini 読み取り(fetch_x の配線: 成功で image_content が外れる・失敗で残る・
+      # 引用ツイート経路では呼ばない)。SDK 依存の単体テストは CI では skip。
+      - name: Run x-image-understanding tests
+        run: python -m unittest -v test_x_image_understanding.py
