@@ -1,0 +1,30 @@
+{
+  "channels": {
+    "x_post": {
+      "match": "(^|\\.)(x|twitter)\\.com$",
+      "methods": ["x_fxtwitter", "x_syndication", "x_vxtwitter"],
+      "canary": {"url": "https://x.com/jack/status/20", "expect": "just setting up my twttr"}
+    },
+    "youtube": {
+      "match": "(^|\\.)(youtube\\.com|youtu\\.be)$",
+      "methods": ["yt_dlp_subs", "yt_oembed"],
+      "canary": {"url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "expect": "never gonna give you up",
+                 "expect_by_method": {"yt_dlp_subs": "strangers"}}
+    },
+    "instagram": {
+      "match": "(^|\\.)instagram\\.com$",
+      "methods": ["ig_oembed", "og_meta"],
+      "canary": {"url": "https://www.instagram.com/p/DX4dpjOiEsz/", "expect": "gallery"}
+    },
+    "threads": {
+      "match": "(^|\\.)threads\\.(net|com)$",
+      "methods": ["og_meta"],
+      "canary": {"url": "https://www.threads.com/@nft_web3_reo/post/DaZST7rEtny", "expect": "Claude"}
+    },
+    "web": {
+      "match": ".*",
+      "methods": ["web_direct", "web_jina"],
+      "canary": {"url": "https://en.wikipedia.org/wiki/Web_scraping", "expect": "web scraping"}
+    }
+  }
+}

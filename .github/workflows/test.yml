@@ -60,6 +60,11 @@ jobs:
       - name: Run run-timing tests
         run: python -m unittest -v test_run_timing.py
 
+      # SNS・Web の取り方の切り替え（fetch_chain/）と、入れる前の安全確認（vet.py）。外には出ない
+      - name: Run fetch-chain tests
+        working-directory: fetch_chain
+        run: python -m unittest -v test_fetchchain test_vet
+
       # 所要時間の異常膨張検知（check_run_timing.py。capture-pipeline 成功
       # 条件(b)）の回帰テスト。
       - name: Run run-timing anomaly-check tests

@@ -1,0 +1,85 @@
+# fetch-chain の毎日の健康診断（canary）。SNS・Web の取り方を見本で実際に取り、壊れていたら Slack に知らせる。
+#
+# 記録（health.jsonl・status.json）は main に入れず、記録専用のブランチ fetch-chain-health に積む。
+# main は夜間ランが毎晩 push するので、書き込みがぶつからないようにするため（2026-10-30 本人決定）。
+# このブランチへの push で動くワークフローは無い（build-feed・test は main、publish-from-branch は claude/publish-**）。
+# 健康記録には URL を書かない（見本の取得だけ）。
+name: fetch-chain-canary
+
+on:
+  schedule:
+    # 毎日 JST 06:37 ごろ（= UTC 21:37）。夜間ラン（3〜4時台）の後。毎時00分は混むので避ける
+    - cron: '37 21 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write   # fetch-chain-health ブランチへの記録の push だけに使う
+
+concurrency:
+  group: fetch-chain-canary
+  cancel-in-progress: false
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Unit tests
+        working-directory: fetch_chain
+        run: python -m unittest test_fetchchain test_vet
+
+      - name: Check out the health branch
+        run: |
+          if git ls-remote --exit-code --heads origin fetch-chain-health >/dev/null; then
+            git fetch --depth 1 origin fetch-chain-health
+            git worktree add state FETCH_HEAD
+          else
+            git worktree add --detach state
+            git -C state checkout --orphan fetch-chain-health
+            git -C state rm -rfq .
+          fi
+
+      - name: Run canary
+        id: canary
+        working-directory: fetch_chain
+        env:
+          FETCHCHAIN_STATE_DIR: ${{ github.workspace }}/state
+          PYTHONIOENCODING: utf-8
+        run: |
+          set +e
+          python fetchchain.py canary | tee ../canary.txt
+          echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Save the record to the health branch
+        working-directory: state
+        run: |
+          git add health.jsonl status.json
+          git -c user.name=katut-brain -c user.email=katut-brain@users.noreply.github.com \
+            commit -qm "canary: gha $(date -u +%FT%TZ) code=${{ steps.canary.outputs.code }}" || exit 0
+          git push -q origin HEAD:refs/heads/fetch-chain-health
+
+      - name: Notify Slack when something is broken
+        if: steps.canary.outputs.code != '0'
+        env:
+          WEBHOOK: ${{ secrets.FETCHCHAIN_SLACK_WEBHOOK }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "FETCHCHAIN_SLACK_WEBHOOK が未設定。通知しない"; exit 0; fi
+          python3 - <<'PY'
+          import json, os, urllib.request
+          body = open("canary.txt", encoding="utf-8").read()
+          text = "fetch-chain の健康診断で壊れた取り方がある（GitHub Actions）\n```\n%s\n```\n%s" % (body[:3500], os.environ["RUN_URL"])
+          req = urllib.request.Request(os.environ["WEBHOOK"], data=json.dumps({"text": text}).encode(),
+                                       headers={"Content-Type": "application/json"})
+          urllib.request.urlopen(req, timeout=20).read()
+          PY
+
+      - name: Fail the run when the canary failed
+        if: steps.canary.outputs.code != '0'
+        run: exit 1

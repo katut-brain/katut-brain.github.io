@@ -30,3 +30,6 @@ index.html
 # ⚠️ これを追跡対象に残すと、手順8(b) の `git status --porcelain -- fetch_facts/` が
 # ロックファイルだけで差分ありと判定し、押すものが無い夜に push 分岐へ入る。
 fetch_facts/runs/*.lock
+
+# fetch-chain
+__pycache__/
