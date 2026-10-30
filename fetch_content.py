@@ -768,6 +768,10 @@ def _iso_from_epoch(sec):
         return ""
 
 
+def _str(v):
+    return v if isinstance(v, str) else ""
+
+
 def _chain_tweet_inner(url):
     from fetch_chain import fetchchain as _fc
     out = _fc.fetch(url, exclude=("x_syndication",))
@@ -780,33 +784,35 @@ def _chain_tweet_inner(url):
         t = raw.get("tweet") or {}
         md = []
         for p in (t.get("media") or {}).get("photos") or []:
-            if isinstance(p, dict) and p.get("url"):
+            if isinstance(p, dict) and _str(p.get("url")):
                 md.append({"type": "photo", "media_url_https": p["url"]})
         for v in (t.get("media") or {}).get("videos") or []:
             if isinstance(v, dict):
-                md.append({"type": "video", "media_url_https": v.get("thumbnail_url", ""),
-                           "video_info": {"variants": [x for x in v.get("variants") or [] if isinstance(x, dict)]}})
+                md.append({"type": "video", "media_url_https": _str(v.get("thumbnail_url")),
+                           "video_info": {"variants": [x for x in v.get("variants") or []
+                                                       if isinstance(x, dict) and _str(x.get("url"))]}})
         # raw_text は t.co の短縮リンクが残る形（リンク先を辿るのに要る。text は展開済みで t.co が消える）
-        text = ((t.get("raw_text") or {}).get("text")) or t.get("text", "")
-        a = t.get("author") or {}
-        return {"text": text, "user": {"name": a.get("name", ""), "screen_name": a.get("screen_name", "")},
+        rt = t.get("raw_text") if isinstance(t.get("raw_text"), dict) else {}
+        text = _str(rt.get("text")) or _str(t.get("text"))
+        a = t.get("author") if isinstance(t.get("author"), dict) else {}
+        return {"text": text, "user": {"name": _str(a.get("name")), "screen_name": _str(a.get("screen_name"))},
                 "created_at": _iso_from_epoch(t.get("created_timestamp")), "favorite_count": t.get("likes"),
                 "mediaDetails": md}, tried
     if out["method"] == "x_vxtwitter":
         md = []
         for m in [m for m in raw.get("media_extended") or [] if isinstance(m, dict)]:
-            if m.get("type") == "image" and m.get("url"):
+            if m.get("type") == "image" and _str(m.get("url")):
                 md.append({"type": "photo", "media_url_https": m["url"]})
-            elif m.get("type") in ("video", "gif") and m.get("url"):
-                md.append({"type": "video", "media_url_https": m.get("thumbnail_url", ""),
+            elif m.get("type") in ("video", "gif") and _str(m.get("url")):
+                md.append({"type": "video", "media_url_https": _str(m.get("thumbnail_url")),
                            "video_info": {"variants": [{"content_type": "video/mp4", "bitrate": 0, "url": m["url"]}]}})
         # vxtwitter の本文は t.co が消えているので、リンク先は辿れない（欠損として残る）
-        return {"text": raw.get("text", ""), "user": {"name": raw.get("user_name", ""),
-                                                       "screen_name": raw.get("user_screen_name", "")},
+        return {"text": _str(raw.get("text")), "user": {"name": _str(raw.get("user_name")),
+                                                         "screen_name": _str(raw.get("user_screen_name"))},
                 "created_at": _iso_from_epoch(raw.get("date_epoch")), "favorite_count": raw.get("likes"),
                 "mediaDetails": md}, tried
     data = out.get("data") or {}   # 試用中の手段など: 本文と投稿者だけ
-    return {"text": data.get("text", ""), "user": {"screen_name": data.get("author", "")},
+    return {"text": _str(data.get("text")), "user": {"screen_name": _str(data.get("author"))},
             "created_at": "", "mediaDetails": []}, tried   # 日付の形が手段ごとに違うので、ここでは不明にする
 
 

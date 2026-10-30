@@ -118,6 +118,22 @@ class FallbackTest(unittest.TestCase):
         odd = {"tweet": {"text": "t", "author": None, "media": {"photos": [None, 3], "videos": ["x"]}}}
         r, _ = self.run_x((503, ""), {"api.fxtwitter.com": (200, json.dumps(odd))})
         self.assertTrue(r["ok"])                     # 変な要素は飛ばして本文だけ使う
+        # 文字列でない本文・名前（リンクを辿る段まで通す）でも落ちない
+        weird = {"tweet": {"text": "本文", "raw_text": {"text": 5}, "author": {"name": [], "screen_name": {}},
+                           "media": {"photos": [{"url": 7}], "videos": [{"variants": [{"url": None}]}]}}}
+        with patch("fetch_content._get", return_value=(503, "")), \
+             patch.object(fc, "http_get", chain_http({"api.fxtwitter.com": (200, json.dumps(weird))})), \
+             patch.object(fc, "_check_public", lambda url: None):
+            r = fetch_content.fetch_x(URL, follow_links=True)
+        self.assertTrue(r["ok"])
+        self.assertEqual((r["text"], r["handle"], r["photos"]), ("本文", "", []))
+        # 本文まで文字列でなければ、fetch-chain 側が「本文が空」で弾いて従来の失敗に戻る（落ちない）
+        weird["tweet"]["text"] = []
+        with patch("fetch_content._get", return_value=(503, "")), \
+             patch.object(fc, "http_get", chain_http({"api.fxtwitter.com": (200, json.dumps(weird))})), \
+             patch.object(fc, "_check_public", lambda url: None):
+            r = fetch_content.fetch_x(URL, follow_links=True)
+        self.assertEqual((r["ok"], r["fail_reason"]), (False, "x_syndication_http_503"))
         with patch("fetch_content._chain_tweet_inner", side_effect=KeyError("method")):
             r, _ = self.run_x((503, ""), {})
         self.assertEqual((r["ok"], r["fail_reason"], r["fetch_chain_tried"]),
