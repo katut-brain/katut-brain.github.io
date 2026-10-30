@@ -296,8 +296,44 @@ def _is_quota_error(e):
 
 _GEMINI_MODEL = "gemini-flash-latest"
 _GEMINI_FALLBACK_MODEL = "gemini-flash-lite-latest"   # 無料キーで使えることを 2026-10-30 に実測
-_GENERATE_TIMEOUT_MS = 75_000
-_last_model = ""   # 直近の generate で読めたモデル(facts の video_model / image_model 用)
+_GENERATE_TIMEOUT_S = 75
+_ITEM_BUDGET_S = 440   # 1件(fetch_x / リール)の締切。手順書の timeout 480 から余裕を引いた値
+_MIN_CALL_S = 15       # 残りがこれ未満なら新しい Gemini 呼び出しを始めない
+_PRIMARY_DOWN_SECONDS = 1800
+_PRIMARY_DOWN_FILE = os.path.join(tempfile.gettempdir(), "katut_gemini_primary_down")
+_last = {}   # 直近の _gemini_generate の記録(model / primary_skipped / primary_reason / fallback_reason)
+
+
+class _DeadlineSkipped(Exception):
+    """件単位の時間予算が足りず、その処理を始めなかった。"""
+
+
+def _now():
+    return time.monotonic()   # テストで差し替える
+
+
+def _new_deadline():
+    return _now() + _ITEM_BUDGET_S
+
+
+def _remaining(deadline):
+    return deadline - _now()
+
+
+def _read_limited(r, max_bytes, deadline):
+    """最大 max_bytes+1 バイトまで読む。チャンクごとに締切を見る(少しずつ送る相手で
+    ソケットのタイムアウトをすり抜けて粘られないように)。"""
+    buf = []
+    total = 0
+    while total <= max_bytes:
+        if _remaining(deadline) <= 0:
+            raise TimeoutError("item deadline exceeded while reading")
+        chunk = r.read(min(65536, max_bytes + 1 - total))
+        if not chunk:
+            break
+        buf.append(chunk)
+        total += len(chunk)
+    return b"".join(buf)
 
 
 def _gemini_client(timeout_ms=90_000, attempts=1):
@@ -312,7 +348,7 @@ def _gemini_client(timeout_ms=90_000, attempts=1):
     try:
         from google.genai import types
         opts = types.HttpOptions(
-            timeout=timeout_ms,
+            timeout=int(timeout_ms),
             retry_options=types.HttpRetryOptions(
                 attempts=attempts, initial_delay=5, max_delay=60, exp_base=2,
                 http_status_codes=[500, 502, 503, 504]))
@@ -321,42 +357,103 @@ def _gemini_client(timeout_ms=90_000, attempts=1):
         return _genai.Client(api_key=_GEMINI_API_KEY)
 
 
-def _gemini_generate(contents, t0=None):
-    """generate_content。主モデルは1回75秒・最大2回(SDK再試行)。それでも読めなければ
-    予備モデル(lite)で1回だけ。RemoteProtocolError(SDKは再試行しない)・無応答もここで予備に回る。
-    429 は予備に回さず投げる(枠切れは別モデルでも同じ扱いにしない→gemini_quota の判定へ)。
-    t0(呼び出し元の開始時刻)から330秒を超えていたら予備は試さない。
-    最悪: 主 2x75+5+jitter1 = 156秒 + 予備 75秒 = 231秒。
-    投げる例外は主モデルのもの(理由コードを主の失敗で残す)。"""
-    global _last_model
-    if t0 is None:
-        t0 = time.time()
-    _last_model = ""
+def _is_transient_failure(e):
+    """予備モデルに回してよい一過性の失敗か。5xx・408・タイムアウト・接続断(httpx/OSError)だけ。
+    429 と他の 4xx(400/401/403/404)は別モデルでも同じなので回さない。"""
+    code = getattr(e, "code", None)
+    if isinstance(code, int) and not isinstance(code, bool):
+        return code >= 500 or code == 408
+    if isinstance(e, (TimeoutError, ConnectionError, OSError)):
+        return True
+    return any(c.__module__.split(".")[0] in ("httpx", "httpcore") for c in type(e).__mro__)
+
+
+def _primary_down():
+    """主モデルが一過性の失敗で2回とも駄目だった印が有効か(プロセスをまたぐ)。読めなければ無効扱い。"""
     try:
-        c1 = _gemini_client(_GENERATE_TIMEOUT_MS, 2)   # 変数で保持(捨てると接続が閉じられる)
-        resp = c1.models.generate_content(model=_GEMINI_MODEL, contents=contents)
-        _last_model = _GEMINI_MODEL
-        return resp
-    except Exception as e:
-        if _is_quota_error(e) or time.time() - t0 > 330:
-            raise
+        with open(_PRIMARY_DOWN_FILE, encoding="utf-8") as f:
+            return time.time() < float(f.read().strip())
+    except Exception:
+        return False
+
+
+def _mark_primary_down():
+    try:
+        with open(_PRIMARY_DOWN_FILE, "w", encoding="utf-8") as f:
+            f.write(str(time.time() + _PRIMARY_DOWN_SECONDS))
+    except Exception:
+        pass   # 印が書けなくても続ける
+
+
+def _gemini_generate(contents, deadline=None):
+    """generate_content。主モデルは1回75秒(残りが短ければ短縮)・最大2回(SDK再試行)。
+    一過性の失敗(_is_transient_failure)で駄目なら予備モデル(lite)で1回。
+    429 と 4xx は予備に回さず投げる(429 は呼び出し側が gemini_quota にする)。
+    主が2回とも一過性で駄目だったら 30分間、後続の呼び出しは主を飛ばして予備から始める(印ファイル)。
+    残りが _MIN_CALL_S 未満なら呼び出しを始めず _DeadlineSkipped。
+    最悪: 主 2x75+6 + 予備 75 だが、各呼び出しのタイムアウトは残り時間で頭打ち。
+    投げる例外は主モデルのもの(主を飛ばしたときは予備のもの)。"""
+    global _last
+    if deadline is None:
+        deadline = _new_deadline()
+    _last = {"model": "", "primary_skipped": False, "primary_reason": "", "fallback_reason": ""}
+    primary_err = None
+    if _primary_down():
+        _last["primary_skipped"] = True
+    else:
+        rem = _remaining(deadline)
+        if rem < _MIN_CALL_S:
+            raise _DeadlineSkipped()
+        attempts = 2 if rem >= 2 * _GENERATE_TIMEOUT_S + 10 else 1
+        c1 = _gemini_client(min(_GENERATE_TIMEOUT_S, rem) * 1000, attempts)   # 変数で保持(捨てると接続が閉じる)
         try:
-            c2 = _gemini_client(_GENERATE_TIMEOUT_MS, 1)
-            resp = c2.models.generate_content(model=_GEMINI_FALLBACK_MODEL, contents=contents)
-        except Exception:
-            raise e
-        _last_model = _GEMINI_FALLBACK_MODEL
-        return resp
+            resp = c1.models.generate_content(model=_GEMINI_MODEL, contents=contents)
+            _last["model"] = _GEMINI_MODEL
+            return resp
+        except Exception as e:
+            if not _is_transient_failure(e):
+                raise
+            primary_err = e
+            _last["primary_reason"] = _exception_reason(e)
+            if attempts == 2:
+                _mark_primary_down()
+    rem = _remaining(deadline)
+    if rem < _MIN_CALL_S:
+        raise primary_err or _DeadlineSkipped()
+    c2 = _gemini_client(min(_GENERATE_TIMEOUT_S, rem) * 1000, 1)
+    try:
+        resp = c2.models.generate_content(model=_GEMINI_FALLBACK_MODEL, contents=contents)
+    except Exception as e2:
+        _last["fallback_reason"] = "gemini_quota" if _is_quota_error(e2) else _exception_reason(e2)
+        if _is_quota_error(e2) or primary_err is None:
+            raise
+        raise primary_err
+    _last["model"] = _GEMINI_FALLBACK_MODEL
+    return resp
+
+
+def _gemini_meta(prev=None):
+    """直近の generate の記録を result に載せる形にする(動画・画像の両方がある件は先に出た非空を残す)。"""
+    cur = {"primary_skipped": bool(_last.get("primary_skipped")),
+           "primary_reason": _last.get("primary_reason", ""),
+           "fallback_reason": _last.get("fallback_reason", "")}
+    if not prev:
+        return cur
+    return {"primary_skipped": prev["primary_skipped"] or cur["primary_skipped"],
+            "primary_reason": prev["primary_reason"] or cur["primary_reason"],
+            "fallback_reason": prev["fallback_reason"] or cur["fallback_reason"]}
 
 
 def _exception_reason(e):
     """例外 → 理由コード "exception:<型名>[:<HTTPステータス>]"。ledger.py は前方一致で transient 扱い。"""
+    if isinstance(e, _DeadlineSkipped):
+        return "deadline_skipped"
     code = getattr(e, "code", None)
     suffix = ":%d" % code if isinstance(code, int) and not isinstance(code, bool) else ""
     return "exception:" + type(e).__name__[:40] + suffix
 
 
-def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
+def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None, deadline=None):
     """動画(mp4)をダウンロードし、Gemini API(無料枠)で映像+音声の内容を理解して
     日本語要約を返す。X動画・Instagram Reels等、動画の実体URLが手に入るケースで共用する。
     GEMINI_API_KEY未設定/google-genai未インストール/失敗時は "" を返す(graceful degradation。
@@ -386,21 +483,26 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
             # 開始URL自体が想定外のホスト。安全側に倒して理解を諦める
             return "", "host_not_allowed"
     tmp_path = None
-    t0 = time.time()
+    if deadline is None:
+        deadline = _new_deadline()
     try:
+        # 件単位の締切(_ITEM_BUDGET_S)。各呼び出しのタイムアウトは min(既定値, 残り時間)。
+        if _remaining(deadline) < 2 * _MIN_CALL_S:
+            return "", "deadline_skipped"
+        dl_timeout = min(60, _remaining(deadline) - _MIN_CALL_S)
         req = urllib.request.Request(video_url, headers={"User-Agent": BROWSER_UA})
         if allowed_hosts is not None:
             opener = urllib.request.build_opener(_AllowlistRedirectHandler(allowed_hosts))
-            cm = opener.open(req, timeout=60)
+            cm = opener.open(req, timeout=dl_timeout)
         else:
-            cm = urllib.request.urlopen(req, timeout=60)
+            cm = urllib.request.urlopen(req, timeout=dl_timeout)
         with cm as r:
             content_type = r.headers.get("Content-Type", "")
             if not content_type.startswith("video/"):
                 # 想定外のContent-Type。動画以外のデータをGeminiに渡さない
                 return "", "bad_content_type"
             content_length = r.headers.get("Content-Length")
-            data = r.read(_VIDEO_MAX_BYTES + 1)
+            data = _read_limited(r, _VIDEO_MAX_BYTES, deadline)
         if len(data) > _VIDEO_MAX_BYTES:
             # 上限超過。不完全データをGeminiに渡さない
             return "", "too_large"
@@ -415,19 +517,25 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
         with os.fdopen(fd, "wb") as f:
             f.write(data)
 
-        client = _gemini_client()   # upload/get 用: 90秒・再試行なし
+        up_rem = _remaining(deadline) - _MIN_CALL_S
+        if up_rem < _MIN_CALL_S:
+            return "", "deadline_skipped"
+        client = _gemini_client(min(90, up_rem) * 1000)   # upload 用: 90秒・再試行なし
         uploaded = client.files.upload(file=tmp_path)
         waited = 0
-        while getattr(uploaded.state, "name", "") == "PROCESSING" and waited < 100:
+        while getattr(uploaded.state, "name", "") == "PROCESSING" and waited < 100 \
+                and _remaining(deadline) > 2 * _MIN_CALL_S + 4:
             time.sleep(4)
             waited += 4
-            uploaded = client.files.get(name=uploaded.name)
+            # 状態確認は軽いので短いタイムアウトの別クライアントで(締切を越えて粘らせない)
+            getter = _gemini_client(min(20, _remaining(deadline) - _MIN_CALL_S) * 1000)
+            uploaded = getter.files.get(name=uploaded.name)
         if getattr(uploaded.state, "name", "") != "ACTIVE":
             # 長尺動画はGemini側の処理が数分かかる場合がある。無人ジョブの時間予算を優先し、
             # 100秒待って終わらなければ理解を諦める(missing: video_contentで正直に記録)。
             return "", "gemini_timeout"
         resp = _gemini_generate(
-            [uploaded, "この動画に映っている内容と、話されている・聞こえる音声の内容を、日本語で具体的に要約して。"], t0)
+            [uploaded, "この動画に映っている内容と、話されている・聞こえる音声の内容を、日本語で具体的に要約して。"], deadline)
         out = (resp.text or "").strip()[:max_chars]
         # 例外は出ていないが中身が空。Gemini が答えを返さなかったケースを
         # 「成功」と記録すると、後から見て理由が消える。
@@ -448,37 +556,69 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None):
                 pass
 
 
-_IMAGE_MAX_BYTES = 10_000_000   # 1枚あたり。Xの large は通常 数百KB〜数MB
+_IMAGE_MAX_BYTES = 10_000_000          # 1枚あたり。Xの large は通常 数百KB〜数MB
+_IMAGE_TOTAL_MAX_BYTES = 15_000_000    # 1投稿の合計
+_IMAGE_TIMEOUT_S = 20                  # 1枚あたりのダウンロード
+_IMAGE_ALLOWED_HOSTS = ("twimg.com",)  # X の画像 CDN(pbs.twimg.com)。リダイレクト先も同じ条件
 
 
-def _gemini_image_understanding(photo_urls, max_chars=4000):
+def _download_image(url, deadline, total_so_far):
+    """画像1枚。戻り値 (Part用の (bytes, mime), "") か (None, 失敗理由)。
+    https かつ twimg.com 配下だけ許可(リダイレクト先も)。外れたら host_not_allowed。"""
+    if urllib.parse.urlsplit(url).scheme.lower() != "https" or \
+            not any(_host_matches(_host_of(url), h) for h in _IMAGE_ALLOWED_HOSTS):
+        return None, "host_not_allowed"
+    rem = _remaining(deadline) - _MIN_CALL_S   # generate の分を残す
+    if rem < 3:
+        return None, "deadline_skipped"
+    cap = min(_IMAGE_MAX_BYTES, _IMAGE_TOTAL_MAX_BYTES - total_so_far)
+    try:
+        opener = urllib.request.build_opener(_AllowlistRedirectHandler(_IMAGE_ALLOWED_HOSTS))
+        req = urllib.request.Request(url, headers={"User-Agent": BROWSER_UA})
+        with opener.open(req, timeout=min(_IMAGE_TIMEOUT_S, rem)) as r:
+            ctype = r.headers.get("Content-Type", "").split(";")[0].strip()
+            data = _read_limited(r, cap, deadline)
+    except urllib.error.URLError as e:
+        if "disallowed" in str(getattr(e, "reason", e)):
+            return None, "host_not_allowed"
+        return None, "image_download_failed"
+    except Exception:
+        return None, "image_download_failed"
+    if len(data) > cap:
+        return None, "too_large"
+    if not ctype.startswith("image/") or not data:
+        return None, "image_download_failed"
+    return (data, ctype), ""
+
+
+def _gemini_image_understanding(photo_urls, max_chars=4000, deadline=None):
     """画像(複数)をダウンロードし、1回の generate_content にまとめて inline で渡して日本語で読み取る。
-    戻り値は (要約, 理由コード)。成功時の理由コードは ""。動画(_gemini_video_understanding)と同じく
-    キー無し/SDK無しは ("", "gemini_unavailable")。取れなかった画像は飛ばし、1枚も読めなければ失敗。
-    ダウンロード元は呼び出し側が信頼できるもの(X の syndication が返した pbs.twimg.com)に限る。"""
+    戻り値は (要約, 理由コード)。全部読めたときだけ理由コードは ""。一部の画像だけ取れたときは
+    読めた分の要約と "partial_download"(呼び出し側は image_content を missing に残す)。
+    1枚も取れなければ ("", 最初の失敗理由)。キー無し/SDK無しは ("", "gemini_unavailable")。"""
     if not _GEMINI_AVAILABLE or not _GEMINI_API_KEY:
         return "", "gemini_unavailable"
-    t0 = time.time()
+    if deadline is None:
+        deadline = _new_deadline()
     try:
         from google.genai import types
-        parts = []
+        parts, failures, total = [], [], 0
         for u in photo_urls:
-            try:
-                req = urllib.request.Request(u, headers={"User-Agent": BROWSER_UA})
-                with urllib.request.urlopen(req, timeout=60) as r:
-                    ctype = r.headers.get("Content-Type", "").split(";")[0].strip()
-                    data = r.read(_IMAGE_MAX_BYTES + 1)
-                if ctype.startswith("image/") and 0 < len(data) <= _IMAGE_MAX_BYTES:
-                    parts.append(types.Part.from_bytes(data=data, mime_type=ctype))
-            except Exception:
-                continue   # 1枚の失敗で全体を捨てない
+            got, why = _download_image(u, deadline, total)
+            if got:
+                parts.append(types.Part.from_bytes(data=got[0], mime_type=got[1]))
+                total += len(got[0])
+            else:
+                failures.append(why)
         if not parts:
-            return "", "image_download_failed"
+            return "", failures[0] if failures else "image_download_failed"
         resp = _gemini_generate(parts + [
             "これらは1つのSNS投稿に添付された画像です。各画像の内容を日本語で具体的に説明して。"
-            "画像に写っている文字・図表の数字は逐語で書き写して。"], t0)
+            "画像に写っている文字・図表の数字は逐語で書き写して。"], deadline)
         out = (resp.text or "").strip()[:max_chars]
-        return (out, "") if out else ("", "gemini_empty_response")
+        if not out:
+            return "", "gemini_empty_response"
+        return out, ("partial_download" if failures else "")
     except Exception as e:
         if _is_quota_error(e):
             return "", "gemini_quota"
@@ -544,6 +684,8 @@ def _fetch_x_embedded_link(expanded, timeout=45):
 
 
 def fetch_x(url, follow_links=True, understand_video=True):
+    deadline = _new_deadline()   # 件単位の締切。動画・画像の Gemini 処理が共有する
+    _last.clear()
     m = re.search(r"/status/(\d+)", url)
     if not m:
         # x.com/i/article/<id> のように Article を直接ブックマークした場合。
@@ -598,6 +740,7 @@ def fetch_x(url, follow_links=True, understand_video=True):
     # (output-verifierが発見)。
     video_understanding = ""
     video_reason = ""          # 動画が無い/理解に成功した場合は空のまま
+    meta = None                # Gemini 呼び出しの記録(primary_skipped 等)
     video_model = ""           # 読めたモデル(予備に落ちたか facts で分かるように)
     has_video = False
     for md in media_details:
@@ -613,8 +756,9 @@ def fetch_x(url, follow_links=True, understand_video=True):
         mp4s = [v for v in variants if v.get("content_type") == "video/mp4" and v.get("url")]
         if mp4s:
             best = min(mp4s, key=lambda v: v.get("bitrate", 0))
-            video_understanding, video_reason = _gemini_video_understanding(best["url"])
-            video_model = _last_model if video_understanding else ""
+            video_understanding, video_reason = _gemini_video_understanding(best["url"], deadline=deadline)
+            video_model = _last.get("model", "") if video_understanding else ""
+            meta = _gemini_meta(meta)
         else:
             # 動画はあるが mp4 バリアントが1つも無い（HLSのみ等）。ダウンロードする実体が無い。
             video_reason = "no_mp4_variant"
@@ -625,8 +769,9 @@ def fetch_x(url, follow_links=True, understand_video=True):
     image_reason = ""          # 画像が無い/読めた場合は空のまま
     image_model = ""
     if photos and understand_video:
-        image_understanding, image_reason = _gemini_image_understanding(photos[:4])
-        image_model = _last_model if image_understanding else ""
+        image_understanding, image_reason = _gemini_image_understanding(photos[:4], deadline=deadline)
+        image_model = _last.get("model", "") if image_understanding else ""
+        meta = _gemini_meta(meta)
 
     # t.co 展開: 本文テキストのリンク先(X Article/YouTube/Instagram/Threads/引用ツイート/一般記事)を取得
     article_text = ""
@@ -673,7 +818,8 @@ def fetch_x(url, follow_links=True, understand_video=True):
     # 図解・スクリーンショットが主役の投稿では、本文だけでは情報の大半が落ちる。
     # 画像を読むのは Routine 側（手順4: 画像をダウンロードして Read で見る）の仕事なので、
     # ここでは「まだ読まれていない画像がある」ことを欠損として正直に残す。
-    if photos and not image_understanding:
+    # 対象の画像を全部読めたときだけ image_content を外す(一部だけなら partial_download で残す)
+    if photos and not (image_understanding and not image_reason):
         if depth == "full":
             depth = "partial"
         if "image_content" not in missing:
@@ -701,6 +847,7 @@ def fetch_x(url, follow_links=True, understand_video=True):
             # 添付画像の読み取り結果(成功時のみ)と、読めなかった理由(失敗時のみ)。
             "image_summary": image_understanding,
             "image_model": image_model, "video_model": video_model,
+            **(meta or {}),
             "image_reason": image_reason,
             "title": (article_title or re.sub(r"\s+", " ", tweet_text or "").strip())[:80],
             "text": text,
@@ -811,6 +958,8 @@ def _fetch_instagram_reel_video_url(url, timeout=12, retry_delay=2):
 
 
 def fetch_instagram(url):
+    deadline = _new_deadline()
+    _last.clear()
     st, txt = _get(url, CRAWLER_UA)
     # ⚠️ HTTPステータスの判定は本文・og:meta の解析より **前**（2026-09-05 Codex 5周目
     # レビュー指摘。fetch_web / fetch_threads / fetch_youtube と順序を揃える）。
@@ -868,12 +1017,14 @@ def fetch_instagram(url):
     video_understanding = ""
     video_reason = ""
     video_model = ""
+    meta = None
     if is_reel:
         mp4_url, reason = _fetch_instagram_reel_video_url(url)
         if mp4_url:
             video_understanding, video_reason = _gemini_video_understanding(
-                mp4_url, allowed_hosts=_INSTAGRAM_VIDEO_ALLOWED_HOSTS)
-            video_model = _last_model if video_understanding else ""
+                mp4_url, allowed_hosts=_INSTAGRAM_VIDEO_ALLOWED_HOSTS, deadline=deadline)
+            video_model = _last.get("model", "") if video_understanding else ""
+            meta = _gemini_meta()
         else:
             video_understanding, video_reason = "", reason
         # video_reasonが空文字のままmissing:["video_content"]になる経路を作らない
@@ -901,6 +1052,7 @@ def fetch_instagram(url):
             "video_understood": bool(video_understanding),
             "video_reason": video_reason,
             "video_model": video_model,
+            **(meta or {}),
             "has_video": bool(is_reel),
             "title": (cap or og_title)[:80], "text": text,
             "author": name, "handle": handle, "date": date,
@@ -1552,6 +1704,10 @@ def _facts(url, started, result):
         # 読めたモデル(gemini-flash-latest か予備の gemini-flash-lite-latest)。未読は ""。
         "video_model": result.get("video_model", ""),
         "image_model": result.get("image_model", ""),
+        # 主モデルを飛ばしたか / 主・予備の失敗理由(予備で成功した件にも主の理由が残る)。
+        "primary_skipped": bool(result.get("primary_skipped")),
+        "primary_reason": result.get("primary_reason", ""),
+        "fallback_reason": result.get("fallback_reason", ""),
         # どの経路で動画理解を諦めたかの生の理由コード。恒久/一過性のラベルは
         # ここに焼き付けず、照会側(ledger.py)がこのコードから導出する。
         "video_reason": result.get("video_reason", ""),

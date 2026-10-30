@@ -12,6 +12,7 @@ import json
 import os
 import sys
 import unittest
+import unittest.mock
 import urllib.error
 import urllib.request
 from unittest.mock import patch
@@ -488,7 +489,8 @@ class FetchInstagramCaptionFallbackTest(unittest.TestCase):
         # _gemini_video_understanding自体をモックで潰す他のテストは渡された引数を
         # 見ていないため、その回帰を検出できていなかった。
         mock_gvu.assert_called_once_with(
-            mp4, allowed_hosts=fetch_content._INSTAGRAM_VIDEO_ALLOWED_HOSTS)
+            mp4, allowed_hosts=fetch_content._INSTAGRAM_VIDEO_ALLOWED_HOSTS,
+            deadline=unittest.mock.ANY)
 
     def test_video_reason_never_empty_when_missing_video_content(self):
         """video_reasonが空文字のままmissing:["video_content"]になる経路が無いことの確認

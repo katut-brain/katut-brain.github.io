@@ -166,6 +166,7 @@ _VIDEO_REASON_KIND = {
     # あり、恒久扱いにすると後続ランで取れるはずのものを切り捨てる。
     "bad_content_type":         "transient",
     "gemini_timeout":           "transient",   # 100秒待ちで諦めた
+    "deadline_skipped":         "transient",   # 件単位の時間予算(440秒)が尽きて始めなかった
     "truncated_download":       "transient",   # 接続断
     "gemini_quota":             "transient",   # 無料枠切れ。翌日戻る
     "gemini_empty_response":    "transient",   # 例外は無いが中身が空
@@ -227,6 +228,10 @@ _FAIL_REASON_KIND = {
 }
 
 
+# 画像の読み取りを諦めた理由のうち、再取得しても無駄なもの。それ以外は一過性。
+_IMAGE_PERMANENT_REASONS = {"host_not_allowed", "too_large", "gemini_unavailable"}
+
+
 def _fail_reason_kind(rec):
     """fail_reason コードから恒久/一過性/unknownを引く。コード無し→None。
     "<prefix>_http_<st>" は前方一致で判定し、<st>が404/410ならpermanent、
@@ -248,7 +253,8 @@ def _fail_reason_kind(rec):
 # 「これ**だけ**が欠けているなら再取得は無駄」を表す集合であって、
 # 1つでも含まれていれば permanent、という意味ではない(部分一致で判定しない)。
 _STRUCTURAL_MISSING = {
-    "image_content",      # fetch側に画像読解の実装が無い(読むのは Routine 側の仕事)
+    "image_content",      # 画像の読み取りに失敗したまま残る欠損。失敗が一過性なら image_reason で transient に
+    # 上書きする(_reason_kind 参照)。image_reason が無い旧記録は従来どおり構造的扱い
     "visual_content",     # 同上
     "audio_content",      # 同上
     "article_body_tail",  # 本文上限による設計上の切り詰め。再取得しても同じ
@@ -284,6 +290,11 @@ def _reason_kind(rec):
         # 満たすのはこの分岐なので、「緩め忘れ」と誤解して削除しないこと。
         return "permanent"
     if rec.get("ok") and missing and set(missing) <= _STRUCTURAL_MISSING:
+        # 画像の読み取りが一過性の理由で失敗した記録(image_reason あり)は取り直す価値がある。
+        # 試行は既存の上限(DEFAULT_MAX_ATTEMPTS)で止まる。
+        ir = rec.get("image_reason")
+        if ir and "image_content" in missing and ir not in _IMAGE_PERMANENT_REASONS:
+            return "transient"
         # 構造的な穴だけが欠けている。再取得しても同じ結果になる
         return "permanent"
     if not missing and rec.get("depth") == "full":

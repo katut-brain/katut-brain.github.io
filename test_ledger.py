@@ -185,6 +185,45 @@ class TestSummaryLegacyUnresolved(LedgerTestBase):
             fetch_content._RID_INDEX_CACHE = orig_cache
 
 
+class TestImageReasonTransient(LedgerTestBase):
+    """X 添付画像の読み取りが一過性の理由で失敗した記録(image_reason あり)は取り直す。
+    試行は既存の上限(DEFAULT_MAX_ATTEMPTS=3)で止まる。image_reason の無い旧記録は従来どおり。"""
+
+    URL = "https://x.com/a/status/9"
+
+    def _rec(self, day, reason, rid=77, seq=1):
+        rec = {"url": self.URL, "route": "x", "ok": True, "depth": "partial",
+               "missing": ["image_content"], "fetched_at": "%sT19:00:00Z" % day,
+               "raindrop_id": rid, "rid_source": "exact", "attempt_seq": seq}
+        if reason is not None:
+            rec["image_reason"] = reason
+        return {self.URL: rec}
+
+    def _cands(self):
+        return [g["key"][1] for g in ledger.backfill_candidates("2026-10-20")]
+
+    def test_transient_reason_is_candidate(self):
+        for reason in ("exception:ServerError:503", "image_download_failed", "partial_download",
+                       "deadline_skipped", "gemini_quota"):
+            self.assertEqual(ledger._reason_kind(self._rec("2026-10-10", reason)[self.URL]), "transient", reason)
+        self._write_day("2026-10-10", self._rec("2026-10-10", "exception:ServerError:503"))
+        self.assertEqual(self._cands(), [77])
+
+    def test_stops_at_existing_attempt_cap(self):
+        for d, seq in (("2026-10-10", 1), ("2026-10-11", 1), ("2026-10-12", 1)):
+            self._write_day(d, self._rec(d, "exception:ServerError:503", seq=seq))
+        g = ledger._build_groups(ledger._load_all_records())[("rid", 77)]
+        self.assertEqual(g["attempt_count"], 3)
+        self.assertTrue(g["exhausted"])
+        self.assertEqual(self._cands(), [])
+
+    def test_permanent_reasons_and_legacy_records_stay_permanent(self):
+        for reason in ("host_not_allowed", "too_large", "gemini_unavailable", None, ""):
+            self.assertEqual(ledger._reason_kind(self._rec("2026-10-10", reason)[self.URL]), "permanent", reason)
+        self._write_day("2026-10-10", self._rec("2026-10-10", None))
+        self.assertEqual(self._cands(), [])
+
+
 class TestGeminiOutageWindow(LedgerTestBase):
     """2026-10-06〜10-13 の gemini_unavailable（import 失敗という環境障害）だけを
     取り直し対象にする。期間外・既存の permanent は変えない。"""

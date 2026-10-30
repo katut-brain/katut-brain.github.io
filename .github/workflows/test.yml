@@ -159,13 +159,18 @@ jobs:
       - name: Run card-refresh tests
         run: python -m unittest -v test_refresh_cards.py
 
-      # Gemini 呼び出しの再試行(503×2→成功・429は再試行しない・使い切るとステータス付き理由・
-      # 途中切断)。ダミーHTTPサーバ相手に本物のgoogle-genaiを動かす。この workflow は
-      # pip install しないので CI では SDK 部分は skip になる(手元 venv で実行すること)。
+      # ここから下は google-genai を入れて実物の SDK で動かす(SDK 依存のテストを CI で skip させない)。
+      # 他のテストに SDK 有りの環境を持ち込まないよう、必ずジョブの最後に置く。
+      # 版は requirements.txt と揃える(2.34.0。上げるときは両方)。
+      - name: Install google-genai (pinned)
+        run: python -m pip install google-genai==2.34.0
+
+      # Gemini 呼び出しの再試行(503×2→成功・429/403は予備に回さない・タイムアウトは主2回→予備1回・
+      # 主の死活の印・件単位の時間予算で最悪でも480秒以内)。ダミーHTTPサーバ相手に本物のSDKを動かす。
       - name: Run gemini-retry tests
         run: python -m unittest -v test_gemini_retry.py
 
-      # X 添付画像の Gemini 読み取り(fetch_x の配線: 成功で image_content が外れる・失敗で残る・
-      # 引用ツイート経路では呼ばない)。SDK 依存の単体テストは CI では skip。
+      # X 添付画像の Gemini 読み取り(fetch_x の配線・画像の行き先の許可リスト・一部だけ取れた件・
+      # 引用ツイート経路では呼ばない)。
       - name: Run x-image-understanding tests
         run: python -m unittest -v test_x_image_understanding.py
