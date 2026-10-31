@@ -32,7 +32,7 @@ jobs:
 
       - name: Unit tests
         working-directory: fetch_chain
-        run: python -m unittest test_fetchchain test_vet test_discover
+        run: python -m unittest test_fetchchain test_vet test_discover test_notify
 
       - name: Check out the health branch
         run: |
@@ -81,19 +81,20 @@ jobs:
 
       - name: Notify Slack when something is broken or was replaced
         if: steps.canary.outputs.code != '0' || steps.discover.outputs.events == '1'
+        working-directory: fetch_chain
         env:
           WEBHOOK: ${{ secrets.FETCHCHAIN_SLACK_WEBHOOK }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          PYTHONIOENCODING: utf-8
         run: |
           if [ -z "$WEBHOOK" ]; then echo "FETCHCHAIN_SLACK_WEBHOOK が未設定。通知しない"; exit 0; fi
+          touch ../discover.txt
+          python notify.py ../state/status.json ../discover.txt > ../notify.txt
+          if [ ! -s ../notify.txt ]; then echo "知らせることが無い"; exit 0; fi
           python3 - <<'PY'
           import json, os, urllib.request
-          body = open("canary.txt", encoding="utf-8").read()
-          events = open("discover.txt", encoding="utf-8").read() if os.path.exists("discover.txt") else ""
-          text = "fetch-chain の健康診断（GitHub Actions）\n```\n%s\n```\n" % body[:3000]
-          if events.strip():
-              text += "代わりの取り方（追加・昇格・失敗した候補）:\n```\n%s\n```\n" % events[:1500]
-          text += os.environ["RUN_URL"]
+          body = open("../notify.txt", encoding="utf-8").read().strip()
+          text = "SNS の取り方の点検\n%s\n<%s|詳しく>" % (body, os.environ["RUN_URL"])
           req = urllib.request.Request(os.environ["WEBHOOK"], data=json.dumps({"text": text}).encode(),
                                        headers={"Content-Type": "application/json"})
           urllib.request.urlopen(req, timeout=20).read()
