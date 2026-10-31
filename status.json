@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-10-30T06:55:46+00:00",
+  "checked_at": "2026-10-31T01:01:39+00:00",
   "env": "gha",
   "channels": {
     "x_post": {
@@ -8,19 +8,19 @@
         {
           "method": "x_fxtwitter",
           "ok": true,
-          "ms": 275,
+          "ms": 180,
           "error": ""
         },
         {
           "method": "x_syndication",
           "ok": true,
-          "ms": 325,
+          "ms": 178,
           "error": ""
         },
         {
           "method": "x_vxtwitter",
           "ok": true,
-          "ms": 222,
+          "ms": 120,
           "error": ""
         }
       ]
@@ -37,7 +37,7 @@
         {
           "method": "yt_oembed",
           "ok": true,
-          "ms": 56,
+          "ms": 45,
           "error": ""
         }
       ]
@@ -48,13 +48,13 @@
         {
           "method": "ig_oembed",
           "ok": true,
-          "ms": 262,
+          "ms": 190,
           "error": ""
         },
         {
           "method": "og_meta",
           "ok": true,
-          "ms": 488,
+          "ms": 324,
           "error": ""
         }
       ]
@@ -65,7 +65,7 @@
         {
           "method": "og_meta",
           "ok": true,
-          "ms": 842,
+          "ms": 655,
           "error": ""
         }
       ]
@@ -76,13 +76,13 @@
         {
           "method": "web_direct",
           "ok": true,
-          "ms": 216,
+          "ms": 270,
           "error": ""
         },
         {
           "method": "web_jina",
           "ok": true,
-          "ms": 688,
+          "ms": 401,
           "error": ""
         }
       ]
