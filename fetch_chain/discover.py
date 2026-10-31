@@ -85,7 +85,10 @@ def try_window_candidates(channels, broken):
                 continue
             spec = dict(cand, status="trial", where=[fc.place_class(fc.where_am_i())])
             errs = fc.validate_spec(spec, channels)
-            host = urllib.parse.urlsplit(str(spec.get("url", "")).replace("{", "").replace("}", "")).hostname or ""
+            try:
+                host = urllib.parse.urlsplit(str(spec.get("url", "")).replace("{", "").replace("}", "")).hostname or ""
+            except ValueError:  # 壊れた URL の候補1つで全体を止めない
+                host = ""
             if host not in APPROVED_HOSTS:
                 errs = errs + ["問い合わせ先が APPROVED_HOSTS に無い"]
             if errs:
