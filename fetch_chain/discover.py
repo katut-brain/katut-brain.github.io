@@ -14,13 +14,17 @@
   昇格 = 試用の手段が同じ場所で PROMOTE_AFTER 回続けて canary に通る
 足した手段は STATE/plugins/ に置く（リポジトリの main には書かない。夜間ランが毎晩 push する main とぶつけないため）。
 """
-import sys, os, json, hashlib, pathlib, shutil, subprocess, tempfile, datetime, zipfile
+import sys, os, re, json, hashlib, pathlib, shutil, subprocess, tempfile, datetime, zipfile, urllib.parse
 import fetchchain as fc
 import vet
 
 HERE = pathlib.Path(__file__).resolve().parent
 CANDIDATES = HERE / "candidates.json"
-PROMOTE_AFTER = 7  # 試用から本番に上げるまでに続けて通る回数（毎日1回なら1週間）
+PROMOTE_AFTER = 7  # 試用から本番に上げるまでに続けて通る日数（1日1票・同じ日の再実行で進まない）
+# 窓口型の候補が問い合わせてよい先。候補の URL（投稿の URL）を渡す相手なので、増やすときはこのコードの変更として人が見る
+APPROVED_HOSTS = ("publish.twitter.com", "noembed.com", "r.jina.ai")
+_PKG_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,80}$")
+_VER_RE = re.compile(r"^[0-9][0-9A-Za-z.+!-]{0,39}$")
 
 
 def _now():
@@ -37,19 +41,19 @@ def _event(kind, **kw):
 
 
 def _canary_rows(method):
-    """この場所の canary の結果（古い順）。"""
+    """この場所の canary の結果を1日1票で（古い順）。同じ日に何度回しても、その日の最後の結果だけを数える。"""
     if not fc.HEALTH.exists():
         return []
     here = fc.place_class(fc.where_am_i())
-    out = []
+    by_day = {}
     for line in fc.HEALTH.read_text(encoding="utf-8").splitlines():
         try:
             r = json.loads(line)
         except ValueError:
             continue
         if r.get("kind") == "canary" and r.get("method") == method and fc.place_class(r.get("env", "pc")) == here:
-            out.append(bool(r.get("ok")))
-    return out
+            by_day[str(r.get("ts", ""))[:10]] = bool(r.get("ok"))
+    return [by_day[d] for d in sorted(by_day)]
 
 
 def broken_channels(channels):
@@ -81,8 +85,12 @@ def try_window_candidates(channels, broken):
                 continue
             spec = dict(cand, status="trial", where=[fc.place_class(fc.where_am_i())])
             errs = fc.validate_spec(spec, channels)
+            host = urllib.parse.urlsplit(str(spec.get("url", "")).replace("{", "").replace("}", "")).hostname or ""
+            if host not in APPROVED_HOSTS:
+                errs = errs + ["問い合わせ先が APPROVED_HOSTS に無い"]
             if errs:
-                lines.append(_event("candidate_invalid", channel=ch, name=cand.get("name"), why="; ".join(errs)[:120]))
+                lines.append(_event("candidate_invalid", channel=ch, name=fc._scrub(str(cand.get("name"))),
+                                    why=fc._scrub("; ".join(errs))))
                 continue
             cfg = channels[ch]
             try:
@@ -137,8 +145,12 @@ def _sha256(path):
 def wheel(name, pip_download=None, make_venv=None, approve=False):
     """候補の wheel を版と sha256 を固定して落とし、vet.py を通して、clean なら隔離 venv に入れる。"""
     cand = next((c for c in _load_candidates() if c.get("kind") == "wheel" and c.get("name") == name), None)
-    if not cand or not all(cand.get(k) for k in ("package", "version", "sha256")):
-        return [_event("wheel_invalid", name=name, why="候補に package・version・sha256 が揃っていない")]
+    if not cand or not all(isinstance(cand.get(k), str) for k in ("package", "version", "sha256")):
+        return [_event("wheel_invalid", name=fc._scrub(str(name)), why="候補に package・version・sha256 が揃っていない")]
+    # 名前・版はフォルダ名とファイル名に使うので、外へ出られない形だけを通す
+    if not (fc._NAME_RE.match(name) and _PKG_RE.match(cand["package"]) and _VER_RE.match(cand["version"])
+            and ".." not in cand["package"] + cand["version"] and re.fullmatch(r"[0-9a-fA-F]{64}", cand["sha256"])):
+        return [_event("wheel_invalid", name=fc._scrub(str(name)), why="名前・package・version・sha256 の形が不正")]
     with tempfile.TemporaryDirectory() as tmp:
         # --only-binary で wheel しか落とさない（sdist は入れた瞬間に setup.py が動くので扱わない）。依存は1つずつ別の候補にする
         cmd = [sys.executable, "-m", "pip", "download", "--only-binary=:all:", "--no-deps", "--no-cache-dir",

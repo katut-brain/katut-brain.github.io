@@ -65,6 +65,7 @@ jobs:
           FETCHCHAIN_STATE_DIR: ${{ github.workspace }}/state
           PYTHONIOENCODING: utf-8
         run: |
+          set -o pipefail
           python discover.py run | tee ../discover.txt
           if [ -s ../discover.txt ]; then echo "events=1" >> "$GITHUB_OUTPUT"; fi
 
@@ -73,8 +74,9 @@ jobs:
         run: |
           git add health.jsonl status.json
           for f in events.jsonl plugins review; do if [ -e "$f" ]; then git add "$f"; fi; done
+          if git diff --cached --quiet; then exit 0; fi   # 変わっていない日だけ飛ばす（commit の失敗は飲み込まない）
           git -c user.name=katut-brain -c user.email=katut-brain@users.noreply.github.com \
-            commit -qm "canary: gha $(date -u +%FT%TZ) code=${{ steps.canary.outputs.code }}" || exit 0
+            commit -qm "canary: gha $(date -u +%FT%TZ) code=${{ steps.canary.outputs.code }}"
           git push -q origin HEAD:refs/heads/fetch-chain-health
 
       - name: Notify Slack when something is broken or was replaced
