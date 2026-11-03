@@ -5,6 +5,9 @@ import fetchchain as fc
 import discover as dc
 import vet
 
+for _k in ("GROKBOT_WEBHOOK_URL", "GROKBOT_WEBHOOK_KEY", "GROKBOT_POLL_TIMEOUT", "GROKBOT_RESULTS_REF"):
+    os.environ.pop(_k, None)  # 秘密があると x_grokbot が本物の待ちに入る。既存テストは未設定のまま
+
 def _fake_gai(host, *a, **k):
     """名前解決を外へ出さない。IP の直書きはそのまま（内部アドレスの検査を本物で通す）、名前は公開の IP。"""
     try:
@@ -32,6 +35,8 @@ class Base(unittest.TestCase):
         self._orig = (fc.STATE, fc.HEALTH, fc.STATUS, fc.AUTO_PLUGINS, fc.http_get, dc.CANDIDATES)
         self._env, self._gai = os.environ.get("FETCHCHAIN_ENV"), fc.socket.getaddrinfo
         os.environ["FETCHCHAIN_ENV"] = "gha"
+        for k in ("GROKBOT_WEBHOOK_URL", "GROKBOT_WEBHOOK_KEY", "GROKBOT_POLL_TIMEOUT", "GROKBOT_RESULTS_REF"):
+            os.environ.pop(k, None)
         fc.socket.getaddrinfo = _fake_gai
         fc.STATE, fc.HEALTH, fc.STATUS = self.tmp, self.tmp / "health.jsonl", self.tmp / "status.json"
         fc.AUTO_PLUGINS = self.tmp / "plugins"

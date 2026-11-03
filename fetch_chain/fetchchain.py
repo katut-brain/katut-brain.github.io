@@ -10,6 +10,8 @@
   - canary は「入っているか」でなく「見本を実際に取って、期待する文字が出るか」を見る
   - 直近3回続けて失敗した手段は、取得時に自動で最後尾へ回す（health.jsonl の記録から）
   - 手段は plugins/*.json の「宣言」でも足せる（コードを含まない窓口型のみ。試用中は最後尾・標準手段は上書き不可）
+  - x_grokbot は GROKBOT_WEBHOOK_URL と GROKBOT_WEBHOOK_KEY が両方あるときだけ順に入る。
+    片方でも無ければ sources.json に書いてあっても試さない（Unavailable として試行に残さない）
   - 他人のプログラムを入れる場合は、先に vet.py の検査を通す（自動で探して足す部分は未実装）
 """
 import sys, os, re, json, time, html, string, ipaddress, socket, pathlib, datetime, shutil, subprocess, tempfile
@@ -115,6 +117,98 @@ def _strip_html(raw):
 
 
 # ---------- 取得手段（どれも {text,title,author,date} を返す） ----------
+# x_grokbot: 外部ボットに依頼し、ボットが公開ブランチへ置いた結果ファイルを待つ。
+# 秘密が無いときは ordered_methods / canary が順から外す。ここを直接呼んだときだけ Unavailable。
+_GROK_RESULTS_REPO = "katut-brain/katut-brain.github.io"
+_GROK_RESULTS_DIR = "data/grok-results"
+_GROK_POLL_EVERY = 10
+_GROK_REF_RE = re.compile(r"^[A-Za-z0-9._-]{1,80}$")
+_GROK_ID_RE = re.compile(r"^[A-Za-z0-9-]+$")
+
+
+def _grokbot_configured():
+    """URL と鍵が両方、制御文字なしで入っているときだけ真。空文字・片方だけでは偽。"""
+    url = (os.environ.get("GROKBOT_WEBHOOK_URL") or "").strip()
+    key = (os.environ.get("GROKBOT_WEBHOOK_KEY") or "").strip()
+    if not url or not key:
+        return False
+    if re.search(r"[\r\n\x00]", url) or re.search(r"[\r\n\x00]", key):
+        return False
+    return True
+
+
+def _grok_poll_timeout():
+    try:
+        return max(0, int(os.environ.get("GROKBOT_POLL_TIMEOUT", "90")))
+    except (TypeError, ValueError):
+        return 90
+
+
+def _grok_results_ref():
+    ref = (os.environ.get("GROKBOT_RESULTS_REF") or "grok-results").strip()
+    if not _GROK_REF_RE.match(ref):
+        raise FetchError("GROKBOT_RESULTS_REF が不正")
+    return ref
+
+
+def _http_post_json(url, body, headers, timeout=15):
+    """POST の HTTP ステータスを返す。通信失敗は None。公開ホスト以外と非公開へのリダイレクトは FetchError。"""
+    _check_public(url)
+    req = urllib.request.Request(url, data=json.dumps(body).encode(), method="POST",
+                                 headers={"User-Agent": UA, "Content-Type": "application/json", **headers})
+    try:
+        with urllib.request.build_opener(_Redirect).open(req, timeout=timeout) as r:
+            return r.status
+    except urllib.error.HTTPError as e:
+        return e.code
+    except FetchError:
+        raise
+    except Exception:
+        return None
+
+
+def x_grokbot(url):
+    if not _grokbot_configured():
+        raise Unavailable("GROKBOT_WEBHOOK_URL / GROKBOT_WEBHOOK_KEY が未設定")
+    hook = os.environ.get("GROKBOT_WEBHOOK_URL").strip()
+    key = os.environ.get("GROKBOT_WEBHOOK_KEY").strip()
+    ref = _grok_results_ref()  # POST の前に見る。不正な参照先では依頼自体を出さない
+    tid = _tweet_id(url)
+    rid = "%s-%d" % (tid, int(time.time()))
+    if not _GROK_ID_RE.match(rid):
+        raise FetchError("依頼IDに使えない文字がある")
+    st = _http_post_json(hook, {"id": rid, "url": url, "query": "x_post_fetch"},
+                         {"Authorization": "Bearer " + key, "X-Webhook-Key": key})
+    if st not in (200, 201, 202):
+        raise FetchError("webhook HTTP %s" % st)
+    raw_url = "https://raw.githubusercontent.com/%s/%s/%s/%s.json" % (
+        _GROK_RESULTS_REPO, ref, _GROK_RESULTS_DIR, urllib.parse.quote(rid, safe="-"))
+    timeout = _grok_poll_timeout()
+    end = time.time() + timeout
+    while time.time() < end:
+        time.sleep(_GROK_POLL_EVERY)
+        code, txt = http_get(raw_url + "?t=%d" % int(time.time()), timeout=10)  # raw の CDN キャッシュ避け
+        if code == 200 and txt.strip():
+            try:
+                d = json.loads(txt)
+            except ValueError:
+                raise FetchError("結果ファイルが JSON でない")
+            if not isinstance(d, dict) or d.get("id") != rid:
+                raise FetchError("結果が不正: id 不一致")
+            if d.get("error"):
+                err = d.get("error")
+                raise FetchError("結果が不正: %s" % (err if isinstance(err, str) else "error")[:80])
+            text = d.get("text", "") or ""
+            if not isinstance(text, str):
+                raise FetchError("結果の本文が文字列でない")
+            author = d.get("author", "") or ""
+            date = d.get("date", "") or ""
+            return {"text": text, "title": text[:80],
+                    "author": author if isinstance(author, str) else "",
+                    "date": date if isinstance(date, str) else "", "raw": d}
+    raise FetchError("結果ファイルが %d 秒で来ない" % timeout)  # → 次の手段 (fxtwitter…)
+
+
 def x_fxtwitter(url):
     raw = _json_get("https://api.fxtwitter.com/i/status/%s" % _tweet_id(url))
     d = raw.get("tweet")
@@ -256,7 +350,7 @@ def yt_dlp_subs(url):
                 "raw": {"subtitle_file": files[0].name}}
 
 
-METHODS = {f.__name__: f for f in (x_fxtwitter, x_vxtwitter, x_syndication, yt_oembed, yt_dlp_subs,
+METHODS = {f.__name__: f for f in (x_grokbot, x_fxtwitter, x_vxtwitter, x_syndication, yt_oembed, yt_dlp_subs,
                                     ig_oembed, og_meta, web_direct, web_jina)}
 CORE_METHODS = frozenset(METHODS)  # プラグインはこの名前を上書きできない
 MIN_CHARS = {"web_direct": 200, "web_jina": 200}  # 中身がほぼ空なら「取れた」と数えない
@@ -480,9 +574,12 @@ def usable_here(channel_cfg, method):
 
 
 def ordered_methods(channel_cfg):
-    """この場所で使う手段だけを登録順に並べ、直近 DEMOTE_AFTER 回すべて失敗した手段だけ最後尾へ。"""
+    """この場所で使う手段だけを登録順に並べ、直近 DEMOTE_AFTER 回すべて失敗した手段だけ最後尾へ。
+    x_grokbot は秘密が両方あるときだけ。無いときは一覧から外す（試行にも残さない）。"""
     ok, demoted = [], []
     for m in channel_cfg["methods"]:
+        if m == "x_grokbot" and not _grokbot_configured():
+            continue
         if not usable_here(channel_cfg, m):
             continue
         r = _recent(m)
@@ -526,6 +623,8 @@ def canary():
     for ch, cfg in channels.items():
         res = []
         for m in cfg["methods"]:  # 並べ替えず登録順に全部測る（壊れた手段も毎回測り続け、復活を拾う）
+            if m == "x_grokbot" and not _grokbot_configured():
+                continue  # 秘密が無い日は測らない。未設定を「壊れた」にも「使えない」にも残さない
             if not usable_here(cfg, m):
                 res.append({"method": m, "ok": None, "ms": 0, "error": "この場所では使わない（where）"})
                 continue

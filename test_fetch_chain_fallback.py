@@ -13,6 +13,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 os.environ["FETCHCHAIN_STATE_DIR"] = tempfile.mkdtemp()   # 健康記録をテストの外に出さない
 os.environ["FETCHCHAIN_ENV"] = "gha"
+for _k in ("GROKBOT_WEBHOOK_URL", "GROKBOT_WEBHOOK_KEY", "GROKBOT_POLL_TIMEOUT", "GROKBOT_RESULTS_REF"):
+    os.environ.pop(_k, None)   # 秘密があると fetch_x が x_grokbot を先に試す。既存テストは未設定のまま
 
 import fetch_content  # noqa: E402
 import ledger  # noqa: E402
@@ -44,6 +46,10 @@ def chain_http(table):
 
 
 class FallbackTest(unittest.TestCase):
+    def setUp(self):
+        for k in ("GROKBOT_WEBHOOK_URL", "GROKBOT_WEBHOOK_KEY", "GROKBOT_POLL_TIMEOUT", "GROKBOT_RESULTS_REF"):
+            os.environ.pop(k, None)
+
     def run_x(self, synd, chain_table):
         seen = {}
         with patch("fetch_content._get", return_value=synd), \
@@ -144,6 +150,157 @@ class FallbackTest(unittest.TestCase):
             r, _ = self.run_x((503, ""), {"api.fxtwitter.com": (200, json.dumps(FX))})
         self.assertFalse(r["ok"])
         self.assertEqual(r["fetch_chain_tried"], "skipped:deadline")
+
+    def _enable_grok(self):
+        os.environ["GROKBOT_WEBHOOK_URL"] = "https://hook.example/h"
+        os.environ["GROKBOT_WEBHOOK_KEY"] = "k"
+        os.environ["GROKBOT_POLL_TIMEOUT"] = "90"
+
+    def _clock(self):
+        clock = [1_700_000_000.0]
+
+        def now():
+            return clock[0]
+
+        def sleep(sec):
+            clock[0] += sec
+
+        return now, sleep
+
+    def test_without_secrets_fetch_x_does_not_call_grokbot(self):
+        posts = []
+        with patch.object(fc, "_http_post_json", lambda *a, **k: posts.append(1) or 202), \
+             patch.object(fc, "x_grokbot", side_effect=AssertionError("x_grokbot を呼んだ")):
+            r, _ = self.run_x((200, json.dumps(SYND)), {})
+        self.assertEqual(r["fetched_via"], "x_syndication")
+        self.assertEqual(posts, [])
+
+    def test_grokbot_maps_media_and_skips_syndication(self):
+        self._enable_grok()
+        posted = {}
+        synd = []
+        seen = {}
+
+        def post(url, body, headers, timeout=15):
+            posted["body"] = body
+            posted["headers"] = dict(headers)
+            return 202
+
+        def get(url, timeout=15, max_bytes=2_000_000):
+            rid = posted["body"]["id"]
+            self.assertIn("/grok-results/data/grok-results/%s.json" % rid, url)
+            return 200, json.dumps({
+                "id": rid, "url": URL, "text": "grok の本文 https://t.co/abc", "author": "h",
+                "date": "2026-10-01T03:04:05.000Z",
+                "media": [
+                    {"type": "photo", "url": "https://pbs.twimg.com/media/p1.jpg"},
+                    {"type": "image", "url": "https://pbs.twimg.com/media/p2.jpg"},
+                    {"type": "video", "url": "https://video.twimg.com/a.mp4"},
+                    {"type": "gif", "url": "https://video.twimg.com/b.mp4"},
+                    {"type": "photo", "url": ""},
+                    "nope",
+                ],
+            })
+
+        now, sleep = self._clock()
+        with patch.object(fc, "_http_post_json", post), \
+             patch.object(fc, "http_get", get), \
+             patch.object(fc, "_check_public", lambda url: None), \
+             patch.object(fc.time, "time", now), \
+             patch.object(fc.time, "sleep", sleep), \
+             patch("fetch_content._get", side_effect=lambda *a, **k: synd.append(a) or (200, json.dumps(SYND))), \
+             patch("fetch_content._gemini_video_understanding",
+                   side_effect=lambda u, **k: (seen.setdefault("videos", []).append(u),
+                                               seen.setdefault("hosts", k.get("allowed_hosts")),
+                                               ("動画の中身", ""))[2]), \
+             patch("fetch_content._gemini_image_understanding",
+                   side_effect=lambda p, **k: (seen.setdefault("photos", list(p)), ("画像の中身", ""))[1]):
+            r = fetch_content.fetch_x(URL, follow_links=False)
+        self.assertEqual(synd, [])
+        self.assertEqual(r["fetched_via"], "x_grokbot")
+        self.assertTrue(r["text"].startswith("grok の本文 https://t.co/abc"))
+        self.assertEqual((r["handle"], r["author"], r["date"]), ("h", "h", "2026-10-01"))
+        self.assertEqual(posted["body"]["query"], "x_post_fetch")
+        self.assertEqual(posted["body"]["url"], URL)
+        self.assertRegex(posted["body"]["id"], r"^[0-9]+-[0-9]+$")
+        self.assertEqual(posted["headers"]["Authorization"], "Bearer k")
+        self.assertEqual(posted["headers"]["X-Webhook-Key"], "k")
+        self.assertEqual(len(seen["photos"]), 2)
+        self.assertIn("name=large", seen["photos"][0])
+        self.assertTrue(r["cover"].startswith("https://pbs.twimg.com/media/p1.jpg"))
+        self.assertEqual(seen["videos"], ["https://video.twimg.com/a.mp4"])
+        self.assertEqual(seen["hosts"], ("twimg.com",))
+
+    def test_grokbot_failure_falls_back_to_syndication_once(self):
+        self._enable_grok()
+        posts = []
+        with patch.object(fc, "_http_post_json", lambda *a, **k: posts.append(1) or 500), \
+             patch.object(fc, "_check_public", lambda url: None), \
+             patch("fetch_content._get", return_value=(200, json.dumps(SYND))), \
+             patch("fetch_content._gemini_video_understanding", return_value=("", "")), \
+             patch("fetch_content._gemini_image_understanding", return_value=("", "")):
+            r = fetch_content.fetch_x(URL, follow_links=False)
+        self.assertEqual(r["fetched_via"], "x_syndication")
+        self.assertEqual(posts, [1])
+        self.assertTrue(r["text"].startswith("syndication の本文"))
+
+    def test_grokbot_and_syndication_down_uses_fxtwitter_without_a_second_webhook(self):
+        self._enable_grok()
+        posts = []
+        now, sleep = self._clock()
+
+        def post(url, body, headers, timeout=15):
+            posts.append(body["id"])
+            return 202
+
+        def get(url, timeout=15, max_bytes=2_000_000):
+            if "raw.githubusercontent.com" in url:
+                return 200, json.dumps({"id": "other", "error": "nope", "text": "bad"})
+            if "api.fxtwitter.com" in url:
+                return 200, json.dumps(FX)
+            return None, ""
+        with patch.object(fc, "_http_post_json", post), \
+             patch.object(fc, "http_get", get), \
+             patch.object(fc, "_check_public", lambda url: None), \
+             patch.object(fc.time, "time", now), \
+             patch.object(fc.time, "sleep", sleep), \
+             patch("fetch_content._get", return_value=(503, "")), \
+             patch("fetch_content._gemini_video_understanding", return_value=("動画の中身", "")), \
+             patch("fetch_content._gemini_image_understanding", return_value=("画像の中身", "")):
+            r = fetch_content.fetch_x(URL, follow_links=False)
+        self.assertEqual(r["fetched_via"], "fetch_chain")
+        self.assertEqual(len(posts), 1)
+        self.assertIn("x_fxtwitter:ok", r["fetch_chain_tried"])
+        self.assertNotIn("x_grokbot", r["fetch_chain_tried"])
+        self.assertTrue(r["text"].startswith("fx の本文"))
+
+    def test_short_budget_skips_grokbot(self):
+        self._enable_grok()
+        posts = []
+        with patch("fetch_content._remaining", return_value=100), \
+             patch.object(fc, "_http_post_json", lambda *a, **k: posts.append(1) or 202), \
+             patch("fetch_content._get", return_value=(200, json.dumps(SYND))), \
+             patch("fetch_content._gemini_video_understanding", return_value=("", "")), \
+             patch("fetch_content._gemini_image_understanding", return_value=("", "")):
+            r = fetch_content.fetch_x(URL, follow_links=False)
+        self.assertEqual(posts, [])
+        self.assertEqual(r["fetched_via"], "x_syndication")
+
+    def test_embedded_quote_passes_a_short_deadline(self):
+        seen = {}
+
+        def spy(url, follow_links=True, understand_video=True, deadline=None):
+            seen["args"] = (follow_links, understand_video, deadline)
+            return {"ok": True, "text": "引用本文", "title": "t"}
+
+        with patch("fetch_content.fetch_x", spy):
+            out = fetch_content._fetch_x_embedded_link_inner("https://x.com/a/status/99", timeout=45)
+        self.assertEqual(out["text"], "引用本文")
+        self.assertEqual(seen["args"][0], False)
+        self.assertEqual(seen["args"][1], False)
+        left = seen["args"][2] - fetch_content._now()
+        self.assertGreater(left, 20)
+        self.assertLess(left, 50)
 
 
 if __name__ == "__main__":

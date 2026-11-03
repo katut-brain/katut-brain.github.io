@@ -2,7 +2,7 @@
   "channels": {
     "x_post": {
       "match": "(^|\\.)(x|twitter)\\.com$",
-      "methods": ["x_fxtwitter", "x_syndication", "x_vxtwitter"],
+      "methods": ["x_grokbot", "x_fxtwitter", "x_syndication", "x_vxtwitter"],
       "canary": {"url": "https://x.com/jack/status/20", "expect": "just setting up my twttr"}
     },
     "youtube": {
