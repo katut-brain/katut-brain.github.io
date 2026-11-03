@@ -13,7 +13,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 os.environ["FETCHCHAIN_STATE_DIR"] = tempfile.mkdtemp()   # 健康記録をテストの外に出さない
 os.environ["FETCHCHAIN_ENV"] = "gha"
-for _k in ("GROKBOT_WEBHOOK_URL", "GROKBOT_WEBHOOK_KEY", "GROKBOT_POLL_TIMEOUT", "GROKBOT_RESULTS_REF"):
+for _k in ("GROKBOT_WEBHOOK_URL", "GROKBOT_WEBHOOK_KEY", "SLACK_GROK_TOKEN",
+          "GROKBOT_SLACK_CHANNEL", "GROKBOT_POLL_TIMEOUT", "GROKBOT_RESULTS_REF"):
     os.environ.pop(_k, None)   # 秘密があると fetch_x が x_grokbot を先に試す。既存テストは未設定のまま
 
 import fetch_content  # noqa: E402
@@ -47,7 +48,8 @@ def chain_http(table):
 
 class FallbackTest(unittest.TestCase):
     def setUp(self):
-        for k in ("GROKBOT_WEBHOOK_URL", "GROKBOT_WEBHOOK_KEY", "GROKBOT_POLL_TIMEOUT", "GROKBOT_RESULTS_REF"):
+        for k in ("GROKBOT_WEBHOOK_URL", "GROKBOT_WEBHOOK_KEY", "SLACK_GROK_TOKEN",
+                  "GROKBOT_SLACK_CHANNEL", "GROKBOT_POLL_TIMEOUT", "GROKBOT_RESULTS_REF"):
             os.environ.pop(k, None)
 
     def run_x(self, synd, chain_table):
@@ -154,7 +156,13 @@ class FallbackTest(unittest.TestCase):
     def _enable_grok(self):
         os.environ["GROKBOT_WEBHOOK_URL"] = "https://hook.example/h"
         os.environ["GROKBOT_WEBHOOK_KEY"] = "k"
+        os.environ["SLACK_GROK_TOKEN"] = "xoxb-k"
+        os.environ["GROKBOT_SLACK_CHANNEL"] = "C0CHAN"
         os.environ["GROKBOT_POLL_TIMEOUT"] = "90"
+
+    def _history(self, rid, payload):
+        text = "grok:%s\n```json\n%s\n```" % (rid, json.dumps(payload))
+        return 200, json.dumps({"ok": True, "messages": [{"text": text}]})
 
     def _clock(self):
         clock = [1_700_000_000.0]
@@ -186,16 +194,20 @@ class FallbackTest(unittest.TestCase):
             posted["headers"] = dict(headers)
             return 202
 
-        def get(url, timeout=15, max_bytes=2_000_000):
+        def get(url, timeout=15, max_bytes=2_000_000, headers=None):
             rid = posted["body"]["id"]
-            self.assertIn("/grok-results/data/grok-results/%s.json" % rid, url)
-            return 200, json.dumps({
+            self.assertIn("https://slack.com/api/conversations.history?", url)
+            q = fc.urllib.parse.parse_qs(fc.urllib.parse.urlparse(url).query)
+            self.assertEqual(q["channel"], ["C0CHAN"])
+            self.assertEqual(q["limit"], ["50"])
+            self.assertEqual(headers["Authorization"], "Bearer xoxb-k")
+            return self._history(rid, {
                 "id": rid, "url": URL, "text": "grok の本文 https://t.co/abc", "author": "h",
                 "date": "2026-10-01T03:04:05.000Z",
                 "media": [
-                    {"type": "photo", "url": "https://pbs.twimg.com/media/p1.jpg"},
+                    {"type": "photo", "url": "&lt;https://pbs.twimg.com/media/p1.jpg&gt;"},
                     {"type": "image", "url": "https://pbs.twimg.com/media/p2.jpg"},
-                    {"type": "video", "url": "https://video.twimg.com/a.mp4"},
+                    {"type": "video", "url": "&lt;https://video.twimg.com/a.mp4|v&gt;"},
                     {"type": "gif", "url": "https://video.twimg.com/b.mp4"},
                     {"type": "photo", "url": ""},
                     "nope",
@@ -253,9 +265,9 @@ class FallbackTest(unittest.TestCase):
             posts.append(body["id"])
             return 202
 
-        def get(url, timeout=15, max_bytes=2_000_000):
-            if "raw.githubusercontent.com" in url:
-                return 200, json.dumps({"id": "other", "error": "nope", "text": "bad"})
+        def get(url, timeout=15, max_bytes=2_000_000, headers=None):
+            if "slack.com/api/conversations.history" in url:
+                return self._history(posts[-1], {"id": "other", "error": "nope", "text": "bad"})
             if "api.fxtwitter.com" in url:
                 return 200, json.dumps(FX)
             return None, ""

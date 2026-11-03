@@ -10,8 +10,9 @@
   - canary は「入っているか」でなく「見本を実際に取って、期待する文字が出るか」を見る
   - 直近3回続けて失敗した手段は、取得時に自動で最後尾へ回す（health.jsonl の記録から）
   - 手段は plugins/*.json の「宣言」でも足せる（コードを含まない窓口型のみ。試用中は最後尾・標準手段は上書き不可）
-  - x_grokbot は GROKBOT_WEBHOOK_URL と GROKBOT_WEBHOOK_KEY が両方あるときだけ順に入る。
-    片方でも無ければ sources.json に書いてあっても試さない（Unavailable として試行に残さない）
+  - x_grokbot は GROKBOT_WEBHOOK_URL、GROKBOT_WEBHOOK_KEY、SLACK_GROK_TOKEN、
+    GROKBOT_SLACK_CHANNEL が全部あるときだけ順に入る。
+    一つでも無ければ sources.json に書いてあっても試さない（Unavailable として試行に残さない）
   - 他人のプログラムを入れる場合は、先に vet.py の検査を通す（自動で探して足す部分は未実装）
 """
 import sys, os, re, json, time, html, string, ipaddress, socket, pathlib, datetime, shutil, subprocess, tempfile
@@ -77,10 +78,13 @@ class _Redirect(urllib.request.HTTPRedirectHandler):
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
-def http_get(url, timeout=15, max_bytes=2_000_000):
-    """(status, text) を返す。通信失敗は (None, "")。"""
+def http_get(url, timeout=15, max_bytes=2_000_000, headers=None):
+    """(status, text) を返す。通信失敗は (None, "")。headers は UA に足す。"""
     _check_public(url)
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "en-US,en;q=0.9"})
+    hdrs = {"User-Agent": UA, "Accept-Language": "en-US,en;q=0.9"}
+    if headers:
+        hdrs.update(headers)
+    req = urllib.request.Request(url, headers=hdrs)
     opener = urllib.request.build_opener(_Redirect)
     try:
         with opener.open(req, timeout=timeout) as r:
@@ -117,22 +121,20 @@ def _strip_html(raw):
 
 
 # ---------- 取得手段（どれも {text,title,author,date} を返す） ----------
-# x_grokbot: 外部ボットに依頼し、ボットが公開ブランチへ置いた結果ファイルを待つ。
+# x_grokbot: webhook に依頼し、非公開 Slack チャンネルの conversations.history から結果を待つ。
 # 秘密が無いときは ordered_methods / canary が順から外す。ここを直接呼んだときだけ Unavailable。
-_GROK_RESULTS_REPO = "katut-brain/katut-brain.github.io"
-_GROK_RESULTS_DIR = "data/grok-results"
-_GROK_POLL_EVERY = 10
-_GROK_REF_RE = re.compile(r"^[A-Za-z0-9._-]{1,80}$")
+_GROK_POLL_EVERY = 5
 _GROK_ID_RE = re.compile(r"^[A-Za-z0-9-]+$")
+_SLACK_HISTORY = "https://slack.com/api/conversations.history"
+_GROK_ENV_KEYS = ("GROKBOT_WEBHOOK_URL", "GROKBOT_WEBHOOK_KEY", "SLACK_GROK_TOKEN", "GROKBOT_SLACK_CHANNEL")
 
 
 def _grokbot_configured():
-    """URL と鍵が両方、制御文字なしで入っているときだけ真。空文字・片方だけでは偽。"""
-    url = (os.environ.get("GROKBOT_WEBHOOK_URL") or "").strip()
-    key = (os.environ.get("GROKBOT_WEBHOOK_KEY") or "").strip()
-    if not url or not key:
+    """webhook の URL と鍵、Slack のトークンとチャンネルが全部、制御文字なしで入っているときだけ真。"""
+    vals = [(os.environ.get(k) or "").strip() for k in _GROK_ENV_KEYS]
+    if not all(vals):
         return False
-    if re.search(r"[\r\n\x00]", url) or re.search(r"[\r\n\x00]", key):
+    if any(re.search(r"[\r\n\x00]", v) for v in vals):
         return False
     return True
 
@@ -142,13 +144,6 @@ def _grok_poll_timeout():
         return max(0, int(os.environ.get("GROKBOT_POLL_TIMEOUT", "90")))
     except (TypeError, ValueError):
         return 90
-
-
-def _grok_results_ref():
-    ref = (os.environ.get("GROKBOT_RESULTS_REF") or "grok-results").strip()
-    if not _GROK_REF_RE.match(ref):
-        raise FetchError("GROKBOT_RESULTS_REF が不正")
-    return ref
 
 
 def _http_post_json(url, body, headers, timeout=15):
@@ -167,46 +162,117 @@ def _http_post_json(url, body, headers, timeout=15):
         return None
 
 
+def _has_grok_marker(text, rid):
+    """本文にマーカー grok:<id> がある。id の途中や、別の語の末尾には一致させない。"""
+    needle = "grok:" + rid
+    for m in re.finditer(re.escape(needle), text):
+        i, end = m.start(), m.end()
+        if i > 0 and text[i - 1].isalnum():
+            continue
+        if end < len(text) and text[end] in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-":
+            continue
+        return True
+    return False
+
+
+def _unescape_slack(text):
+    """Slack が本文に入れる &lt; &gt; &amp; を一回だけ戻す。"""
+    return text.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
+
+
+def _strip_slack_links(text):
+    """<url|label> と <url> の包みを外し、url を残す（JSON を読む前）。"""
+    return re.sub(r"<(https?://[^|>]+)(?:\|[^>]*)?>", r"\1", text)
+
+
+def _first_code_block(text):
+    m = re.search(r"```[^\n`]*\r?\n(.*?)```", text, re.S)
+    if not m:
+        m = re.search(r"```(.*?)```", text, re.S)
+    if not m:
+        raise FetchError("結果のコードブロックが無い")
+    return m.group(1).strip()
+
+
+def _grok_result(d, rid):
+    if not isinstance(d, dict) or d.get("id") != rid:
+        raise FetchError("結果が不正: id 不一致")
+    if d.get("error"):
+        err = d.get("error")
+        raise FetchError("結果が不正: %s" % (err if isinstance(err, str) else "error")[:80])
+    text = d.get("text", "") or ""
+    if not isinstance(text, str):
+        raise FetchError("結果の本文が文字列でない")
+    author = d.get("author", "") or ""
+    date = d.get("date", "") or ""
+    return {"text": text, "title": text[:80],
+            "author": author if isinstance(author, str) else "",
+            "date": date if isinstance(date, str) else "", "raw": d}
+
+
+def _parse_grok_message(text, rid):
+    plain = _strip_slack_links(_unescape_slack(_first_code_block(text)))
+    try:
+        d = json.loads(plain)
+    except ValueError:
+        raise FetchError("結果が JSON でない")
+    return _grok_result(d, rid)
+
+
+def _grok_from_history(code, txt, rid):
+    """履歴の応答から、この依頼の結果 dict を返す。まだ無ければ None。壊れた結果は FetchError。"""
+    if code != 200 or not (txt or "").strip():
+        return None
+    try:
+        body = json.loads(txt)
+    except ValueError:
+        return None
+    if not isinstance(body, dict) or body.get("ok") is not True:
+        return None
+    messages = body.get("messages")
+    if not isinstance(messages, list):
+        return None
+    for msg in messages:
+        if not isinstance(msg, dict):
+            continue
+        text = msg.get("text")
+        if not isinstance(text, str) or not _has_grok_marker(text, rid):
+            continue
+        return _parse_grok_message(text, rid)
+    return None
+
+
+def _slack_history_url(channel, oldest):
+    q = urllib.parse.urlencode({"channel": channel, "oldest": oldest, "limit": 50})
+    return _SLACK_HISTORY + "?" + q
+
+
 def x_grokbot(url):
     if not _grokbot_configured():
-        raise Unavailable("GROKBOT_WEBHOOK_URL / GROKBOT_WEBHOOK_KEY が未設定")
+        raise Unavailable("GROKBOT_WEBHOOK_URL / GROKBOT_WEBHOOK_KEY / SLACK_GROK_TOKEN / GROKBOT_SLACK_CHANNEL が未設定")
     hook = os.environ.get("GROKBOT_WEBHOOK_URL").strip()
     key = os.environ.get("GROKBOT_WEBHOOK_KEY").strip()
-    ref = _grok_results_ref()  # POST の前に見る。不正な参照先では依頼自体を出さない
+    token = os.environ.get("SLACK_GROK_TOKEN").strip()
+    channel = os.environ.get("GROKBOT_SLACK_CHANNEL").strip()
     tid = _tweet_id(url)
-    rid = "%s-%d" % (tid, int(time.time()))
+    posted_at = time.time()
+    rid = "%s-%d" % (tid, int(posted_at))
     if not _GROK_ID_RE.match(rid):
         raise FetchError("依頼IDに使えない文字がある")
     st = _http_post_json(hook, {"id": rid, "url": url, "query": "x_post_fetch"},
                          {"Authorization": "Bearer " + key, "X-Webhook-Key": key})
     if st not in (200, 201, 202):
         raise FetchError("webhook HTTP %s" % st)
-    raw_url = "https://raw.githubusercontent.com/%s/%s/%s/%s.json" % (
-        _GROK_RESULTS_REPO, ref, _GROK_RESULTS_DIR, urllib.parse.quote(rid, safe="-"))
+    hist = _slack_history_url(channel, "%.6f" % (posted_at - 5))
     timeout = _grok_poll_timeout()
     end = time.time() + timeout
     while time.time() < end:
         time.sleep(_GROK_POLL_EVERY)
-        code, txt = http_get(raw_url + "?t=%d" % int(time.time()), timeout=10)  # raw の CDN キャッシュ避け
-        if code == 200 and txt.strip():
-            try:
-                d = json.loads(txt)
-            except ValueError:
-                raise FetchError("結果ファイルが JSON でない")
-            if not isinstance(d, dict) or d.get("id") != rid:
-                raise FetchError("結果が不正: id 不一致")
-            if d.get("error"):
-                err = d.get("error")
-                raise FetchError("結果が不正: %s" % (err if isinstance(err, str) else "error")[:80])
-            text = d.get("text", "") or ""
-            if not isinstance(text, str):
-                raise FetchError("結果の本文が文字列でない")
-            author = d.get("author", "") or ""
-            date = d.get("date", "") or ""
-            return {"text": text, "title": text[:80],
-                    "author": author if isinstance(author, str) else "",
-                    "date": date if isinstance(date, str) else "", "raw": d}
-    raise FetchError("結果ファイルが %d 秒で来ない" % timeout)  # → 次の手段 (fxtwitter…)
+        code, txt = http_get(hist, timeout=10, headers={"Authorization": "Bearer " + token})
+        found = _grok_from_history(code, txt, rid)
+        if found is not None:
+            return found
+    raise FetchError("Slack の結果が %d 秒で来ない" % timeout)  # → 次の手段 (fxtwitter…)
 
 
 def x_fxtwitter(url):
@@ -575,7 +641,7 @@ def usable_here(channel_cfg, method):
 
 def ordered_methods(channel_cfg):
     """この場所で使う手段だけを登録順に並べ、直近 DEMOTE_AFTER 回すべて失敗した手段だけ最後尾へ。
-    x_grokbot は秘密が両方あるときだけ。無いときは一覧から外す（試行にも残さない）。"""
+    x_grokbot は四つの秘密が全部あるときだけ。無いときは一覧から外す（試行にも残さない）。"""
     ok, demoted = [], []
     for m in channel_cfg["methods"]:
         if m == "x_grokbot" and not _grokbot_configured():
