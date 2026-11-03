@@ -79,7 +79,7 @@ footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
 <div class="wrap">
 <a class="back" href="../index.html">← 戻る</a>
 <h1>2026-11-02 の振り返り</h1>
-<div class="meta">Grok Botを「自宅PCの司令塔」にする構成談義が主役の10件（AI 9件・建築/デザインテック 1件）</div>
+<div class="meta">Grok Botを「自宅PCの司令塔」にする構成談義が主役の10件（AI 9件・建築/デザインテック 1件）・Grok Botを「秘書」に・常駐MacのClaude Code/Codexを「部下」にする構成を8件連続で保存（8件）</div>
 
 <section class="summary">
 <h2>まとめ</h2>
@@ -91,6 +91,8 @@ footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
 <li><b>図にする道具</b>：stack-diagramとTreformは、文章から構成図・3Dモデルを起こす点で同じ系統</li>
 </ul>
 <div class="q"><b>次に考える問い：</b>自宅PCの出口IPとログイン状態をエージェントに貸すとき、どこまでを許可の範囲として言語化できるか？</div>
+<p>追記 11/03 12:51 JST: 今回の保存8件のうち7件は同じ問いに収束している。「AIに何ができるか」ではなく「どのAIを窓口にし、実作業をどこで走らせるか」という分業設計だ。Grok Botを指示役の秘書にしてスマホから頼み、実作業は自宅の常駐MacにいるClaude CodeとCodexに任せる構成が、複数の発信者から相次いで紹介されている。</p>
+<p>追記 11/03 12:51 JST: もう一つの流れはモデル側の分業で、Claude Codeの<code>--advisor opus</code>のように、実行役と助言役を分けてトークンを抑える発想も同じ「役割分担」の系譜にある。今日活性化したのは「作りたい」より「仕組みを知る・整理して紹介したい」軸で、図解を読み解く保存が中心だった。この関心は今回の保存全体に一貫している。</p>
 </section>
 
 <h2>🔎 深掘り（関連記事）</h2>
@@ -98,6 +100,7 @@ footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
 <div class="ntag">Grok Botは「クラウド常駐」か「自宅PC操作」か</div>
 <ul class="ilist">
 <li><a href="https://macrumors.com/2026/08/11/grok-bot-macos-ios" target="_blank" rel="noopener"><b>Grok Bot Brings Always-On AI Agents to macOS and iOS - MacRumors</b></a> <span>→ 記事ではGrok Botはクラウド上で作業を続け、ノートPCを閉じても動くと説明されており、ローカルPCの直接操作には触れていない。保存された投稿の「自宅PC常駐」構成は、公式機能というより利用者がTailscaleやアプリで橋渡ししている使い方だと読める。</span></li>
+<li><a href="https://claudelog.com/faqs/what-is-advisor-in-claude-code/" target="_blank" rel="noopener"><b>What is the Advisor Tool in Claude Code</b></a> <span>→ advisorは実行役が行き詰まった時や完了前に、より強いモデルへ相談する仕組み。<code>/advisor opus</code>または<code>claude --advisor opus</code>で有効化でき、呼ぶ頻度はClaude任せで上限を決められない点、呼び出しが課金・利用枠に乗る点が注意。</span></li>
 </ul>
 </section>
 
@@ -179,7 +182,68 @@ footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
 </div>
 </div>
 
-<footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-11-02 run_id=8f51702f saves=10 step1_s=21 step2_s=15 step2_5_s=1 step3_s=6 step4_s=256 step4_5_s=58 step5_s=0 step7_s=5 total_s=362 -->
+<footer>毎朝の同期で自動生成 ｜ katut-brain
+<h2>➕ 追記（11/03 12:51 JST）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/showheyohtaki/status/2117086292022309161?a=QdEL1-u87xIdvWpd5Eo&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2117086292022309161" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">スマホからGrok Bot1行でClaude Code・Codexが分担作業</div><div class="vdesc">Grok Botを指示役のAI秘書、性能はClaude Opus 5.5が上という前提で、スマホ→Grok Bot→Reason Network経由でClaude Code・Codexへ。動画ではLP見出し案の作成、議事録づくりを複数AIが分担しNotionにまとめる流れが映る。</div><div class="vsaved">保存 11/3 12:12</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/showheyohtaki/status/2117086292022309161?a=QdEL1-u87xIdvWpd5Eo&amp;s=12" data-title="スマホからGrok Bot1行でClaude Code・Codexが分担作業" data-rid="1911644277">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/tetumemo/status/2117172370515648882?a=dLvngGF1xEKeKWOPlSo&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/media/HWG1DRubMAAw5xD?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Grok Botを常駐Macに繋ぎOrca経由でCodexを回す構成</div><div class="vdesc">kazukiさんの組み立てをテツメモが紹介。常駐MacへGrok Bot接続、Orca経由でCodex、用途ごとに専用ボットを振る、の4点を図解したインフォグラフィック。</div><div class="vsaved">保存 11/3 12:13</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/tetumemo/status/2117172370515648882?a=dLvngGF1xEKeKWOPlSo&amp;s=12" data-title="Grok Botを常駐Macに繋ぎOrca経由でCodexを回す構成" data-rid="1911644385">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/miyatti/status/2117157231947137494?a=WSfxrnJW8k3YaKSI7_s&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/media/HWGl1ejagAAtNWD?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Grok Bot・Muse・Dotsの秘書3役とClaude Code/Codexの図解</div><div class="vdesc">Grok Botを第一秘書、Museを第二秘書、Dotsを補欠とし、その先の常駐MacにClaude CodeとCodexが控える構成。秘書は複数でも部下と台帳は共通、という整理が核心。</div><div class="vsaved">保存 11/3 12:14</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/miyatti/status/2117157231947137494?a=WSfxrnJW8k3YaKSI7_s&amp;s=12" data-title="Grok Bot・Muse・Dotsの秘書3役とClaude Code/Codexの図解" data-rid="1911644587">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/tetumemo/status/2116859050185126110?a=9TFzRqZrZKFaTuoySVw&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/media/HWCYFqVa4AA9Yf_?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">「Claude Codeで全部できるならGrok Botの良さは？」への答え</div><div class="vdesc">普段はClaude Codeで作業→GitHubにバックアップ→外出先ではGrok Botの仮想PC内のClaude Codeで続行、の3ステップ。「常駐のMac miniはいらない」と結論する図解。</div><div class="vsaved">保存 11/3 12:16</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/tetumemo/status/2116859050185126110?a=9TFzRqZrZKFaTuoySVw&amp;s=12" data-title="「Claude Codeで全部できるならGrok Botの良さは？」への答え" data-rid="1911645331">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/tetumemo/status/2117451770125488518?a=EAY6VPyGi4CSeTEZxsY&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/card_img/2115515268223184896/fNk4d6OR?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">ChatGPT・Claude・Grok Botから呼べる自分専用Skills基盤</div><div class="vdesc">Codex枠を消費しないChatGPTから、Cloudflare無料枠で作ったMCPの「受付」経由でSkillsを呼ぶ手法。Grok Botやdotsからも呼べ、構築キットを配布するという週刊記事の紹介。</div><div class="vsaved">保存 11/3 12:17</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/tetumemo/status/2117451770125488518?a=EAY6VPyGi4CSeTEZxsY&amp;s=12" data-title="ChatGPT・Claude・Grok Botから呼べる自分専用Skills基盤" data-rid="1911647367">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/peter_0123/status/2117102188644450432?a=ppqrHr5hxHEmpWzggiQ&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/media/HWF1OChaYAAuE-N?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">自宅Desktop常時起動のGrok Botでスマホ開発</div><div class="vdesc">スマホ側と自宅側のGrok Botを連携させ、CEO Bot・開発Bot・見張り番Botの役割分担でClaude Code/Codexを動かす図解。承認が要るのはお金・送信・削除だけ。</div><div class="vsaved">保存 11/3 12:26</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/peter_0123/status/2117102188644450432?a=ppqrHr5hxHEmpWzggiQ&amp;s=12" data-title="自宅Desktop常時起動のGrok Botでスマホ開発" data-rid="1911662658">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/angeldot_/status/2117231967905141038?a=-EYMQMQpaIwwCwDy07k&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2117231967905141038" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Claude Codeで複数モデルを使い分ける「advisor」起動法</div><div class="vdesc">claude --advisor opus で起動し、Sonnet・Haiku・Opusを得意分野ごとに併用して出力を良くしトークンを減らすというAnthropic発のTipsをスペイン語で紹介（動画はClaude Codeの管理画面で各エージェントがコマンドを実行する様子）。</div><div class="vsaved">保存 11/3 12:10</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/angeldot_/status/2117231967905141038?a=-EYMQMQpaIwwCwDy07k&amp;s=12" data-title="Claude Codeで複数モデルを使い分ける「advisor」起動法" data-rid="1911642793">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/fukku_ai_bd/status/2117164821229474072?a=8paLAOvaoD4S2KB0wKs&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Ffukku_ai_bd%2Fstatus%2F2117164821229474072%3Fa%3D8paLAOvaoD4S2KB0wKs%26s%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">スクショ1枚をClaude Codeに読ませて再現できる時代</div><div class="vdesc">スクリーンショット1つをClaude Codeに読み込ませればその見た目を再現できてしまう、という感嘆の投稿。投稿本文のみ取得でき、添付画像の中身は未確認。</div><div class="vsaved">保存 11/3 12:10</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/fukku_ai_bd/status/2117164821229474072?a=8paLAOvaoD4S2KB0wKs&amp;s=12" data-title="スクショ1枚をClaude Codeに読ませて再現できる時代" data-rid="1911643094">💬 AIと話す</button>
+</div>
+</div>
+
+<!-- run-timing schema=v2 status=complete target=2026-11-02 run_id=27a0750e saves=8 step1_s=19 step2_s=13 step2_5_s=2 step3_s=2 step4_s=152 step4_5_s=45 step5_s=3 step7_s=2 total_s=238 -->
 </footer>
 </div>
 <script>
