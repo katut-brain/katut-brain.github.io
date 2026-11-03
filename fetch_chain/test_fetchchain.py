@@ -37,6 +37,17 @@ def tearDownModule():
 os.environ["FETCHCHAIN_ENV"] = "pc"   # 実行場所の自動判定に左右されない
 fc._ytdlp = lambda: None              # 本物の yt-dlp を呼ばない（外の世界に出ない）
 
+_GROK_ENV = ("GROKBOT_WEBHOOK_URL", "GROKBOT_WEBHOOK_KEY", "GROKBOT_POLL_TIMEOUT", "GROKBOT_RESULTS_REF")
+
+
+def _clear_grokbot_env():
+    """秘密が外から入っていても、既存テストは「未設定」の並びのままにする。"""
+    for k in _GROK_ENV:
+        os.environ.pop(k, None)
+
+
+_clear_grokbot_env()
+
 TWEET = {"tweet": {"text": "hello from fxtwitter", "author": {"screen_name": "u"}, "created_at": "d"}}
 SYND = {"text": "hello from syndication", "user": {"screen_name": "u"}, "created_at": "d"}
 URL = "https://x.com/u/status/123456789"
@@ -54,11 +65,13 @@ def fake_http(table):
 
 class ChainTest(unittest.TestCase):
     def setUp(self):
+        _clear_grokbot_env()
         self.tmp = pathlib.Path(tempfile.mkdtemp())
         self._orig = (fc.HEALTH, fc.STATUS, fc.http_get)
         fc.HEALTH, fc.STATUS = self.tmp / "health.jsonl", self.tmp / "status.json"
 
     def tearDown(self):
+        _clear_grokbot_env()
         fc.HEALTH, fc.STATUS, fc.http_get = self._orig
 
     def test_primary_ok(self):
@@ -207,6 +220,7 @@ class PluginTest(unittest.TestCase):
     """自動で足される手段は「宣言だけ」。他人のコードは動かず、標準の手段を上書きできず、壊れた仕様は黙って無視しない。"""
 
     def setUp(self):
+        _clear_grokbot_env()
         self.tmp = pathlib.Path(tempfile.mkdtemp())
         (self.tmp / "plugins").mkdir()
         self._orig = (fc.HEALTH, fc.STATUS, fc.PLUGINS, fc.http_get)
@@ -386,11 +400,13 @@ class YtDlpTest(unittest.TestCase):
 
 class SafetyTest(unittest.TestCase):
     def setUp(self):
+        _clear_grokbot_env()
         self.tmp = pathlib.Path(tempfile.mkdtemp())
         self._orig = (fc.HEALTH, fc.STATUS, fc.http_get)
         fc.HEALTH, fc.STATUS = self.tmp / "health.jsonl", self.tmp / "status.json"
 
     def tearDown(self):
+        _clear_grokbot_env()
         fc.HEALTH, fc.STATUS, fc.http_get = self._orig
 
     def test_internal_url_never_reaches_a_relay(self):
@@ -479,6 +495,307 @@ class SafetyTest(unittest.TestCase):
         for bad in ("http://127.0.0.1/", "http://localhost/", "file:///etc/passwd", "http://169.254.169.254/"):
             with self.assertRaises(fc.FetchError, msg=bad):
                 fc._check_public(bad)
+
+
+class GrokbotTest(unittest.TestCase):
+    """x_grokbot。通信は偽物。秘密が無いときは順から外し、あるときは webhook と結果ファイルだけを見る。"""
+
+    def setUp(self):
+        _clear_grokbot_env()
+        self.tmp = pathlib.Path(tempfile.mkdtemp())
+        self._orig = (fc.HEALTH, fc.STATUS, fc.http_get)
+        fc.HEALTH, fc.STATUS = self.tmp / "health.jsonl", self.tmp / "status.json"
+        self._time, self._sleep = fc.time.time, fc.time.sleep
+        self._post = fc._http_post_json
+        self.clock = [1_700_000_000.0]
+        self.slept = []
+
+        def now():
+            return self.clock[0]
+
+        def sleep(sec):
+            self.slept.append(sec)
+            self.clock[0] += sec
+
+        fc.time.time = now
+        fc.time.sleep = sleep
+
+    def tearDown(self):
+        fc.time.time, fc.time.sleep = self._time, self._sleep
+        fc._http_post_json = self._post
+        _clear_grokbot_env()
+        fc.HEALTH, fc.STATUS, fc.http_get = self._orig
+
+    def _enable(self, url="https://hook.example/in", key="test-key"):
+        os.environ["GROKBOT_WEBHOOK_URL"] = url
+        os.environ["GROKBOT_WEBHOOK_KEY"] = key
+
+    def _result_get(self, payload_for):
+        """結果ファイルの URL だけ payload_for(id) を返し、fxtwitter は TWEET。"""
+        def get(url, timeout=15, max_bytes=2_000_000):
+            if "raw.githubusercontent.com" in url:
+                rid = url.split("/data/grok-results/")[1].split(".json")[0]
+                return payload_for(rid, url)
+            if "api.fxtwitter.com" in url:
+                return 200, json.dumps(TWEET)
+            return None, ""
+        return get
+
+    def test_unset_secrets_leave_it_out_of_the_order(self):
+        raw = json.loads(fc.REGISTRY.read_text(encoding="utf-8"))["channels"]["x_post"]["methods"]
+        self.assertEqual(raw[0], "x_grokbot")
+        cfg = fc.load_registry()["x_post"]
+        self.assertEqual(fc.ordered_methods(cfg)[0], "x_fxtwitter")
+        self.assertNotIn("x_grokbot", fc.ordered_methods(cfg))
+        fc.http_get = fake_http({"api.fxtwitter.com": (200, json.dumps(TWEET))})
+        out = fc.fetch(URL)
+        self.assertEqual(out["method"], "x_fxtwitter")
+        self.assertNotIn("x_grokbot", [t["method"] for t in out["tried"]])
+        with self.assertRaises(fc.Unavailable):
+            fc.x_grokbot(URL)
+        names = [m["method"] for m in fc.canary()["channels"]["x_post"]["methods"]]
+        self.assertNotIn("x_grokbot", names)
+        self.assertEqual(names[0], "x_fxtwitter")
+
+    def test_blank_or_partial_secrets_are_the_same_as_unset(self):
+        cfg = fc.load_registry()["x_post"]
+        os.environ["GROKBOT_WEBHOOK_URL"] = "https://hook.example/in"
+        self.assertNotIn("x_grokbot", fc.ordered_methods(cfg))
+        os.environ["GROKBOT_WEBHOOK_KEY"] = "  "
+        self.assertNotIn("x_grokbot", fc.ordered_methods(cfg))
+        os.environ["GROKBOT_WEBHOOK_KEY"] = "a\nb"
+        self.assertNotIn("x_grokbot", fc.ordered_methods(cfg))
+
+    def test_webhook_500_is_fetch_error_and_does_not_poll(self):
+        self._enable(key="supersecretkey")
+        polls = []
+        fc._http_post_json = lambda url, body, headers, timeout=15: 500
+
+        def get(url, timeout=15, max_bytes=2_000_000):
+            if "raw.githubusercontent.com" in url:
+                polls.append(url)
+            return fake_http({"api.fxtwitter.com": (200, json.dumps(TWEET))})(url)
+        fc.http_get = get
+        out = fc.fetch(URL)
+        self.assertEqual(out["method"], "x_fxtwitter")
+        self.assertEqual(out["tried"][0]["method"], "x_grokbot")
+        self.assertFalse(out["tried"][0]["ok"])
+        self.assertNotIn("unavailable", out["tried"][0])
+        self.assertIn("500", out["tried"][0]["error"])
+        self.assertEqual(polls, [])
+        self.assertEqual(self.slept, [])
+        self.assertNotIn("supersecretkey", fc.HEALTH.read_text(encoding="utf-8"))
+
+    def test_timeout_zero_does_not_poll(self):
+        self._enable()
+        os.environ["GROKBOT_POLL_TIMEOUT"] = "0"
+        fc._http_post_json = lambda url, body, headers, timeout=15: 202
+        seen = []
+
+        def get(url, timeout=15, max_bytes=2_000_000):
+            seen.append(url)
+            return 200, json.dumps(TWEET)
+        fc.http_get = get
+        out = fc.fetch(URL)
+        self.assertEqual(out["method"], "x_fxtwitter")
+        self.assertTrue(any("結果ファイルが 0 秒" in t["error"] for t in out["tried"] if t["method"] == "x_grokbot"))
+        self.assertFalse(any("raw.githubusercontent.com" in u for u in seen))
+        self.assertEqual(self.slept, [])
+
+    def test_timeout_stops_and_falls_back(self):
+        self._enable()
+        os.environ["GROKBOT_POLL_TIMEOUT"] = "25"
+        fc._http_post_json = lambda url, body, headers, timeout=15: 202
+        polls = []
+
+        def get(url, timeout=15, max_bytes=2_000_000):
+            if "raw.githubusercontent.com" in url:
+                polls.append(url)
+                return 404, ""
+            if "api.fxtwitter.com" in url:
+                return 200, json.dumps(TWEET)
+            return None, ""
+        fc.http_get = get
+        out = fc.fetch(URL)
+        self.assertEqual(out["method"], "x_fxtwitter")
+        self.assertIn("25 秒", out["tried"][0]["error"])
+        self.assertEqual(self.slept, [10, 10, 10])
+        self.assertEqual(len(polls), 3)
+
+    def test_rejects_mismatched_id_error_and_bad_json(self):
+        self._enable()
+        cases = [
+            (lambda rid: (200, json.dumps({"id": "other", "text": "wrong tweet"}))),
+            (lambda rid: (200, json.dumps({"id": rid, "error": "no such tweet", "text": "nope"}))),
+            (lambda rid: (200, "<html>not json</html>")),
+            (lambda rid: (200, "[1, 2]")),
+        ]
+        for payload in cases:
+            self.slept[:] = []
+            if fc.HEALTH.exists():
+                fc.HEALTH.unlink()  # 3回失敗で最後尾へ回ると、次のケースの先頭が fxtwitter になる
+            fc._http_post_json = lambda url, body, headers, timeout=15: 202
+            fc.http_get = self._result_get(lambda rid, url, payload=payload: payload(rid))
+            out = fc.fetch(URL)
+            self.assertEqual(out["method"], "x_fxtwitter", payload)
+            self.assertFalse(out["tried"][0]["ok"])
+            self.assertEqual(out["tried"][0]["method"], "x_grokbot")
+            self.assertNotIn("wrong tweet", json.dumps(out))
+            self.assertNotIn("nope", json.dumps(out))
+            self.assertEqual(self.slept, [10])  # 不正な結果は待たずに次へ
+
+    def test_success_posts_once_and_returns_the_file(self):
+        self._enable()
+        os.environ["GROKBOT_RESULTS_REF"] = "grok-results"
+        posted = {}
+
+        def post(url, body, headers, timeout=15):
+            posted["url"] = url
+            posted["body"] = body
+            posted["headers"] = headers
+            return 202
+
+        def payload(rid, url):
+            self.assertIn(
+                "https://raw.githubusercontent.com/katut-brain/katut-brain.github.io/grok-results/data/grok-results/%s.json?" % rid,
+                url)
+            self.assertRegex(rid, r"^123456789-\d+$")
+            return 200, json.dumps({"id": rid, "url": URL, "text": "from grok", "author": "alice",
+                                    "date": "2026-10-01",
+                                    "media": [{"type": "photo", "url": "https://pbs.twimg.com/a.jpg"}]})
+        fc._http_post_json = post
+        fc.http_get = self._result_get(payload)
+        out = fc.fetch(URL)
+        self.assertEqual(out["method"], "x_grokbot")
+        self.assertEqual(out["tried"], [{"method": "x_grokbot", "ok": True}])
+        self.assertEqual(out["data"]["text"], "from grok")
+        self.assertEqual(out["data"]["author"], "alice")
+        self.assertEqual(out["data"]["raw"]["media"][0]["type"], "photo")
+        self.assertEqual(posted["url"], "https://hook.example/in")
+        self.assertEqual(posted["body"]["query"], "x_post_fetch")
+        self.assertEqual(posted["body"]["url"], URL)
+        self.assertRegex(posted["body"]["id"], r"^[A-Za-z0-9-]+$")
+        self.assertEqual(posted["headers"]["Authorization"], "Bearer test-key")
+        self.assertEqual(posted["headers"]["X-Webhook-Key"], "test-key")
+        self.assertEqual(self.slept, [10])
+
+    def test_custom_results_ref_is_in_the_poll_url(self):
+        self._enable()
+        os.environ["GROKBOT_RESULTS_REF"] = "my-results"
+        fc._http_post_json = lambda url, body, headers, timeout=15: 202
+        seen = []
+
+        def payload(rid, url):
+            seen.append(url)
+            return 200, json.dumps({"id": rid, "text": "ok"})
+        fc.http_get = self._result_get(payload)
+        self.assertEqual(fc.x_grokbot(URL)["text"], "ok")
+        self.assertIn("/my-results/data/grok-results/", seen[0])
+
+    def test_bad_results_ref_does_not_post(self):
+        self._enable()
+        os.environ["GROKBOT_RESULTS_REF"] = "../secrets"
+        posts = []
+        fc._http_post_json = lambda *a, **k: posts.append(1) or 202
+        with self.assertRaises(fc.FetchError):
+            fc.x_grokbot(URL)
+        self.assertEqual(posts, [])
+
+    def test_post_refuses_non_public_webhook_without_connecting(self):
+        self._enable(url="http://127.0.0.1/hook")
+        opened = []
+        orig = fc.urllib.request.build_opener
+        fc.urllib.request.build_opener = lambda *a: opened.append(a)
+        try:
+            with self.assertRaises(fc.FetchError):
+                fc.x_grokbot(URL)
+        finally:
+            fc.urllib.request.build_opener = orig
+        self.assertEqual(opened, [])
+        fc.http_get = fake_http({"api.fxtwitter.com": (200, json.dumps(TWEET))})
+        out = fc.fetch(URL)
+        self.assertIn("公開ホストでない", out["tried"][0]["error"])
+        self.assertEqual(out["method"], "x_fxtwitter")
+
+    def test_post_sends_both_headers_through_the_public_check(self):
+        self._enable(key="k")
+        captured = {}
+
+        class Resp:
+            status = 202
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
+
+        class Opener:
+            def open(self, req, timeout=None):
+                captured["req"] = req
+                captured["timeout"] = timeout
+                return Resp()
+
+        seen = []
+        orig = fc.urllib.request.build_opener
+
+        def build(*handlers):
+            seen.extend(handlers)
+            return Opener()
+
+        fc.urllib.request.build_opener = build
+        try:
+            def payload(rid, url):
+                body = json.loads(captured["req"].data.decode())
+                self.assertIn(body["id"], url)
+                return 200, json.dumps({"id": body["id"], "text": "hello", "author": "u", "date": "d",
+                                        "media": [{"type": "photo", "url": "https://pbs.twimg.com/media/a.jpg"}]})
+            fc.http_get = self._result_get(payload)
+            data = fc.x_grokbot(URL)
+        finally:
+            fc.urllib.request.build_opener = orig
+        req = captured["req"]
+        body = json.loads(req.data.decode())
+        self.assertEqual(body, {"id": body["id"], "url": URL, "query": "x_post_fetch"})
+        self.assertEqual(req.get_header("Authorization"), "Bearer k")
+        self.assertEqual(req.get_header("X-webhook-key"), "k")
+        self.assertEqual(req.get_header("Content-type"), "application/json")
+        self.assertEqual(req.get_header("User-agent"), fc.UA)
+        self.assertIs(seen[0], fc._Redirect)
+        self.assertEqual(captured["timeout"], 15)
+        self.assertEqual(data["text"], "hello")
+        self.assertEqual(data["raw"]["media"][0]["url"], "https://pbs.twimg.com/media/a.jpg")
+
+    def test_configured_grokbot_is_first_until_demoted(self):
+        self._enable()
+        cfg = fc.load_registry()["x_post"]
+        self.assertEqual(fc.ordered_methods(cfg)[0], "x_grokbot")
+        for _ in range(3):
+            fc.log_health("fetch", "x_post", "x_grokbot", False, 1, "x")
+        self.assertEqual(fc.ordered_methods(cfg)[0], "x_fxtwitter")
+        self.assertEqual(fc.ordered_methods(cfg)[-1], "x_grokbot")
+
+    def test_canary_calls_grokbot_once(self):
+        self._enable()
+        posts = []
+
+        def post(url, body, headers, timeout=15):
+            posts.append(body)
+            return 202
+
+        def get(url, timeout=15, max_bytes=2_000_000):
+            if "grok-results" in url and posts:
+                return 200, json.dumps({"id": posts[-1]["id"], "text": "just setting up my twttr",
+                                        "author": "jack", "date": "2006-03-21"})
+            return None, ""
+        fc._http_post_json = post
+        fc.http_get = get
+        rep = fc.canary()
+        self.assertEqual(len(posts), 1)
+        self.assertEqual(posts[0]["url"], "https://x.com/jack/status/20")
+        self.assertEqual(posts[0]["query"], "x_post_fetch")
+        methods = {m["method"]: m for m in rep["channels"]["x_post"]["methods"]}
+        self.assertTrue(methods["x_grokbot"]["ok"])
 
 
 if __name__ == "__main__":

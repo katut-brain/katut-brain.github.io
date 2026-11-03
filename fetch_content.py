@@ -2,7 +2,7 @@
 # fetch_content.py — 保存URL → 中身（タイトル/本文/投稿者/日付）を取る統一モジュール
 #
 # 設計（capture-pipeline 機能A）: ドメインで振り分ける1モジュール。
-#   x.com / twitter.com → syndication endpoint（無料・無認証）
+#   x.com / twitter.com → 秘密があるときは Grok Bot、無ければ syndication endpoint（無料・無認証）
 #   instagram.com       → og:meta を facebookexternalhit UA で取得（無料・無認証）
 #   それ以外（ニュース等）→ 汎用Webリーダー（og/meta + 本文テキスト抽出）
 # 依存は標準ライブラリのみ（urllib）＋オプション: youtube-transcript-api, google-genai
@@ -689,7 +689,7 @@ def _gemini_image_understanding(photo_urls, max_chars=4000, deadline=None):
         return "", _exception_reason(e)
 
 
-def _fetch_x_embedded_link_inner(expanded):
+def _fetch_x_embedded_link_inner(expanded, timeout=45):
     """_fetch_x_embedded_link() の実処理本体(タイムアウトガードの内側で動く)。"""
     host = _host_of(expanded)
     try:
@@ -706,7 +706,10 @@ def _fetch_x_embedded_link_inner(expanded):
             # 引用ツイート等。無限再帰防止のためfollow_links=Falseで1階層のみ辿る。
             # understand_video=False: 目的はテキスト本文の補完であり、動画Gemini理解
             # (最大100秒超)まで行うと外側45秒タイムアウトでテキストごと失われるため省略する。
-            r = fetch_x(expanded, follow_links=False, understand_video=False)
+            # 外側は timeout 秒で打ち切る。fetch_x の締切もそれに合わせ、最大90秒の
+            # x_grokbot 待ちを始めない（始まると引用本文ごと失われ、枠も使う）。
+            r = fetch_x(expanded, follow_links=False, understand_video=False,
+                        deadline=_now() + max(1, timeout - 5))
             label = "引用元投稿の内容"
         else:
             r = fetch_web(expanded)
@@ -737,7 +740,7 @@ def _fetch_x_embedded_link(expanded, timeout=45):
     result = {}
 
     def _run():
-        r = _fetch_x_embedded_link_inner(expanded)
+        r = _fetch_x_embedded_link_inner(expanded, timeout=timeout)
         if r:
             result["value"] = r
 
@@ -753,6 +756,7 @@ _X_VIDEO_HOSTS = ("twimg.com",)
 def _chain_tweet(url):
     """syndication が失敗した投稿を fetch-chain（fxtwitter → vxtwitter・名乗りは偽らない）で取り直し、
     syndication と同じ形の dict にそろえて返す。取れなければ (None, 試した手段の要約)。
+    x_grokbot は fetch_x が先に試し終えているので、ここではもう呼ばない（二重の待ちと枠の消費を避ける）。
     2026-10-30 追加（[[2026-10-30-sns-fetch-via-fetch-chain]]）。普段の経路（syndication で取れたとき）は通らない。"""
     try:
         return _chain_tweet_inner(url)
@@ -774,7 +778,7 @@ def _str(v):
 
 def _chain_tweet_inner(url):
     from fetch_chain import fetchchain as _fc
-    out = _fc.fetch(url, exclude=("x_syndication",))
+    out = _fc.fetch(url, exclude=("x_syndication", "x_grokbot"))
     tried = ",".join("%s:%s" % (t.get("method", "?"), "ok" if t.get("ok") else "x")
                      for t in out.get("tried", []) if isinstance(t, dict))
     if not out.get("ok"):
@@ -816,8 +820,60 @@ def _chain_tweet_inner(url):
             "created_at": "", "mediaDetails": []}, tried   # 日付の形が手段ごとに違うので、ここでは不明にする
 
 
-def fetch_x(url, follow_links=True, understand_video=True):
-    deadline = _new_deadline()   # 件全体の締切(440秒)。最初の取得・t.co展開・埋め込みリンクが使う
+def _grok_media_details(media):
+    """x_grokbot の media[{type,url}] を syndication の mediaDetails にそろえる。
+    写真は media_url_https、動画は fxtwitter / vxtwitter と同じく video_info.variants の mp4。"""
+    md = []
+    for item in media or []:
+        if not isinstance(item, dict):
+            continue
+        media_url = _str(item.get("url"))
+        if not media_url:
+            continue
+        kind = _str(item.get("type")).lower()
+        if kind in ("video", "gif", "animated_gif"):
+            md.append({"type": "video", "media_url_https": "",
+                       "video_info": {"variants": [{"content_type": "video/mp4", "bitrate": 0, "url": media_url}]}})
+        elif kind in ("photo", "image"):
+            md.append({"type": "photo", "media_url_https": media_url})
+    return md
+
+
+def _syndication_from_grok(data):
+    """x_grokbot の戻り値を、fetch_x が syndication に期待する dict にする。"""
+    raw = data.get("raw") if isinstance(data.get("raw"), dict) else {}
+    author = _str(data.get("author")) or _str(raw.get("author"))
+    created = _str(data.get("date")) or _str(raw.get("date"))
+    text = _str(data.get("text"))
+    if not text.strip():
+        return None
+    return {"text": text, "user": {"name": author, "screen_name": author},
+            "created_at": created, "mediaDetails": _grok_media_details(raw.get("media"))}
+
+
+def _grokbot_budget_ok(deadline):
+    """待ちの上限に加え、本文を取ったあとのリンク展開の分が残っているときだけ始める。"""
+    from fetch_chain import fetchchain as _fc
+    return _remaining(deadline) > _fc._grok_poll_timeout() + _LINK_RESERVE_S
+
+
+def _fetch_x_via_grokbot(url, deadline):
+    """秘密が揃い、時間予算が残っているときだけ x_grokbot を試す。失敗は None（従来の流れへ）。"""
+    from fetch_chain import fetchchain as _fc
+    if not _fc._grokbot_configured() or not _grokbot_budget_ok(deadline):
+        return None
+    try:
+        data = _fc.x_grokbot(url)
+    except Exception:
+        return None
+    if not isinstance(data, dict):
+        return None
+    return _syndication_from_grok(data)
+
+
+def fetch_x(url, follow_links=True, understand_video=True, deadline=None):
+    if deadline is None:
+        deadline = _new_deadline()   # 件全体の締切(440秒)。最初の取得・t.co展開・埋め込みリンクが使う
     gdeadline = deadline - _LINK_RESERVE_S   # Gemini(動画・画像)が使ってよいのは開始から 380 秒まで
     skipped = []                 # 時間切れで飛ばした段(facts の deadline_skipped)
     _last.clear()
@@ -837,26 +893,29 @@ def fetch_x(url, follow_links=True, understand_video=True):
         return {"ok": False, "type": "x", "reason": "tweet id をURLから抽出できない", "url": url,
                 "fail_reason": "x_tweet_id_unparsable"}
     tid = m.group(1)
-    api = "https://cdn.syndication.twimg.com/tweet-result?id=%s&token=%s&lang=en" % (tid, _tweet_token(tid))
-    st, txt = _get(api, BROWSER_UA, deadline=deadline)
-    d, fail, via, chain_tried = None, None, "x_syndication", ""
-    if st != 200 or not txt.strip():
-        fail = {"ok": False, "type": "x", "reason": "syndication 空/失敗 (status=%s)" % st,
-                "url": url, "fallback": "twitterapi.io",
-                "fail_reason": _http_fail_reason("x_syndication", st)}
-    else:
-        try:
-            d = json.loads(txt)
-        except Exception:
-            fail = {"ok": False, "type": "x", "reason": "JSON parse 失敗", "url": url,
-                    "fail_reason": "x_syndication_bad_json"}
-    if fail is not None:
-        # syndication がだめなときだけ fetch-chain に回す。全部だめなら従来の失敗のまま（台帳の分類を変えない）
-        d, chain_tried = _chain_tweet(url) if _remaining(deadline) > 60 else (None, "skipped:deadline")
-        if d is None:
-            fail["fetch_chain_tried"] = chain_tried
-            return fail
-        via = "fetch_chain"
+    d = _fetch_x_via_grokbot(url, deadline)
+    fail, via, chain_tried = None, "x_grokbot", ""
+    if d is None:
+        via = "x_syndication"
+        api = "https://cdn.syndication.twimg.com/tweet-result?id=%s&token=%s&lang=en" % (tid, _tweet_token(tid))
+        st, txt = _get(api, BROWSER_UA, deadline=deadline)
+        if st != 200 or not txt.strip():
+            fail = {"ok": False, "type": "x", "reason": "syndication 空/失敗 (status=%s)" % st,
+                    "url": url, "fallback": "twitterapi.io",
+                    "fail_reason": _http_fail_reason("x_syndication", st)}
+        else:
+            try:
+                d = json.loads(txt)
+            except Exception:
+                fail = {"ok": False, "type": "x", "reason": "JSON parse 失敗", "url": url,
+                        "fail_reason": "x_syndication_bad_json"}
+        if fail is not None:
+            # syndication がだめなときだけ fetch-chain に回す。全部だめなら従来の失敗のまま（台帳の分類を変えない）
+            d, chain_tried = _chain_tweet(url) if _remaining(deadline) > 60 else (None, "skipped:deadline")
+            if d is None:
+                fail["fetch_chain_tried"] = chain_tried
+                return fail
+            via = "fetch_chain"
     u = d.get("user", {})
     media_details = d.get("mediaDetails", [])
     media = [md.get("media_url_https", "") for md in media_details if md.get("media_url_https")]
@@ -900,9 +959,10 @@ def fetch_x(url, follow_links=True, understand_video=True):
         mp4s = [v for v in variants if v.get("content_type") == "video/mp4" and v.get("url")]
         if mp4s:
             best = min(mp4s, key=lambda v: v.get("bitrate", 0))
-            # fetch-chain 経由（第三者の中継）で得た動画の URL は twimg.com だけを許す（開始もリダイレクト先も）
+            # fetch-chain と x_grokbot は第三者の中継。動画 URL は twimg.com だけを許す（開始もリダイレクト先も）
             video_understanding, video_reason = _gemini_video_understanding(
-                best["url"], deadline=gdeadline, allowed_hosts=_X_VIDEO_HOSTS if via == "fetch_chain" else None)
+                best["url"], deadline=gdeadline,
+                allowed_hosts=_X_VIDEO_HOSTS if via in ("fetch_chain", "x_grokbot") else None)
             video_model = _last.get("model", "") if video_understanding else ""
             meta = _gemini_meta(meta)
         else:

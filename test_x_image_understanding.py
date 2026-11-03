@@ -12,6 +12,9 @@ from unittest.mock import MagicMock, patch
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
+for _k in ("GROKBOT_WEBHOOK_URL", "GROKBOT_WEBHOOK_KEY", "GROKBOT_POLL_TIMEOUT", "GROKBOT_RESULTS_REF"):
+    os.environ.pop(_k, None)  # 秘密があると fetch_x が webhook を先に待つ
+
 import fetch_content  # noqa: E402
 import ledger  # noqa: E402
 
