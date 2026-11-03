@@ -51,9 +51,11 @@ jobs:
         env:
           FETCHCHAIN_STATE_DIR: ${{ github.workspace }}/state
           PYTHONIOENCODING: utf-8
-          # 両方あるときだけ x_grokbot を見本で1回測る。未設定なら順から外れ、空のままでは呼ばない
+          # 四つ揃っているときだけ x_grokbot を見本で1回測る。一つでも未設定なら順から外れ、空のままでは呼ばない
           GROKBOT_WEBHOOK_URL: ${{ secrets.GROKBOT_WEBHOOK_URL }}
           GROKBOT_WEBHOOK_KEY: ${{ secrets.GROKBOT_WEBHOOK_KEY }}
+          SLACK_GROK_TOKEN: ${{ secrets.SLACK_GROK_TOKEN }}
+          GROKBOT_SLACK_CHANNEL: ${{ secrets.GROKBOT_SLACK_CHANNEL }}
         run: |
           set +e
           python fetchchain.py canary | tee ../canary.txt

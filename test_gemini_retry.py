@@ -19,7 +19,8 @@ from unittest.mock import patch
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
-for _k in ("GROKBOT_WEBHOOK_URL", "GROKBOT_WEBHOOK_KEY", "GROKBOT_POLL_TIMEOUT", "GROKBOT_RESULTS_REF"):
+for _k in ("GROKBOT_WEBHOOK_URL", "GROKBOT_WEBHOOK_KEY", "SLACK_GROK_TOKEN",
+          "GROKBOT_SLACK_CHANNEL", "GROKBOT_POLL_TIMEOUT", "GROKBOT_RESULTS_REF"):
     os.environ.pop(_k, None)  # 秘密があると fetch_x が webhook を先に待つ
 
 import fetch_content  # noqa: E402
