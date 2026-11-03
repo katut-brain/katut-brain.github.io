@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-11-03T13:43:01+00:00",
+  "checked_at": "2026-11-03T16:29:32+00:00",
   "env": "gha",
   "channels": {
     "x_post": {
@@ -8,25 +8,25 @@
         {
           "method": "x_grokbot",
           "ok": false,
-          "ms": 90634,
-          "error": "結果ファイルが 90 秒で来ない"
+          "ms": 91295,
+          "error": "Slack の結果が 90 秒で来ない"
         },
         {
           "method": "x_fxtwitter",
           "ok": true,
-          "ms": 207,
+          "ms": 193,
           "error": ""
         },
         {
           "method": "x_syndication",
           "ok": true,
-          "ms": 103,
+          "ms": 173,
           "error": ""
         },
         {
           "method": "x_vxtwitter",
           "ok": true,
-          "ms": 137,
+          "ms": 235,
           "error": ""
         }
       ]
@@ -43,7 +43,7 @@
         {
           "method": "yt_oembed",
           "ok": true,
-          "ms": 50,
+          "ms": 1269,
           "error": ""
         }
       ]
@@ -54,13 +54,13 @@
         {
           "method": "ig_oembed",
           "ok": false,
-          "ms": 143,
+          "ms": 172,
           "error": "HTTP 400・本文が空"
         },
         {
           "method": "og_meta",
           "ok": false,
-          "ms": 281,
+          "ms": 305,
           "error": "本文が短すぎる／空"
         }
       ]
@@ -71,7 +71,7 @@
         {
           "method": "og_meta",
           "ok": true,
-          "ms": 866,
+          "ms": 593,
           "error": ""
         }
       ]
@@ -82,13 +82,13 @@
         {
           "method": "web_direct",
           "ok": true,
-          "ms": 240,
+          "ms": 27,
           "error": ""
         },
         {
           "method": "web_jina",
           "ok": true,
-          "ms": 1551,
+          "ms": 764,
           "error": ""
         }
       ]
