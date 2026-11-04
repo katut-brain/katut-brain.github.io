@@ -158,6 +158,11 @@ jobs:
       - name: Run ledger tests
         run: python -m unittest -v test_ledger.py
 
+      # メディア理解の配管（Content-Type 判定、引用ツイートの帰属、Groq 書き起こし、
+      # Instagram の取得順、段ごとの facts）。ネットワークには出ない。
+      - name: Run media-understanding tests
+        run: python -m unittest -v test_media_pipeline.py
+
       # 手順1.5 の依存点検(check_deps.py)と、gemini_unavailable の原因補足
       # (fetch_facts の video_reason_detail)の回帰テスト（2026-10-13 追加）。
       - name: Run deps-check tests
