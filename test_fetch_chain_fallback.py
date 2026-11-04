@@ -301,8 +301,9 @@ class FallbackTest(unittest.TestCase):
     def test_embedded_quote_passes_a_short_deadline(self):
         seen = {}
 
-        def spy(url, follow_links=True, understand_video=True, deadline=None):
+        def spy(url, follow_links=True, understand_video=True, deadline=None, _quote=False):
             seen["args"] = (follow_links, understand_video, deadline)
+            seen["quote"] = _quote
             return {"ok": True, "text": "引用本文", "title": "t"}
 
         with patch("fetch_content.fetch_x", spy):
@@ -310,6 +311,7 @@ class FallbackTest(unittest.TestCase):
         self.assertEqual(out["text"], "引用本文")
         self.assertEqual(seen["args"][0], False)
         self.assertEqual(seen["args"][1], False)
+        self.assertTrue(seen["quote"])   # 引用経路は x_grokbot を quote_path として飛ばす
         left = seen["args"][2] - fetch_content._now()
         self.assertGreater(left, 20)
         self.assertLess(left, 50)
