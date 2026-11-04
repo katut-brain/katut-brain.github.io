@@ -129,14 +129,29 @@ _SLACK_HISTORY = "https://slack.com/api/conversations.history"
 _GROK_ENV_KEYS = ("GROKBOT_WEBHOOK_URL", "GROKBOT_WEBHOOK_KEY", "SLACK_GROK_TOKEN", "GROKBOT_SLACK_CHANNEL")
 
 
+def _grokbot_env_problems():
+    """足りない・壊れた秘密を "missing:<変数名>" / "invalid:<変数名>" の並びで返す。値は決して含めない。"""
+    out = []
+    for k in _GROK_ENV_KEYS:
+        v = (os.environ.get(k) or "").strip()
+        if not v:
+            out.append("missing:" + k)
+        elif re.search(r"[\r\n\x00]", v):
+            out.append("invalid:" + k)
+    return out
+
+
 def _grokbot_configured():
     """webhook の URL と鍵、Slack のトークンとチャンネルが全部、制御文字なしで入っているときだけ真。"""
-    vals = [(os.environ.get(k) or "").strip() for k in _GROK_ENV_KEYS]
-    if not all(vals):
-        return False
-    if any(re.search(r"[\r\n\x00]", v) for v in vals):
-        return False
-    return True
+    return not _grokbot_env_problems()
+
+
+def _grokbot_env_warning():
+    """canary 用。秘密が揃わないとき GitHub Actions の ::warning:: 行（変数名だけ）を返す。揃っていれば ""。"""
+    probs = _grokbot_env_problems()
+    if not probs:
+        return ""
+    return "::warning title=x_grokbot skipped::x_grokbot を順から外した（%s）" % ", ".join(probs)
 
 
 def _grok_poll_timeout():
@@ -738,6 +753,9 @@ def main(argv):
         print(json.dumps(out, ensure_ascii=False, indent=2))
         return 0 if out["ok"] else 1
     if len(argv) >= 2 and argv[1] == "canary":
+        warn = _grokbot_env_warning()
+        if warn:
+            print(warn)  # Actions のログと注釈に出る。canary の終了コードは変えない
         rep = canary()
         print(render(rep))
         levels = {c["level"] for c in rep["channels"].values()}

@@ -217,6 +217,9 @@
    - ⚠️ **手順4のすべての `fetch_content.py` 呼び出しで `FACTS_DATE=$TARGET` を環境変数として渡すこと。** これを忘れると実行日（＝TARGETの翌日）の名前でファイルが作られ、手順8で push するファイル名と食い違う。
      - グループA: `FACTS_DATE=$TARGET timeout 480 python3 fetch_content.py <単一URL>`
      - グループB: `FACTS_DATE=$TARGET python3 fetch_content.py <url1> <url2> ...`
+   - 手順4の最初の `fetch_content.py` の前に1回だけ、x_grokbot の秘密が**あるかだけ**をログに出す（値は絶対に出さない）：
+     `for v in GROKBOT_WEBHOOK_URL GROKBOT_WEBHOOK_KEY SLACK_GROK_TOKEN GROKBOT_SLACK_CHANNEL; do if [ -n "${!v}" ]; then echo "$v=set"; else echo "$v=MISSING"; fi; done`
+     一つでも `MISSING` でも止めない（X は syndication から取る。facts の `x_primary_skipped`/`x_primary_reason` にも残る）。
    - ⚠️ **なぜ記録するのか**：`depth` は導出ラベルであり、実装の都合で嘘をつくことがある（2026-08-23の監査で、web記事14件が全て `depth="full"` を自称しながら本文の完全取得は0件だったと実測）。**導出値を信じるのではなく、後からいくらでも再計算できる不変の事実を残す**。これが無いと「修正して改善したのか」「特定の媒体だけ失敗しているのか」「失敗が一過性か構造的か」を後から一切測れない。
    - 手順3の選定が0件と判定した場合は、そもそも取得が走らないのでファイルもできない。
    - ⚠️ **なぜ必要か**：`depth` は導出ラベルであり、実装の都合で嘘をつくことがある（2026-08-23の監査で、web記事14件が全て `depth="full"` を自称しながら本文の完全取得は0件だったと実測）。**導出値を信じるのではなく、後からいくらでも再計算できる不変の事実を残す**。これが無いと「修正して改善したのか」「特定の媒体だけ失敗しているのか」「失敗が一過性か構造的か」を後から一切測れない。

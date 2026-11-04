@@ -709,7 +709,7 @@ def _fetch_x_embedded_link_inner(expanded, timeout=45):
             # 外側は timeout 秒で打ち切る。fetch_x の締切もそれに合わせ、最大90秒の
             # x_grokbot 待ちを始めない（始まると引用本文ごと失われ、枠も使う）。
             r = fetch_x(expanded, follow_links=False, understand_video=False,
-                        deadline=_now() + max(1, timeout - 5))
+                        deadline=_now() + max(1, timeout - 5), _quote=True)
             label = "引用元投稿の内容"
         else:
             r = fetch_web(expanded)
@@ -857,10 +857,27 @@ def _grokbot_budget_ok(deadline):
     return _remaining(deadline) > _fc._grok_poll_timeout() + _LINK_RESERVE_S
 
 
-def _fetch_x_via_grokbot(url, deadline):
-    """秘密が揃い、時間予算が残っているときだけ x_grokbot を試す。失敗は None（従来の流れへ）。"""
+def _grokbot_skip_reason(deadline, quote=False):
+    """x_grokbot を試さない理由（missing:<変数名> / invalid:<変数名> / quote_path / insufficient_time）。試すなら ""。
+    秘密の値は決して返さない（変数名だけ）。"""
     from fetch_chain import fetchchain as _fc
-    if not _fc._grokbot_configured() or not _grokbot_budget_ok(deadline):
+    probs = _fc._grokbot_env_problems()
+    if probs:
+        return probs[0]
+    if quote:
+        return "quote_path"
+    if not _grokbot_budget_ok(deadline):
+        return "insufficient_time"
+    return ""
+
+
+def _fetch_x_via_grokbot(url, deadline, quote=False):
+    """秘密が揃い、時間予算が残っているときだけ x_grokbot を試す。失敗は None（従来の流れへ）。
+    飛ばした理由は _x_skip に残す（facts の x_primary_skipped / x_primary_reason）。"""
+    from fetch_chain import fetchchain as _fc
+    why = _grokbot_skip_reason(deadline, quote)
+    if why:
+        _x_skip.update({"x_primary_skipped": "x_grokbot", "x_primary_reason": why})
         return None
     try:
         data = _fc.x_grokbot(url)
@@ -871,7 +888,25 @@ def _fetch_x_via_grokbot(url, deadline):
     return _syndication_from_grok(data)
 
 
-def fetch_x(url, follow_links=True, understand_video=True, deadline=None):
+_x_skip = {}   # 直近の fetch_x で x_grokbot を飛ばした記録
+
+
+def fetch_x(url, follow_links=True, understand_video=True, deadline=None, _quote=False):
+    """_fetch_x_impl の結果に、x_grokbot を飛ばした理由（あれば）を足す。"""
+    outer = dict(_x_skip)   # 引用ツイートで入れ子になったとき、外側の記録を消さない
+    _x_skip.clear()
+    try:
+        r = _fetch_x_impl(url, follow_links, understand_video, deadline, _quote)
+        mine = dict(_x_skip)
+    finally:
+        _x_skip.clear()
+        _x_skip.update(outer)
+    if isinstance(r, dict) and mine:
+        r = {**r, **mine}
+    return r
+
+
+def _fetch_x_impl(url, follow_links=True, understand_video=True, deadline=None, _quote=False):
     if deadline is None:
         deadline = _new_deadline()   # 件全体の締切(440秒)。最初の取得・t.co展開・埋め込みリンクが使う
     gdeadline = deadline - _LINK_RESERVE_S   # Gemini(動画・画像)が使ってよいのは開始から 380 秒まで
@@ -893,7 +928,7 @@ def fetch_x(url, follow_links=True, understand_video=True, deadline=None):
         return {"ok": False, "type": "x", "reason": "tweet id をURLから抽出できない", "url": url,
                 "fail_reason": "x_tweet_id_unparsable"}
     tid = m.group(1)
-    d = _fetch_x_via_grokbot(url, deadline)
+    d = _fetch_x_via_grokbot(url, deadline, quote=_quote)
     fail, via, chain_tried = None, "x_grokbot", ""
     if d is None:
         via = "x_syndication"
@@ -1938,6 +1973,10 @@ def _facts(url, started, result):
         # X の投稿をどこから取ったか（x_syndication／fetch_chain）と、fetch-chain が試した手段（2026-10-30〜）
         "fetched_via": result.get("fetched_via", ""),
         "fetch_chain_tried": result.get("fetch_chain_tried", ""),
+        # x_grokbot を飛ばしたとき "x_grokbot" と理由（missing:<変数名> / invalid:<変数名> /
+        # insufficient_time / quote_path）。Gemini の primary_skipped(bool) とは別キー。値は記録しない。
+        "x_primary_skipped": result.get("x_primary_skipped", ""),
+        "x_primary_reason": result.get("x_primary_reason", ""),
         # 同じ日に同じURLを何度取り直したか。日別ファイルはURLキーのdictなので
         # 同日2回目は1回目のレコードを上書きしてしまい、回数の痕跡だけが消える
         # （2026-09-02 Codexの敵対的レビューで発見）。ファイル形式を変えずに
