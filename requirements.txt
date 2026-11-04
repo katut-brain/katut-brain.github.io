@@ -1,2 +1,4 @@
 youtube-transcript-api
 google-genai==2.34.0
+yt-dlp
+instaloader

@@ -15,8 +15,10 @@
 #   python3 fetch_content.py                     # 内蔵テストURLで動作確認
 
 import sys, os, re, json, html, string, tempfile, time, threading, ipaddress, socket, http.client
-import datetime, hashlib, io
+import datetime, hashlib, io, shutil, subprocess
 import urllib.request, urllib.error, urllib.parse
+
+import groq_transcribe
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -308,8 +310,12 @@ def _is_quota_error(e):
     return False
 
 
-_GEMINI_MODEL = "gemini-flash-latest"
-_GEMINI_FALLBACK_MODEL = "gemini-flash-lite-latest"   # 無料キーで使えることを 2026-10-30 に実測
+# *-latest は別名が入れ替わり、混んでいる側に当たりやすい（2026-09〜10 の ServerError の温床）。
+# 安定版の ID に固定する。無料枠は flash が約20回/日、flash-lite が約500回/日。
+# 夜間は最大20件×(動画+画像)なので、枠の広い lite を主、flash を予備にする。
+_GEMINI_MODEL = "gemini-2.5-flash-lite"
+_GEMINI_FALLBACK_MODEL = "gemini-2.5-flash"
+_GEMINI_RETRY_JITTER = 5   # 秒。指数待ちに 0〜この値を足す（未指定だと SDK 既定の 1 秒）
 _GENERATE_TIMEOUT_S = 75
 _LINK_RESERVE_S = 60
 _ITEM_BUDGET_S = 440   # 1件(fetch_x / リール)の締切。手順書の timeout 480 から余裕を引いた値
@@ -357,17 +363,23 @@ def _gemini_client(timeout_ms=90_000, attempts=1):
 
     2026-09-20〜10-29 に動画の読み取りが X82・IG13 件 ServerError(503 high demand)・無応答で
     落ちた(再試行もタイムアウトも無く、切断まで約310秒待たされた)。
-    attempts>1 のとき 5xx とタイムアウトだけ SDK が再試行する(初期5秒・指数)。429 は再試行しない
+    attempts>1 のとき 5xx とタイムアウトだけ SDK が再試行する(初期5秒・指数・ジッタ)。429 は再試行しない
     (gemini_quota の判定に任せる)。
     shortcut: SDK が HttpRetryOptions を持たない古い版では再試行・タイムアウトなしで動く(落とさない)。
+    jitter を知らない版では、再試行そのものは残す（TypeError で丸ごと落とさない）。
     """
     try:
         from google.genai import types
+        fields = getattr(types.HttpRetryOptions, "model_fields", None)
+        if fields is None:
+            fields = getattr(types.HttpRetryOptions, "__annotations__", {})
+        kwargs = dict(attempts=attempts, initial_delay=5, max_delay=60, exp_base=2,
+                      http_status_codes=[500, 502, 503, 504])
+        if "jitter" in fields:
+            kwargs["jitter"] = _GEMINI_RETRY_JITTER
         opts = types.HttpOptions(
             timeout=int(timeout_ms),
-            retry_options=types.HttpRetryOptions(
-                attempts=attempts, initial_delay=5, max_delay=60, exp_base=2,
-                http_status_codes=[500, 502, 503, 504]))
+            retry_options=types.HttpRetryOptions(**kwargs))
         return _genai.Client(api_key=_GEMINI_API_KEY, http_options=opts)
     except (ImportError, AttributeError, TypeError):
         return _genai.Client(api_key=_GEMINI_API_KEY)
@@ -517,6 +529,128 @@ def _exception_reason(e):
     return "exception:" + type(e).__name__[:40] + suffix
 
 
+# 直近の動画ダウンロードで得た書き起こし。fetch_x / fetch_instagram が読んでから捨てる。
+# 本文は facts に載せない（_facts はホワイトリスト）。
+_aux = {"transcript": None, "download": None}
+
+
+def _reset_aux():
+    _aux["transcript"] = None
+    _aux["download"] = None
+
+
+def _isolate_aux(fn):
+    """入れ子の取得（引用先の fetch_x / Instagram）が、外側の書き起こし記録を消さない。"""
+    def wrap(*a, **k):
+        saved = {"transcript": _aux.get("transcript"), "download": _aux.get("download")}
+        _reset_aux()
+        try:
+            return fn(*a, **k)
+        finally:
+            _aux["transcript"] = saved.get("transcript")
+            _aux["download"] = saved.get("download")
+    wrap.__name__ = getattr(fn, "__name__", "wrap")
+    wrap.__doc__ = getattr(fn, "__doc__", None)
+    return wrap
+
+
+def _note_download(status, reason=""):
+    prev = _aux.get("download")
+    # 引用動画の失敗で、先に成功した本体のダウンロード記録を消さない。
+    if prev and prev.get("status") == "ok" and status != "ok":
+        return
+    _aux["download"] = {"status": status, "reason": reason}
+
+
+def _note_transcript(tr):
+    if not isinstance(tr, dict):
+        return
+    prev = _aux.get("transcript")
+    if prev and prev.get("ok"):
+        return
+    if prev and not tr.get("ok"):
+        return
+    _aux["transcript"] = tr
+
+
+def _transcribe_local(path, deadline):
+    try:
+        tr = groq_transcribe.transcribe_file(path, deadline=deadline)
+    except Exception as e:
+        tr = {"ok": False, "reason": "exception:%s" % type(e).__name__,
+              "text": "", "flagged": 0, "duration_s": 0}
+    _note_transcript(tr)
+    return tr
+
+
+def _classify_video_payload(content_type, data):
+    """"" なら動画として Gemini に渡してよい。そうでなければ "bad_content_type"。
+
+    CDN は mp4 を application/octet-stream で返すことがある（bad_content_type の主因）。
+    マジックが ftyp / WebM なら受け入れる。逆に Content-Type が video/* でも
+    中身が HTML・JSON・HLS・画像なら拒否する（ログイン壁を動画として渡さない）。
+    """
+    ctype = (content_type or "").split(";")[0].strip().lower()
+    blob = data or b""
+    head = blob[:64].lstrip()
+    if head.startswith((b"<", b"{", b"[")) or blob.startswith(
+            (b"<!DOCTYPE", b"<!doctype", b"#EXTM3U", b"#EXT", b"GIF87", b"GIF89",
+             b"\x89PNG", b"\xff\xd8\xff")):
+        return "bad_content_type"
+    if ctype.startswith("video/"):
+        return "" if blob else "bad_content_type"
+    container = (len(blob) >= 12 and blob[4:8] == b"ftyp") or blob.startswith(b"\x1a\x45\xdf\xa3")
+    octet = ctype in ("", "application/octet-stream", "binary/octet-stream",
+                      "application/octetstream", "application/mp4", "application/binary")
+    if container and (octet or ctype.startswith("application/")):
+        if ctype.startswith("text/") or ctype in ("application/json", "application/xml"):
+            return "bad_content_type"
+        return ""
+    return "bad_content_type"
+
+
+def _upload_and_describe(tmp_path, max_chars, deadline):
+    """ローカルの動画を Gemini Files API へ上げて日本語要約を返す。URL は渡さない。"""
+    up_rem = _remaining(deadline) - _MIN_CALL_S
+    if up_rem < _MIN_CALL_S:
+        return "", "deadline_skipped"
+    client = _gemini_client(min(90, up_rem) * 1000)   # upload 用: 90秒・再試行なし
+    uploaded = client.files.upload(file=tmp_path)
+    waited = 0
+    while getattr(uploaded.state, "name", "") == "PROCESSING" and waited < 100 \
+            and _remaining(deadline) > 2 * _MIN_CALL_S + 4:
+        time.sleep(4)
+        waited += 4
+        getter = _gemini_client(min(20, _remaining(deadline) - _MIN_CALL_S) * 1000)
+        uploaded = getter.files.get(name=uploaded.name)
+    if getattr(uploaded.state, "name", "") != "ACTIVE":
+        return "", "gemini_timeout"
+    resp = _gemini_generate(
+        [uploaded, "この動画に映っている内容と、話されている・聞こえる音声の内容を、日本語で具体的に要約して。"],
+        deadline)
+    out = (resp.text or "").strip()[:max_chars]
+    return (out, "") if out else ("", "gemini_empty_response")
+
+
+def _gemini_understand_local(path, deadline=None, max_chars=4000):
+    """既に手元にある動画ファイル。書き起こしてから Files API で理解する。ファイルは消さない。"""
+    if deadline is None:
+        deadline = _new_deadline()
+    if not path or not os.path.isfile(path):
+        _note_download("fail", "missing_file")
+        return "", "truncated_download"
+    _note_download("ok", "local")
+    _transcribe_local(path, deadline)
+    if not _GEMINI_AVAILABLE or not _GEMINI_API_KEY:
+        return "", "gemini_unavailable"
+    try:
+        return _upload_and_describe(path, max_chars, deadline)
+    except Exception as e:
+        if _is_quota_error(e):
+            return "", "gemini_quota"
+        return "", _exception_reason(e)
+
+
 def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None, deadline=None):
     """動画(mp4)をダウンロードし、Gemini API(無料枠)で映像+音声の内容を理解して
     日本語要約を返す。X動画・Instagram Reels等、動画の実体URLが手に入るケースで共用する。
@@ -552,6 +686,7 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None, d
     try:
         # 件単位の締切(_ITEM_BUDGET_S)。各呼び出しのタイムアウトは min(既定値, 残り時間)。
         if _remaining(deadline) < 2 * _MIN_CALL_S:
+            _note_download("skipped", "deadline_skipped")
             return "", "deadline_skipped"
         dl_timeout = min(60, _remaining(deadline) - _MIN_CALL_S)
         req = urllib.request.Request(video_url, headers={"User-Agent": BROWSER_UA})
@@ -562,18 +697,30 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None, d
             cm = urllib.request.urlopen(req, timeout=dl_timeout)
         with cm as r:
             content_type = r.headers.get("Content-Type", "")
-            if not content_type.startswith("video/"):
-                # 想定外のContent-Type。動画以外のデータをGeminiに渡さない
-                return "", "bad_content_type"
             content_length = r.headers.get("Content-Length")
-            data = _read_limited(r, _VIDEO_MAX_BYTES, deadline)
+            # 先頭だけ見て HTML/画像なら本体を最後まで取らない。octet-stream の mp4 は通す。
+            first = r.read(65536)
+            if not isinstance(first, bytes):
+                first = b""
+            if _classify_video_payload(content_type, first):
+                _note_download("fail", "bad_content_type")
+                return "", "bad_content_type"
+            rest_cap = _VIDEO_MAX_BYTES - len(first)
+            rest = _read_limited(r, rest_cap, deadline) if rest_cap > 0 else b""
+            data = first + rest
+        verdict = _classify_video_payload(content_type, data)
+        if verdict:
+            _note_download("fail", verdict)
+            return "", verdict
         if len(data) > _VIDEO_MAX_BYTES:
             # 上限超過。不完全データをGeminiに渡さない
+            _note_download("fail", "too_large")
             return "", "too_large"
         if content_length is not None:
             try:
                 if int(content_length) != len(data):
                     # 途中で切断された(接続断等)。不完全データをGeminiに渡さない
+                    _note_download("fail", "truncated_download")
                     return "", "truncated_download"
             except ValueError:
                 pass
@@ -581,29 +728,10 @@ def _gemini_video_understanding(video_url, max_chars=4000, allowed_hosts=None, d
         with os.fdopen(fd, "wb") as f:
             f.write(data)
 
-        up_rem = _remaining(deadline) - _MIN_CALL_S
-        if up_rem < _MIN_CALL_S:
-            return "", "deadline_skipped"
-        client = _gemini_client(min(90, up_rem) * 1000)   # upload 用: 90秒・再試行なし
-        uploaded = client.files.upload(file=tmp_path)
-        waited = 0
-        while getattr(uploaded.state, "name", "") == "PROCESSING" and waited < 100 \
-                and _remaining(deadline) > 2 * _MIN_CALL_S + 4:
-            time.sleep(4)
-            waited += 4
-            # 状態確認は軽いので短いタイムアウトの別クライアントで(締切を越えて粘らせない)
-            getter = _gemini_client(min(20, _remaining(deadline) - _MIN_CALL_S) * 1000)
-            uploaded = getter.files.get(name=uploaded.name)
-        if getattr(uploaded.state, "name", "") != "ACTIVE":
-            # 長尺動画はGemini側の処理が数分かかる場合がある。無人ジョブの時間予算を優先し、
-            # 100秒待って終わらなければ理解を諦める(missing: video_contentで正直に記録)。
-            return "", "gemini_timeout"
-        resp = _gemini_generate(
-            [uploaded, "この動画に映っている内容と、話されている・聞こえる音声の内容を、日本語で具体的に要約して。"], deadline)
-        out = (resp.text or "").strip()[:max_chars]
-        # 例外は出ていないが中身が空。Gemini が答えを返さなかったケースを
-        # 「成功」と記録すると、後から見て理由が消える。
-        return (out, "") if out else ("", "gemini_empty_response")
+        # URL は Gemini に渡さない。手元のファイルを Files API で上げる。
+        _note_download("ok", "")
+        _transcribe_local(tmp_path, deadline)
+        return _upload_and_describe(tmp_path, max_chars, deadline)
     except Exception as e:
         # 無料枠切れ(429)・ネットワーク断・API仕様変更が全部ここに来る。
         # 枠切れは翌日には戻るので一過性側だが、区別できるよう例外の型名だけ残す。
@@ -626,18 +754,20 @@ _IMAGE_TIMEOUT_S = 20                  # 1枚あたりのダウンロード
 _IMAGE_ALLOWED_HOSTS = ("twimg.com",)  # X の画像 CDN(pbs.twimg.com)。リダイレクト先も同じ条件
 
 
-def _download_image(url, deadline, total_so_far):
+def _download_image(url, deadline, total_so_far, allowed_hosts=None):
     """画像1枚。戻り値 (Part用の (bytes, mime), "") か (None, 失敗理由)。
-    https かつ twimg.com 配下だけ許可(リダイレクト先も)。外れたら host_not_allowed。"""
+    https かつ許可ホスト配下だけ許可(リダイレクト先も)。外れたら host_not_allowed。
+    既定は twimg.com。Instagram のカルーセルは fbcdn / cdninstagram を渡す。"""
+    hosts = allowed_hosts or _IMAGE_ALLOWED_HOSTS
     if urllib.parse.urlsplit(url).scheme.lower() != "https" or \
-            not any(_host_matches(_host_of(url), h) for h in _IMAGE_ALLOWED_HOSTS):
+            not any(_host_matches(_host_of(url), h) for h in hosts):
         return None, "host_not_allowed"
     rem = _remaining(deadline) - _MIN_CALL_S   # generate の分を残す
     if rem < 3:
         return None, "deadline_skipped"
     cap = min(_IMAGE_MAX_BYTES, _IMAGE_TOTAL_MAX_BYTES - total_so_far)
     try:
-        opener = urllib.request.build_opener(_AllowlistRedirectHandler(_IMAGE_ALLOWED_HOSTS))
+        opener = urllib.request.build_opener(_AllowlistRedirectHandler(hosts))
         req = urllib.request.Request(url, headers={"User-Agent": BROWSER_UA})
         with opener.open(req, timeout=min(_IMAGE_TIMEOUT_S, rem)) as r:
             ctype = r.headers.get("Content-Type", "").split(";")[0].strip()
@@ -655,11 +785,13 @@ def _download_image(url, deadline, total_so_far):
     return (data, ctype), ""
 
 
-def _gemini_image_understanding(photo_urls, max_chars=4000, deadline=None):
+def _gemini_image_understanding(photo_urls, max_chars=4000, deadline=None, allowed_hosts=None,
+                                instruction=None):
     """画像(複数)をダウンロードし、1回の generate_content にまとめて inline で渡して日本語で読み取る。
     戻り値は (要約, 理由コード)。全部読めたときだけ理由コードは ""。一部の画像だけ取れたときは
     読めた分の要約と "partial_download"(呼び出し側は image_content を missing に残す)。
-    1枚も取れなければ ("", 最初の失敗理由)。キー無し/SDK無しは ("", "gemini_unavailable")。"""
+    1枚も取れなければ ("", 最初の失敗理由)。キー無し/SDK無しは ("", "gemini_unavailable")。
+    photo_urls の順がカルーセルの順。並べ替えない。"""
     if not _GEMINI_AVAILABLE or not _GEMINI_API_KEY:
         return "", "gemini_unavailable"
     if deadline is None:
@@ -668,7 +800,7 @@ def _gemini_image_understanding(photo_urls, max_chars=4000, deadline=None):
         from google.genai import types
         parts, failures, total = [], [], 0
         for u in photo_urls:
-            got, why = _download_image(u, deadline, total)
+            got, why = _download_image(u, deadline, total, allowed_hosts)
             if got:
                 parts.append(types.Part.from_bytes(data=got[0], mime_type=got[1]))
                 total += len(got[0])
@@ -676,9 +808,11 @@ def _gemini_image_understanding(photo_urls, max_chars=4000, deadline=None):
                 failures.append(why)
         if not parts:
             return "", failures[0] if failures else "image_download_failed"
-        resp = _gemini_generate(parts + [
-            "これらは1つのSNS投稿に添付された画像です。各画像の内容を日本語で具体的に説明して。"
-            "画像に写っている文字・図表の数字は逐語で書き写して。"], deadline)
+        prompt = instruction or (
+            "これらは1つのSNS投稿に添付された画像です。添付順（1枚目から）を崩さず、"
+            "各画像の内容を日本語で具体的に説明して。"
+            "画像に写っている文字・図表の数字は逐語で書き写して。")
+        resp = _gemini_generate(parts + [prompt], deadline)
         out = (resp.text or "").strip()[:max_chars]
         if not out:
             return "", "gemini_empty_response"
@@ -753,6 +887,91 @@ def _fetch_x_embedded_link(expanded, timeout=45):
 _X_VIDEO_HOSTS = ("twimg.com",)
 
 
+def _append_untrusted(text, label, body, source):
+    """理解結果・書き起こしを区切りで包む。本文の先頭は変えない（テストと表示順のため）。"""
+    body = (body or "").strip()
+    if not body:
+        return text
+    return text + "\n<<<UNTRUSTED source=%s>>>\n\n%s: %s\n<<<END UNTRUSTED>>>" % (source, label, body)
+
+
+def _x_media_parts(media_details):
+    """mediaDetails から (photos, video_url, has_video)。写真は並び順のまま。動画は最初の1本。
+    video_url が "" のときは動画はあるが mp4 が無い。None は動画なし。"""
+    photos = []
+    video_url = None
+    has_video = False
+    for md in media_details or []:
+        if not isinstance(md, dict):
+            continue
+        if md.get("type") == "photo":
+            base = md.get("media_url_https") or ""
+            if base:
+                parts = urllib.parse.urlsplit(base)
+                q = dict(urllib.parse.parse_qsl(parts.query))
+                q["format"] = "jpg"
+                q["name"] = "large"
+                photos.append(urllib.parse.urlunsplit(parts._replace(query=urllib.parse.urlencode(q))))
+        elif md.get("type") == "video" and not has_video:
+            has_video = True
+            info = md.get("video_info") if isinstance(md.get("video_info"), dict) else {}
+            variants = info.get("variants") or []
+            mp4s = [v for v in variants if isinstance(v, dict)
+                    and v.get("content_type") == "video/mp4" and v.get("url")]
+            video_url = min(mp4s, key=lambda v: v.get("bitrate") or 0)["url"] if mp4s else ""
+    return photos, video_url, has_video
+
+
+def _quote_media_details(q):
+    """fxtwitter の media / vxtwitter の media_extended を mediaDetails にする。"""
+    md = []
+    media = q.get("media") if isinstance(q.get("media"), dict) else {}
+    for p in media.get("photos") or []:
+        if isinstance(p, dict) and _str(p.get("url")):
+            md.append({"type": "photo", "media_url_https": p["url"]})
+    for v in media.get("videos") or []:
+        if not isinstance(v, dict):
+            continue
+        variants = [x for x in v.get("variants") or [] if isinstance(x, dict) and _str(x.get("url"))]
+        if not variants and _str(v.get("url")):
+            variants = [{"content_type": "video/mp4", "bitrate": 0, "url": v["url"]}]
+        if variants:
+            md.append({"type": "video", "media_url_https": _str(v.get("thumbnail_url")),
+                       "video_info": {"variants": variants}})
+    for m in q.get("media_extended") or []:
+        if not isinstance(m, dict):
+            continue
+        if m.get("type") == "image" and _str(m.get("url")):
+            md.append({"type": "photo", "media_url_https": m["url"]})
+        elif m.get("type") in ("video", "gif") and _str(m.get("url")):
+            md.append({"type": "video", "media_url_https": _str(m.get("thumbnail_url")),
+                       "video_info": {"variants": [{"content_type": "video/mp4", "bitrate": 0, "url": m["url"]}]}})
+    return md
+
+
+def _normalize_quote(q):
+    """syndication / fxtwitter / vxtwitter の引用を {author, handle, text, mediaDetails} にする。"""
+    if not isinstance(q, dict):
+        return None
+    user = q.get("user") if isinstance(q.get("user"), dict) else {}
+    author = q.get("author") if isinstance(q.get("author"), dict) else {}
+    handle = _str(user.get("screen_name")) or _str(author.get("screen_name")) or _str(q.get("user_screen_name"))
+    name = _str(user.get("name")) or _str(author.get("name")) or _str(q.get("user_name"))
+    if isinstance(q.get("mediaDetails"), list):
+        md = q.get("mediaDetails")
+    else:
+        md = _quote_media_details(q)
+    text = _str(q.get("text"))
+    if not text and not md:
+        return None
+    return {"author": name, "handle": handle, "text": text, "mediaDetails": md or []}
+
+
+def _quote_who(quote):
+    handle = (quote or {}).get("handle") or ""
+    return ("@%s" % handle) if handle else "投稿"
+
+
 def _chain_tweet(url):
     """syndication が失敗した投稿を fetch-chain（fxtwitter → vxtwitter・名乗りは偽らない）で取り直し、
     syndication と同じ形の dict にそろえて返す。取れなければ (None, 試した手段の要約)。
@@ -799,9 +1018,13 @@ def _chain_tweet_inner(url):
         rt = t.get("raw_text") if isinstance(t.get("raw_text"), dict) else {}
         text = _str(rt.get("text")) or _str(t.get("text"))
         a = t.get("author") if isinstance(t.get("author"), dict) else {}
-        return {"text": text, "user": {"name": _str(a.get("name")), "screen_name": _str(a.get("screen_name"))},
-                "created_at": _iso_from_epoch(t.get("created_timestamp")), "favorite_count": t.get("likes"),
-                "mediaDetails": md}, tried
+        quoted = t.get("quote") if isinstance(t.get("quote"), dict) else t.get("quoted_tweet")
+        out_d = {"text": text, "user": {"name": _str(a.get("name")), "screen_name": _str(a.get("screen_name"))},
+                 "created_at": _iso_from_epoch(t.get("created_timestamp")), "favorite_count": t.get("likes"),
+                 "mediaDetails": md}
+        if isinstance(quoted, dict):
+            out_d["quoted_tweet"] = quoted
+        return out_d, tried
     if out["method"] == "x_vxtwitter":
         md = []
         for m in [m for m in raw.get("media_extended") or [] if isinstance(m, dict)]:
@@ -811,10 +1034,14 @@ def _chain_tweet_inner(url):
                 md.append({"type": "video", "media_url_https": _str(m.get("thumbnail_url")),
                            "video_info": {"variants": [{"content_type": "video/mp4", "bitrate": 0, "url": m["url"]}]}})
         # vxtwitter の本文は t.co が消えているので、リンク先は辿れない（欠損として残る）
-        return {"text": _str(raw.get("text")), "user": {"name": _str(raw.get("user_name")),
-                                                         "screen_name": _str(raw.get("user_screen_name"))},
-                "created_at": _iso_from_epoch(raw.get("date_epoch")), "favorite_count": raw.get("likes"),
-                "mediaDetails": md}, tried
+        quoted = raw.get("qrt") if isinstance(raw.get("qrt"), dict) else raw.get("quoted_tweet")
+        out_d = {"text": _str(raw.get("text")), "user": {"name": _str(raw.get("user_name")),
+                                                          "screen_name": _str(raw.get("user_screen_name"))},
+                 "created_at": _iso_from_epoch(raw.get("date_epoch")), "favorite_count": raw.get("likes"),
+                 "mediaDetails": md}
+        if isinstance(quoted, dict):
+            out_d["quoted_tweet"] = quoted
+        return out_d, tried
     data = out.get("data") or {}   # 試用中の手段など: 本文と投稿者だけ
     return {"text": _str(data.get("text")), "user": {"screen_name": _str(data.get("author"))},
             "created_at": "", "mediaDetails": []}, tried   # 日付の形が手段ごとに違うので、ここでは不明にする
@@ -906,6 +1133,7 @@ def fetch_x(url, follow_links=True, understand_video=True, deadline=None, _quote
     return r
 
 
+@_isolate_aux
 def _fetch_x_impl(url, follow_links=True, understand_video=True, deadline=None, _quote=False):
     if deadline is None:
         deadline = _new_deadline()   # 件全体の締切(440秒)。最初の取得・t.co展開・埋め込みリンクが使う
@@ -956,56 +1184,32 @@ def _fetch_x_impl(url, follow_links=True, understand_video=True, deadline=None, 
     media = [md.get("media_url_https", "") for md in media_details if md.get("media_url_https")]
     tweet_text = d.get("text", "")
 
-    # 画像: 高解像度バリアントを明示指定(クエリなしだと画像により縮小版が返ることがある実測済み)。
-    # 既存クエリに format/name が既にあれば置換する(単純追記だと重複パラメータになりCDN側の
-    # 採用がどちらか不定になるため)。
-    photos = []
-    for md in media_details:
-        base = md.get("media_url_https", "")
-        if md.get("type") == "photo" and base:
-            parts = urllib.parse.urlsplit(base)
-            q = dict(urllib.parse.parse_qsl(parts.query))
-            q["format"] = "jpg"
-            q["name"] = "large"
-            photos.append(urllib.parse.urlunsplit(parts._replace(query=urllib.parse.urlencode(q))))
+    # 画像は添付順のまま（カルーセル）。動画は最初の1本、mp4 の最小 bitrate。
+    # understand_video=False（埋め込みの引用ツイート）では Gemini を呼ばない。45秒の枠で
+    # 引用本文まで失われるため（output-verifier が発見）。引用のメディアも同じく切る。
+    photos, video_url, has_video = _x_media_parts(media_details)
+    quote = None if _quote else _normalize_quote(
+        d.get("quoted_tweet") or d.get("quoted_status") or d.get("quote") or d.get("qrt"))
+    q_photos, q_video, q_has_video = _x_media_parts(quote["mediaDetails"]) if quote else ([], None, False)
 
-    # 動画: 最初の1本のみ対象(複数動画・複数ツイート跨ぎは今回対象外)。mp4バリアントのうち
-    # 最小bitrateを選ぶ(Whisper/Gemini等の後段処理には解像度は不要・ダウンロード量を最小化するため)。
-    # understand_video=False(埋め込みリンク経由の引用ツイート取得等)の場合はGemini理解を
-    # スキップする: 動画理解(ダウンロード+Gemini処理で最大100秒超)は、埋め込みリンク全体に
-    # 掛かっている45秒の壁時計タイムアウト(_fetch_x_embedded_link)を軽く超え、本来数秒で
-    # 済むはずの引用元テキスト本文まで巻き添えで失われるバグを実機で確認したため
-    # (output-verifierが発見)。
     video_understanding = ""
     video_reason = ""          # 動画が無い/理解に成功した場合は空のまま
     meta = None                # Gemini 呼び出しの記録(primary_skipped 等)
     video_model = ""           # 読めたモデル(予備に落ちたか facts で分かるように)
-    has_video = False
-    for md in media_details:
-        if md.get("type") != "video":
-            continue
-        has_video = True
-        if not understand_video:
-            # 呼び出し側が意図的に理解を切っている（埋め込みリンク経由の引用ツイート等）。
-            # 失敗ではないので、そうと分かるコードを残す。
-            video_reason = "understanding_disabled"
-            break
-        variants = md.get("video_info", {}).get("variants", [])
-        mp4s = [v for v in variants if v.get("content_type") == "video/mp4" and v.get("url")]
-        if mp4s:
-            best = min(mp4s, key=lambda v: v.get("bitrate", 0))
-            # fetch-chain と x_grokbot は第三者の中継。動画 URL は twimg.com だけを許す（開始もリダイレクト先も）
-            video_understanding, video_reason = _gemini_video_understanding(
-                best["url"], deadline=gdeadline,
-                allowed_hosts=_X_VIDEO_HOSTS if via in ("fetch_chain", "x_grokbot") else None)
-            video_model = _last.get("model", "") if video_understanding else ""
-            meta = _gemini_meta(meta)
-        else:
-            # 動画はあるが mp4 バリアントが1つも無い（HLSのみ等）。ダウンロードする実体が無い。
-            video_reason = "no_mp4_variant"
-        break
+    if has_video and not understand_video:
+        video_reason = "understanding_disabled"
+    elif video_url:
+        # fetch-chain と x_grokbot は第三者の中継。動画 URL は twimg.com だけを許す（開始もリダイレクト先も）
+        video_understanding, video_reason = _gemini_video_understanding(
+            video_url, deadline=gdeadline,
+            allowed_hosts=_X_VIDEO_HOSTS if via in ("fetch_chain", "x_grokbot") else None)
+        video_model = _last.get("model", "") if video_understanding else ""
+        meta = _gemini_meta(meta)
+    elif has_video:
+        video_reason = "no_mp4_variant"
 
     # 添付画像: 引用ツイート取得(understand_video=False)では読まない(動画と同じ理由・45秒の枠)。
+    # 先頭4枚まで、並び順は崩さない。
     image_understanding = ""
     image_reason = ""          # 画像が無い/読めた場合は空のまま
     image_model = ""
@@ -1013,6 +1217,36 @@ def _fetch_x_impl(url, follow_links=True, understand_video=True, deadline=None, 
         image_understanding, image_reason = _gemini_image_understanding(photos[:4], deadline=gdeadline)
         image_model = _last.get("model", "") if image_understanding else ""
         meta = _gemini_meta(meta)
+
+    # 引用元のメディアは引用した側とは別呼び出し・別ラベル。カルーセル順は mediaDetails のまま。
+    q_video_text, q_video_reason = "", ""
+    q_image_text, q_image_reason = "", ""
+    if understand_video and (q_has_video or q_photos):
+        if _remaining(gdeadline) < 2 * _MIN_CALL_S:
+            q_video_reason = "deadline_skipped" if q_has_video else ""
+            q_image_reason = "deadline_skipped" if q_photos else ""
+            skipped.append("quoted_media")
+        else:
+            hosts = _X_VIDEO_HOSTS if via in ("fetch_chain", "x_grokbot") else None
+            if q_video:
+                q_video_text, q_video_reason = _gemini_video_understanding(
+                    q_video, deadline=gdeadline, allowed_hosts=hosts)
+                if q_video_text:
+                    video_model = video_model or (_last.get("model", "") or "")
+                    meta = _gemini_meta(meta)
+            elif q_has_video:
+                q_video_reason = "no_mp4_variant"
+            if q_photos and _remaining(gdeadline) >= _MIN_CALL_S:
+                who = _quote_who(quote)
+                q_image_text, q_image_reason = _gemini_image_understanding(
+                    q_photos[:4], deadline=gdeadline,
+                    instruction=("これらは引用元(%s)の投稿に、添付順（1枚目から）で並んだ画像です。"
+                                 "引用した側の画像と混ぜず、その順で説明して。画像内の文字は逐語で。") % who)
+                if q_image_text:
+                    image_model = image_model or (_last.get("model", "") or "")
+                    meta = _gemini_meta(meta)
+            elif q_photos:
+                q_image_reason = "deadline_skipped"
 
     # t.co 展開: 本文テキストのリンク先(X Article/YouTube/Instagram/Threads/引用ツイート/一般記事)を取得
     article_text = ""
@@ -1061,44 +1295,69 @@ def _fetch_x_impl(url, follow_links=True, understand_video=True, deadline=None, 
     text = tweet_text
     if article_text:
         text = tweet_text + "\n\n" + article_label + ":\n" + article_text
+    if quote and quote.get("text") and quote["text"] not in (text or ""):
+        text = _append_untrusted(text, "引用元 %s の本文" % _quote_who(quote), quote["text"], "quote_caption")
 
-    # 画像付き投稿は、画像URLを集めるだけで中身を一切読んでいない（OCR/Visionを通す
-    # 実装がここには無い）。それでも depth="full" を名乗るのは実態と違う。
-    # 図解・スクリーンショットが主役の投稿では、本文だけでは情報の大半が落ちる。
-    # 画像を読むのは Routine 側（手順4: 画像をダウンロードして Read で見る）の仕事なので、
-    # ここでは「まだ読まれていない画像がある」ことを欠損として正直に残す。
-    # 対象の画像を全部読めたときだけ image_content を外す(一部だけなら partial_download で残す)
-    if photos and not (image_understanding and not image_reason):
+    # 引用側の画像を先に、引用元の画像はラベルを分けて後ろに置く。
+    own_images_ok = bool(image_understanding) and not image_reason
+    if photos and not own_images_ok:
+        if depth == "full":
+            depth = "partial"
+        if "image_content" not in missing:
+            missing = missing + ["image_content"]
+    elif q_photos and not (q_image_text and not q_image_reason):
         if depth == "full":
             depth = "partial"
         if "image_content" not in missing:
             missing = missing + ["image_content"]
     if image_understanding:
-        text = text + "\n\n添付画像の内容: " + image_understanding
+        text = _append_untrusted(text, "添付画像の内容", image_understanding, "ocr")
+    if q_image_text:
+        text = _append_untrusted(text, "引用元 %s の添付画像の内容" % _quote_who(quote),
+                                 q_image_text, "quote_ocr")
 
+    any_video = has_video or q_has_video
+    video_understood = bool(video_understanding or q_video_text)
+    if not video_reason and q_video_reason and not video_understanding:
+        video_reason = q_video_reason
+    if video_understood:
+        video_reason = "" if video_understanding or q_video_text else video_reason
     if video_understanding:
-        text = text + "\n\n動画の内容: " + video_understanding
-    elif has_video:
-        # 動画はあるが理解できなかった(APIキー未設定/ダウンロード失敗/Gemini側エラー等)。
-        # タイトル・キャプションのみで完走させる(完走優先)が、欠損は正直に記録する。
+        text = _append_untrusted(text, "動画の内容", video_understanding, "gemini_video")
+    if q_video_text:
+        text = _append_untrusted(text, "引用元 %s の動画の内容" % _quote_who(quote),
+                                 q_video_text, "quote_video")
+    if any_video and not video_understood:
         if depth == "full":
             depth = "partial"
         missing = missing + ["video_content"]
 
+    tr = _aux.get("transcript") or {}
+    audio = (tr.get("text") or "").strip()
+    if audio:
+        audio = "<<<UNTRUSTED source=audio_transcript>>>\n%s\n<<<END UNTRUSTED>>>" % audio
+    stages = _stages_from_run(
+        has_video or bool(photos), video_understood, video_reason,
+        bool(photos), image_understanding, image_reason, tr,
+        quote_status=_quote_stage(q_has_video, q_video_text, q_video_reason,
+                                  q_photos, q_image_text, q_image_reason))
+    quote_ok = True
+    if understand_video and q_has_video and not q_video_text:
+        quote_ok = False
+    if understand_video and q_photos and not (q_image_text and not q_image_reason):
+        quote_ok = False
+    primary_ok = (not has_video or bool(video_understanding)) and (not photos or own_images_ok)
+    success = primary_ok and quote_ok
+
     return {"ok": True, "type": "x", "url": url,
             "fetched_via": via, **({"fetch_chain_tried": chain_tried} if chain_tried else {}),
-            # 動画理解の成否は本文の部分文字列で判定しない（本文側に同じ語が
-            # 現れれば誤検出するし、キャプションが空だと接頭辞が付かない）。
-            "video_understood": bool(video_understanding),
-            # どの経路で動画理解を諦めたか（成功時・動画なし時は空）。
-            # 恒久/一過性の分類はここでは決めず、照会側が導出する。
-            "video_reason": video_reason,
-            "has_video": bool(has_video),
-            # 添付画像の読み取り結果(成功時のみ)と、読めなかった理由(失敗時のみ)。
-            "image_summary": image_understanding,
+            "video_understood": video_understood,
+            "video_reason": "" if video_understood else video_reason,
+            "has_video": bool(any_video),
+            "image_summary": image_understanding or q_image_text,
             "image_model": image_model, "video_model": video_model,
             **(meta or {}),
-            "image_reason": image_reason,
+            "image_reason": image_reason or (q_image_reason if not photos else ""),
             "deadline_skipped": skipped,
             "title": (article_title or re.sub(r"\s+", " ", tweet_text or "").strip())[:80],
             "text": text,
@@ -1107,7 +1366,13 @@ def _fetch_x_impl(url, follow_links=True, understand_video=True, deadline=None, 
             "likes": d.get("favorite_count"), "media": media,
             "photos": photos,
             "cover": media[0] if media else "",
-            "depth": depth, "missing": missing}
+            "depth": depth, "missing": missing,
+            "quoted_handle": (quote or {}).get("handle") or "",
+            "audio_transcript": audio,
+            "transcript_reason": tr.get("reason") or "",
+            "stages": stages,
+            "success": success,
+            "unique_url": _normalize_url_for_rid(url)}
 
 
 # ---------- Instagram Reel 動画URL取得（中継: kkinstagram.com） ----------
@@ -1149,7 +1414,7 @@ class _NoFollowRedirectHandler(urllib.request.HTTPRedirectHandler):
         return None
 
 
-def _fetch_instagram_reel_video_url(url, timeout=12, retry_delay=2):
+def _fetch_instagram_reel_video_url(url, timeout=12, retry_delay=2, relay_template=None):
     """Instagram Reel の実体mp4 URLを中継(kkinstagram.com)経由で取得する。
     戻り値: (video_url_or_None, reason_code)。成功時の reason_code は ""。
 
@@ -1163,7 +1428,7 @@ def _fetch_instagram_reel_video_url(url, timeout=12, retry_delay=2):
     m = _REEL_SHORTCODE_RE.search(url)
     if not m:
         return None, "instagram_relay_not_video"
-    relay_url = "https://www.kkinstagram.com/reel/%s/" % m.group(1)
+    relay_url = (relay_template or "https://www.kkinstagram.com/reel/%s/") % m.group(1)
     opener = urllib.request.build_opener(_NoFollowRedirectHandler())
 
     for attempt in range(2):
@@ -1208,6 +1473,170 @@ def _fetch_instagram_reel_video_url(url, timeout=12, retry_delay=2):
     return None, "instagram_relay_unavailable"
 
 
+_IG_FIX_TEMPLATES = (
+    "https://www.kkinstagram.com/reel/%s/",
+    "https://www.ddinstagram.com/reel/%s/",
+)
+_IG_CODE_RE = re.compile(r"/(?:reel|p|tv)/([A-Za-z0-9_-]+)")
+
+
+def _fetch_instagramfix_video_url(url, timeout=12, retry_delay=2):
+    """instagramfix 系（kkinstagram → ddinstagram）。成功したらそこで止める。"""
+    reasons = []
+    for tmpl in _IG_FIX_TEMPLATES:
+        got, reason = _fetch_instagram_reel_video_url(
+            url, timeout=timeout, retry_delay=retry_delay, relay_template=tmpl)
+        if got:
+            return got, ""
+        reasons.append(reason)
+        if reason == "instagram_relay_not_video" and "/reel/" not in url:
+            break
+    for reason in reasons:
+        if reason == "instagram_relay_thumbnail_only":
+            return None, reason
+    return None, (reasons[-1] if reasons else "instagram_relay_unavailable")
+
+
+def _ytdlp_reel_argv(url, outtmpl):
+    return [
+        shutil.which("yt-dlp") or "yt-dlp",
+        "--no-playlist", "--no-warnings", "--no-progress", "--no-cookies",
+        "--socket-timeout", "20", "--retries", "1",
+        "--max-filesize", "100M",
+        "-f", "b[ext=mp4]/b",
+        "-o", outtmpl, url,
+    ]
+
+
+def _ytdlp_download_reel(url, deadline):
+    """Reel を yt-dlp で一時ディレクトリへ。失敗は None。cookie / login は渡さない。"""
+    if not shutil.which("yt-dlp"):
+        return None
+    if not _host_matches(_host_of(url), "instagram.com") or "/reel/" not in url:
+        return None
+    tmp = tempfile.mkdtemp(prefix="katut_ig_")
+    cmd = _ytdlp_reel_argv(url, os.path.join(tmp, "v.%(ext)s"))
+    if any(a in ("--cookies", "--cookies-from-browser", "--username", "--password") for a in cmd):
+        shutil.rmtree(tmp, ignore_errors=True)
+        return None
+    try:
+        timeout = 45 if deadline is None else max(1, min(45, _remaining(deadline)))
+        subprocess.run(cmd, timeout=timeout, check=False, capture_output=True)
+    except Exception:
+        shutil.rmtree(tmp, ignore_errors=True)
+        return None
+    files = [os.path.join(tmp, n) for n in os.listdir(tmp)
+             if os.path.isfile(os.path.join(tmp, n)) and os.path.getsize(os.path.join(tmp, n)) > 0]
+    if not files:
+        shutil.rmtree(tmp, ignore_errors=True)
+        return None
+    return files[0]
+
+
+def _instaloader_fetch(url, deadline):
+    """ログインもセッションファイルも使わない。戻り値 {ok, reason, video, images}。
+    images はカルーセルの表示順。video は手元のファイルパス（呼び出し側が消す）。"""
+    box = {}
+
+    def run():
+        try:
+            box["value"] = _instaloader_fetch_inner(url)
+        except Exception as e:
+            box["value"] = {"ok": False, "reason": "exception:%s" % type(e).__name__,
+                            "video": None, "images": []}
+
+    t = threading.Thread(target=run, daemon=True)
+    t.start()
+    limit = 25 if deadline is None else max(1, min(25, _remaining(deadline)))
+    t.join(timeout=limit)
+    return box.get("value") or {"ok": False, "reason": "timeout", "video": None, "images": []}
+
+
+def _ig_url_ok(url):
+    if urllib.parse.urlsplit(url).scheme.lower() != "https":
+        return False
+    return any(_host_matches(_host_of(url), h) for h in _INSTAGRAM_VIDEO_ALLOWED_HOSTS)
+
+
+def _download_to(url, dest, timeout):
+    if not _ig_url_ok(url):
+        return False
+    req = urllib.request.Request(url, headers={"User-Agent": BROWSER_UA})
+    opener = urllib.request.build_opener(_AllowlistRedirectHandler(_INSTAGRAM_VIDEO_ALLOWED_HOSTS))
+    with opener.open(req, timeout=timeout) as r:
+        data = r.read(_VIDEO_MAX_BYTES + 1)
+    if not data or len(data) > _VIDEO_MAX_BYTES:
+        return False
+    with open(dest, "wb") as f:
+        f.write(data)
+    return True
+
+
+def _instaloader_fetch_inner(url):
+    empty = {"ok": False, "reason": "instaloader_missing", "video": None, "images": []}
+    try:
+        import instaloader
+    except ImportError:
+        return empty
+    m = _IG_CODE_RE.search(url or "")
+    if not m:
+        return {"ok": False, "reason": "instagram_relay_not_video", "video": None, "images": []}
+    dest = tempfile.mkdtemp(prefix="katut_il_")
+    try:
+        return _instaloader_read_post(url, dest, instaloader, m.group(1))
+    except Exception:
+        shutil.rmtree(dest, ignore_errors=True)
+        raise
+
+
+def _instaloader_read_post(url, dest, instaloader, shortcode):
+    L = instaloader.Instaloader(
+        dirname_pattern=dest, filename_pattern="{shortcode}",
+        download_pictures=False, download_videos=False, download_video_thumbnails=False,
+        download_geotags=False, download_comments=False, save_metadata=False,
+        compress_json=False, post_metadata_txt_pattern="", max_connection_attempts=1, quiet=True)
+    # ログイン・セッション読み込みはしない。公開リポに cookie を置かない。
+    post = instaloader.Post.from_shortcode(L.context, shortcode)
+    nodes = []
+    if getattr(post, "typename", "") == "GraphSidecar":
+        nodes = list(post.get_sidecar_nodes())
+    else:
+        nodes = [post]
+    images = []
+    video_path = None
+    for i, node in enumerate(nodes):
+        is_video = bool(getattr(node, "is_video", False))
+        media_url = getattr(node, "video_url", None) if is_video else (
+            getattr(node, "display_url", None) or getattr(node, "url", None))
+        if not media_url or not _ig_url_ok(media_url):
+            continue
+        if is_video and video_path is None:
+            path = os.path.join(dest, "v%d.mp4" % i)
+            if _download_to(media_url, path, 30):
+                video_path = path
+        elif not is_video:
+            images.append(media_url)
+    if not video_path and not images:
+        shutil.rmtree(dest, ignore_errors=True)
+        return {"ok": False, "reason": "instaloader_empty", "video": None, "images": []}
+    return {"ok": True, "reason": "", "video": video_path, "images": images, "dir": dest}
+
+
+def _acquire_instagram_reel(url, deadline):
+    """(local_path or None, remote_url or None, reason, source)。local の親ディレクトリは呼び出し側が消す。"""
+    local = _ytdlp_download_reel(url, deadline)
+    if local:
+        return local, None, "", "ytdlp"
+    remote, reason = _fetch_instagramfix_video_url(url)
+    if remote:
+        return None, remote, "", "instagramfix"
+    got = _instaloader_fetch(url, deadline)
+    if got.get("ok") and got.get("video"):
+        return got["video"], None, "", "instaloader"
+    return None, None, reason or got.get("reason") or "instagram_relay_unavailable", ""
+
+
+@_isolate_aux
 def fetch_instagram(url):
     deadline = _new_deadline()
     _last.clear()
@@ -1259,47 +1688,76 @@ def fetch_instagram(url):
         mc2 = re.search(r':\s*"(.*)"', og_desc, re.S)
         cap = mc2.group(1) if mc2 else og_desc
 
-    # Reels動画理解: 中継(kkinstagram.com)経由でmp4 URLを取得→Gemini APIへ渡す。
-    # 失敗/対象外ならmissingに正直に記録する(caption-only フォールバックが緩和策の本体。
-    # 動画側が何で失敗してもここから先は必ずok:Trueでキャプション・og:imageを返し、
-    # 夜間Routineを止めない)。
+    # Reel は yt-dlp → instagramfix（kkinstagram, ddinstagram）→ 無認証 instaloader。
+    # ログインも cookie も使わない。失敗してもキャプションで ok:True のまま完走する。
     text = cap
     is_reel = "/reel/" in url
     video_understanding = ""
     video_reason = ""
     video_model = ""
     meta = None
-    if is_reel:
-        mp4_url, reason = _fetch_instagram_reel_video_url(url)
-        if mp4_url:
-            video_understanding, video_reason = _gemini_video_understanding(
-                mp4_url, allowed_hosts=_INSTAGRAM_VIDEO_ALLOWED_HOSTS, deadline=deadline)
-            video_model = _last.get("model", "") if video_understanding else ""
-            meta = _gemini_meta()
+    photos = [og_img] if og_img else []
+    image_understanding = ""
+    image_reason = ""
+    local_dir = None
+    try:
+        if is_reel:
+            local_path, remote, reason, _source = _acquire_instagram_reel(url, deadline)
+            if local_path:
+                local_dir = os.path.dirname(local_path)
+                video_understanding, video_reason = _gemini_understand_local(local_path, deadline=deadline)
+                video_model = _last.get("model", "") if video_understanding else ""
+                meta = _gemini_meta() if video_understanding or _last else None
+            elif remote:
+                video_understanding, video_reason = _gemini_video_understanding(
+                    remote, allowed_hosts=_INSTAGRAM_VIDEO_ALLOWED_HOSTS, deadline=deadline)
+                video_model = _last.get("model", "") if video_understanding else ""
+                meta = _gemini_meta()
+            else:
+                video_understanding, video_reason = "", reason
+            if not video_understanding and not video_reason:
+                video_reason = "instagram_relay_unavailable"
+            if video_understanding:
+                text = _append_untrusted(cap, "動画の内容", video_understanding, "gemini_video")
+                depth = "full"
+                missing = []
+            else:
+                depth = "partial"
+                missing = ["video_content"]
         else:
-            video_understanding, video_reason = "", reason
-        # video_reasonが空文字のままmissing:["video_content"]になる経路を作らない
-        # (理解に失敗したら必ず上の理由コードのいずれかが入っている契約のガード)。
-        if not video_understanding and not video_reason:
-            video_reason = "instagram_relay_unavailable"
-        if video_understanding:
-            text = cap + "\n\n動画の内容: " + video_understanding
-            depth = "full"
-            missing = []
-        else:
-            # Reelと分かっているのに動画URL取得やGemini理解が失敗した場合は、通常投稿(画像等)と
-            # 区別できるようdepth: partial + missing: video_content で記録する(単なる shallow だと
-            # 「動画として一度も試みていない」場合と見分けが付かず、後からの再取得対象を絞り込めない。
-            # Codex敵対的レビューで指摘)。
-            depth = "partial"
-            missing = ["video_content"]
-    else:
-        depth = "shallow"
-        missing = ["visual_content", "audio_content"]
+            depth = "shallow"
+            missing = ["visual_content", "audio_content"]
+            got = _instaloader_fetch(url, deadline)
+            if got.get("dir"):
+                local_dir = got["dir"]
+            images = got.get("images") or []
+            if images:
+                photos = images
+                image_understanding, image_reason = _gemini_image_understanding(
+                    images[:4], deadline=deadline, allowed_hosts=_INSTAGRAM_VIDEO_ALLOWED_HOSTS,
+                    instruction="これはInstagramのカルーセルです。添付順（1枚目から）を崩さず説明して。画像内の文字は逐語で。")
+                if image_understanding and not image_reason:
+                    missing = ["audio_content"]
+                    depth = "partial"
+                    text = _append_untrusted(cap, "添付画像の内容", image_understanding, "ocr")
+    finally:
+        if local_dir:
+            shutil.rmtree(local_dir, ignore_errors=True)
+
+    tr = _aux.get("transcript") or {}
+    audio = (tr.get("text") or "").strip()
+    if audio:
+        audio = "<<<UNTRUSTED source=audio_transcript>>>\n%s\n<<<END UNTRUSTED>>>" % audio
+    stages = _stages_from_run(
+        is_reel, bool(video_understanding), video_reason,
+        bool(photos) and not is_reel, image_understanding, image_reason, tr)
+    success = (not is_reel or bool(video_understanding)) and (
+        is_reel or not photos or (bool(image_understanding) and not image_reason) or image_reason == "")
+    # カルーセルを試して失敗した非リールは、従来どおり og の shallow のまま成功扱いにしない。
+    if not is_reel and image_reason and not image_understanding:
+        success = False
 
     return {"ok": True, "type": "instagram", "url": url,
-            # キャプションが空だと text が理解結果そのものになり「動画の内容:」が
-            # 付かない。部分文字列判定ではこれを取りこぼすので明示フラグを返す。
             "video_understood": bool(video_understanding),
             "video_reason": video_reason,
             "video_model": video_model,
@@ -1308,13 +1766,16 @@ def fetch_instagram(url):
             "title": (cap or og_title)[:80], "text": text,
             "author": name, "handle": handle, "date": date,
             "likes": likes, "comments": comments, "cover": og_img,
-            # photos: og:image はIG側の署名付きURLで既に実質フル解像度(実測2160x2880px)。
-            # X実装のようなクエリ改変での高解像度化は署名検証に引っかかり403になるため行わない
-            # (2026-07-28調査)。Xとのフィールド名を揃え、Routine側の「画像はphotosを見てダウンロード
-            # →Readで読む」という指示を使い回せるようにするだけの目的でそのまま入れる。
-            "photos": [og_img] if og_img else [],
+            "photos": photos,
+            "image_summary": image_understanding,
+            "image_reason": image_reason,
             "note": "og:descriptionは長文截断あり。フル要時はoEmbedへ昇格",
-            "depth": depth, "missing": missing}
+            "depth": depth, "missing": missing,
+            "audio_transcript": audio,
+            "transcript_reason": tr.get("reason") or "",
+            "stages": stages,
+            "success": bool(video_understanding) if is_reel else success,
+            "unique_url": _normalize_url_for_rid(url)}
 
 
 # ---------- Threads ----------
@@ -1421,6 +1882,50 @@ def _yt_transcript(vid_id, max_chars=50000, timeout=30):
     return result.get("text", "")[:max_chars]
 
 
+@_isolate_aux
+def _finish_youtube(url, title, author, cover, caption, note=""):
+    """字幕が無ければ Groq（15分まで）。全文は facts に残さない。"""
+    text = (title + "\n\n" + caption).strip() if caption else (title or "")
+    has = bool(caption)
+    transcript_reason = "captions" if has else ""
+    tr = {"ok": True, "reason": "captions", "text": "", "flagged": 0, "duration_s": 0} if has else None
+    if not has:
+        tr = groq_transcribe.transcribe_youtube(url)
+        _note_transcript(tr)
+        if tr.get("ok") and tr.get("text"):
+            has = True
+            transcript_reason = ""
+            text = (title or "") + "\n\n<<<UNTRUSTED source=audio_transcript>>>\n%s\n<<<END UNTRUSTED>>>" % tr["text"]
+        else:
+            transcript_reason = tr.get("reason") or "unavailable"
+    missing = [] if has else ["transcript"]
+    if not has and transcript_reason in ("budget", "duration_cap"):
+        missing = ["transcript", "video_content"]
+    audio = ""
+    if tr and tr.get("text"):
+        audio = "<<<UNTRUSTED source=audio_transcript>>>\n%s\n<<<END UNTRUSTED>>>" % tr["text"]
+    stages = _stages_from_run(True, False, "" if has else transcript_reason, False, "", "", tr or {})
+    if has:
+        stages["understanding"] = {"status": "skipped", "reason": "transcript_only"}
+        if transcript_reason == "captions":
+            stages["transcription"] = {"status": "ok", "reason": "captions", "flagged": 0, "duration_s": 0}
+    out = {"ok": True, "type": "youtube", "url": url,
+           "title": (title or "")[:80], "text": text,
+           "author": author or "", "handle": "",
+           "cover": cover or "",
+           "has_transcript": has,
+           "transcript_reason": transcript_reason,
+           "audio_transcript": audio,
+           "depth": "full" if has else "shallow",
+           "missing": missing,
+           "stages": stages,
+           "success": has,
+           "unique_url": _normalize_url_for_rid(url)}
+    if note:
+        out["note"] = note
+    return out
+
+
 def fetch_youtube(url):
     """YouTube oEmbed（無認証・無料）: タイトル・チャンネル名・サムネ取得 + transcript"""
     vid_id = _yt_video_id(url)
@@ -1430,16 +1935,8 @@ def fetch_youtube(url):
         try:
             d = json.loads(txt)
             title = d.get("title", "")
-            transcript = _yt_transcript(vid_id)
-            text = (title + "\n\n" + transcript).strip() if transcript else title
-            has_transcript = bool(transcript)
-            return {"ok": True, "type": "youtube", "url": url,
-                    "title": title[:80], "text": text,
-                    "author": d.get("author_name", ""), "handle": "",
-                    "cover": d.get("thumbnail_url", ""),
-                    "has_transcript": has_transcript,
-                    "depth": "full" if has_transcript else "shallow",
-                    "missing": [] if has_transcript else ["transcript"]}
+            return _finish_youtube(url, title, d.get("author_name", ""), d.get("thumbnail_url", ""),
+                                   _yt_transcript(vid_id))
         except Exception:
             pass
     # フォールバック: og:meta
@@ -1456,17 +1953,8 @@ def fetch_youtube(url):
         og_desc  = _meta(txt, "og:description")
         og_img   = _meta(txt, "og:image")
         if og_title:
-            transcript = _yt_transcript(vid_id)
-            text_base = og_desc or og_title
-            text = (og_title + "\n\n" + transcript).strip() if transcript else text_base
-            has_transcript = bool(transcript)
-            return {"ok": True, "type": "youtube", "url": url,
-                    "title": og_title[:80], "text": text,
-                    "author": "", "handle": "", "cover": og_img or "",
-                    "has_transcript": has_transcript,
-                    "note": "og:meta fallback",
-                    "depth": "full" if has_transcript else "shallow",
-                    "missing": [] if has_transcript else ["transcript"]}
+            return _finish_youtube(url, og_title, "", og_img or "", _yt_transcript(vid_id),
+                                   note="og:meta fallback")
     return {"ok": False, "type": "youtube", "reason": "oEmbed & og:meta 失敗", "url": url,
             "fail_reason": "youtube_no_og_meta"}
 
@@ -1714,7 +2202,7 @@ def fetch_web(url):
 # ---------- ディスパッチャ ----------
 # 取得ロジックを変えたら上げる。過去の取得結果が「どの版で取られたか」を
 # 後から判別できるようにするための版番号。
-FETCHER_VERSION = "2026-09-20.1"
+FETCHER_VERSION = "2026-11-04.1"
 
 
 # ---------- rid解決（captures.json との逆引き） ----------
@@ -1887,14 +2375,74 @@ def clean_video_summary(text):
     return cut[:i + 1] if i > 0 else cut + "…"
 
 
+def _transcript_stage(tr):
+    if not tr:
+        return {"status": "skipped", "reason": "no_media"}
+    extra = {"flagged": int(tr.get("flagged") or 0), "duration_s": int(tr.get("duration_s") or 0)}
+    if tr.get("ok"):
+        return {"status": "ok", "reason": "", **extra}
+    reason = tr.get("reason") or "failed"
+    status = "fail" if reason.startswith(("http_", "exception")) else "skipped"
+    return {"status": status, "reason": reason, **extra}
+
+
+def _quote_stage(q_has_video, q_video_text, q_video_reason, q_photos, q_image_text, q_image_reason):
+    if not q_has_video and not q_photos:
+        return {"status": "skipped", "reason": "no_quote"}
+    video_bad = q_has_video and not q_video_text
+    image_bad = q_photos and not (q_image_text and not q_image_reason)
+    if video_bad or image_bad:
+        return {"status": "fail", "reason": q_video_reason or q_image_reason or "quote_failed"}
+    return {"status": "ok", "reason": ""}
+
+
+def _stages_from_run(tried_media, video_understood, video_reason, has_photos, image_text, image_reason, tr,
+                     quote_status=None):
+    """download / frames / transcription / understanding。frames は Gemini に動画そのものを渡すので切らない。"""
+    dl = _aux.get("download")
+    if not dl:
+        if has_photos and image_text and not image_reason:
+            dl = {"status": "ok", "reason": ""}
+        elif has_photos and image_reason:
+            dl = {"status": "fail", "reason": image_reason}
+        elif tried_media and video_reason:
+            dl = {"status": "fail" if video_reason not in ("understanding_disabled", "deadline_skipped", "no_mp4_variant") else "skipped",
+                  "reason": video_reason}
+        else:
+            dl = {"status": "skipped", "reason": "no_media"}
+    if video_understood or (image_text and not image_reason):
+        understanding = {"status": "ok", "reason": ""}
+    elif not tried_media and not has_photos:
+        understanding = {"status": "skipped", "reason": "no_media"}
+    else:
+        understanding = {"status": "fail", "reason": video_reason or image_reason or "not_understood"}
+    frames_reason = "gemini_native" if dl.get("status") == "ok" and tried_media else "no_video"
+    out = {
+        "download": dl,
+        "frames": {"status": "skipped", "reason": frames_reason},
+        "transcription": _transcript_stage(tr if tried_media else None),
+        "understanding": understanding,
+    }
+    if quote_status:
+        out["quote"] = quote_status
+    return out
+
+
 def _video_summary(result):
     """動画理解の本文（text 末尾の「動画の内容: ...」）を整形して VIDEO_SUMMARY_MAX 字以内で返す。
     video_understood が偽なら空。fetch_x / fetch_instagram とも動画理解を text の最後に足す。"""
     if not result.get("video_understood"):
         return ""
-    _head, sep, tail = (result.get("text") or "").rpartition("\n\n動画の内容: ")
+    text = result.get("text") or ""
+    # 引用元の「…の動画の内容」より、投稿本体の「\n\n動画の内容:」を優先する。
+    _head, sep, tail = text.rpartition("\n\n動画の内容: ")
     if not sep:
-        return ""   # 区切りが無い text は要約を捏造しない
+        m = re.search(r"動画の内容: (.*?)(?:\n<<<END UNTRUSTED>>>|\Z)", text, re.S)
+        if not m:
+            return ""
+        tail = m.group(1)
+    tail = tail.split("\n<<<END UNTRUSTED>>>", 1)[0]
+    tail = tail.replace("<<<END UNTRUSTED>>>", "")
     return clean_video_summary(tail)
 
 
@@ -1977,6 +2525,18 @@ def _facts(url, started, result):
         # insufficient_time / quote_path）。Gemini の primary_skipped(bool) とは別キー。値は記録しない。
         "x_primary_skipped": result.get("x_primary_skipped", ""),
         "x_primary_reason": result.get("x_primary_reason", ""),
+        # 段ごとの成否（download / frames / transcription / understanding）。本文は入れない。
+        # unique_url は追跡パラメータを除いた URL。success はその試行、unique_success は
+        # record_facts が同日の同じ unique_url の成功を残す（再試行の失敗で消さない）。
+        "stages": result.get("stages") or {
+            "download": {"status": "skipped", "reason": ""},
+            "frames": {"status": "skipped", "reason": ""},
+            "transcription": {"status": "skipped", "reason": ""},
+            "understanding": {"status": "skipped", "reason": ""},
+        },
+        "unique_url": result.get("unique_url") or _normalize_url_for_rid(url),
+        "success": bool(result["success"]) if "success" in result else bool(result.get("ok")),
+        "transcript_reason": result.get("transcript_reason", ""),
         # 同じ日に同じURLを何度取り直したか。日別ファイルはURLキーのdictなので
         # 同日2回目は1回目のレコードを上書きしてしまい、回数の痕跡だけが消える
         # （2026-09-02 Codexの敵対的レビューで発見）。ファイル形式を変えずに
@@ -2035,6 +2595,16 @@ def record_facts(facts, day=None):
                 facts["attempt_seq"] = int(prev.get("attempt_seq", 1)) + 1
             except (TypeError, ValueError):
                 facts["attempt_seq"] = 2
+        uk = facts.get("unique_url") or facts.get("url")
+        prior = bool(isinstance(prev, dict) and (prev.get("success") or prev.get("unique_success")))
+        if uk and not prior:
+            for rec in store.values():
+                if isinstance(rec, dict) and rec.get("unique_url") == uk and (
+                        rec.get("success") or rec.get("unique_success")):
+                    prior = True
+                    break
+        facts["prior_success"] = prior
+        facts["unique_success"] = bool(facts.get("success")) or prior
         store[facts["url"]] = facts
         # 原子的置換。書き込み途中で落ちても既存ファイルを壊さない
         # （壊れると次回ランがそれを読めず、その日の記録ごと失う）。
@@ -2073,10 +2643,46 @@ def fetch_content(url):
     if isinstance(result, dict):
         result["facts"] = _facts(url, started, result)
         record_facts(result["facts"])
+        _log_media_stages(result["facts"])
     return result
 
 
+def _log_media_stages(facts):
+    """1 URL 1行。段の成否と、同日の unique URL として成功したかを残す（本文は出さない）。"""
+    st = facts.get("stages") or {}
+
+    def one(name):
+        s = st.get(name) or {}
+        status = s.get("status") or "?"
+        reason = s.get("reason") or ""
+        return status if not reason else "%s:%s" % (status, reason)
+
+    uk = facts.get("unique_url") or ""
+    if len(uk) > 180:
+        uk = uk[:180]
+    print("MEDIA_STAGES: success=%s unique_success=%s download=%s frames=%s transcription=%s understanding=%s url=%s" % (
+        int(bool(facts.get("success"))), int(bool(facts.get("unique_success"))),
+        one("download"), one("frames"), one("transcription"), one("understanding"), uk),
+          file=sys.stderr)
+
+
+def _log_media_setup():
+    """起動時に Gemini の import とキーの有無を1行で残す。キーの値は出さない。"""
+    gemini = "ok" if _GEMINI_AVAILABLE else ("fail:%s" % (_GEMINI_IMPORT_ERROR or "import"))
+    key = "set" if _GEMINI_API_KEY else "unset"
+    groq = "set" if groq_transcribe.api_key() else "unset"
+    ff = "ok" if shutil.which("ffmpeg") and shutil.which("ffprobe") else "missing"
+    print("MEDIA_SETUP: gemini=%s gemini_key=%s model=%s fallback=%s groq_key=%s ffmpeg=%s" % (
+        gemini, key, _GEMINI_MODEL, _GEMINI_FALLBACK_MODEL, groq, ff), file=sys.stderr)
+    if not _GEMINI_AVAILABLE or not _GEMINI_API_KEY:
+        print("::warning::Gemini SDK import failed or GEMINI_API_KEY is unset; media understanding will record gemini_unavailable",
+              file=sys.stderr)
+    if not groq_transcribe.api_key():
+        groq_transcribe.warn_missing_key()
+
+
 if __name__ == "__main__":
+    _log_media_setup()
     urls = sys.argv[1:] or [
         "https://x.com/obsidianotaku/status/2067951785298522305",
         "https://www.instagram.com/p/DZj9G-hEiZW/",

@@ -432,7 +432,17 @@ class ReasonKindClassificationTest(unittest.TestCase):
 class FetchInstagramCaptionFallbackTest(unittest.TestCase):
     """動画理解に失敗しても fetch_instagram() は ok:True でキャプションを返す
     （caption-only フォールバック）。中継のダブルは _fetch_instagram_reel_video_url() に閉じ、
-    fetch_instagram() 自体は本物の関数を通す。"""
+    fetch_instagram() 自体は本物の関数を通す。
+    yt-dlp / instaloader はこのクラスでは走らせない（インストール有無でネットワークに出ない）。"""
+
+    def setUp(self):
+        self._ydl = patch("fetch_content._ytdlp_download_reel", return_value=None)
+        self._ilo = patch("fetch_content._instaloader_fetch", return_value={
+            "ok": False, "reason": "instaloader_missing", "video": None, "images": []})
+        self._ydl.start()
+        self._ilo.start()
+        self.addCleanup(self._ydl.stop)
+        self.addCleanup(self._ilo.stop)
 
     _OG_HTML = (
         '<html><head>'

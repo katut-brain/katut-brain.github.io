@@ -22,6 +22,7 @@ import fetch_content  # noqa: E402
 LINE_RE = re.compile(
     r"^DEPS_STATUS: python=\d+\.\d+\.\d+ genai=(ok|fail\(.+\)) "
     r"yt_transcript=(ok|fail\(.+\)) gemini_key=(set|unset) "
+    r"groq_key=(set|unset) ffmpeg=(ok|missing) ffprobe=(ok|missing) "
     r"pip_exit=(-?\d+|unknown) pip_retry=(none|bsp)$")
 
 

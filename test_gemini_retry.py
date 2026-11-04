@@ -101,19 +101,39 @@ class GeminiRetryTest(_MarkerMixin):
             except Exception as e:  # noqa: BLE001
                 return None, e, models
 
+    def test_models_are_pinned_lite_primary_and_jittered(self):
+        """*-latest は使わない。主は flash-lite。5xx 再試行は指数＋ジッタ。429 は再試行リストに入れない。"""
+        self.assertNotIn("latest", fetch_content._GEMINI_MODEL)
+        self.assertNotIn("latest", fetch_content._GEMINI_FALLBACK_MODEL)
+        self.assertIn("lite", fetch_content._GEMINI_MODEL)
+        captured = {}
+
+        class C:
+            def __init__(self, **kw):
+                captured.update(kw)
+
+        with patch.object(fetch_content._genai, "Client", C):
+            fetch_content._gemini_client(1000, 2)
+        opts = captured["http_options"].retry_options
+        self.assertEqual(opts.jitter, fetch_content._GEMINI_RETRY_JITTER)
+        self.assertGreater(opts.jitter, 1)
+        self.assertEqual(opts.exp_base, 2)
+        self.assertIn(503, opts.http_status_codes)
+        self.assertNotIn(429, opts.http_status_codes)
+
     def test_503_once_then_primary_succeeds(self):
         resp, err, models = self._run([503, "ok"])
         self.assertIsNone(err)
-        self.assertEqual(models, ["gemini-flash-latest"] * 2)
-        self.assertEqual(fetch_content._last["model"], "gemini-flash-latest")
+        self.assertEqual(models, [fetch_content._GEMINI_MODEL] * 2)
+        self.assertEqual(fetch_content._last["model"], fetch_content._GEMINI_MODEL)
         self.assertFalse(os.path.exists(self.marker))
 
     def test_primary_exhausted_falls_back_to_lite_once(self):
         resp, err, models = self._run([503, 503, "ok"])
         self.assertIsNone(err)
         self.assertEqual(resp.text, "要約です")
-        self.assertEqual(models, ["gemini-flash-latest"] * 2 + ["gemini-flash-lite-latest"])
-        self.assertEqual(fetch_content._last["model"], "gemini-flash-lite-latest")
+        self.assertEqual(models, [fetch_content._GEMINI_MODEL] * 2 + [fetch_content._GEMINI_FALLBACK_MODEL])
+        self.assertEqual(fetch_content._last["model"], fetch_content._GEMINI_FALLBACK_MODEL)
         # 予備で成功しても主の失敗理由が残る
         self.assertEqual(fetch_content._last["primary_reason"], "exception:ServerError:503")
         self.assertTrue(os.path.exists(self.marker))   # 主は死んでいる印
@@ -123,13 +143,13 @@ class GeminiRetryTest(_MarkerMixin):
         # サーバは "slow" を 1.0 秒後に ok で返すので、主2回はタイムアウトし予備も同様に黙る…ため
         # 予備側は即応答させる(3回目だけ ok)。
         resp, err, models = self._run(["slow", "slow", "ok"], timeout_s=0.3)
-        self.assertEqual(models[:2], ["gemini-flash-latest"] * 2)
-        self.assertEqual(models[2], "gemini-flash-lite-latest")
+        self.assertEqual(models[:2], [fetch_content._GEMINI_MODEL] * 2)
+        self.assertEqual(models[2], fetch_content._GEMINI_FALLBACK_MODEL)
         self.assertTrue(fetch_content._last["primary_reason"].startswith("exception:"))
 
     def test_403_is_not_sent_to_fallback(self):
         _, err, models = self._run([403, "ok"])
-        self.assertEqual(models, ["gemini-flash-latest"])    # 予備を呼ばない・再試行もしない
+        self.assertEqual(models, [fetch_content._GEMINI_MODEL])    # 予備を呼ばない・再試行もしない
         self.assertEqual(fetch_content._exception_reason(err), "exception:ClientError:403")
         self.assertFalse(os.path.exists(self.marker))
 
@@ -137,8 +157,8 @@ class GeminiRetryTest(_MarkerMixin):
         """主の1日の枠切れ(429)は、再試行せず予備を1回。6時間の印に理由を残す。"""
         resp, err, models = self._run([429, "ok"])
         self.assertIsNone(err)
-        self.assertEqual(models, ["gemini-flash-latest", "gemini-flash-lite-latest"])
-        self.assertEqual(fetch_content._last["model"], "gemini-flash-lite-latest")
+        self.assertEqual(models, [fetch_content._GEMINI_MODEL, fetch_content._GEMINI_FALLBACK_MODEL])
+        self.assertEqual(fetch_content._last["model"], fetch_content._GEMINI_FALLBACK_MODEL)
         self.assertEqual(fetch_content._last["primary_reason"], "exception:ClientError:429")
         with open(self.marker) as f:
             until, reason = f.read().split(None, 1)
@@ -149,7 +169,7 @@ class GeminiRetryTest(_MarkerMixin):
         self._run([429, "ok"])
         resp, err, models = self._run(["ok"])
         self.assertIsNone(err)
-        self.assertEqual(models, ["gemini-flash-lite-latest"])          # 主は呼ばない
+        self.assertEqual(models, [fetch_content._GEMINI_FALLBACK_MODEL])          # 主は呼ばない
         self.assertTrue(fetch_content._last["primary_skipped"])
         self.assertEqual(fetch_content._last["primary_reason"], "exception:ClientError:429")
 
@@ -161,7 +181,7 @@ class GeminiRetryTest(_MarkerMixin):
                 os.remove(self.marker)
             resp, err, models = self._run([(429, msg), "ok"])
             self.assertIsNone(err, msg)
-            self.assertEqual(models, ["gemini-flash-latest", "gemini-flash-lite-latest"], msg)
+            self.assertEqual(models, [fetch_content._GEMINI_MODEL, fetch_content._GEMINI_FALLBACK_MODEL], msg)
             self.assertFalse(os.path.exists(self.marker), msg)
 
     def test_legacy_marker_reports_reason(self):
@@ -169,12 +189,12 @@ class GeminiRetryTest(_MarkerMixin):
         with open(self.marker, "w") as f:
             f.write(str(time.time() + 600))
         resp, err, models = self._run(["ok"])
-        self.assertEqual(models, ["gemini-flash-lite-latest"])
+        self.assertEqual(models, [fetch_content._GEMINI_FALLBACK_MODEL])
         self.assertEqual(fetch_content._last["primary_reason"], "legacy_marker")
 
     def test_both_429_is_quota(self):
         _, err, models = self._run([429])
-        self.assertEqual(models, ["gemini-flash-latest", "gemini-flash-lite-latest"])
+        self.assertEqual(models, [fetch_content._GEMINI_MODEL, fetch_content._GEMINI_FALLBACK_MODEL])
         self.assertTrue(fetch_content._is_quota_error(err))
         self.assertEqual(fetch_content._last["fallback_reason"], "gemini_quota")
 
@@ -200,7 +220,7 @@ class GeminiRetryTest(_MarkerMixin):
     def test_connection_cut_falls_back_to_lite(self):
         resp, err, models = self._run(["cut", "ok"])
         self.assertIsNone(err)
-        self.assertEqual(models, ["gemini-flash-latest", "gemini-flash-lite-latest"])
+        self.assertEqual(models, [fetch_content._GEMINI_MODEL, fetch_content._GEMINI_FALLBACK_MODEL])
         self.assertFalse(os.path.exists(self.marker))   # 接続断1回では死んでいる印を付けない
 
     def test_timeouts_twice_mark_primary_down(self):
@@ -218,7 +238,7 @@ class GeminiRetryTest(_MarkerMixin):
         self._run([503, 503, "ok"])                      # 主が死ぬ→印
         resp, err, models = self._run(["ok"])            # 次の呼び出しは最初から予備
         self.assertIsNone(err)
-        self.assertEqual(models, ["gemini-flash-lite-latest"])
+        self.assertEqual(models, [fetch_content._GEMINI_FALLBACK_MODEL])
         self.assertTrue(fetch_content._last["primary_skipped"])
 
     def test_expired_or_broken_marker_is_ignored(self):
