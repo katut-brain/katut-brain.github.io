@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>2026-11-05 の振り返り</title><style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style></head><body>
+<div class="wrap">
+<a class="back" href="../index.html">← 戻る</a>
+<h1>2026-11-05 の振り返り</h1>
+<div class="meta">Claude Codeの運用術（トークン節約・ストレージ整理）が主役、AIボット集とハードの遊び心も（4件）</div>
+<section class="summary">
+<h2>まとめ</h2>
+<p>今日の保存4件のうち3件がAIエージェントの「運用」を扱っていた。通奏低音は、モデルの賢さよりも、何を読ませ何を捨てさせるかという文脈の管理が成果とコストを決める、という問い意識だ。CLAUDE.mdの6行でトークン浪費を抑える話も、/storageで過去タスクを片付ける話も、AIを使い続ける環境の衛生管理という同じ軸に乗っている。</p>
+<p>もう1件のCMF Speaker Sは、3Dプリントで着せ替えできるモジュラー設計。「使い手が改造できる余白を製品側が用意する」点が、設定ファイルで挙動を調整するClaude Codeと響き合う。今日は「知る・紹介する」軸が活性化した日で、「作りたい」衝動はnoteには出ていない。</p>
+<ul class="pts">
+<li><b>文脈は節約資源</b>：読む前に検索、探索は委任、差分だけ見せる。性能より入力の絞り込みで効率が変わるという含意がある</li>
+<li><b>環境の片付けも運用の一部</b>：/storageは使い続けるほど溜まる作業痕跡を可視化する。溜めない仕組みをどこに置くかを問える</li>
+<li><b>改造できる余白</b>：交換可能なノブとパネルは、AIツールの設定可能性と同じ設計思想として読める</li>
+</ul>
+<div class="q"><b>次に考える問い：</b>CLAUDE.mdに入れる「節約の指示」は、自分の作業では本当にトークンを減らすのか、それとも指示そのものが文脈を食うのか。</div>
+</section>
+<h2>🔎 深掘り（関連記事）</h2>
+<section class="notes">
+<div class="ntag">Claude Codeのトークン節約</div>
+<ul class="ilist">
+<li><a href="https://kdnuggets.com/7-practical-ways-to-reduce-claude-code-token-usage" target="_blank" rel="noopener"><b>7 Practical Ways to Reduce Claude Code Token Usage</b></a> <span>→ 用途に合わせたモデルと労力の選択、短いCLAUDE.md、価値のある場面だけのサブエージェント、早めの/compact、/contextでの肥大の確認を勧める。保存した6行と同方向で、個別の節約術よりセッションに見せる情報の制御が効くという視点。</span></li>
+</ul>
+</section>
+<h2>🤖 AI・Claude運用（3件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/maarcoofdezz/status/2117744331515666475?a=WE4F1EnVU6bVyG5-SRo&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2117744331515666475" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">CLAUDE.mdに6行足すだけでClaude Codeのトークン浪費を抑える</div><div class="vdesc">@maarcoofdezz：検索してから読む、探索はサブエージェントに任せて要約だけ受け取る、全文でなくdiffを見せる、決定済みの内容を繰り返さない、圧縮や仕切り直しの時期を知らせる、返答は既定で短く、の6方針。1分で貼れて同じClaudeのまま消費を減らす狙い。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/5 22:18</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/maarcoofdezz/status/2117744331515666475?a=WE4F1EnVU6bVyG5-SRo&amp;s=12" data-title="CLAUDE.mdに6行足すだけでClaude Codeのトークン浪費を抑える" data-rid="1914547400">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/oikon48/status/2118085586859053565?a=Tnp_Fjqak2ctwpLZOBk&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://jf.x.com/images/media-preview/2118085586859053565" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Claude Desktopに/storageコマンドが追加</div><div class="vdesc">Oikon氏の紹介：Claudeが使っているディスク容量を確認し、非アクティブな過去タスクや不要なワークツリーを整理して空きを作れる機能。元投稿はAnthropic側の告知で、デスクトップアプリへの追加。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/5 22:33</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/oikon48/status/2118085586859053565?a=Tnp_Fjqak2ctwpLZOBk&amp;s=12" data-title="Claude Desktopに/storageコマンドが追加" data-rid="1914559690">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/cu30rry_/status/2118177735214329946?a=JzfetysjvqaWElxaQbU&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/card_img/2118025236612300800/x8Jjy5W6?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">本日のGrok Bot 10選</div><div class="vdesc">kaito氏のまとめ。1本目は「Grok Bot でこれできる？」に、SpaceXAI・Cursor・Xのエンジニアが同じ作業をどう解いたかを公開投稿リンク付きで答える「SpaceXAI Engineer」ボット（第三者製）。やり方をゼロから考えずに済む点が売り。本文では2本目以降の中身は取得できていない。</div><div class="vsaved">保存 11/5 22:32</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/cu30rry_/status/2118177735214329946?a=JzfetysjvqaWElxaQbU&amp;s=12" data-title="本日のGrok Bot 10選" data-rid="1914559423">💬 AIと話す</button>
+</div>
+</div>
+<h2>🧊 3D・ハードウェア（1件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/DehtpvzguCr/?obrf=dTFqaDVmdHJuaGdu" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.82787-15/848223813_18126620315310320_128844712433216040_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=1&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=oVVHyRmOHrEQ7kNvwEgewOB&amp;_nc_oc=AdrSdc14kOatGwrOPhwcXCXaxFXk3ljLzrlr4WUS9qOkhNcLb4_-aUVUPoUJxWiSxXM&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-1.cdninstagram.com&amp;_nc_gid=ciM7mSfLmazBtLHVuO8EtQ&amp;_nc_ss=7ba02&amp;oh=00_AQRTrGbfuGl-LIZpdyqgowM0AGl1eNGS7DLGzBjk1JMn8A&amp;oe=6AF25F68" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">CMF Speaker S：牛乳パック風でモジュラーなスピーカー</div><div class="vdesc">@vittortechtv：牛乳パックを模したデザイン、防水、物理ノブ操作。音量ノブの交換と前面パネルの取り外しができ、3Dプリントの自作パネルで着せ替え可能。NFCペアリング・Bluetooth 6.0・USB-Cのロスレス音声にも対応。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/5 23:37</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DehtpvzguCr/?obrf=dTFqaDVmdHJuaGdu" data-title="CMF Speaker S：牛乳パック風でモジュラーなスピーカー" data-rid="1914599262">💬 AIと話す</button>
+</div>
+</div>
+<footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-11-05 run_id=e344beed saves=4 step1_s=13 step2_s=24 step2_5_s=63 step3_s=9 step4_s=168 step4_5_s=40 step5_s=0 step7_s=1 total_s=318 -->
+<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（2件中0件成功・内訳: exception:ClientError:404 2件）。中継サービスの死亡を疑うこと</p>
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+<script src="../deepdive-mark.js" defer></script>
+</body></html>
