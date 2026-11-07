@@ -14,7 +14,7 @@
     "instagram": {
       "match": "(^|\\.)instagram\\.com$",
       "methods": ["ig_oembed", "og_meta"],
-      "canary": {"url": "https://www.instagram.com/p/DX4dpjOiEsz/", "expect": "gallery"}
+      "canary": {"url": "https://www.instagram.com/p/BsOGulcndj-/", "expect": "world record"}
     },
     "threads": {
       "match": "(^|\\.)threads\\.(net|com)$",
