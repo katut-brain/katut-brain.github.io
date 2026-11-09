@@ -116,6 +116,47 @@ class ReadCommentTests(unittest.TestCase):
         self.assertEqual(status, "parse_error")
         self.assertEqual(reason, "multiple_comments")
 
+    def test_warn_line_between_comment_and_footer_is_parse_error(self):
+        """2026-11 の赤の型: 警告が計測コメントと `</footer>` の間に挟まった。
+        footer の中に計測コメントがあるのに直前に無いので検知する。"""
+        one = _comment(status="complete", target="2026-09-18", run_id="3b462ccb",
+                        saves=4, total_s=371)
+        html_text = FOOTER_HTML.replace(
+            "</footer>", "\n" + one + '\n<p class="notegen-warn">w</p>\n</footer>')
+        status, fields, reason = check_run_timing.read_run_timing_comment(html_text)
+        self.assertEqual((status, reason), ("parse_error", "comment_not_adjacent_to_footer"))
+
+    def test_second_comment_inside_footer_but_not_adjacent_is_parse_error(self):
+        old = _comment(status="complete", target="2026-09-18", run_id="aaaaaaaa",
+                        saves=4, total_s=371)
+        new = _comment(status="complete", target="2026-09-18", run_id="bbbbbbbb",
+                        saves=4, total_s=371)
+        html_text = FOOTER_HTML.replace(
+            "</footer>", "\n" + old + '\n<p class="notegen-warn">w</p>\n' + new + "\n</footer>")
+        status, fields, reason = check_run_timing.read_run_timing_comment(html_text)
+        self.assertEqual((status, reason), ("parse_error", "multiple_comments"))
+
+    def test_github_warning_for_comment_not_adjacent(self):
+        one = _comment(status="complete", target="2026-09-18", run_id="3b462ccb",
+                        saves=4, total_s=371)
+        tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, tmp, True)
+        with open(os.path.join(tmp, "2026-09-18.html"), "w", encoding="utf-8") as fh:
+            fh.write(FOOTER_HTML.replace(
+                "</footer>", "\n" + one + '\n<p class="notegen-warn">w</p>\n</footer>'))
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = check_run_timing.main(["--reviews-dir", tmp, "--all", "--github"])
+        self.assertEqual(rc, 0)
+        self.assertIn("::warning title=run-timing::RUN_TIMING_VIOLATION: date=2026-09-18 "
+                      "status=parse_error reason=comment_not_adjacent_to_footer", buf.getvalue())
+
+    def test_comment_in_script_after_footer_is_not_flagged(self):
+        """footer の外（script）の同形文字列は、footer の中だけを見るので拾わない。"""
+        js = '<script>var s = "<!-- run-timing schema=v2 a=1 -->";</script>\n'
+        html_text = FOOTER_HTML.replace("</html>", js + "</html>")
+        self.assertEqual(check_run_timing.read_run_timing_comment(html_text)[0], "no_comment")
+
     def test_unsupported_schema_is_parse_error(self):
         html_text = FOOTER_HTML.replace(
             "</footer>",
