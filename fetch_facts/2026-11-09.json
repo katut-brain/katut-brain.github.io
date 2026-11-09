@@ -1,0 +1,68 @@
+{
+ "https://x.com/codexneo4/status/2119325295844974719?a=-RvE0VMuvIzw9-pffyY&s=12": {
+  "fetched_at": "2026-11-09T19:12:06Z",
+  "elapsed_ms": 64966,
+  "fetcher_version": "2026-11-04.1",
+  "url": "https://x.com/codexneo4/status/2119325295844974719?a=-RvE0VMuvIzw9-pffyY&s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "full",
+  "missing": [],
+  "raindrop_id": 1918837668,
+  "rid_source": "exact",
+  "text_chars": 40,
+  "text_sha1": "b765954f375565b6eb482bc203aecb616a1c88a8",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 0,
+  "has_video": false,
+  "video_understood": false,
+  "video_summary": "",
+  "image_summary": "",
+  "image_reason": "",
+  "video_model": "",
+  "image_model": "",
+  "primary_skipped": false,
+  "primary_reason": "",
+  "fallback_reason": "",
+  "deadline_skipped": [],
+  "video_reason": "",
+  "video_reason_detail": "",
+  "reason": "",
+  "fail_reason": "",
+  "fetched_via": "x_syndication",
+  "fetch_chain_tried": "",
+  "x_primary_skipped": "",
+  "x_primary_reason": "",
+  "stages": {
+   "download": {
+    "status": "skipped",
+    "reason": "no_media"
+   },
+   "frames": {
+    "status": "skipped",
+    "reason": "no_video"
+   },
+   "transcription": {
+    "status": "skipped",
+    "reason": "no_media"
+   },
+   "understanding": {
+    "status": "skipped",
+    "reason": "no_media"
+   },
+   "quote": {
+    "status": "skipped",
+    "reason": "no_quote"
+   }
+  },
+  "unique_url": "https://x.com/codexneo4/status/2119325295844974719?a=-RvE0VMuvIzw9-pffyY",
+  "success": true,
+  "transcript_reason": "",
+  "attempt_seq": 1,
+  "prior_success": false,
+  "unique_success": true
+ }
+}
