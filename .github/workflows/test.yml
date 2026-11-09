@@ -60,6 +60,11 @@ jobs:
       - name: Run run-timing tests
         run: python -m unittest -v test_run_timing.py
 
+      # reviews への警告の差し込み（review_warn.py）の回帰テスト。どの順で呼んでも
+      # 計測コメントが </footer> 直前に1本のまま・同種の警告も1本のままであること。
+      - name: Run review-warn tests
+        run: python -m unittest -v test_review_warn.py
+
       # SNS・Web の取り方の切り替え（fetch_chain/）と、入れる前の安全確認（vet.py）。外には出ない
       - name: Run fetch-chain tests
         working-directory: fetch_chain

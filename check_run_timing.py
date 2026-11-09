@@ -180,6 +180,13 @@ def _footer_head(html_text):
     return html_text[:idx]
 
 
+def _footer_inner(html_text):
+    """唯一の `</footer>` と、その手前で最後の `<footer` の間の文字列（無ければ空）。"""
+    idx = html_text.find("</footer>")
+    start = html_text.rfind("<footer", 0, idx)
+    return html_text[start:idx] if start != -1 else ""
+
+
 def _matches_immediately_before(head, pattern):
     """head（`</footer>` 直前までの文字列）の**末尾に連なって**いる pattern の
     マッチを、run_timing.insert_comment と同じ剥がし方（末尾の空白のみの行を
@@ -246,6 +253,12 @@ def read_run_timing_comment(html_text):
     strict = _matches_immediately_before(head, run_timing.COMMENT_RE)
     if len(strict) > 1:
         return "parse_error", {}, "multiple_comments"
+    # `<footer>`〜`</footer>` の**中**にある計測コメントの本数（script を拾わないよう
+    # footer の外は見ない）。警告が計測コメントと `</footer>` の間に挟まると、
+    # コメントが直前から外れたり、次の finish で2本になったりする（2026-11 の赤の型）。
+    in_footer = _footer_inner(html_text).count("<!-- run-timing")
+    if len(strict) == 1 and in_footer > 1:
+        return "parse_error", {}, "multiple_comments"
     if len(strict) == 1:
         fields = _parse_fields(strict[0])
         if fields.get("schema") != "v2":
@@ -265,8 +278,11 @@ def read_run_timing_comment(html_text):
     if loose:
         return "parse_error", {}, "malformed_comment"
 
-    # `<!-- run-timing` はあるが footer の直前に連なっていない
-    # （本文中の同形文字列であり、footer とは無関係）。
+    if in_footer:
+        # footer の中に計測コメントがあるのに `</footer>` の直前に無い
+        return "parse_error", {}, "comment_not_adjacent_to_footer"
+
+    # `<!-- run-timing` はあるが footer の外（本文中の同形文字列であり、footer とは無関係）。
     return "no_comment", {}, None
 
 

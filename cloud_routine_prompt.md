@@ -54,7 +54,7 @@
    - 失敗しても止めない（`fetch_content.py` はこれらのパッケージが無くても他の取得は正常動作する graceful degradation設計。ただしYouTube動画は字幕なし・X動画/Instagram Reel動画は音声/映像理解なしのタイトルのみに落ちる）。
    - **出力の `DEPS_STATUS:` 行（`python=… genai=ok|fail(…) yt_transcript=ok|fail(…) gemini_key=set|unset groq_key=set|unset ffmpeg=ok|missing ffprobe=ok|missing pip_exit=… pip_retry=none|bsp`）を隠さずログに残し、最終報告にそのまま1行貼る**。stderr の `::warning::` も削らず最終報告に残す。`genai=fail` または `gemini_key=unset` なら、その夜の X動画・Reel は `video_reason=gemini_unavailable` になる（原因は fetch_facts の `video_reason_detail` にも残る）。`groq_key=unset` でもランは止めない。
 2. （先に `python3 run_timing.py mark step2 --run-id <8桁>`）`python3 _build_graph.py` を実行。Raindrop の新規を `captures.json` に取り込み、既存レコードも冪等に更新する（失敗してもログして続行）。
-   - **出力の `IMPORT_STATUS:` 行を必ず読む**。`INCOMPLETE` だった場合は Raindrop を全件取得できておらず、**その日の振り返りが欠損しうる**。この場合は手順5の `reviews/<TARGET>.html` の `</footer>` 直前に `<p class="notegen-warn">⚠️ 取り込み不完全: Raindrop取得エラー N件。欠けている保存がある可能性あり</p>` を1行足して、欠損の可能性を残す（黙って完走しない）。import は冪等なので翌ランで自動的に回復する。
+   - **出力の `IMPORT_STATUS:` 行を必ず読む**。`INCOMPLETE` だった場合は Raindrop を全件取得できておらず、**その日の振り返りが欠損しうる**。この場合は手順5で作る `/tmp/review_new.html` の `</footer>` 直前（`reviews/<TARGET>.html` へは `merge_review.py` が計測コメントより前に差し込む）に `<p class="notegen-warn">⚠️ 取り込み不完全: Raindrop取得エラー N件。欠けている保存がある可能性あり</p>` を1行足して、欠損の可能性を残す（黙って完走しない）。import は冪等なので翌ランで自動的に回復する。
    - この行を見落として「正常に完走した」と扱わないこと。無人運用ではログを誰も読まないため、**成果物側に痕跡を残すことが唯一の検知手段**になる。
 2.1. **日別台帳の更新**：
    ```bash
@@ -172,7 +172,7 @@
    - 書き直した `reviews/<日付>.html` の一覧は `/tmp/card_refresh_files.txt` に1行1ファイルで書かれる（書き直しが無い夜は空のファイル）。**手順8がこのファイルを読んで機械的に送る**ので、あなたが覚えたり書き写したりしない。
 3. （先に `python3 run_timing.py mark step3 --run-id <8桁>`）**対象の選定**：`select_targets.py` を実行し、
    まだどの `reviews/*.html` にも載っていない保存すべて（`date >= 2026-06-14`、過去日も含む・上限なし）を対象にする。
-   `TARGET` は既存の書き方（手順1・手順7の `reel_health.py` 呼び出し）と同じく、別シェル呼び出しになるたびに
+   `TARGET` は既存の書き方（手順1・手順7の `review_warn.py --kind reel` 呼び出し）と同じく、別シェル呼び出しになるたびに
    同じ式で再導出する：
    ```bash
    TARGET=${TARGET_OVERRIDE:-$(TZ=Asia/Tokyo date -d yesterday +%F)}
@@ -181,7 +181,7 @@
    - **`SELECT_STATUS:` 行を必ず読む**（例外が起きても exit 0 で必ず出る設計）。`selected=N` が今回の対象件数。
      以降「手順3の選定」と呼ぶものは常にこの `/tmp/targets.json` の `records`（＝ `selected` 件）を指す。
    - `warn=unreadable` が付いていたら、読めなかった既存 `reviews/*.html` があり、そこに載っていたブックマークを
-     誤って二重掲載する可能性がある。この場合は手順5で `reviews/<TARGET>.html` を作る際、`</footer>` 直前に
+     誤って二重掲載する可能性がある。この場合は手順5で `/tmp/review_new.html` を作る際（`reviews/<TARGET>.html` へは `merge_review.py` が計測コメントより前に差し込む。finish より前の手順なので `review_warn.py` は使わない）、`</footer>` 直前に
      `<p class="notegen-warn">⚠️ 一部の既存reviewsが読めず、掲載済み判定が不完全（二重掲載の可能性）</p>` を1行足す。
    - **`selected=0` なら reviews は作らず手順6へ**（空ノートを作らない。従来の0件経路と同じ）。
      （バックフィル(手順2.5)がその日 `fetch_facts/<TARGET>.json` に何か書いていた場合でも、
@@ -251,7 +251,7 @@
      - 出力の `MERGE_STATUS: target=<TARGET> mode=new|merged kept=N added=N skipped_dup=N` を読む。`mode=merged` で `skipped_dup>0` なら、その件数ぶんは既に掲載済みとして統合時に弾かれている（正常。エラーではない）。
      - **以降（手順7・7.5・8）で「reviews/<TARGET>.html」と書いてあるものは、このコマンド実行後の `reviews/<TARGET>.html`（統合済みの実ファイル）を指す。** `/tmp/review_new.html` 自体はもう参照しない。
      - このコマンドが非ゼロで終わった場合（`MERGE_STATUS: ... mode=error`）、`reviews/<TARGET>.html` は**一切変更されていない**（`merge_review.py` は失敗時に既存ファイルへ書き込まない設計）。手順を止めず、`/tmp/review_new.html` の内容が失われたことをログに残した上で手順6以降へ進む。**この夜 `reviews/<TARGET>.html` が実行前の時点でどうだったかで、この後の分岐が変わる**（手順7 の `card_parse_failed` 対応・手順8の(a)(b)(c)分岐と矛盾しないよう、ここで明示する）：
-       - **実行前に `reviews/<TARGET>.html` が既に存在していた**（＝この夜は追記のはずだった。統合前検証で既存側が壊れていると判明した等）場合: 既存ファイルはそのまま残る。手順6以降は「`reviews/<TARGET>.html` が存在する」前提で通常どおり進む（手順7の `card_parse_failed` 対応を参照。今夜の新規分は反映されないだけで、ファイル自体は消えない）。手順8は (a) 相当（`reviews/<TARGET>.html` を含めて push）になる。
+       - **実行前に `reviews/<TARGET>.html` が既に存在していた**（＝この夜は追記のはずだった。統合前検証で既存側が壊れていると判明した等）場合: 既存ファイルはそのまま残る。手順6以降は「`reviews/<TARGET>.html` が存在する」前提で通常どおり進む（手順7の `card_parse_failed` 対応を参照。今夜の新規分は反映されないだけで、ファイル自体は消えない）。手順8は (a) 相当（`reviews/<TARGET>.html` を含めて push）になる。⚠️ この経路では `/tmp/review_new.html` に書いた `IMPORT_STATUS: INCOMPLETE`／`warn=unreadable` の警告は reviews に入らない。`reviews/<TARGET>.html` へ手で足さず（計測コメントとの順序が壊れる）、最終報告に「警告は反映されなかった」と書く。
        - **実行前に `reviews/<TARGET>.html` が存在しなかった**（＝この夜が初回のはずだった。新規HTML自体の構造検証で弾かれた等）場合: `reviews/<TARGET>.html` は作られないまま。手順3の選定が1件以上でもこの夜は reviews を作れなかったことになるので、手順7・7.5は「手順5で reviews を作った場合」に該当せずスキップし、手順8は (b) または (c) 相当（`fetch_facts/` 配下の変更有無で判定。手順3の選定が1件以上あった扱いは変えないが、reviews が無いのでpush対象にreviews/<TARGET>.htmlは含まれない）として扱う。翌晩以降、同じ選定内容が select_targets.py によって再度候補に上がるので取りこぼしではない。
    - **スタイル**：`<head>` の中に `<style>` 要素を1つ置き、その中身は**公開リポ直下の `review_style.css` をそのまま**使う（CSS変数・ダーク対応込み）。`<title><TARGET> の振り返り</title>`。
      - CSS は**手で書き写さず、ファイルから読み込んで埋め込む**（例: HTML を組む Python の中で `open('review_style.css', encoding='utf-8').read()`）。
@@ -370,34 +370,34 @@
      3. `reason=no_card` の違反が残っている場合は、対応するカード自体が `reviews/<TARGET>.html` に無い（抜け落ち）ということなので、`--fix` では直らない。手順5に戻ってそのブックマークのカードを書き足してから、この手順7をやり直す。
      4. `DISCLOSURE_ERROR: ... card_parse_failed` が出た場合は `reviews/<TARGET>.html` のカード構造そのものが壊れている疑いがある。**2026-09-22 変更**: 統合方式（`merge_review.py`）導入後は「手順5からやり直す」だけでは直らない——`reviews/<TARGET>.html` は既存カードとの統合結果であり、壊れているのが既存側のカードなら、手順5をやり直して新しい `/tmp/review_new.html` を作っても、次の `merge_review.py` 呼び出しが**既存側の構造検証で弾かれて mode=error になる**（統合方式は壊れた既存カードを直せない設計）。そこで次の順で対応する：
         a. まず `/tmp/review_new.html` を作り直し、`python3 merge_review.py --target $TARGET --new /tmp/review_new.html` を**もう1回だけ**再試行する（一時的な生成ミスの可能性を先に消す）。`MERGE_STATUS: ... mode=merged` になれば、そのまま `check_disclosure.py --date $TARGET --fix` からやり直す。
-        b. 再試行しても `mode=error` のままなら（＝壊れているのは既存の `reviews/<TARGET>.html` 側）、直そうとせずに先へ進む。ただし `reviews/<TARGET>.html` の `</footer>` 直前に、既存の `notegen-warn` と同じ書式で1行だけ追記する：
-           ```html
-           <p class="notegen-warn">⚠️ reviews構造検証エラーのため今回の統合をスキップ（既存カードは保持済み・新規分は未反映の可能性あり）</p>
+        b. 再試行しても `mode=error` のままなら（＝壊れているのは既存の `reviews/<TARGET>.html` 側）、直そうとせずに先へ進む。ただし警告を1行だけ残す。次のコマンドを1回実行する（**`reviews/<TARGET>.html` を手で開いて警告を書かない**。位置・重複・改行コードはスクリプトが決める）：
+           ```bash
+           TARGET=${TARGET_OVERRIDE:-$(TZ=Asia/Tokyo date -d yesterday +%F)}
+           python3 review_warn.py --kind merge_skipped --target "$TARGET"
            ```
-           （`</footer>` が一意に見つからない等でこの追記自体も失敗する場合は、追記せずログにその旨だけ残して先へ進む。無人ランを止めない）。
+           出力は `WARN_STATUS: kind=merge_skipped result=... reason=...` の1行（ログに残す）。`result=error` や `result=skipped`（`</footer>` が一意に見つからない等）でも**手で補わず**先へ進む。無人ランを止めない。
         c. どちらの場合も、これで手順7を続行する（`--fix` 以降の開示チェックは、bの場合は既存カードのみを対象に行われる。新規分がその夜の開示チェック対象から漏れるのは仕様——構造が壊れた既存ファイルを無理に直そうとしない、というこの節全体の方針と一致する）。
      5. どの場合も、ここで手順を止めずに手順7.5へ進む。`DISCLOSURE_EXCLUDED:` 行はバックフィル（過去日のカードを再取得しただけ）の正常な結果なので無視してよい。**この仕組みは手順7の実行自体を強制しない。公開ゲートでマーカー欠落を警告することで、手順7を飛ばした夜も検知できる**（`reviews/<TARGET>.html` 自体が無い＝手順7未実行の夜は、公開ゲート側が `status=no_review` かつ duty>0 のときに `::warning` を出す）。
    - **Reel動画取得の全滅検知（機械判定・2026-09-20 追加、同日ユーザー裁定でスクリプト化）**：Instagram Reel動画取得の中継（kkinstagram.com）への依存は4回目で、過去3回とも数週間〜数ヶ月で死んでいる。中継が死んでも `fetch_instagram()` はcaption-onlyで `ok:true` のまま完走するため、**黙って毎晩公開され続け誰も気づかない**リスクがある。`python3 ledger.py --summary` は誰も無人で実行しないコマンドなので（本手順書内で「これは無人ランの実行指示ではない」と明記済み）、上の開示チェックと同じく**成果物側（reviews）に痕跡を残す**方式で検知する。**判定ロジック（母数フィルタ・警告条件）は `reel_health.py` 側だけが持ち、この手順書には書き写さない**（二重管理を避ける。ロジックを直したくなったら `reel_health.py` と `test_reel_health.py` を見る）。
-     1. `reel_health.py` を実行する。**対象日は明示的に渡す**（手順ごとに別のシェル呼び出しになり、手順1で代入した `TARGET` はここには届かない。手順2.5の `backfill.py --target $TARGET` と同じ形にする＝この場で手順1・26行目と同じ式で `TARGET` を再導出してから `--target` で渡す）：
+     1. 次のコマンドを**1回**実行する。`reel_health.py` の判定をこのコマンドが同じプロセスで1回だけ呼び、`REEL_VIDEO_STATUS:` 行を出し、警告の書き込み・置き換え・削除まで済ませる（**`reviews/<TARGET>.html` を手で開いて警告を書かない**。数値の書き写しもしない）。**対象日は明示的に渡す**（手順ごとに別のシェル呼び出しになり、手順1で代入した `TARGET` はここには届かない。手順2.5の `backfill.py --target $TARGET` と同じ形にする＝この場で手順1・26行目と同じ式で `TARGET` を再導出してから `--target` で渡す）：
         ```bash
         TARGET=${TARGET_OVERRIDE:-$(TZ=Asia/Tokyo date -d yesterday +%F)}
-        python3 reel_health.py --target "$TARGET"
+        python3 review_warn.py --kind reel --target "$TARGET"
         ```
-        出力は `REEL_VIDEO_STATUS: total=<N> ok=<N> reasons=<内訳> warn=yes|no` の1行。`fetch_facts/<TARGET>.json` が無い夜は `warn=no` に `(facts file not found)` が添えられて正常終了する（traceback は出ない）。⚠️ `--target` を渡し忘れても `reel_health.py` 自身が `TARGET_OVERRIDE`（`YYYY-MM-DD` 形式のときのみ）→ JSTの昨日、の順で自己解決する保険を持つが、**明示的に渡すのが本則**（作り直しラン等で対象日を取り違えないため）。
-     2. **`warn=yes` のときだけ**、`reviews/<TARGET>.html` の `</footer>` 直前に、既存の `notegen-warn` と同じ書式で理由コードの内訳を入れた1行を追記する：
-        ```html
-        <p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（N件中0件成功・内訳: instagram_relay_unavailable N件, ...）。中継サービスの死亡を疑うこと</p>
-        ```
-        `N` と内訳の部分は上の `REEL_VIDEO_STATUS:` の実測値（`total=` と `reasons=`）をそのまま使う（捏造しない）。内訳の理由コードで `instagram_relay_unavailable` が支配的なら中継自体の死亡、`gemini_*` 系が支配的ならGemini側の問題、と切り分けられる。
-     3. `warn=no` なら、この警告は追記しない。
+        出力は次の2行。
+        - `REEL_VIDEO_STATUS: total=<N> ok=<N> reasons=<内訳> warn=yes|no`（従来どおり。`fetch_facts/<TARGET>.json` が無い夜は `warn=no` に `(facts file not found)` が添えられて正常終了する）。
+        - `WARN_STATUS: kind=reel result=written|replaced|removed|unchanged|skipped|error reason=<理由>`。
+     2. 書かれる行は `<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（N件中0件成功・内訳: …）。中継サービスの死亡を疑うこと</p>` で、`warn=yes` のときだけ `</footer>` 直前（計測コメントがあればその前）に**1本だけ**置かれる。同じ日にこの手順をやり直したら、最新の判定で置き換わる。`warn=no` で、かつ `fetch_facts/<TARGET>.json` を実際に読めた（`(facts file not found)` 等の注記が付かない）夜は、前に書いた Reel 警告が消える。facts が無い・読めない・記録無効の夜は判定材料が無いだけなので、既存の Reel 警告は消さない（`result=unchanged reason=no_facts_keep_existing`）。
+     3. `result=error` や `result=skipped` でも**手で補わず**先へ進む（無人ランを止めない）。`WARN_STATUS:` 行は削らずログに残し、`result=error`／`skipped` のときは**最終報告にもその行を貼る**（警告が付かなかったことを無人運用で気づける唯一の痕跡）。⚠️ `--target` を渡し忘れても自己解決する保険（`TARGET_OVERRIDE`（`YYYY-MM-DD` 形式のときのみ）→ JSTの昨日）はあるが、**明示的に渡すのが本則**（作り直しラン等で対象日を取り違えないため）。
    - **所要時間の記録を reviews に焼き込む**（手順1で始めた計測の締め。上の開示チェックまで終えてから行う。`mark step7` は既にこの手順7の冒頭で打っている）。次の1つを実行するだけでよい：
      ```
      python3 run_timing.py finish --target $TARGET --run-id <8桁> --reviews reviews/$TARGET.html --saves <selected>
      ```
      `<selected>` には手順3の `SELECT_STATUS:` 行の `selected=N` の値（今回の対象件数）をそのまま渡す。
      ⚠️ **あなたが数値を書いたり、コメント行を手で貼ったりしない。** `run_timing.py` が
-     `reviews/<TARGET>.html` の `</footer>` 直前へ**ちょうど1件だけ**挿入する（既存の run-timing コメントは
-     何本あっても消してから入れ直すので、同日再実行でも2本並ばない）。`saves=` は `--saves` に渡した値が
+     `reviews/<TARGET>.html` の `</footer>` 直前へ**ちょうど1件だけ**挿入する（消すのは `</footer>` の直前に
+     連なっている正規形のコメントだけ。間に別の行があると連なっていないので消えず、2本になる。警告は必ず
+     `review_warn.py` で足すこと——手で足すとコメントと `</footer>` の間に挟まる）。`saves=` は `--saves` に渡した値が
      そのまま焼き込まれる（旧版は `captures.json` を `date == TARGET` で数えていたが、対象が手順3の選定へ
      変わったため、件数の出処も選定結果に揃える）。
      **手で埋める欄は1つも無い**（旧版は heredoc の出力をあなたが貼る設計だったが、貼り忘れ・重複・
@@ -455,7 +455,7 @@
      - **本文**：手順4で取得済みの内容（記事本文／字幕／動画理解結果＝`text`、および手順5でカード用に作った `.vdesc` の一言）を踏まえた、そのブックマークの実内容理解を日本語3〜6文程度でまとめる。既に得ている理解の再利用であり、新たに `WebSearch`/`WebFetch` で調べ直さない。
      - **末尾に `## 関連ノート` セクションを置く**（Vault規約）。中身は空でよい（義務的にリンクを作らない）。
    - **push前のfrontmatterスキーマ検証（必須）**：この手順で新規作成した各ノートについて、Pythonで frontmatter（`---`〜`---`の間）をYAMLとしてパースし、`date`（文字列・YYYY-MM-DD形式）・`tags`（リストで `type/bookmark` を含む）・`raindrop_id`（数値）・`source`（文字列・`http` で始まる）の4キーの存在と型を確認する。1つでも不合格ならそのノートは push 対象から除外する（ファイル自体はローカルクローンに残ってよい＝次回ランは新規cloneのため無害）。
-   - **検証結果の記録**：検証に落ちたノートが1件以上あった場合、`reviews/<TARGET>.html` の `</footer>` 直前に、`_build_feed.py` の抽出対象（`.meta`/`.summary p`/`.notes` 内`li`）と衝突しない独自クラスで1行追記する：`<p class="notegen-warn">⚠️ ノート生成: 検証失敗 N件（rid: 1234, 5678 ...）</p>`。全件合格した場合はこの追記をしない。この追記は手順8で push する `reviews/<TARGET>.html` の内容に含める。
+   - **検証結果の記録**：検証に落ちたノートが1件以上あった場合は、次のコマンドを1回実行する（`<rids>` は落ちたノートの `raindrop_id` を数字だけカンマで繋いだもの。例 `1234,5678`。**`reviews/<TARGET>.html` を手で開いて警告を書かない**）：`python3 review_warn.py --kind note_verify --target "$TARGET" --rids <rids>`（`TARGET` はその場で手順1と同じ式で再導出する）。`<p class="notegen-warn">⚠️ ノート生成: 検証失敗 N件（rid: 1234, 5678）</p>` が計測コメントより前に1本だけ置かれ、同じ日にもう一度実行すると rid が足し合わされる。出力の `WARN_STATUS:` が `error` や `skipped` でも手で補わず先へ進む。全件合格した場合はこの追記をしない。この追記は手順8で push する `reviews/<TARGET>.html` の内容に含める。
 8. **公開（GitHubへ反映）**：対象は `katut-brain/katut-brain.github.io` リポ（Vaultリポではない）。
    - ⚠️⚠️ **送り方の原則（2026-09-08 変更・ここが最優先）**：**本文を自分で書き写して送らない。ファイルのまま送る。**
      `bash push_via_branch.sh "<コミットメッセージ>" <パス> [<パス> ...]` を使う（2026-09-14 変更）。このスクリプトはディスク上のファイルを git でそのまま `claude/publish-<時刻>` という新しいブランチに送る。本文があなたの文脈を一度も通らないので、転記による化けが原理的に起きない。

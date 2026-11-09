@@ -515,30 +515,32 @@ class InsertCommentTest(unittest.TestCase):
         self.assertTrue(names, "reviews/*.html が無い")
         checked = 0
         for name in names:
-            with open(os.path.join(reviews_dir, name), encoding="utf-8", newline="") as f:
-                original = f.read()
-            if "</footer>" not in original:
-                continue
-            out, existing = run_timing.insert_comment(original, self.C1)
-            self.assertIsNotNone(out, name)
-            eol = "\r\n" if "\r\n" in original else "\n"
-            if existing == 0:
-                # まだ計測を通っていない過去ぶん。本文は1バイトも変わらない。
-                self.assertEqual(out.replace(self.C1 + eol, ""), original, name)
-            else:
-                # 本番ランで既に計測コメントが入ったファイル（2026-09-17 以降）。
-                # 旧版はここを existing == 0 と決め打ちしていたので、装置が動き出した
-                # 時点で main の CI が落ちた（2026-09-18 に発見）。コメント行を両側から
-                # 同じ規則で取り除いて、本文が変わっていないことを見る。
-                self.assertEqual(run_timing.COMMENT_RE.sub("", out),
-                                 run_timing.COMMENT_RE.sub("", original), name)
-            self.assertEqual(out.count("<!-- run-timing"), 1, name)
-            base = out.replace(self.C1 + eol, "")
-            again, existing2 = run_timing.insert_comment(out, self.C2)
-            self.assertEqual(existing2, 1, name)
-            self.assertEqual(again.count("run-timing"), 1, name)
-            self.assertEqual(again.replace(self.C2 + eol, ""), base, name)
-            checked += 1
+            # 壊れたファイルを全部まとめて表示するための subTest（不変条件は緩めない）。
+            with self.subTest(name):
+                with open(os.path.join(reviews_dir, name), encoding="utf-8", newline="") as f:
+                    original = f.read()
+                if "</footer>" not in original:
+                    continue
+                out, existing = run_timing.insert_comment(original, self.C1)
+                self.assertIsNotNone(out, name)
+                eol = "\r\n" if "\r\n" in original else "\n"
+                if existing == 0:
+                    # まだ計測を通っていない過去ぶん。本文は1バイトも変わらない。
+                    self.assertEqual(out.replace(self.C1 + eol, ""), original, name)
+                else:
+                    # 本番ランで既に計測コメントが入ったファイル（2026-09-17 以降）。
+                    # 旧版はここを existing == 0 と決め打ちしていたので、装置が動き出した
+                    # 時点で main の CI が落ちた（2026-09-18 に発見）。コメント行を両側から
+                    # 同じ規則で取り除いて、本文が変わっていないことを見る。
+                    self.assertEqual(run_timing.COMMENT_RE.sub("", out),
+                                     run_timing.COMMENT_RE.sub("", original), name)
+                self.assertEqual(out.count("<!-- run-timing"), 1, name)
+                base = out.replace(self.C1 + eol, "")
+                again, existing2 = run_timing.insert_comment(out, self.C2)
+                self.assertEqual(existing2, 1, name)
+                self.assertEqual(again.count("run-timing"), 1, name)
+                self.assertEqual(again.replace(self.C2 + eol, ""), base, name)
+                checked += 1
         self.assertGreater(checked, 0)
 
 

@@ -223,5 +223,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run build-feed.yml --ref main
 
+      # bot の push では test.yml の push トリガーが動かない（GITHUB_TOKEN の仕様）ので、
+      # 夜の取り込みのあとに明示的に起動する。起動に失敗しても公開は止めない（`|| echo` で
+      # このステップは緑のまま、あとの「Delete publish branch」も走る。main の更新と build-feed の
+      # 起動は上で済んでいる）。test.yml 自体の赤は、起動者を問わず最後の結論を読む見張りで拾う。
+      # 確かめ方: gh run list --workflow test.yml --json event,headSha,conclusion
+      - name: Trigger test.yml
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run test.yml --ref main || echo "::warning::could not dispatch test.yml"
+
       - name: Delete publish branch
         run: git push -q origin --delete "$GITHUB_REF_NAME"
