@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-11-10 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-11-10 の振り返り</h1>
+  <div class="meta">AIエージェントの「つなぎ方」と、巨大工場に重なる磯崎新の1972年構想（6件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の通奏低音は「AIをどこに、どう繋ぐか」という配線の問いだった。Tailscale OAuthアプリのGAは、エージェントをAPIキーで信用するのではなく本人のIDでプライベートネットワークに参加させる設計への転換で、Claude Codeを中心に判断AI・フック・権限ルール・外部APIを11列に配線したAIエコシステム図と同じく、AIの能力より「境界と経路」を設計することが主題になっている。無料GPU枠や、10分野の専門家役を束ねる株式リサーチ用プロンプトも、個人がどの資源をどこへ繋ぐかという同じ層の話として読める。</p>
+    <p>そこに建築側から1件、テスラ×スペースXの巨大工場「テラファブ」を磯崎新《コンピューター・エイディッド・シティ》（1972）そのものと見る比嘉武彦の指摘が重なる。情報処理を前提に都市を組み立てた半世紀前の構想が、計算資源を生産する工場として実体化しつつあるという読みで、AI×建築のドメインをまたぐ接続がはっきり立った日だった。全体としては「知る/紹介したい」軸が中心で、AIエコシステム図の再現は「作りたい」軸にもつながる。Grok Bot周りの保存は今週4日目（11/3〜5に7件、この日2件）で、単発の流行追いではなく継続する関心になっている。</p>
+    <ul class="pts">
+      <li><b>APIキーからIDへ</b>：Tailscale OAuthアプリでエージェントが本人IDでtailnetに参加し、Grantsと監査ログで縛られる。秘密情報をAIに渡す運用からの退出という含意がある。</li>
+      <li><b>配線図そのものが成果物</b>：AIエコシステム図は「この画像1枚を読ませれば再現できる」とされ、構成図がそのまま実装仕様として流通する段階への問いを立てる。</li>
+      <li><b>計算の器としての建築</b>：テラファブと《コンピューター・エイディッド・シティ》の重ね合わせは、情報都市の構想が工場という形で回帰しているという含意がある。</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>磯崎が1972年に描いた「コンピューターに支援される都市」の形式が、ペンタゴンの50倍という工場で反復されるとき、そこで失われた（あるいは消された）のは都市の側のどの要素なのか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">AIエージェントとプライベートなMCP</div>
+    <ul class="ilist">
+      <li><a href="https://www.scalekit.com/blog/tailscale-mcp-vs-api" target="_blank" rel="noopener"><b>Tailscale MCP vs Tailscale API for AI Agents (2026)</b></a> <span>→ TailscaleのMCPはAIゲートウェイAperture内にあり、tailnet上のMagicDNS名で既定拒否・Tailscale IDとGrantsで制御される。OAuthアプリはクライアントにAPI資格情報を持たせず1時間で失効する単回用キーを発行する形で、権限を「渡す」より「その場で発行する」設計が鍵だと分かる。</span></li>
+    </ul>
+    <div class="ntag">磯崎新の都市構想</div>
+    <ul class="ilist">
+      <li><a href="https://bijutsutecho.com/magazine/news/exhibition/31435?page=2" target="_blank" rel="noopener"><b>磯崎新の没後初の大規模回顧展「磯崎新：群島としての建築」（美術手帖）</b></a> <span>→ 水戸芸術館（2025/11/1〜2026/1/25）の回顧展で、《空中都市―新宿計画》《渋谷計画》と並び《コンピューター・エイディッド・シティ》（1972）が都市デザイナー磯崎の提案として紹介された。テラファブとの比較は、未完の構想群を今の巨大インフラと照らし直す読み方として位置づけられる。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI・ツール（5件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/cursorvers/status/2119912922394849619?a=nsqwcm4XzLoh6YSalFU&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HWtu2IrbUAABk-e?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">TailscaleのOAuthアプリが一般提供開始：AIエージェントをtailnetへ</div><div class="vdesc">Grok等のAIエージェントが、インターネットに公開しないまま自分のtailnet上のプライベートMCPサーバーに接続可能に。添付図解では「これまで」＝Funnelでサーバー公開かAPIキー・秘密情報をAIへ渡す、「これから」＝ユーザーがOAuth同意画面で許可→エージェントが本人IDでデバイスとして参加、Grants（アクセスポリシー）と監査ログを適用、という整理。GAは2026-10-27・OAuth 2.0認可コードフロー。</div><div class="vsaved">保存 11/10 15:58</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/cursorvers/status/2119912922394849619?a=nsqwcm4XzLoh6YSalFU&amp;s=12" data-title="TailscaleのOAuthアプリが一般提供開始：AIエージェントをtailnetへ" data-rid="1921501628">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/fukku_ai_bd/status/2119205754641215545?a=DzTL-aptI7CgkjLOKgc&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HWXvW_4aoAAakhO?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">画像1枚をClaude Codeに読ませてAI環境を一新</div><div class="vdesc">引用元の「PC上のAIエコシステム全体像」図は、Claude Codeを入口に「ハーネス（判断AI・フック11本・権限ルール・APIキーを直接見せない）」→「ほかのAIに頼む／スキルで作る／外部サービスを操作／外部APIを呼ぶ」の4分岐→スキル・検証・道具→出口（Vercel・Cloudflare独自ドメイン）と11列で流す構成。下段にGrok Bot（クラウドPC）とDiscord Botの別入口、記憶メモ・Obsidian・GitHubの「ナレッジと資産の棚」。この図ごと読ませて同じ構成を再現させる発想。</div><div class="vsaved">保存 11/10 23:53</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/fukku_ai_bd/status/2119205754641215545?a=DzTL-aptI7CgkjLOKgc&amp;s=12" data-title="画像1枚をClaude Codeに読ませてAI環境を一新" data-rid="1921935363">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/gagarot200/status/2119691961296949656?a=F4zfJJieqXELQpwHlzc&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fgagarot200%2Fstatus%2F2119691961296949656%3Fa%3DF4zfJJieqXELQpwHlzc%26s%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Muse・Grok Bot使いへ：無料枠でT4×2のGPU環境</div><div class="vdesc">T4（16GB）×2枚のGPU環境が無料枠で使え、個人でAIモデルを動かして文章・画像・動画生成ができるという紹介。サービス名は本文中に明記なし（続きはリンク先）。</div><div class="vsaved">保存 11/10 22:51</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/gagarot200/status/2119691961296949656?a=F4zfJJieqXELQpwHlzc&amp;s=12" data-title="Muse・Grok Bot使いへ：無料枠でT4×2のGPU環境" data-rid="1921870755">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/hukugyootaku/status/2119779942770880813?a=e3gw6AREMKeiDDcWlK4&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HWr4U5caQAAh1iB?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">「2027年に株価が伸びる銘柄」をAIで探すマスタープロンプト</div><div class="vdesc">本もnoteも買わず、2018年のビットコインや上場後〜2026年のキオクシア・マイクロンのような銘柄をAIで探しているという投稿。添付画像は「次のMicron・キオクシア候補30銘柄発掘」用プロンプトで、ファンダメンタルズ・半導体/AIインフラ・需給・バリュエーション・テクニカル・マクロ・リスク管理など10分野の専門家役を統合させる構成。引用元は収入源29個の副業をAIで管理しているという同じ作者の自己紹介。</div><div class="vsaved">保存 11/10 15:55</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/hukugyootaku/status/2119779942770880813?a=e3gw6AREMKeiDDcWlK4&amp;s=12" data-title="「2027年に株価が伸びる銘柄」をAIで探すマスタープロンプト" data-rid="1921500334">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://youtube.com/shorts/KkTNmMP3UGA?si=G25l947dAW-2C6KG" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://i.ytimg.com/vi/KkTNmMP3UGA/oardefault.jpg?sqp=-oaymwEkCJUDENAFSFqQAgHyq4qpAxMIARUAAAAAJQAAyEI9AICiQ3gB&amp;rs=AOn4CLBN3uUVcRi42gm2o8BSOOBZQ3Q4Cw" onerror="this.remove()"><span class="ph">YouTube</span></div>
+        <div class="vbody"><div class="vtitle">Prompts shared（LandSpace Architecture）</div><div class="vdesc">LandSpace Architectureのショート動画。タイトル「Prompts shared」のみ取得、字幕と動画本体は今回取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/10 23:53</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://youtube.com/shorts/KkTNmMP3UGA?si=G25l947dAW-2C6KG" data-title="Prompts shared（LandSpace Architecture）" data-rid="1921935580">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🏛️ 建築・都市（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/higa_kwhg/status/2119759844144222510?a=HpHJzZrQYljuVdMK1IY&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2119759844144222510" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">テスラ×スペースXの「テラファブ」は磯崎新のコンピューター・エイディッド・シティそのもの</div><div class="vdesc">建築家・比嘉武彦が、建設地が決まった巨大工場「テラファブ」（引用元 @EVCafe_jp によれば完成すればペンタゴンの50倍）を「ほとんど磯崎新のコンピューターエイディッドシティそのもの」と評した。添付は2本の巨大なカプセル状ヴォリュームから櫛状に細い棟が伸びる白黒の模型写真と、森の中に左右対称の長大な施設が横たわる夜景レンダー。</div><div class="vsaved">保存 11/10 23:55</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/higa_kwhg/status/2119759844144222510?a=HpHJzZrQYljuVdMK1IY&amp;s=12" data-title="テスラ×スペースXの「テラファブ」は磯崎新のコンピューター・エイディッド・シティそのもの" data-rid="1921936265">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-11-10 run_id=940f253d saves=6 step1_s=59 step2_s=23 step2_5_s=5 step3_s=7 step4_s=410 step4_5_s=67 step5_s=4 step7_s=5 total_s=580 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+<script src="../deepdive-mark.js" defer></script>
+</body>
+</html>
