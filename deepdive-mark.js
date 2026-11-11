@@ -3,7 +3,9 @@
 // 取れなかったら何もしない（印が付かないだけで、ページは今までどおり）。
 //
 // もう一つ、「💬 AIと話す」をスマホ・タブレットでも押せるようにする（2026-10-27）。
-// PC は各ページのインラインの openChat（Claude Desktop の claude://code/new）をそのまま呼ぶ。
+// PC は家の PC で動く深掘りアプリ deepdive-desk（http://127.0.0.1:8765・元の投稿／会話／ノートを1画面に並べる。
+// 2026-11-11）を「deepdive-desk」という名前のタブで開く（2回目以降は同じタブに切り替わる）。
+// rid が正の数でない古いカードと Shift＋クリックは、従来どおりインラインの openChat（Claude Desktop）を呼ぶ。
 // スマホ・タブレットは、Vault のリポジトリ（非公開）を開いたクラウドの会話を
 // https://claude.ai/code/new で開く。依頼文は data-url / data-title / data-rid だけから作る固定文
 // （取得した本文やモデルが書いた文は混ぜない）。
@@ -47,8 +49,19 @@
   }
   window.deepdiveMobileLink = mobileLink;
 
+  function deskLink(btn) {
+    var url = btn.getAttribute('data-url');
+    var rid = btn.getAttribute('data-rid');
+    if (!/^\d+$/.test(rid || '') || !/^https?:\/\//.test(url || '')) return null;
+    return 'http://127.0.0.1:8765/?rid=' + rid + '&url=' + encodeURIComponent(url) +
+      '&title=' + encodeURIComponent(btn.getAttribute('data-title') || '');
+  }
+  window.deepdiveDeskLink = deskLink;
+
   window.openChat = function (btn) {
     if (isTouchDevice()) { var link = mobileLink(btn); if (link) location.href = link; return; }
+    var ev = window.event, desk = deskLink(btn);
+    if (desk && !(ev && ev.shiftKey)) { window.open(desk, 'deepdive-desk'); return; }
     if (typeof pcOpenChat === 'function') pcOpenChat(btn);
   };
 
