@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-11-11 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-11-11 の振り返り</h1>
+  <div class="meta">AIの「使用量」と「作業面」をどう設計するか——Grok Botの節約術、Museの自作秘書・ウィジェット、Claudeの新機能（5件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の通奏低音は「AIを一日中働かせるとき、何がコストで、何が自分の持ち物になるのか」だった。Grok Botの11ページPDFは、週間使用量を「起動回数×コンテキスト×ステップ×扇出」の掛け算に分解し、15分毎の定期実行が週672回の起動を生むことを示す。同じ関心は、Codex・Claude Code・Grok・Museの残量をiPhoneのホーム画面に並べるウィジェットにも表れていて、複数のAIの残り%を常に見える場所に置くこと自体が、いまの個人のAI運用の前提になりつつある。</p>
+    <p>一方で、Museで組まれたライフログ秘書「じゅら」は、会話・移動・支払い・資産を自分のGoogleドライブに集め、毎晩まとめを返す構成図として、AIの使い方を「チャット」から「自分専用の情報インフラ」へ広げてみせる。東大Codex研究所のリファクタリング100選は、AIへの指示を「きれいにして」から「データの群れを探して1つにまとめて」のような語彙へ置き換える試みで、Claudeが Whiteboards・Sheets・Data という図・表・データの作業面を持ち始めたことと同じく、AIとの共通言語や共通の作業台を整える話として読める。全体としては「作りたい」軸が強く活性化した日で、Muse・Grok Bot周りの保存は今週4日目（11/4・11/5・11/10に続く）と継続する関心になっている。翌日付（11/12未明）の保存1件を含む。</p>
+    <ul class="pts">
+      <li><b>使用量は掛け算</b>：起動・文脈・手数・扇出のどれか1つを大きく削るより、4つを少しずつ削るほうが効く。定期実行をイベント駆動に変えるだけで週の半分が浮くという含意がある。</li>
+      <li><b>残量の可視化</b>：複数AIの残り%とリセット日時を1画面に並べるウィジェットは、AIの契約枠を「資源」として管理する段階に入ったことへの問いを立てる。</li>
+      <li><b>自分専用インフラ</b>：「じゅら」はデータを自分のドライブに閉じ、AIは読む側に置く。AIの価値がモデルより「何を集めて渡すか」の配線で決まるという含意がある。</li>
+      <li><b>指示の語彙</b>：リファクタリングの名前で頼むという発想は、AIへの依頼を職能の共通語彙で書くほど精度が上がるという含意がある。</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>「じゅら」のように会話・移動・支払いまで集める秘書を作るとき、毎晩のまとめと30分ごとの整理が使用量の大半を占めるなら、どの記録を「起動のきっかけ」にし、どれを「聞かれた時だけ読む」側に回すべきか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">Grok Botの週間使用量をどう持たせるか</div>
+    <ul class="ilist">
+      <li><a href="https://cursor.com/help/grok-bot/routines" target="_blank" rel="noopener"><b>Routines（Cursor ヘルプ：Grok Bot）</b></a> <span>→ 公式ヘルプも「実行のたびに使用量を消費し、頻度が最大の要因。毎時のスケジュールや忙しいSlackトリガーは1日で1週間分を使い切りうる」と明記し、不要なルーティンの停止・間隔の拡大・Slackトリガーの絞り込みを推奨している。Testボタンも実作業をするので消費する点、ルーティン合計で毎時300回までという上限もあり、PDFの「起動回数」因子は公式の説明と一致する。</span></li>
+      <li><a href="https://forum.cursor.com/t/grok-bot-ultra-users-how-do-you-make-the-weekly-allowance-last-mine-reached-99-in-three-days/171221" target="_blank" rel="noopener"><b>Grok Bot Ultra users: how do you make the weekly allowance last? Mine reached 99% in three days（Cursor Forum）</b></a> <span>→ Ultra（月$200）で1日目65%・3日目99%に達した例では、2〜3日目の約2億8400万トークンのうち約84%がキャッシュ読み込みで、会話履歴の読み直しが主因だった。タスクごとに新しいチャットを開く・定期処理は専用Botへ・重い実装はCursor Agentsへ逃がす、という対処が挙がっており、PDFの「コンテキスト」因子を裏づける実測になっている。</span></li>
+    </ul>
+    <div class="ntag">複数AIの残量をスマホで見る</div>
+    <ul class="ilist">
+      <li><a href="https://community.openai.com/t/codex-widget-with-usage-limits-now-available-in-ios/1403682" target="_blank" rel="noopener"><b>Codex widget with usage limits now available in iOS（OpenAI Community）</b></a> <span>→ ChatGPTのiOSアプリ更新でCodexの使用量・タスクのウィジェットが公式に追加された。ただし公式は自社分だけなので、Codex・Claude Code・Grok・Museを横断して1枚に並べるには、Museウィジェットのように自分で集計して数字だけを端末に渡す仕組みが要る、という位置づけが見える。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI・ツール（5件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/claudeai/status/2120206365759094857?a=4Zof-hBIqdAAx-zy7tw&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HWx89ZkXMAAqMO6.png" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claude Whiteboards・Sheets・Data、本日から順次提供</div><div class="vdesc">Anthropic公式（@claudeai）の告知で、新機能は3つ：ボードで計画を考え抜く「Whiteboards」、シートで進捗トラッカーを組む「Sheets」、データで物語を語る「Data」。会話の外に、図・表・データという3種類の作業面をClaudeが持ち始めたという位置づけ。今回は添付動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/11 09:35</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/claudeai/status/2120206365759094857?a=4Zof-hBIqdAAx-zy7tw&amp;s=12" data-title="Claude Whiteboards・Sheets・Data、本日から順次提供" data-rid="1923026125">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/room_206_ai/status/2120186760122777707?a=vCiwiVC2BTAmOo676nM&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HWxqiP-agAAoesc.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Museで作ったライフログ秘書「じゅら」の全体図</div><div class="vdesc">構成図は①あつめる（胸元レコーダーreSpeaker Clipの会話、自作Androidアプリで聴いた曲・行った場所・歩数・睡眠・画面時間、PayPay・Revolutの支払い通知、マネーフォワード経由の銀行・証券）→②ためる（誰とも共有しないGoogleドライブ）→③AI秘書「じゅら」（Muse）が毎晩まとめを送り、30分ごとにお金を整理、聞かれたら記録を読んで答える、の3層。LINEは「自分のLINEを代読・代送」と「じゅら自身のアカウントでトーク・通話（音声AI）」の2系統。</div><div class="vsaved">保存 11/11 09:38</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/room_206_ai/status/2120186760122777707?a=vCiwiVC2BTAmOo676nM&amp;s=12" data-title="Museで作ったライフログ秘書「じゅら」の全体図" data-rid="1923027858">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/ut_codex/status/2120011089333363177?a=I_umwaAa0CCrV51x7lg&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HWvK1sWa8AAez7m.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">AIに頼むリファクタリング100選：「コードの臭い」の名前で指示する</div><div class="vdesc">「コードをきれいにして」ではなく臭いと技法の名前で頼むのがコツ、という東大Codex研究所の4枚図解。1枚目は臭い25種（長すぎる関数→「関数の抽出で分けて」、マジックナンバー86400→「名前付きの定数に」、フラグ引数、データの群れ、相続拒否など）、2枚目は技法25種（変数の抽出、パラメータオブジェクト、問い合わせと更新の分離、フェーズの分離、ファクトリ関数など）で、各項目にそのまま貼れる依頼文が付く。</div><div class="vsaved">保存 11/11 10:39</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ut_codex/status/2120011089333363177?a=I_umwaAa0CCrV51x7lg&amp;s=12" data-title="AIに頼むリファクタリング100選：「コードの臭い」の名前で指示する" data-rid="1923068248">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/heli8866/status/2120008430882841054?a=D00bm0Pd37CoilP0Eds&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HWvIbYybkAAuN2r.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Grok Botの週間使用量を100%→20%に減らす11ページPDFの10手順</div><div class="vdesc">使用量＝起動回数×コンテキスト×ステップ×扇出の掛け算、という4因子モデル。15分毎の定期実行は何も変わらなくても週672回起動するので、Slackメンション・メール・GitHub・webhookのトリガーに置き換えれば十数回に圧縮できる。同じBotに6週間同じ仕事をさせず約300字の引き継ぎで新Botへ、2回連続失敗で停止、群チャットはBot1体が担当・Bot間の往復は2通まで、週半ば80%で低消費モードへ。例示は2000→400 units（実測値ではなく説明用の単位）。</div><div class="vsaved">保存 11/11 10:48</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/heli8866/status/2120008430882841054?a=D00bm0Pd37CoilP0Eds&amp;s=12" data-title="Grok Botの週間使用量を100%→20%に減らす11ページPDFの10手順" data-rid="1923072976">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/memuringo7544/status/2120426960698724853?a=XKdbNyoPdvpw0Rzfn8Y&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HW1FFHwbcAAIo19.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">MuseでiPhoneホーム画面に「AIレート制限」ウィジェット</div><div class="vdesc">Codex・Claude Code（5h併記）・Grok・Museの残り%とバー、リセット日時を1枚に並べるウィジェット（スクショ時点でCodex残り5%・Claude Code 88%・Grok 88%・Muse 78%）。Museが3時間ごとに更新するボードの数字だけをiPhone側のScriptable（無料）スクリプトが取りに行き、トークン類は端末に置かない設計。手順は貼り付け→▶で1回実行→ホーム画面にScriptableの中サイズを追加→Scriptで「AIレート制限」を選ぶ。</div><div class="vsaved">保存 11/12 01:37</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/memuringo7544/status/2120426960698724853?a=XKdbNyoPdvpw0Rzfn8Y&amp;s=12" data-title="MuseでiPhoneホーム画面に「AIレート制限」ウィジェット" data-rid="1924275076">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-11-11 run_id=e8dbf900 saves=5 step1_s=17 step2_s=32 step2_5_s=239 step3_s=5 step4_s=709 step4_5_s=86 step5_s=3 step7_s=2 total_s=1093 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+<script src="../deepdive-mark.js" defer></script>
+</body>
+</html>
