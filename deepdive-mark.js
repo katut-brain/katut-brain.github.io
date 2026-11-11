@@ -58,10 +58,20 @@
   }
   window.deepdiveDeskLink = deskLink;
 
+  // アプリは開いた元（このページ）に hello を送ってくる。今ここでそのカードのボタンが押されていれば
+  // go と戻り先（このページの URL）を返し、アプリはそれを合図に自動で深掘りを始める（2026-11-11）。
+  var lastDeskRid = null;
+  window.addEventListener('message', function (e) {
+    if (e.origin !== 'http://127.0.0.1:8765' || !e.data || e.data.type !== 'deepdive-desk:hello') return;
+    if (!lastDeskRid || String(e.data.rid) !== lastDeskRid) return;
+    lastDeskRid = null; // 1回の押下につき1回だけ
+    e.source.postMessage({ type: 'deepdive-desk:go', rid: e.data.rid, back: location.href }, e.origin);
+  });
+
   window.openChat = function (btn) {
     if (isTouchDevice()) { var link = mobileLink(btn); if (link) location.href = link; return; }
     var ev = window.event, desk = deskLink(btn);
-    if (desk && !(ev && ev.shiftKey)) { window.open(desk, 'deepdive-desk'); return; }
+    if (desk && !(ev && ev.shiftKey)) { lastDeskRid = btn.getAttribute('data-rid'); window.open(desk, 'deepdive-desk'); return; }
     if (typeof pcOpenChat === 'function') pcOpenChat(btn);
   };
 
