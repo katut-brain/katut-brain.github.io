@@ -172,3 +172,13 @@
 {"ts": "2026-11-11T01:28:46+00:00", "env": "gha", "kind": "canary", "channel": "threads", "method": "og_meta", "ok": true, "ms": 831, "error": ""}
 {"ts": "2026-11-11T01:28:47+00:00", "env": "gha", "kind": "canary", "channel": "web", "method": "web_direct", "ok": true, "ms": 240, "error": ""}
 {"ts": "2026-11-11T01:28:48+00:00", "env": "gha", "kind": "canary", "channel": "web", "method": "web_jina", "ok": true, "ms": 900, "error": ""}
+{"ts": "2026-11-12T02:29:51+00:00", "env": "gha", "kind": "canary", "channel": "x_post", "method": "x_grokbot", "ok": true, "ms": 30817, "error": ""}
+{"ts": "2026-11-12T02:29:51+00:00", "env": "gha", "kind": "canary", "channel": "x_post", "method": "x_fxtwitter", "ok": true, "ms": 178, "error": ""}
+{"ts": "2026-11-12T02:29:51+00:00", "env": "gha", "kind": "canary", "channel": "x_post", "method": "x_syndication", "ok": true, "ms": 384, "error": ""}
+{"ts": "2026-11-12T02:29:51+00:00", "env": "gha", "kind": "canary", "channel": "x_post", "method": "x_vxtwitter", "ok": true, "ms": 106, "error": ""}
+{"ts": "2026-11-12T02:29:51+00:00", "env": "gha", "kind": "canary", "channel": "youtube", "method": "yt_oembed", "ok": true, "ms": 34, "error": ""}
+{"ts": "2026-11-12T02:29:52+00:00", "env": "gha", "kind": "canary", "channel": "instagram", "method": "ig_oembed", "ok": true, "ms": 212, "error": ""}
+{"ts": "2026-11-12T02:29:52+00:00", "env": "gha", "kind": "canary", "channel": "instagram", "method": "og_meta", "ok": true, "ms": 332, "error": ""}
+{"ts": "2026-11-12T02:29:53+00:00", "env": "gha", "kind": "canary", "channel": "threads", "method": "og_meta", "ok": true, "ms": 991, "error": ""}
+{"ts": "2026-11-12T02:29:53+00:00", "env": "gha", "kind": "canary", "channel": "web", "method": "web_direct", "ok": true, "ms": 65, "error": ""}
+{"ts": "2026-11-12T02:29:55+00:00", "env": "gha", "kind": "canary", "channel": "web", "method": "web_jina", "ok": true, "ms": 1662, "error": ""}
