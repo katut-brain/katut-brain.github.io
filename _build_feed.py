@@ -218,6 +218,8 @@ TEMPLATE = """<!doctype html>
 
   <footer>毎朝の同期で自動生成 ｜ katut-brain</footer>
 </div>
+<!-- トップを「#desk=」付きでホーム画面に追加したとき、深掘りアプリの場所を覚えさせる（2026-11-13） -->
+<script src="deepdive-mark.js" defer></script>
 </body>
 </html>
 """
