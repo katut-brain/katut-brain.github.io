@@ -49,27 +49,55 @@
   }
   window.deepdiveMobileLink = mobileLink;
 
-  function deskLink(btn) {
+  var PC_DESK = 'http://127.0.0.1:8765';
+  function deskLink(btn, base) {
     var url = btn.getAttribute('data-url');
     var rid = btn.getAttribute('data-rid');
     if (!/^\d+$/.test(rid || '') || !/^https?:\/\//.test(url || '')) return null;
-    return 'http://127.0.0.1:8765/?rid=' + rid + '&url=' + encodeURIComponent(url) +
+    return (base || PC_DESK) + '/?rid=' + rid + '&url=' + encodeURIComponent(url) +
       '&title=' + encodeURIComponent(btn.getAttribute('data-title') || '');
   }
   window.deepdiveDeskLink = deskLink;
+
+  // タブレットからも家の PC の deepdive-desk を使う（2026-11-13）。tailnet 内だけに出した
+  // https://<機械>.<tailnet>.ts.net を、その端末で一度だけ「#desk=<そのURL>」付きで開いて覚えさせる
+  // （公開コードに家の機械名を書かない。#desk=off で忘れる）。PC が寝ていて届かなければ従来の claude.ai へ。
+  var DESK_KEY = 'deepdive-desk-origin', TS_RE = /^https:\/\/[a-z0-9-]+\.[a-z0-9-]+\.ts\.net$/;
+  var hm = /^#desk=(.+)$/.exec(location.hash);
+  if (hm) {
+    try {
+      var v = decodeURIComponent(hm[1]).replace(/\/+$/, '');
+      if (v === 'off') localStorage.removeItem(DESK_KEY); else if (TS_RE.test(v)) localStorage.setItem(DESK_KEY, v);
+    } catch (err) {}
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+  var tabletDesk = null, tabletDeskOk = false;
+  try { tabletDesk = localStorage.getItem(DESK_KEY); } catch (err) {}
+  if (tabletDesk && !TS_RE.test(tabletDesk)) tabletDesk = null;
+  if (tabletDesk && isTouchDevice()) {
+    // window.open はクリックの中で同期的に呼ぶ必要があるので、届くかどうかは先に調べておく
+    var ctl = window.AbortController ? new AbortController() : null;
+    if (ctl) setTimeout(function () { ctl.abort(); }, 4000);
+    fetch(tabletDesk + '/api/sessions', { mode: 'no-cors', cache: 'no-store', signal: ctl && ctl.signal })
+      .then(function () { tabletDeskOk = true; }).catch(function () {});
+  }
 
   // アプリは開いた元（このページ）に hello を送ってくる。今ここでそのカードのボタンが押されていれば
   // go と戻り先（このページの URL）を返し、アプリはそれを合図に自動で深掘りを始める（2026-11-11）。
   var lastDeskRid = null;
   window.addEventListener('message', function (e) {
-    if (e.origin !== 'http://127.0.0.1:8765' || !e.data || e.data.type !== 'deepdive-desk:hello') return;
+    if ((e.origin !== PC_DESK && e.origin !== tabletDesk) || !e.data || e.data.type !== 'deepdive-desk:hello') return;
     if (!lastDeskRid || String(e.data.rid) !== lastDeskRid) return;
     lastDeskRid = null; // 1回の押下につき1回だけ
     e.source.postMessage({ type: 'deepdive-desk:go', rid: e.data.rid, back: location.href }, e.origin);
   });
 
   window.openChat = function (btn) {
-    if (isTouchDevice()) { var link = mobileLink(btn); if (link) location.href = link; return; }
+    if (isTouchDevice()) {
+      var td = tabletDeskOk && deskLink(btn, tabletDesk);
+      if (td) { lastDeskRid = btn.getAttribute('data-rid'); window.open(td, 'deepdive-desk'); return; }
+      var link = mobileLink(btn); if (link) location.href = link; return;
+    }
     var ev = window.event, desk = deskLink(btn);
     if (desk && !(ev && ev.shiftKey)) { lastDeskRid = btn.getAttribute('data-rid'); window.open(desk, 'deepdive-desk'); return; }
     if (typeof pcOpenChat === 'function') pcOpenChat(btn);
