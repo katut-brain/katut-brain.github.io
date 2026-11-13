@@ -62,25 +62,32 @@
   // タブレットからも家の PC の deepdive-desk を使う（2026-11-13）。tailnet 内だけに出した
   // https://<機械>.<tailnet>.ts.net を、その端末で一度だけ「#desk=<そのURL>」付きで開いて覚えさせる
   // （公開コードに家の機械名を書かない。#desk=off で忘れる）。PC が寝ていて届かなければ従来の claude.ai へ。
+  // 受け入れるのは SHA-256 が DESK_SHA256 と一致する1か所だけ（他人の ts.net を覚えさせられて rid・合言葉を
+  // 送らされるのを防ぐ。Codex レビュー P1・2026-11-13）。機械名を変えたらここの値を作り直す。
   var DESK_KEY = 'deepdive-desk-origin', TS_RE = /^https:\/\/[a-z0-9-]+\.[a-z0-9-]+\.ts\.net$/;
+  var DESK_SHA256 = 'f1ad4b71350a1f6c4b899a953b5d45f8c5c4ccdf80dad844c3ec26768d2548ae';
+  var tabletDesk = null, tabletDeskOk = false, cand = null, fromHash = false;
   var hm = /^#desk=(.+)$/.exec(location.hash);
-  if (hm) {
-    try {
-      var v = decodeURIComponent(hm[1]).replace(/\/+$/, '');
-      if (v === 'off') localStorage.removeItem(DESK_KEY); else if (TS_RE.test(v)) localStorage.setItem(DESK_KEY, v);
-    } catch (err) {}
-    // アドレスから #desk= を消さない: ホーム画面のアプリは Safari と保存領域が別で、
-    // 消すと「ホーム画面に追加」した URL から抜けて覚えられない（2026-11-13 iPad 実測）
-  }
-  var tabletDesk = null, tabletDeskOk = false;
-  try { tabletDesk = localStorage.getItem(DESK_KEY); } catch (err) {}
-  if (tabletDesk && !TS_RE.test(tabletDesk)) tabletDesk = null;
-  if (tabletDesk && isTouchDevice()) {
-    // window.open はクリックの中で同期的に呼ぶ必要があるので、届くかどうかは先に調べておく
-    var ctl = window.AbortController ? new AbortController() : null;
-    if (ctl) setTimeout(function () { ctl.abort(); }, 4000);
-    fetch(tabletDesk + '/api/sessions', { mode: 'no-cors', cache: 'no-store', signal: ctl && ctl.signal })
-      .then(function () { tabletDeskOk = true; }).catch(function () {});
+  // アドレスから #desk= は消さない: ホーム画面のアプリは Safari と保存領域が別で、
+  // 消すと「ホーム画面に追加」した URL から抜けて覚えられない（2026-11-13 iPad 実測）
+  try {
+    if (hm) cand = decodeURIComponent(hm[1]).replace(/\/+$/, ''), fromHash = true;
+    if (cand === 'off') { localStorage.removeItem(DESK_KEY); cand = null; }
+    if (!cand) cand = localStorage.getItem(DESK_KEY), fromHash = false;
+  } catch (err) {}
+  if (cand && TS_RE.test(cand) && window.crypto && crypto.subtle && window.TextEncoder) {
+    crypto.subtle.digest('SHA-256', new TextEncoder().encode(cand)).then(function (buf) {
+      var hex = Array.prototype.map.call(new Uint8Array(buf), function (x) { return ('0' + x.toString(16)).slice(-2); }).join('');
+      if (hex !== DESK_SHA256) { try { localStorage.removeItem(DESK_KEY); } catch (err) {} return; }
+      tabletDesk = cand;
+      if (fromHash) { try { localStorage.setItem(DESK_KEY, cand); } catch (err) {} }
+      if (!isTouchDevice()) return;
+      // window.open はクリックの中で同期的に呼ぶ必要があるので、届くかどうかは先に調べておく
+      var ctl = window.AbortController ? new AbortController() : null;
+      if (ctl) setTimeout(function () { ctl.abort(); }, 4000);
+      return fetch(tabletDesk + '/api/sessions', { mode: 'no-cors', cache: 'no-store', signal: ctl && ctl.signal })
+        .then(function () { tabletDeskOk = true; });
+    }).catch(function () {});
   }
 
   // アプリは開いた元（このページ）に hello を送ってくる。今ここでそのカードのボタンが押されていれば
@@ -96,7 +103,16 @@
   window.openChat = function (btn) {
     if (isTouchDevice()) {
       var td = tabletDeskOk && deskLink(btn, tabletDesk);
-      if (td) { lastDeskRid = btn.getAttribute('data-rid'); window.open(td, 'deepdive-desk'); return; }
+      if (td) {
+        lastDeskRid = btn.getAttribute('data-rid');
+        // ホーム画面のアプリからは opener の合図が届かないので、合言葉 k をアプリのサーバーへ直接送る（Origin で本物と確かめられる）
+        var kb = new Uint8Array(16); crypto.getRandomValues(kb);
+        var k = Array.prototype.map.call(kb, function (x) { return ('0' + x.toString(16)).slice(-2); }).join('');
+        window.open(td + '&k=' + k, 'deepdive-desk');
+        fetch(tabletDesk + '/api/arm', { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ rid: lastDeskRid, k: k, back: location.href }) }).catch(function () {});
+        return;
+      }
       var link = mobileLink(btn); if (link) location.href = link; return;
     }
     var ev = window.event, desk = deskLink(btn);
