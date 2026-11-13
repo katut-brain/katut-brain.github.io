@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-11-13 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-11-13 の振り返り</h1>
+  <div class="meta">保存1件：3Dプリントの「非平面印刷」——積層の階段を、ノズルの動きで消す</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存は1件だけで、PrintFixes の Reel が扱う「非平面印刷」。通奏低音は、<b>道具が前提にしている「平らな層」という制約を、形の側ではなく工程の側でほどく</b>という発想にある。曲面の上面が安っぽく見える原因はモデルではなくスライサーの積み方にあり、ノズルを上下させるだけで仕上がりが変わる。ただしヒーターブロックやファンダクトとの衝突という物理的な限界があり、効くのは緩い曲面に限られる。</p>
+    <p>建築の目で見ると、これは「施工法が形を決める」話のミニチュアでもある。作例が既製のスライサーではなく自作の Blender プラグインから生まれている点は、「作りたい」軸——道具そのものを自分で拡張して表現の幅を取りに行く側——が活性化した一日だったことを示す。メモ（note）は付いていない。3D系の保存は直近1週間には無く、単発の関心として現れた。</p>
+    <ul class="pts">
+      <li><b>段差の原因は工程にある</b>：曲面の「安っぽさ」はモデルの精度ではなく平面スライスの積層由来で、ツールパスを変えれば形を変えずに質感を変えられるという含意がある。</li>
+      <li><b>自由度には干渉の上限がある</b>：ノズル周りの部品が造形物に当たるため、傾斜の許容範囲がそのまま表現できる曲面の範囲になる——設計段階で勾配を管理する必要への問いを立てる。</li>
+      <li><b>道具を自作する作り手</b>：@sebanumata は A1 mini と自作の Blender プラグインで印刷しており、モデリング環境の中でツールパスまで扱う流れが見える。</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>ヘッドが干渉しない「緩い勾配」に収めるという制約を、曲面屋根やシェル形状の模型を設計する段階でどこまで先に織り込めるか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">非平面スライス</div>
+    <ul class="ilist">
+      <li><a href="https://hackaday.com/2025/04/20/non-planar-slicing-is-for-the-birds" target="_blank" rel="noopener"><b>Non-planar Slicing Is For The Birds（Hackaday）</b></a> <span>→ Joshua Bird 氏の S4 slicer は、四面体メッシュを変形してから Cura でスライスし、G-code を逆変換する方式で、Benchy を逆さまに印刷した。非平面でも「ベッドから上へ積む」原則は変わらず計算も重いので、上面だけを曲げる今回の手法は、その手前で実用に寄せた落としどころと読める。</span></li>
+    </ul>
+  </section>
+
+  <h2>🖨️ 3Dプリント（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DfhloGBoFZM/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.82787-15/892322605_1460739432675508_5968832591547481557_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=1&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=cMwwUFxwFgEQ7kNvwHvPMYY&amp;_nc_oc=Adqs7iSiRNo6XNtQ8Vl7MTrBTuzzVeQ91eoZZz3Eo1sHmV4M7o6VHd6jiG9Keki142Q&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-1.cdninstagram.com&amp;_nc_gid=-SkR4CoabvYG07LV6nDGQQ&amp;_nc_ss=7ba02&amp;_nc_ct=RQosPBUKAAAA&amp;oh=00_AQQ_KbRmU30IXBMVfZWAPSpMzi-mg0tIwAUVQkxJvZCbzQ&amp;oe=6AFCD15F" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">曲面の上面を滑らかにする「非平面印刷」— 3Dプリントの段差対策</div><div class="vdesc">通常のスライスは平らな層を積むので、曲面の上面は階段状になる。非平面印刷は押し出しながらノズルを上下させ、上面の層を曲面に沿わせて滑らかに仕上げる手法。弱点は傾斜で、急すぎるとヒーターブロックやファンダクトが造形物に当たるため、緩い曲面向き。多くのスライサーは標準非対応で、作例は @sebanumata が A1 mini と自作の Blender プラグインで印刷したもの。今回は動画の内容を取得できなかったため、キャプションの範囲で要約した。※動画の内容は未取得</div><div class="vsaved">保存 11/13 21:52</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DfhloGBoFZM/" data-title="曲面の上面を滑らかにする「非平面印刷」— 3Dプリントの段差対策" data-rid="1927313899">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain
+<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（1件中0件成功・内訳: exception:ClientError:404 1件）。中継サービスの死亡を疑うこと</p>
+<!-- run-timing schema=v2 status=complete target=2026-11-13 run_id=82a16c84 saves=1 step1_s=14 step2_s=27 step2_5_s=250 step3_s=5 step4_s=41 step4_5_s=20 step5_s=30 step7_s=1 total_s=388 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+<script src="../deepdive-mark.js" defer></script>
+</body>
+</html>
