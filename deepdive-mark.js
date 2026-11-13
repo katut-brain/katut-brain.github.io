@@ -69,7 +69,8 @@
       var v = decodeURIComponent(hm[1]).replace(/\/+$/, '');
       if (v === 'off') localStorage.removeItem(DESK_KEY); else if (TS_RE.test(v)) localStorage.setItem(DESK_KEY, v);
     } catch (err) {}
-    history.replaceState(null, '', location.pathname + location.search);
+    // アドレスから #desk= を消さない: ホーム画面のアプリは Safari と保存領域が別で、
+    // 消すと「ホーム画面に追加」した URL から抜けて覚えられない（2026-11-13 iPad 実測）
   }
   var tabletDesk = null, tabletDeskOk = false;
   try { tabletDesk = localStorage.getItem(DESK_KEY); } catch (err) {}
