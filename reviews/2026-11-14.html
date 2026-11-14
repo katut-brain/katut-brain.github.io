@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-11-14 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-11-14 の振り返り</h1>
+  <div class="meta">保存1件：BIM×SketchUp×AI——SketchUp 2027 の新Importerで「Revitで作り直す」工程が消えるか</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存は1件だけで、通奏低音は「手で速く考えるツール」と「図面・数量まで責任を持つツール」の断絶をどう埋めるか、という問いだった。平裕太さんが note で始めた連載「BIM×SketchUp×AI」は、SketchUp 2027 と新しい Importer の発表を機に、SketchUp→Revit 連携が“作り直し前提”から変わりつつあると述べ、無料記事「作り直しになる3つの理由」と、対応表・チェックリスト・AI監査プロンプト入りの有料『作り直しゼロの実務ルールブック』（980円）を出している。</p>
+    <p>ここで AI は造形の主役ではなく、モデルの命名・タグ付けがルールに沿っているかを点検する「監査役」として置かれている点が面白い。建築×技術の接続で、この日に活性化したのは「作りたい」軸より、実務の流れを「知る/紹介する」軸。過去7日間は AI ツール（Muse・Grok Bot・Claude）の保存が中心で、BIM・SketchUp という建築実務の話題は今週これが初めて。</p>
+    <ul class="pts">
+      <li><b>変換の鍵はモデルの書き方</b>：Trimble の新しい SketchUp Importer for Revit はコンポーネントのタグ・分類を Revit カテゴリへ写像して編集可能な要素にする。連携の成否は、変換ツールより前の「SketchUp側でどう名付け・分類するか」に移るという含意がある</li>
+      <li><b>AIは生成でなく監査</b>：ルールブックに「AI監査プロンプト」が入るのは、AIをモデルの規約チェックに使う発想。設計の手を速くするより、手戻りを減らす方向のAI活用への問いを立てる</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>スケッチ段階からRevitで読める分類規約を守ってSketchUpでモデリングすると、SketchUpの「速く雑に考えられる」良さはどこまで残るのか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">SketchUp→Revit連携</div>
+    <ul class="ilist">
+      <li><a href="https://www.phcppros.com/articles/24466-trimble-expands-design-and-constructability-workflows-with-new-sketchup-capabilities" target="_blank" rel="noopener"><b>Trimble Expands Design and Constructability Workflows With New SketchUp Capabilities</b></a> <span>→ SketchUp 2027 と同時発表の SketchUp Importer for Revit は、コンポーネントのタグと分類を Revit カテゴリへ写像し、集計・図面化できるネイティブ要素に変える（2026年11月予定、Pro Advanced Workflows／Studio 向けに追加料金なし）。連載の言う「作り直し前提からの変化」の実体はこれで、Procedures（非破壊モデリング）や断面ハッチも同時に入った。</span></li>
+    </ul>
+  </section>
+
+  <h2>🏛 建築×AI（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.threads.com/share/BAmUCGtNwQ" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-ord5-2.xx.fbcdn.net/v/t39.92108-6/900474021_1470148925254765_4523499470549496760_n.jpg?_nc_cat=110&amp;_nc_map=urlgen_bucketless&amp;ccb=1-7&amp;_nc_sid=554f3c&amp;_nc_ohc=J3tGwicz8eYQ7kNvwED_eMt&amp;_nc_oc=AdrFQzYC61AGxfq5Hf5A73HQYZrXAYI2MQc7oGxN7qZvjt7CX_rY_5OV42Uh5ZWCUtY&amp;_nc_zt=14&amp;_nc_ht=scontent-ord5-2.xx&amp;_nc_gid=8A7O_Cfo8Koo1KUQnwan-g&amp;_nc_ss=7b100&amp;oh=00_AQRmI8Hon5QviK370e4zeHCaHa5RjeTYc0YLD3GRA8KiZw&amp;oe=6AFE9304" onerror="this.remove()"><span class="ph">Threads</span></div>
+        <div class="vbody"><div class="vtitle">noteで新連載「BIM×SketchUp×AI」——SketchUp→Revit連携は作り直し前提から変わるか</div><div class="vdesc">平裕太さんが note で連載開始。SketchUp 2027 と新Importerの登場を受け、無料記事「作り直しになる3つの理由」と、対応表・チェックリスト・AI監査プロンプト入りの有料『作り直しゼロの実務ルールブック』（980円）を案内している。 ※画像の内容は未取得 ※音声の内容は未取得</div><div class="vsaved">保存 11/14 14:48</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.threads.com/share/BAmUCGtNwQ" data-title="noteで新連載「BIM×SketchUp×AI」——SketchUp→Revit連携は作り直し前提から変わるか" data-rid="1928344473">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain
+<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（1件中0件成功・内訳: exception:ClientError:404 1件）。中継サービスの死亡を疑うこと</p>
+<!-- run-timing schema=v2 status=complete target=2026-11-14 run_id=f1a8abfc saves=1 step1_s=18 step2_s=15 step2_5_s=116 step3_s=2 step4_s=14 step4_5_s=40 step5_s=4 step7_s=1 total_s=210 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+<script src="../deepdive-mark.js" defer></script>
+</body>
+</html>
