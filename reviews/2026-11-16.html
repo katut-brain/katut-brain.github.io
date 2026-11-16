@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-11-16 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-11-16 の振り返り</h1>
+  <div class="meta">保存9件：点群→Jw_cad現況図のAIデモと、常時稼働エージェント・決定論化の運用知</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>9件を通して流れていたのは「AIの出力を、どこまで手放しで信用できる“仕組み”に変えられるか」という問いだった。点群から1/50の平面図を描かせたデモは投稿者自身が「たたき台」と言い切り、会話履歴を決定論へ押し上げる提案は、自然言語の指示に任せていた部分をツールへ固め直すことを説く。Anthropicの常時稼働エージェントの整理も、賢さではなくインボックス・タイマー・メモリ・権限という“構造”で信頼を作る話であり、どれも生成の派手さより検証可能性に重心がある。</p>
+    <p>ドメインをまたぐ接続は、建築の実施図面とエージェントの運用ルールの相似だ。Aria design のReelが言う「デザインが現実になるのは誰も見ない図面の段階」は、エージェントでいえば SKILL.md や権限設計にあたる。この日は「作りたい」軸——自分の制作環境（Muse・Claude Code）と設計ツール（Rhino・Jw_cad）にAIを組み込む側——が強く活性化した。Muse／Claude Code まわりの運用知は今週 11/10・11/11・11/12 に続いて4日目、建築×AIも 11/10・11/14 に続き週内3日目で、単発の流行追いではなく育っている関心と言える。</p>
+    <ul class="pts">
+      <li><b>点群→現況図</b>：AIが「撮り漏れ」まで指摘できたことは、図面化より前の現地調査の段取りこそ自動化の効きどころだという含意がある</li>
+      <li><b>決定論への押し上げ</b>：エージェントが2回詰まった箇所をツール化する発想は、プロンプトの改善より「同じ失敗を構造で潰す」方が信頼性に効くという立場を取る</li>
+      <li><b>常時稼働＝ほぼ休止</b>：起きる条件と保存する状態の設計がエージェントの本体であり、能力より“寝方”が問われるという視点を与える</li>
+      <li><b>AI Slop からの脱出</b>：良いデザインを「プロンプトとして拾う」流れは、審美眼が参照の選び方へ移っていくことへの問いを立てる</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>点群から描いた1/50の現況図を「たたき台」から「提出できる図面」に引き上げるには、AIに任せる工程と人が必ず確かめる寸法の境界をどこに引くべきか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">点群からの平面図自動化</div>
+    <ul class="ilist">
+      <li><a href="https://www.geoweeknews.com/news/benchmarking-the-future-usibd" target="_blank" rel="noopener"><b>Benchmarking the Future（Geo Week News）</b></a> <span>→ USIBD が点群・写真測量から2D平面図を作る手法を、学術プロトタイプ・商用ツール・実務ワークフローの三者で比べる初の「Reality Mapping to Floor Plan Challenge」を実施中。モデル化がいまだボトルネックで精度の物差しすら未整備という現状は、Jw_cadデモの「たたき台」評価を業界規模で裏づける。</span></li>
+    </ul>
+    <div class="ntag">長時間・常時稼働エージェントの設計</div>
+    <ul class="ilist">
+      <li><a href="https://anthropic.com/engineering/effective-harnesses-for-long-running-agents" target="_blank" rel="noopener"><b>Effective harnesses for long-running agents（Anthropic）</b></a> <span>→ セッションをまたぐと記憶が消える前提で、初期化エージェントが init.sh・進捗ファイル・初回コミットを用意し、以降は機能リスト(JSON)の passes だけを書き換えさせる設計。「状態を外に保存して次の自分に渡す」点で、常時稼働エージェントの5部品とも、会話履歴の決定論化とも同じ発想に立つ。</span></li>
+    </ul>
+  </section>
+
+  <h2>🏛 建築・設計×AI（4件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/akionionio/status/2122097401846726893?a=i8DTq6arLBoFVyiI5Vc&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2122097401846726893" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">事務所の点群をAIがJw_cadの現況図に</div><div class="vdesc">点群1つからAIが壁・柱・開口と梁下高さ（窓際だけ2,350）を読み取り、Blenderで3D化→Jw_cadを操作してA3・1/50の平面図を1枚出力。入口の撮り漏れもAIが指摘し、撮り足すと扉まで読めた。投稿者自身の評価は「現調のたたき台」止まり。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/16 10:28</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/akionionio/status/2122097401846726893?a=i8DTq6arLBoFVyiI5Vc&amp;s=12" data-title="事務所の点群をAIがJw_cadの現況図に" data-rid="1930950065">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://youtube.com/watch?v=PeNEoiYtiQA&amp;si=HTY0EUzXhU2hwSB7" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://i.ytimg.com/vi/PeNEoiYtiQA/maxresdefault.jpg" onerror="this.remove()"><span class="ph">YouTube</span></div>
+        <div class="vbody"><div class="vtitle">Rhino AI ── 追いつけない速さ</div><div class="vdesc">Philipp Galvan Design による Rhino の AI 機能をめぐる動画。今回は字幕を取得できず、タイトルから分かるのは「進化が速すぎて追いつけない」という問題提起まで。</div><div class="vsaved">保存 11/16 12:01</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://youtube.com/watch?v=PeNEoiYtiQA&amp;si=HTY0EUzXhU2hwSB7" data-title="Rhino AI ── 追いつけない速さ" data-rid="1931118578">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Dfs59atsSB6/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra3-2.cdninstagram.com/v/t51.71878-15/905163577_1541560991147031_2789582870959867306_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=100&amp;_nc_map=urlgen_bucketless&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=jMXd49Z1JREQ7kNvwE0LcWa&amp;_nc_oc=Adq6wuSVRU068-wXpbiM75gs_CcjXGFTnjlYcX-ptR4vSRS-7D55OvrvC0GqF1ytQA4&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-2.cdninstagram.com&amp;_nc_gid=7RbmYbNqdts0XCByztRE7Q&amp;_nc_ss=7ba02&amp;_nc_ct=RQosPBUKFQQAAAA&amp;oh=00_AQRD251r5E82xLyQA95G9NUk_I5LR-bPDh8y3MtNaDWYXg&amp;oe=6B00756D" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">建築ディテール×AIのチュートリアル予告（Jonas Hagen Jensen）</div><div class="vdesc">建築・ディテーリング・AIを掲げる studioihagen のReel。キャプションは「チュートリアルを出すべき？」という予告のみで、手法そのものは本文に無い。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/16 15:29</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Dfs59atsSB6/" data-title="建築ディテール×AIのチュートリアル予告（Jonas Hagen Jensen）" data-rid="1931359496">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Dc-unewPqkG/" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.82787-15/799486992_18085403741423686_6418751839691885201_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=103&amp;_nc_map=urlgen_bucketless&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=VixM33mVp1YQ7kNvwHZxXPj&amp;_nc_oc=Adp3ugNa-3IWuEE5RDx0iXdvW6Gp4a1ReVYYZnivRj5pUt_oTqqO-ch98A990bZIYdY&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-1.cdninstagram.com&amp;_nc_gid=TgM6nIP21sYwNgMZqk5aoA&amp;_nc_ss=7ba02&amp;_nc_ct=RQosPBUKFQQAAAA&amp;oh=00_AQQoeRHCwQhvJgBadaY3QExmu12hPdCN2dzAfNBxUvRtyA&amp;oe=6AFFB101" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">設計は終わった…と思ったら実施図面が待っていた</div><div class="vdesc">Aria design のインテリア実務ネタ。何ページもの図面、終わらない詳細、怪しいほど多い寸法——「誰にも見えないが、デザインが現実になり始めるのはここ」というキャプション。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/16 01:46</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Dc-unewPqkG/" data-title="設計は終わった…と思ったら実施図面が待っていた" data-rid="1930405322">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🤖 AIエージェントの運用知（5件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/kgsi/status/2121434959953133584?a=lJbornFh4RJgxfwdxcU&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/card_img/2121434709825929218/9JLDIQ5s?format=webp&amp;name=medium" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Anthropicが整理した常時稼働エージェントの作り方</div><div class="vdesc">常時稼働といっても大半は休止。イベントで起き、状態を保存してまた休む——必要な部品はインボックス・タイマー・メモリ・権限・アウトボックスの5つ、という要約。</div><div class="vsaved">保存 11/16 10:20</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/kgsi/status/2121434959953133584?a=lJbornFh4RJgxfwdxcU&amp;s=12" data-title="Anthropicが整理した常時稼働エージェントの作り方" data-rid="1930936725">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/cu30rry_/status/2121577384927543415?a=G-Pa4eycT-EU_d_pI2U&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fcu30rry_%2Fstatus%2F2121577384927543415%3Fa%3DG-Pa4eycT-EU_d_pI2U%26s%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">AIとの会話履歴を「決定論」に押し上げる</div><div class="vdesc">Fable・Muse・Grok Bot・Codex の会話履歴は宝の山。pstack の /correct や /retro でエージェントが2回以上詰まった箇所をツール化し、/recall と「Build the Lever」の原則で Rule・Skill の自然言語部分も決定論的に置き換える、という提案。</div><div class="vsaved">保存 11/16 10:26</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/cu30rry_/status/2121577384927543415?a=G-Pa4eycT-EU_d_pI2U&amp;s=12" data-title="AIとの会話履歴を「決定論」に押し上げる" data-rid="1930941638">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/claudedevs/status/2121375309287301360?a=3K3dN1zQjbEe6fTCYIw&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2121375309287301360" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claude Code の Projects が大型アップデート</div><div class="vdesc">プロジェクト内で並列スレッドのタスクを束ねるコーディネーターが能動的になり、プロジェクトチャットで質問に答え、進行中スレッドの状況を自分から報告するように。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/16 10:27</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/claudedevs/status/2121375309287301360?a=3K3dN1zQjbEe6fTCYIw&amp;s=12" data-title="Claude Code の Projects が大型アップデート" data-rid="1930944953">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/studio_yebisu/status/2121704770620825637?a=hMwK9Ox2eNlN69MTMYM&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2121704770620825637" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">さよなら、AI Slop──デザインのプロンプトを拾えるサイト</div><div class="vdesc">気に入ったデザインのボタンを押すとプロンプトが取れ、Codex か Claude に貼るだけで「AIっぽいダサさ」を避けられるというサイト紹介。サイト名・画面は動画側にあり、今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/16 10:27</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/studio_yebisu/status/2121704770620825637?a=hMwK9Ox2eNlN69MTMYM&amp;s=12" data-title="さよなら、AI Slop──デザインのプロンプトを拾えるサイト" data-rid="1930947186">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/ai_300/status/2122102348352807220?a=Q_aLKeH3bQky_DB101k&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HXKERC-aUAAymXO?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">画像1枚でMuseに「Xリサーチ専用スキル」を作らせる</div><div class="vdesc">添付画像は読み取り専用のカスタムスキル設計図：FxTwitter→vxTwitter→公式oEmbed→アカウント情報の順で取得を切り替え、Grok CLI の x_search で話題検索も連携。保存先は ~/workspace/custom-skills/fxtwitter_post_reader/SKILL.md、「いいね・フォロー・ログインはしない」が原則。</div><div class="vsaved">保存 11/16 10:32</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ai_300/status/2122102348352807220?a=Q_aLKeH3bQky_DB101k&amp;s=12" data-title="画像1枚でMuseに「Xリサーチ専用スキル」を作らせる" data-rid="1930972481">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain
+<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（2件中0件成功・内訳: exception:ClientError:404 2件）。中継サービスの死亡を疑うこと</p>
+<!-- run-timing schema=v2 status=complete target=2026-11-16 run_id=514b6023 saves=9 step1_s=17 step2_s=22 step2_5_s=4 step3_s=11 step4_s=396 step4_5_s=14 step5_s=47 step7_s=5 total_s=516 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+<script src="../deepdive-mark.js" defer></script>
+</body>
+</html>
