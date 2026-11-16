@@ -41,13 +41,8 @@ def extract_review(path):
   件数・cover サムネも review のカードから取る（その日の唯一の真実＝review に揃える。
   captures.json の date とは別グルーピングのためズレるので参照しない）。"""
   src = io.open(path, encoding="utf-8").read()
-  out = {"theme": "", "summary": "", "notes": [], "cards": [], "dd": []}
+  out = {"theme": "", "summary": "", "notes": [], "cards": []}
 
-  # 深掘りボタン（各カードの 💬 AIと話す）の data-*。トップから同じ深掘りへ飛べるように拾う
-  for tag in re.findall(r'<button class="deepdive"[^>]*>', src):
-    a = {k: html.unescape(v) for k, v in re.findall(r'data-(url|title|rid)="([^"]*)"', tag)}
-    if a.get("url") and a.get("rid"):
-      out["dd"].append(a)
 
   m = re.search(r'<div class="meta">(.*?)</div>', src, re.S)
   if m:
@@ -95,7 +90,7 @@ def thumb_html(card):
   return '<a><span class="ph">%s</span></a>' % esc(ph)
 
 
-def day_block(date, theme, summary, notes, cards, dd=()):
+def day_block(date, theme, summary, notes, cards):
   count = len(cards)
   parts = ['<div class="day">']
   cnt = ('<span class="count">%d件</span>' % count) if count else ''
@@ -113,15 +108,6 @@ def day_block(date, theme, summary, notes, cards, dd=()):
     if extra > 0:
       parts.append('<a><span class="ph">+%d</span></a>' % extra)
     parts.append('</div>')
-
-  if dd:
-    # 2件までは開いたまま、多い日は畳む。ボタンの動きは deepdive-mark.js の openChat（PC は深掘りデスク）
-    rows = "".join(
-      '<div class="ddrow"><span class="ddt">%s</span><button class="deepdive" onclick="openChat(this)" '
-      'data-url="%s" data-title="%s" data-rid="%s">💬 AIと話す</button></div>'
-      % (esc(d.get("title", "")), esc(d["url"]), esc(d.get("title", "")), esc(d["rid"])) for d in dd)
-    parts.append('<details class="dd"%s><summary>💬 深掘りする（%d件）</summary>%s</details>'
-                 % (" open" if len(dd) <= 2 else "", len(dd), rows))
 
   if notes:
     parts.append('<div class="notes"><ul class="ilist">')
@@ -151,7 +137,7 @@ def build():
   blocks = []
   for i, date in enumerate(dates):
     rv = extract_review(os.path.join(REVIEWS_DIR, date + ".html"))
-    blocks.append(day_block(date, rv["theme"], rv["summary"], rv["notes"], rv["cards"], rv["dd"]))
+    blocks.append(day_block(date, rv["theme"], rv["summary"], rv["notes"], rv["cards"]))
     if i < len(dates) - 1:
       blocks.append('<hr class="sep">')
 
@@ -216,16 +202,6 @@ TEMPLATE = """<!doctype html>
   .ilist li::before { content: "\\1F4AC"; position: absolute; left: 0; font-size: 11px; }
   .ilist b { color: var(--ink); }
   .ilist span { color: var(--sub); }
-
-  .dd { margin-top: 12px; }
-  .dd summary { cursor: pointer; font-size: 13px; color: var(--sub); }
-  .ddrow { display: flex; align-items: center; gap: 10px; margin-top: 8px; background: var(--panel);
-    border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
-  .ddt { flex: 1; min-width: 0; font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical; overflow: hidden; }
-  .deepdive { flex: none; font: inherit; font-size: 13px; font-weight: 700; border: none; border-radius: 8px;
-    padding: 8px 12px; background: var(--accent); color: #fff; cursor: pointer; }
-  @media (prefers-color-scheme: dark) { .deepdive { color: #0f1115; } }
 
   .more { display: inline-block; margin-top: 12px; color: var(--accent); text-decoration: none; font-size: 13px; font-weight: 700; }
   .more:hover { text-decoration: underline; }
