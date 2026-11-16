@@ -90,6 +90,12 @@
     }).catch(function () {});
   }
 
+  // トップの見出し横のボタン用: 深掘りデスクそのもの（進行中の会話の一覧）を開く。届かない端末では何もしない
+  window.openDeskHome = function () {
+    var base = isTouchDevice() ? (tabletDeskOk && tabletDesk) : PC_DESK;
+    if (base) window.open(base + '/', 'deepdive-desk');
+  };
+
   // アプリは開いた元（このページ）に hello を送ってくる。今ここでそのカードのボタンが押されていれば
   // go と戻り先（このページの URL）を返し、アプリはそれを合図に自動で深掘りを始める（2026-11-11）。
   var lastDeskRid = null;

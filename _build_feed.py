@@ -184,11 +184,15 @@ TEMPLATE = """<!doctype html>
   html, body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.7;
     font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased; }
-  .wrap { max-width: 720px; margin: 0 auto; padding: 22px 16px 64px; }
+  .wrap { position: relative; max-width: 720px; margin: 0 auto; padding: 22px 16px 64px; }
   h1.site { font-size: 22px; margin: 0; font-weight: 700; }
   .tagline { color: var(--sub); font-size: 13px; margin: 3px 0 4px; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 8px; }
   .chip { background: var(--chip); color: var(--sub); border-radius: 999px; padding: 4px 10px; font-size: 12px; }
+
+  .deskbtn { position: absolute; top: 24px; right: 16px; font: inherit; font-size: 13px; font-weight: 700; border: none;
+    border-radius: 999px; padding: 8px 14px; background: var(--accent); color: #fff; cursor: pointer; }
+  @media (prefers-color-scheme: dark) { .deskbtn { color: #0f1115; } }
 
   .day { margin-top: 30px; }
   .dayhead { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
@@ -232,6 +236,7 @@ TEMPLATE = """<!doctype html>
 </head>
 <body>
 <div class="wrap">
+  <button class="deskbtn" onclick="openDeskHome()">💬 深掘り</button>
   <h1 class="site">毎朝の振り返り</h1>
   <div class="tagline">見たもの・読んだものから、その日の気づきを残す</div>
   <div class="chips">
