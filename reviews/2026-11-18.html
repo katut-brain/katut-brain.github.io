@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-11-18 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-11-18 の振り返り</h1>
+  <div class="meta">2件：AIの「出口」を握るインフラと、敷地を読むための地図づくり</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の2件を貫くのは「道具を扱えるかどうかで、見えるもの・作れるものの範囲が決まる」という問い意識だ。usutaku氏は、AIでコードが書けるようになった人にとって次の壁はGitHubとCloudflare――作ったものを保管し、公開する層――だと言い切る。一方のランドスケープ講座は、オープンデータを取ってきてレイヤーに整理し、敷地の条件をダイアグラムとして可視化する技術を「設計の前提」として売っている。どちらも、生成や描画そのものより、その手前と後ろにある基盤のリテラシーを問題にしている。</p>
+    <p>AI×建築のドメインでは、GitHub＋Cloudflareで静的サイトを公開する流れと、QGIS等で敷地データを地図化する流れが「データを集め、構造化し、外に見せる」という同じ骨格を持つ点に接続がある。この日は「知る/紹介する」より、自分の手で作って出すための「作りたい」軸が活性化した。AIツールの使いこなしへの関心は今週ほぼ毎日続いており（11/11〜11/16で計16件、11/16には点群→Jw_cad現況図などAI×建築の保存が集中）、単発ではなく継続して育っている関心だと言える。</p>
+    <ul class="pts">
+      <li><b>公開層のリテラシー</b>：AIが生成を肩代わりするほど、成果物を保管・配信するGitHub/Cloudflareの理解が「やれることの幅」を決める側に回る、という含意がある。</li>
+      <li><b>敷地分析はデータ編集</b>：マッピング講座の中身は描画技術より、オープンデータの取得とレイヤー整理という前処理であり、敷地分析をデータ編集の問題として捉え直す問いを立てる。</li>
+      <li><b>同じ骨格</b>：集める→構造化する→見せる、という流れがWeb公開と敷地ダイアグラムで共通しており、建築学生がAI時代に鍛えるべき基礎体力の輪郭が見える。</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>敷地分析のマップをQGISで作り、そのままGitHub＋Cloudflare Pagesで公開・更新し続けたら、それは「プレゼン資料」ではなく「育つ敷地のデータベース」になるのか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">AI時代のGitHub＋Cloudflare</div>
+    <ul class="ilist">
+      <li><a href="https://abt-blog.pages.dev/ai-learning/2026-04-16-publish-website-updates-in-5-minutes-claude-code-github-cloudflare" target="_blank" rel="noopener"><b>How We Publish Website Updates in 5 Minutes Using Claude Code, GitHub, and Cloudflare</b></a> <span>→ 単一HTMLをGitHubで管理し、mainへのpushをCloudflare Pagesが検知して自動公開する構成。Claude Codeが「読む→必要箇所だけ置換→古い表記を検索で確認→push」を担うので、更新が会話の延長で済む。ただし50ページ級の大規模サイトには単一ファイル方式は向かず、commit/pushの概念理解は前提として残る。</span></li>
+    </ul>
+    <div class="ntag">敷地分析のためのマッピング</div>
+    <ul class="ilist">
+      <li><a href="https://umanitoba.ca/architecture/yuhao-lu/qgis-tutorial" target="_blank" rel="noopener"><b>Geographical Information System (QGIS) Tutorial – University of Manitoba</b></a> <span>→ ランドスケープ専攻向けの無料・自習型4モジュール（投影法とデータ構造／重ね合わせ分析／ジオリファレンスとデジタイズ／2D・3D表現）。clip・buffer・空間結合・ゾーン統計・DEM地形まで扱い、有料講座の「データ取得→レイヤー整理→ダイアグラム」を無償で一通り辿れる。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI活用（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/usutaku_channel/status/2122488984979063161?a=qAydDgFDNIZwCvCbfag&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fusutaku_channel%2Fstatus%2F2122488984979063161%3Fa%3DqAydDgFDNIZwCvCbfag%26s%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">AIを使い始めたらGitHubとCloudflareは最低限学ぶべき</div><div class="vdesc">usutaku氏の投稿（4,218いいね）。プログラミングに苦手意識があっても、AIを使い始めた人はGitHub（コード置き場・履歴管理）とCloudflare（公開・配信）だけは押さえておくと、作れるものの幅が一気に広がり楽しくなる、という一点張りの主張。</div><div class="vsaved">保存 11/18 06:44</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/usutaku_channel/status/2122488984979063161?a=qAydDgFDNIZwCvCbfag&amp;s=12" data-title="AIを使い始めたらGitHubとCloudflareは最低限学ぶべき" data-rid="1933680778">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🌳 建築・ランドスケープ（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Dfw0GtTI81Z/?evlk=eHpqbmJvbWpjMTZ3" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.82787-15/896705720_18201382147389254_5959142959507894036_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=101&amp;_nc_map=urlgen_bucketless&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=7-tNyQs_sUcQ7kNvwEq5WXl&amp;_nc_oc=AdpRll8lnxVph6pGZ-AX_qpnrP39XTX378tj7QBU4q4L99EAhxyk1hY1pjt9RJtxlFo&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-1.cdninstagram.com&amp;_nc_gid=jjJCQSztp6uyuKKMS61ILA&amp;_nc_ss=7b60f&amp;_nc_ct=RQosPBUKFQ4AAAA&amp;oh=00_AQQVY2FKGrcKGU8hUDaSJxj8wGEaE1Jt1LR_a1P7nv4uSQ&amp;oe=6B02B5CD" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">ランドスケープ建築の敷地分析マッピング講座</div><div class="vdesc">@landspace.arch のReel（1,380いいね）。キャプションによれば、オープンソースの地図データ取得→レイヤー整理→多様な敷地分析ダイアグラム作成までを扱う、建築・ランドスケープ・都市デザイン向けのマッピング講座の告知（「course」とコメントすると割引リンクをDM）。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/18 07:31</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Dfw0GtTI81Z/?evlk=eHpqbmJvbWpjMTZ3" data-title="ランドスケープ建築の敷地分析マッピング講座" data-rid="1933733348">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain
+<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（2件中0件成功・内訳: exception:ClientError:404 2件）。中継サービスの死亡を疑うこと</p>
+<!-- run-timing schema=v2 status=complete target=2026-11-18 run_id=c45402b6 saves=2 step1_s=45 step2_s=22 step2_5_s=173 step3_s=5 step4_s=81 step4_5_s=27 step5_s=35 step7_s=2 total_s=390 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+<script src="../deepdive-mark.js" defer></script>
+</body>
+</html>

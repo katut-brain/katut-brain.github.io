@@ -1,0 +1,468 @@
+{
+ "https://x.com/ai_300/status/2122102348352807220?a=Q_aLKeH3bQky_DB101k&s=12": {
+  "fetched_at": "2026-11-18T19:13:21Z",
+  "elapsed_ms": 97544,
+  "fetcher_version": "2026-11-04.1",
+  "url": "https://x.com/ai_300/status/2122102348352807220?a=Q_aLKeH3bQky_DB101k&s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "image_content"
+  ],
+  "raindrop_id": 1930972481,
+  "rid_source": "exact",
+  "text_chars": 574,
+  "text_sha1": "641801b9d61378d1635b2e5a9fdc240ef3f46ced",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": false,
+  "video_understood": false,
+  "video_summary": "",
+  "image_summary": "",
+  "image_reason": "exception:ClientError:404",
+  "video_model": "",
+  "image_model": "",
+  "primary_skipped": false,
+  "primary_reason": "",
+  "fallback_reason": "",
+  "deadline_skipped": [],
+  "video_reason": "",
+  "video_reason_detail": "",
+  "reason": "",
+  "fail_reason": "",
+  "fetched_via": "x_syndication",
+  "fetch_chain_tried": "",
+  "x_primary_skipped": "",
+  "x_primary_reason": "",
+  "stages": {
+   "download": {
+    "status": "fail",
+    "reason": "exception:ClientError:404"
+   },
+   "frames": {
+    "status": "skipped",
+    "reason": "no_video"
+   },
+   "transcription": {
+    "status": "skipped",
+    "reason": "no_media"
+   },
+   "understanding": {
+    "status": "fail",
+    "reason": "exception:ClientError:404"
+   },
+   "quote": {
+    "status": "fail",
+    "reason": "exception:ClientError:404"
+   }
+  },
+  "unique_url": "https://x.com/ai_300/status/2122102348352807220?a=Q_aLKeH3bQky_DB101k",
+  "success": false,
+  "transcript_reason": "",
+  "attempt_seq": 1,
+  "prior_success": false,
+  "unique_success": false
+ },
+ "https://youtube.com/watch?v=PeNEoiYtiQA&si=HTY0EUzXhU2hwSB7": {
+  "fetched_at": "2026-11-18T19:13:28Z",
+  "elapsed_ms": 5763,
+  "fetcher_version": "2026-11-04.1",
+  "url": "https://youtube.com/watch?v=PeNEoiYtiQA&si=HTY0EUzXhU2hwSB7",
+  "route": "youtube",
+  "ok": true,
+  "http_status": null,
+  "depth": "shallow",
+  "missing": [
+   "transcript"
+  ],
+  "raindrop_id": 1931118578,
+  "rid_source": "exact",
+  "text_chars": 29,
+  "text_sha1": "a3ab49db1719832b8a8f9d67b967c5e75bb0e990",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": false,
+  "video_understood": false,
+  "video_summary": "",
+  "image_summary": "",
+  "image_reason": "",
+  "video_model": "",
+  "image_model": "",
+  "primary_skipped": false,
+  "primary_reason": "",
+  "fallback_reason": "",
+  "deadline_skipped": [],
+  "video_reason": "",
+  "video_reason_detail": "",
+  "reason": "",
+  "fail_reason": "",
+  "fetched_via": "",
+  "fetch_chain_tried": "",
+  "x_primary_skipped": "",
+  "x_primary_reason": "",
+  "stages": {
+   "download": {
+    "status": "fail",
+    "reason": "ytdlp_failed"
+   },
+   "frames": {
+    "status": "skipped",
+    "reason": "no_video"
+   },
+   "transcription": {
+    "status": "skipped",
+    "reason": "ytdlp_failed",
+    "flagged": 0,
+    "duration_s": 0
+   },
+   "understanding": {
+    "status": "fail",
+    "reason": "ytdlp_failed"
+   }
+  },
+  "unique_url": "https://youtube.com/watch?v=PeNEoiYtiQA",
+  "success": false,
+  "transcript_reason": "ytdlp_failed",
+  "attempt_seq": 1,
+  "prior_success": false,
+  "unique_success": false
+ },
+ "https://www.instagram.com/reel/Dc-unewPqkG/": {
+  "fetched_at": "2026-11-18T19:13:29Z",
+  "elapsed_ms": 845,
+  "fetcher_version": "2026-11-04.1",
+  "url": "https://www.instagram.com/reel/Dc-unewPqkG/",
+  "route": "instagram",
+  "ok": false,
+  "http_status": null,
+  "depth": "none",
+  "missing": [
+   "fetch_failed"
+  ],
+  "raindrop_id": 1930405322,
+  "rid_source": "exact",
+  "text_chars": 0,
+  "text_sha1": "",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 0,
+  "has_video": false,
+  "video_understood": false,
+  "video_summary": "",
+  "image_summary": "",
+  "image_reason": "",
+  "video_model": "",
+  "image_model": "",
+  "primary_skipped": false,
+  "primary_reason": "",
+  "fallback_reason": "",
+  "deadline_skipped": [],
+  "video_reason": "",
+  "video_reason_detail": "",
+  "reason": "og:meta無し（JS殻/ログイン壁の可能性）",
+  "fail_reason": "instagram_no_og_meta",
+  "fetched_via": "",
+  "fetch_chain_tried": "",
+  "x_primary_skipped": "",
+  "x_primary_reason": "",
+  "stages": {
+   "download": {
+    "status": "skipped",
+    "reason": ""
+   },
+   "frames": {
+    "status": "skipped",
+    "reason": ""
+   },
+   "transcription": {
+    "status": "skipped",
+    "reason": ""
+   },
+   "understanding": {
+    "status": "skipped",
+    "reason": ""
+   }
+  },
+  "unique_url": "https://instagram.com/reel/Dc-unewPqkG",
+  "success": false,
+  "transcript_reason": "",
+  "attempt_seq": 1,
+  "prior_success": false,
+  "unique_success": false
+ },
+ "https://www.instagram.com/reel/Dfs59atsSB6/": {
+  "fetched_at": "2026-11-18T19:13:41Z",
+  "elapsed_ms": 10774,
+  "fetcher_version": "2026-11-04.1",
+  "url": "https://www.instagram.com/reel/Dfs59atsSB6/",
+  "route": "instagram",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "video_content"
+  ],
+  "raindrop_id": 1931359496,
+  "rid_source": "exact",
+  "text_chars": 86,
+  "text_sha1": "9c796944e1de8f0b6efea201c86f6bb840647937",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": true,
+  "video_understood": false,
+  "video_summary": "",
+  "image_summary": "",
+  "image_reason": "",
+  "video_model": "",
+  "image_model": "",
+  "primary_skipped": false,
+  "primary_reason": "",
+  "fallback_reason": "",
+  "deadline_skipped": [],
+  "video_reason": "exception:ClientError:404",
+  "video_reason_detail": "",
+  "reason": "",
+  "fail_reason": "",
+  "fetched_via": "",
+  "fetch_chain_tried": "",
+  "x_primary_skipped": "",
+  "x_primary_reason": "",
+  "stages": {
+   "download": {
+    "status": "ok",
+    "reason": "local"
+   },
+   "frames": {
+    "status": "skipped",
+    "reason": "gemini_native"
+   },
+   "transcription": {
+    "status": "fail",
+    "reason": "http_403",
+    "flagged": 0,
+    "duration_s": 10
+   },
+   "understanding": {
+    "status": "fail",
+    "reason": "exception:ClientError:404"
+   }
+  },
+  "unique_url": "https://instagram.com/reel/Dfs59atsSB6",
+  "success": false,
+  "transcript_reason": "http_403",
+  "attempt_seq": 1,
+  "prior_success": false,
+  "unique_success": false
+ },
+ "https://x.com/claudedevs/status/2121375309287301360?a=3K3dN1zQjbEe6fTCYIw&s=12": {
+  "fetched_at": "2026-11-18T19:14:32Z",
+  "elapsed_ms": 51060,
+  "fetcher_version": "2026-11-04.1",
+  "url": "https://x.com/claudedevs/status/2121375309287301360?a=3K3dN1zQjbEe6fTCYIw&s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "video_content"
+  ],
+  "raindrop_id": 1930944953,
+  "rid_source": "exact",
+  "text_chars": 694,
+  "text_sha1": "74a842e6437fe1ec05bdb2d922aeb059bb1d0a04",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": true,
+  "video_understood": false,
+  "video_summary": "",
+  "image_summary": "",
+  "image_reason": "",
+  "video_model": "",
+  "image_model": "",
+  "primary_skipped": false,
+  "primary_reason": "",
+  "fallback_reason": "",
+  "deadline_skipped": [],
+  "video_reason": "exception:ClientError:404",
+  "video_reason_detail": "",
+  "reason": "",
+  "fail_reason": "",
+  "fetched_via": "x_syndication",
+  "fetch_chain_tried": "",
+  "x_primary_skipped": "",
+  "x_primary_reason": "",
+  "stages": {
+   "download": {
+    "status": "ok",
+    "reason": ""
+   },
+   "frames": {
+    "status": "skipped",
+    "reason": "gemini_native"
+   },
+   "transcription": {
+    "status": "fail",
+    "reason": "http_403",
+    "flagged": 0,
+    "duration_s": 18
+   },
+   "understanding": {
+    "status": "fail",
+    "reason": "exception:ClientError:404"
+   },
+   "quote": {
+    "status": "skipped",
+    "reason": "no_quote"
+   }
+  },
+  "unique_url": "https://x.com/claudedevs/status/2121375309287301360?a=3K3dN1zQjbEe6fTCYIw",
+  "success": false,
+  "transcript_reason": "http_403",
+  "attempt_seq": 1,
+  "prior_success": false,
+  "unique_success": false
+ },
+ "https://www.instagram.com/reel/Dfw0GtTI81Z/?evlk=eHpqbmJvbWpjMTZ3": {
+  "fetched_at": "2026-11-18T19:14:52Z",
+  "elapsed_ms": 11225,
+  "fetcher_version": "2026-11-04.1",
+  "url": "https://www.instagram.com/reel/Dfw0GtTI81Z/?evlk=eHpqbmJvbWpjMTZ3",
+  "route": "instagram",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "video_content"
+  ],
+  "raindrop_id": 1933733348,
+  "rid_source": "exact",
+  "text_chars": 554,
+  "text_sha1": "304a518d47a5b912812e91f968ee21aaae75c3b0",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": true,
+  "video_understood": false,
+  "video_summary": "",
+  "image_summary": "",
+  "image_reason": "",
+  "video_model": "",
+  "image_model": "",
+  "primary_skipped": false,
+  "primary_reason": "",
+  "fallback_reason": "",
+  "deadline_skipped": [],
+  "video_reason": "exception:ClientError:404",
+  "video_reason_detail": "",
+  "reason": "",
+  "fail_reason": "",
+  "fetched_via": "",
+  "fetch_chain_tried": "",
+  "x_primary_skipped": "",
+  "x_primary_reason": "",
+  "stages": {
+   "download": {
+    "status": "ok",
+    "reason": "local"
+   },
+   "frames": {
+    "status": "skipped",
+    "reason": "gemini_native"
+   },
+   "transcription": {
+    "status": "fail",
+    "reason": "http_403",
+    "flagged": 0,
+    "duration_s": 20
+   },
+   "understanding": {
+    "status": "fail",
+    "reason": "exception:ClientError:404"
+   }
+  },
+  "unique_url": "https://instagram.com/reel/Dfw0GtTI81Z?evlk=eHpqbmJvbWpjMTZ3",
+  "success": false,
+  "transcript_reason": "http_403",
+  "attempt_seq": 1,
+  "prior_success": false,
+  "unique_success": false
+ },
+ "https://x.com/usutaku_channel/status/2122488984979063161?a=qAydDgFDNIZwCvCbfag&s=12": {
+  "fetched_at": "2026-11-18T19:15:41Z",
+  "elapsed_ms": 47522,
+  "fetcher_version": "2026-11-04.1",
+  "url": "https://x.com/usutaku_channel/status/2122488984979063161?a=qAydDgFDNIZwCvCbfag&s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "full",
+  "missing": [],
+  "raindrop_id": 1933680778,
+  "rid_source": "exact",
+  "text_chars": 93,
+  "text_sha1": "b34a43c763292471b7cf03c12acd7fe5d3bbb73f",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 0,
+  "has_video": false,
+  "video_understood": false,
+  "video_summary": "",
+  "image_summary": "",
+  "image_reason": "",
+  "video_model": "",
+  "image_model": "",
+  "primary_skipped": false,
+  "primary_reason": "",
+  "fallback_reason": "",
+  "deadline_skipped": [],
+  "video_reason": "",
+  "video_reason_detail": "",
+  "reason": "",
+  "fail_reason": "",
+  "fetched_via": "x_syndication",
+  "fetch_chain_tried": "",
+  "x_primary_skipped": "",
+  "x_primary_reason": "",
+  "stages": {
+   "download": {
+    "status": "skipped",
+    "reason": "no_media"
+   },
+   "frames": {
+    "status": "skipped",
+    "reason": "no_video"
+   },
+   "transcription": {
+    "status": "skipped",
+    "reason": "no_media"
+   },
+   "understanding": {
+    "status": "skipped",
+    "reason": "no_media"
+   },
+   "quote": {
+    "status": "skipped",
+    "reason": "no_quote"
+   }
+  },
+  "unique_url": "https://x.com/usutaku_channel/status/2122488984979063161?a=qAydDgFDNIZwCvCbfag",
+  "success": true,
+  "transcript_reason": "",
+  "attempt_seq": 1,
+  "prior_success": false,
+  "unique_success": true
+ }
+}
