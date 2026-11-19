@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-11-19 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-11-19 の振り返り</h1>
+  <div class="meta">AIの3D生成——「LLMが組むモデル」と「3D専用生成モデル」の差（1件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存は1件、Tripo公式が「Opusの出力にもっとディテールが必要？」と煽る比較画像。Blenderのビューポートで、同じ「剣を握る有翼の骸骨像」を左にTripo、右にOpusの出力として並べ、Tripo側は羽の一枚一枚・衣のひだ・台座の欠けまで彫られているのに対し、Opus側は箱と板を組み合わせたような量塊に石のテクスチャを貼った姿に留まる。通奏低音は「汎用LLMにどこまで造形を任せられるか」という線引きの問いで、言語で手続きを書くLLMは形の“構成”は作れても“表面の情報量”は出せない、という分業の含意がある。</p>
+    <p>ドメインとしてはAI活用×3Dモデリング（建築・プロダクトの造形）の接点。今週は14日の「BIM×SketchUp×AI」連載、16日の「点群→Jw_cad現況図」「Rhino AI」と、AIを設計・モデリングの道具に組み込む保存が続いており、この関心は今週3日にわたって続いている。今日活性化したのは「作りたい」軸——どのツールで何を作らせるかの選択眼に関わる保存だった。</p>
+    <ul class="pts">
+      <li><b>LLMは“操作者”、3D生成モデルは“造形者”</b>：Opusの像がプリミティブの寄せ集めになるのは、Pythonで頂点を手続き的に置く方式の限界であり、有機形状は学習済みの3D生成モデルに任せるべきという含意がある。</li>
+      <li><b>比較画像はベンダーの宣伝でもある</b>：Tripo自身の投稿なので条件（プロンプト・反復回数）は不明。建築の箱物やハードサーフェスならLLM＋Blenderでも十分戦えるはずで、題材の選び方そのものが勝敗を決めていないかを問う必要がある。</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>建築模型や家具のような直線主体の形なら、Tripoの精細さより「LLMがBlenderで組んだ、寸法を後から編集できるモデル」のほうが設計の道具として価値が高いのではないか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">LLM×Blender と 3D生成AI の分業</div>
+    <ul class="ilist">
+      <li><a href="https://www.3daistudio.com/3d-generator-ai-comparison-alternatives-guide/blender-mcp" target="_blank" rel="noopener"><b>Blender MCP: What It Is, What It Does Well, and Where It Falls Short (2026)</b></a> <span>→ Blender MCPはAIにBlenderのPythonを実行させる仕組みで、メッシュをAI生成するわけではない。建築やハードサーフェスの組み立て・照明・一括編集は得意だが、キャラクター等の有機形状はプリミティブの寄せ集めになる——Tripo対Opusの画像の差はまさにこれ（生成ツール側ベンダーの記事である点は割り引く）。</span></li>
+      <li><a href="https://akitaonrails.com/en/2026/01/23/ai-3d-can-you-actually-model-3d-with-prompts-now/" target="_blank" rel="noopener"><b>AI 3D: Can You Actually Model 3D With Prompts Now?</b></a> <span>→ 画像→3D生成ではHunyuanやHitem3Dが実用水準で、Blenderでリメッシュして3Dプリントまで通った。品質を決めるのは入力画像で、背景除去と前後左右の多視点画像を先に用意するのが鍵という実務的な知見。</span></li>
+    </ul>
+  </section>
+
+  <h2>🧊 AI×3Dモデリング（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/tripoai/status/2120048034960601335?a=MYZjsvNsqurImIOXJmM&s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HWREKBKbYAAALAC?format=webp&name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">TripoがOpusのBlender出力と同じ天使像を並べて精細さの差を示す</div><div class="vdesc">@tripoai の投稿（いいね3,107）。添付画像はBlender上の比較で、左のTripo製は羽・衣のひだ・剣の装飾・台座の欠けまで精細、右のOpus製は同じ構図ながら板状の羽と箱型の胴体に石テクスチャを貼っただけ。「初期3Dモデルを高精細アセットへ」がTripoの売り文句。</div><div class="vsaved">保存 11/19 22:50</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/tripoai/status/2120048034960601335?a=MYZjsvNsqurImIOXJmM&s=12" data-title="TripoがOpusのBlender出力と同じ天使像を並べて精細さの差を示す" data-rid="1936008848">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain
+<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（1件中0件成功・内訳: exception:ClientError:404 1件）。中継サービスの死亡を疑うこと</p>
+<!-- run-timing schema=v2 status=complete target=2026-11-19 run_id=d9ccb1d9 saves=1 step1_s=18 step2_s=16 step2_5_s=726 step3_s=0 step4_s=54 step4_5_s=51 step5_s=4 step7_s=1 total_s=870 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+<script src="../deepdive-mark.js" defer></script>
+</body>
+</html>
