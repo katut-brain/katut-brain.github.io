@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-11-19T02:47:22+00:00",
+  "checked_at": "2026-11-20T02:34:38+00:00",
   "env": "gha",
   "channels": {
     "x_post": {
@@ -8,25 +8,25 @@
         {
           "method": "x_grokbot",
           "ok": false,
-          "ms": 41558,
+          "ms": 40919,
           "error": "結果が JSON でない"
         },
         {
           "method": "x_fxtwitter",
           "ok": true,
-          "ms": 316,
+          "ms": 145,
           "error": ""
         },
         {
           "method": "x_syndication",
           "ok": true,
-          "ms": 293,
+          "ms": 334,
           "error": ""
         },
         {
           "method": "x_vxtwitter",
           "ok": true,
-          "ms": 199,
+          "ms": 85,
           "error": ""
         }
       ]
@@ -43,7 +43,7 @@
         {
           "method": "yt_oembed",
           "ok": true,
-          "ms": 86,
+          "ms": 32,
           "error": ""
         }
       ]
@@ -54,13 +54,13 @@
         {
           "method": "ig_oembed",
           "ok": true,
-          "ms": 205,
+          "ms": 204,
           "error": ""
         },
         {
           "method": "og_meta",
           "ok": true,
-          "ms": 413,
+          "ms": 247,
           "error": ""
         }
       ]
@@ -71,7 +71,7 @@
         {
           "method": "og_meta",
           "ok": true,
-          "ms": 733,
+          "ms": 415,
           "error": ""
         }
       ]
@@ -82,13 +82,13 @@
         {
           "method": "web_direct",
           "ok": true,
-          "ms": 154,
+          "ms": 31,
           "error": ""
         },
         {
           "method": "web_jina",
           "ok": true,
-          "ms": 640,
+          "ms": 1172,
           "error": ""
         }
       ]
