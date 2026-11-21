@@ -1,0 +1,16 @@
+{
+  "name": "x_publish_oembed",
+  "channel": "x_post",
+  "kind": "http",
+  "format": "json",
+  "url": "https://publish.twitter.com/oembed?url={url}",
+  "map": {
+    "text": "html",
+    "author": "author_name"
+  },
+  "min_chars": 20,
+  "status": "trial",
+  "where": [
+    "cloud"
+  ]
+}
