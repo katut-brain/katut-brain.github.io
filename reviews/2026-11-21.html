@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-11-21 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-11-21 の振り返り</h1>
+  <div class="meta">AIエージェントの「置き場所」と、レーザーカットの組立模型（3件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>保存は3件で、うち2件はAIエージェント寄り。MyClaw 3.0は、Claude CodeやCodexといった実行エンジンを「選べる部品」として扱い、データ源とクラウドの計算機をまとめて差し出す「AIチームメイト」を名乗る。AIRA CODEのリールも同じくClaude周りのアカウントで、通奏低音は「エージェントそのものより、それをどこで常時動かすか」という置き場所の問いにある。もう1件のLaserPrep 3Dはレーザーカットで組む立体模型で、建築模型づくりの手の側の関心が顔を出した。</p>
+    <p>ドメインの接続としては、19日のTripo比較（AIが組む3D）から、今日のレーザーカット模型（3Dを平らな部材に割って組む）へと「デジタルの形を物にする」流れが続いている。今日活性化したのは「作りたい」軸。AIエージェントの実行環境を扱う保存は16日・18日・20日・21日と続いており、この関心は今週4日続いている。なお動画3本は、Instagram側のアクセス制限と動画理解の失敗で中身を読めておらず、題名と投稿文の範囲での読みにとどまる。前日以前の保存2件を含む。</p>
+    <ul class="pts">
+      <li><b>エンジンは差し替え部品になった</b>：MyClawがClaude Code・Codex・Hermesを並列の選択肢として並べるのは、差別化の軸がモデルではなく「共有コンテキスト・データ源・計算資源」という周辺に移ったという含意がある。</li>
+      <li><b>レーザーカット模型のボトルネックは組立</b>：設計と切断が速くなった今、遅いのは組立だという研究（Roadkill）があり、模型づくりでは部材の並べ方そのものを設計対象にするという問いを立てる。</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>建築模型のレーザーカットで、カット図の並べ方（どの部材を隣に置くか）を設計すれば、組立の手間はどこまで減らせるか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">複数のコーディングエージェントを束ねる場所</div>
+    <ul class="ilist">
+      <li><a href="https://myclaw.ai/en/skills/coding-agent" target="_blank" rel="noopener"><b>coding-agent on MyClaw</b></a> <span>→ MyClawの統括AIは、Codex・Claude Code・Pi・OpenCodeを実際のプロジェクトのフォルダでバックグラウンド処理として起動し、セッションIDで状態確認・ログ・停止まで扱う。Claude Codeは対話なしの実行モードで回す設計で、「どのエンジンを使うか」より「誰がエージェントを監督するか」を商品にしている。</span></li>
+    </ul>
+    <div class="ntag">レーザーカットの立体模型</div>
+    <ul class="ilist">
+      <li><a href="https://hpi.de/oldsite/fileadmin/user_upload/fachgebiete/baudisch/projects/Roadkill/2021-uist-roadkill.pdf" target="_blank" rel="noopener"><b>Roadkill: Nesting Laser-Cut Objects for Fast Assembly</b></a> <span>→ 3Dモデルを2Dのカット図に変えるとき、部材を板の中で隣り合わせに並べ、サムネイル・矢印・番号・板の開口を治具として使うことで、組立手順をカット図そのものに書き込む。被験者は従来の番号対応の配置より2.4倍速く組み立てられた。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AIエージェント（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/myclaw_jp/status/2123240454825410720?a=9UNRQJorCeVy8L-gMAQ&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/amplify_video_thumb/2123237173818531840/img/yqVEsH1Aq2KDTHX9.jpg" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">MyClaw 3.0——Claude Code・Codex等を好きに選べる「すぐ仕事を任せられるAIチームメイト」</div><div class="vdesc">@MyClaw_JP の発表（いいね269）。実行環境をClaude Code・Codex・Hermes・Pi・OpenClawから選べてコンテキストを共有、5,000以上のリアルタイムデータソースを内蔵し、クラウド側は最大64 vCPU・128GB RAMのマシンで動く。今回は紹介動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/20 10:25</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/myclaw_jp/status/2123240454825410720?a=9UNRQJorCeVy8L-gMAQ&amp;s=12" data-title="MyClaw 3.0——Claude Code・Codex等を好きに選べる「すぐ仕事を任せられるAIチームメイト」" data-rid="1936626843">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/Df60k2dtMS-/?gwpx=MTh1bXBlaWk0dWpy" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra3-2.cdninstagram.com/v/t51.71878-15/916027446_2237524170445888_7004555140315370055_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=102&amp;_nc_map=urlgen_bucketless&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=Z0tXbHQTg8kQ7kNvwFVlelL&amp;_nc_oc=AdouXZJ7AHl2GgTdi_SawGuIePvjn32x2AX-fh0kjLTrRSZzQMs1T2QQpRj_tHsZhes&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-2.cdninstagram.com&amp;_nc_gid=03rdJj6dFVQCbtdJ62Comw&amp;_nc_ss=7b60f&amp;_nc_ct=RQosPBUKFQQAAAA&amp;oh=00_AQTbWuicafJiOfqEo43G82skWLq5MsVnufySc1ZLdsbeKA&amp;oe=6B065274" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">AIRA CODE（@airacode_jp）のリール</div><div class="vdesc">AI・Claude系の話題を扱うアカウントのリール。投稿ページへのアクセスが混み合い（HTTP 429）、今回はキャプションも動画の内容も取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/21 01:17</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/Df60k2dtMS-/?gwpx=MTh1bXBlaWk0dWpy" data-title="AIRA CODE（@airacode_jp）のリール" data-rid="1937364282">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🧊 3D・ファブリケーション（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DfzMkjTIiUU/?lqvp=MXVxbzY0aW9wMWFxMw==" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.82787-15/896733397_18010438898808718_5331509654481245943_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=101&amp;_nc_map=urlgen_bucketless&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=EnCSnr-pghYQ7kNvwFqnyVu&amp;_nc_oc=AdoQ6s_SrqmhIghTazOuu-4DVDLkGNO-RZF108Nw-vSOgB_zksEszJ8Tcu0g1X-LZo0&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-1.cdninstagram.com&amp;_nc_gid=8UyJfBuy4Tw-ETgojzb6Tw&amp;_nc_ss=7b60f&amp;_nc_ct=RQosPBUKFQwAAAA&amp;oh=00_AQS2JmaXqCD6cC7eNSeEL3oojulbbTJtQjlxvdgwhnn5KA&amp;oe=6B05F00C" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">LaserPrep 3D——レーザーカットで組む立体モデルのリール</div><div class="vdesc">レーザーカット用の組立モデルを発信する @laserprep3d のリール。Instagramのアクセス制限（HTTP 429）で、今回はキャプションも動画の内容も取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/20 18:46</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DfzMkjTIiUU/?lqvp=MXVxbzY0aW9wMWFxMw==" data-title="LaserPrep 3D——レーザーカットで組む立体モデルのリール" data-rid="1936993398">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain
+<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（1件中0件成功・内訳: exception:ClientError:404 1件）。中継サービスの死亡を疑うこと</p>
+<!-- run-timing schema=v2 status=complete target=2026-11-21 run_id=93cd9daf saves=3 step1_s=14 step2_s=15 step2_5_s=22 step3_s=6 step4_s=107 step4_5_s=17 step5_s=38 step7_s=1 total_s=220 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+<script src="../deepdive-mark.js" defer></script>
+</body>
+</html>
