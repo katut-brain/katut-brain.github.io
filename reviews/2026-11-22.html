@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-11-22 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-11-22 の振り返り</h1>
+  <div class="meta">AIを「どこで・誰の持ち物として」動かすか ― エージェント連携とローカル移行の2件</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の2件は、どちらもAIの「使い方」ではなく「置き場所」を問うている。一方は Claude Code と Codex を同じ部屋に入れて文脈を共有させる Switch Buddy、もう一方はクラウドAIの値上げや停止に備えて Apache 2.0 のモデルを手元に確保せよという警告だ。複数のAIをつなぐほど便利になるが、その接続基盤や推論そのものを他社のクラウドに預けるほど、ある日まとめて使えなくなるリスクも積み上がる ― 利便と自律のトレードオフが通奏低音にある。</p>
+    <p>建築の比喩でいえば、前者は「共有の作業場」をどう設計するか、後者は「土地と道具を自前で持つか借りるか」の話で、どちらも制作環境のインフラ設計に属する。今日活性化したのは「作りたい」軸寄りで、AIを道具として運用する側の視点が強い。11/16 以降、Claude Code・Codex・Gemini CLI などを組み合わせる保存が続いており、この関心は今週4日続いている。（翌日未明の保存1件を含む）</p>
+    <ul class="pts">
+      <li><b>エージェントの「部屋」化</b>：AI間の引き継ぎをコピペから共有コンテキストへ移すことは、人がAIの間の“運び屋”をやめるという含意がある。</li>
+      <li><b>ライセンスは調達戦略</b>：Apache 2.0 か、Commons Clause 付きかで「手元に置ける」範囲が変わるので、モデルや基盤を選ぶ時点でライセンスを読むことが自衛になる。</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>自分の制作フローのうち、クラウドAIが明日止まったら本当に困る工程はどれで、それはローカルの30Bクラスのモデルで代替できるのか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">複数エージェントの協働基盤</div>
+    <ul class="ilist">
+      <li><a href="https://www.unite.ai/sandboxaq-makes-switch-free-to-put-any-ai-agent-in-slack-and-teams/" target="_blank" rel="noopener"><b>SandboxAQ Makes Switch Free to Put Any AI Agent in Slack and Teams</b></a> <span>→ Switch は Slack・Teams・Discord のチャンネルを「ルーム」に変え、人とClaude Code・Google ADK・LangChain製のエージェントが同じ文脈と履歴を共有する仕組み。サーバーは自社インフラで動かせる一方、ライセンスは Apache 2.0＋Commons Clause で、OSI定義のオープンソースではない点に注意。</span></li>
+    </ul>
+    <div class="ntag">ローカルAIへの備え</div>
+    <ul class="ilist">
+      <li><a href="https://datanorth.ai/blog/the-best-open-source-llm-in-2026" target="_blank" rel="noopener"><b>The best open source LLM in 2026</b></a> <span>→ Apache 2.0 の候補として Qwen 3/3.5、Mistral Small 4、Gemma 4 26B A4B などが挙がり、Gemma 4 26B A4B は Q4量子化で16GBメモリでも動くという。30Bクラスは24GB VRAMが実用ライン、MoEは全エキスパートの重みをメモリに載せる必要がある、という目安が「取っておく」ための現実的な指標になる。</span></li>
+    </ul>
+  </section>
+
+  <h2>🤖 AI活用（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/nori_ynt1103/status/2124250886449037510?a=osRG9cUqNsHNlh-sgSI&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fnori_ynt1103%2Fstatus%2F2124250886449037510%3Fa%3DosRG9cUqNsHNlh-sgSI%26s%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claude CodeとCodexを同じ部屋で動かす「Switch Buddy」</div><div class="vdesc">引用元 @Claude_Digest によれば、SandboxAQ発のオープン基盤「Switch AI」に、複数エージェントの連携環境を数分で自動構築する新機能「Switch Buddy」が加わり、Claude Code・Codex間の“コピペ引き継ぎ”が不要になるという。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/22 15:17</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/nori_ynt1103/status/2124250886449037510?a=osRG9cUqNsHNlh-sgSI&amp;s=12" data-title="Claude CodeとCodexを同じ部屋で動かす「Switch Buddy」" data-rid="1938868250">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/vrisc66337/status/2124292087239864554?a=HJDlDXsUibqDRRTYGB4&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fvrisc66337%2Fstatus%2F2124292087239864554%3Fa%3DHJDlDXsUibqDRRTYGB4%26s%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">AI界隈の先行き不安とローカルAI移行のすすめ</div><div class="vdesc">クラウドAIは近い将来、高額課金か利用不能に陥る可能性が高いとして、Apache 2.0ライセンスのモデルデータを今のうちに取れるだけ確保しローカル移行に備えよ、という警告（いいね6,719）。</div><div class="vsaved">保存 11/23 02:45</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/vrisc66337/status/2124292087239864554?a=HJDlDXsUibqDRRTYGB4&amp;s=12" data-title="AI界隈の先行き不安とローカルAI移行のすすめ" data-rid="1939329939">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain
+<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（1件中0件成功・内訳: exception:ClientError:404 1件）。中継サービスの死亡を疑うこと</p>
+<!-- run-timing schema=v2 status=complete target=2026-11-22 run_id=653f0796 saves=2 step1_s=10 step2_s=17 step2_5_s=68 step3_s=7 step4_s=181 step4_5_s=25 step5_s=34 step7_s=2 total_s=344 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+<script src="../deepdive-mark.js" defer></script>
+</body>
+</html>
