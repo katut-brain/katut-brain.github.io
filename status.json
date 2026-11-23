@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-11-22T01:33:28+00:00",
+  "checked_at": "2026-11-23T01:57:28+00:00",
   "env": "gha",
   "channels": {
     "x_post": {
@@ -8,31 +8,31 @@
         {
           "method": "x_grokbot",
           "ok": false,
-          "ms": 47092,
+          "ms": 36211,
           "error": "結果が JSON でない"
         },
         {
           "method": "x_fxtwitter",
           "ok": true,
-          "ms": 209,
+          "ms": 139,
           "error": ""
         },
         {
           "method": "x_syndication",
           "ok": true,
-          "ms": 180,
+          "ms": 200,
           "error": ""
         },
         {
           "method": "x_vxtwitter",
           "ok": true,
-          "ms": 190,
+          "ms": 124,
           "error": ""
         },
         {
           "method": "x_publish_oembed",
           "ok": true,
-          "ms": 412,
+          "ms": 120,
           "error": ""
         }
       ]
@@ -49,7 +49,7 @@
         {
           "method": "yt_oembed",
           "ok": true,
-          "ms": 100,
+          "ms": 48,
           "error": ""
         }
       ]
@@ -60,13 +60,13 @@
         {
           "method": "ig_oembed",
           "ok": true,
-          "ms": 216,
+          "ms": 241,
           "error": ""
         },
         {
           "method": "og_meta",
           "ok": true,
-          "ms": 367,
+          "ms": 358,
           "error": ""
         }
       ]
@@ -77,25 +77,25 @@
         {
           "method": "og_meta",
           "ok": true,
-          "ms": 554,
+          "ms": 454,
           "error": ""
         }
       ]
     },
     "web": {
-      "level": "ok",
+      "level": "degraded",
       "methods": [
         {
           "method": "web_direct",
           "ok": true,
-          "ms": 147,
+          "ms": 154,
           "error": ""
         },
         {
           "method": "web_jina",
-          "ok": true,
-          "ms": 755,
-          "error": ""
+          "ok": false,
+          "ms": 70,
+          "error": "HTTP 401"
         }
       ]
     }
