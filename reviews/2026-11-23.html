@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-11-23 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-11-23 の振り返り</h1>
+  <div class="meta">手描きの線で「引く」建築と、AIで「足す」3Dモデル（3件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存を通して流れているのは、「形をどこまで描き込むか」という問いだった。広島大学・中園研究室の「200段の家」は、空き家・階段・廃材を家の部屋・廊下・家具に読み替え、建物を足さずに「引く」ことで地区をひとつの住まいにする提案で、ユーザーが付けたメモは「デッサン表現」。注目したのは計画の中身以上に、石積みや植栽、人の会話まで細い色線で描き込んだ、あえて精密すぎないドローイングの手触りだった。</p>
+    <p>対照的に、Tripo の告知は Opus などで作った粗い初期3Dモデルを高精細なアセットへ「足して」仕上げる方向を示す。建築の手描きが余白で暮らしの気配を伝えるのに対し、AIの3D生成はディテールの密度で説得力をつくる。同じ「表現の精度」をめぐって逆向きの二つが並んだ日で、活性化したのは「知る/紹介したい」軸よりも、自分のプレゼン表現をどう描くかという「作りたい」軸。3Dモデルづくりへの関心は今週、11/19 の同じ Tripo 投稿、11/20 のレーザーカット模型に続いて3件目で、この関心は今週3日続いている。</p>
+    <ul class="pts">
+      <li><b>「引く」設計を伝える線</b>：足さない提案は、描き込みすぎない線画と相性が良いという含意がある。表現の方法そのものが提案の論理を語っている。</li>
+      <li><b>AIで精細化する3D</b>：生成AIを複数つないで粗いモデルを仕上げる流れは、模型やパースの「下描き→清書」をAIで分業できるかという問いにつながる。</li>
+      <li><b>描写の密度と説得力</b>：手描きの余白と高精細メッシュの密度、どちらが審査員や施主に届くのかを比べる視点を立てる。</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>「200段の家」の柔らかい線画は、Tripo のような高精細3Dで描き直したら、かえって「引く」という提案の説得力を失うのではないか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">建築ドローイングの役割</div>
+    <ul class="ilist">
+      <li><a href="https://architizer.com/blog/inspiration/industry/lines-of-thought-why-architects-still-draw-why-that-matters/" target="_blank" rel="noopener"><b>Lines of Thought: Why Architects Still Draw — and Why That Matters（Architizer）</b></a> <span>→ ドローイングを「理解するための描画（分析）」と「もしも？を試す描画（思弁）」に分け、両者は混ざり合う研究行為だと論じる。「200段の家」の線画も、斜面の現況分析と住民が集う未来像を1枚に重ねた点で、まさにこの二つの混成と読める。</span></li>
+    </ul>
+    <div class="ntag">AI 3D生成の精細化</div>
+    <ul class="ilist">
+      <li><a href="https://80.lv/articles/how-tripo-is-tackling-clean-topology-for-its-3d-asset-pipeline" target="_blank" rel="noopener"><b>How Tripo Is Tackling Clean Topology for Its 3D Asset Pipeline（80 Level）</b></a> <span>→ Tripo は整ったトポロジーを数秒で出す Smart Mesh と、数百万ポリゴン級の高精細モデルを1分以内で出す H シリーズを使い分け、Magic Brush で手直しして Blender などへ書き出す流れ。告知の「初期モデル→高精細化」は、この H シリーズ側を指すと読める。</span></li>
+    </ul>
+  </section>
+
+  <h2>🏛 建築・ドローイング（1件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/p/Df6OpbpiUUr/?evlk=bHBtODVrc2M1MHZ6" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-arn2-1.cdninstagram.com/v/t51.82787-15/909932999_17995659156115274_2288927226445805725_n.jpg?stp=c215.0.645.645a_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=103&amp;_nc_map=urlgen_bucketless&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0FST1VTRUxfSVRFTS5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&amp;_nc_ohc=zpDHiQom8e0Q7kNvwG21SBY&amp;_nc_oc=AdosBQbgf5uFAYjr4OaNGnGnab0Gpyrw1qFL9b9B_OCUAN7LCKS3UdpQd55MaZHnPAg&amp;_nc_zt=23&amp;_nc_ht=scontent-arn2-1.cdninstagram.com&amp;_nc_gid=ldIS_i82mrqSeeXZTFuagA&amp;_nc_ss=7ba02&amp;_nc_ct=RQosPBUKFQIAAAA&amp;oh=00_AQQk2rHlGEoWKXR6upjIs0K46cL44nHh9lSxhHB-WhyuMQ&amp;oe=6B09E460" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">200段の家 ― 広島大学 中園研究室（建築学会設計競技2026 中国支部入選）</div><div class="vdesc">呉市・両城の急斜面で、空き家を「部屋」、200段の階段を「廊下」、廃材を「家具」と読み替え、地区全体をひとつの家にする提案。制度上「足す」ことが禁じられた空き家を、骨格だけ残して「引く」ことで住民の手作業を呼び込む筋立てで、パネルは細い色鉛筆調の線画に石積み・植栽・会話の吹き出しまで描き込んだ柔らかいドローイング。</div><div class="vsaved">保存 11/23 17:41</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/p/Df6OpbpiUUr/?evlk=bHBtODVrc2M1MHZ6" data-title="200段の家 ― 広島大学 中園研究室（建築学会設計競技2026 中国支部入選）" data-rid="1940078306">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🧊 3D・AI生成（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/tripoai/status/2124713724837806355?a=BIn5olBVsNV3DwFHmyE&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HWREKBKbYAAALAC?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Tripo：Opusの出力をもっと精細な3Dアセットへ</div><div class="vdesc">Tripo公式の告知。Claude Opus 等で作った初期3Dモデルを Tripo に通して高精細なアセットへ仕上げる、という生成AI同士をつなぐ使い方の提案（本文は1行のみで、具体的な手順や数値は投稿に無い）。</div><div class="vsaved">保存 11/23 17:43</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/tripoai/status/2124713724837806355?a=BIn5olBVsNV3DwFHmyE&amp;s=12" data-title="Tripo：Opusの出力をもっと精細な3Dアセットへ" data-rid="1940078705">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DgCpDx6HvhY/?gwpx=dWdlYmY5ODkxb2F4" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-fra3-1.cdninstagram.com/v/t51.82787-15/902954797_17913055071580701_4919900666216978737_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=107&amp;_nc_map=urlgen_bucketless&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=_E9pp-ZpihIQ7kNvwGX5TmB&amp;_nc_oc=AdoUFpRmmm_wrSCNHZTO4H3bJOyyMiB4X8_rosDKoXP2V90hdxxaWpLhqIVwch1N37k&amp;_nc_zt=23&amp;_nc_ht=scontent-fra3-1.cdninstagram.com&amp;_nc_gid=ws9KtMQOt2lrC82L4w_wTQ&amp;_nc_ss=7b60f&amp;_nc_ct=RQosPBUKFQQAAAA&amp;oh=00_AQQKV2xvtdP32z8Vrfl05o5jbQnSVm9gcwDrup9Ub5l6OA&amp;oe=6B09B5E4" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">David Iya（@davidiya.co）のリール</div><div class="vdesc">David Iya によるリール投稿。Instagram 側のアクセス制限（HTTP 429）で、今回は本文・動画とも取得できなかった（再試行も同じ）。翌晩以降に取り直す。※動画の内容は未取得</div><div class="vsaved">保存 11/23 16:12</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DgCpDx6HvhY/?gwpx=dWdlYmY5ODkxb2F4" data-title="David Iya（@davidiya.co）のリール" data-rid="1940033873">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain<!-- run-timing schema=v2 status=complete target=2026-11-23 run_id=6e5d1849 saves=3 step1_s=43 step2_s=20 step2_5_s=131 step3_s=6 step4_s=95 step4_5_s=57 step5_s=8 step7_s=1 total_s=361 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+<script src="../deepdive-mark.js" defer></script>
+</body>
+</html>

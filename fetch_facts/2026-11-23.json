@@ -1,0 +1,335 @@
+{
+ "https://x.com/myclaw_jp/status/2123240454825410720?a=9UNRQJorCeVy8L-gMAQ&s=12": {
+  "fetched_at": "2026-11-23T19:12:39Z",
+  "elapsed_ms": 60130,
+  "fetcher_version": "2026-11-04.1",
+  "url": "https://x.com/myclaw_jp/status/2123240454825410720?a=9UNRQJorCeVy8L-gMAQ&s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "video_content"
+  ],
+  "raindrop_id": 1936626843,
+  "rid_source": "exact",
+  "text_chars": 526,
+  "text_sha1": "aedf1a7b828709cf8b45f4dc7479ac1a2cbaa1aa",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": true,
+  "video_understood": false,
+  "video_summary": "",
+  "image_summary": "",
+  "image_reason": "",
+  "video_model": "",
+  "image_model": "",
+  "primary_skipped": false,
+  "primary_reason": "",
+  "fallback_reason": "",
+  "deadline_skipped": [],
+  "video_reason": "exception:ClientError:404",
+  "video_reason_detail": "",
+  "reason": "",
+  "fail_reason": "",
+  "fetched_via": "x_syndication",
+  "fetch_chain_tried": "",
+  "x_primary_skipped": "",
+  "x_primary_reason": "",
+  "stages": {
+   "download": {
+    "status": "ok",
+    "reason": ""
+   },
+   "frames": {
+    "status": "skipped",
+    "reason": "gemini_native"
+   },
+   "transcription": {
+    "status": "fail",
+    "reason": "http_403",
+    "flagged": 0,
+    "duration_s": 113
+   },
+   "understanding": {
+    "status": "fail",
+    "reason": "exception:ClientError:404"
+   },
+   "quote": {
+    "status": "skipped",
+    "reason": "no_quote"
+   }
+  },
+  "unique_url": "https://x.com/myclaw_jp/status/2123240454825410720?a=9UNRQJorCeVy8L-gMAQ",
+  "success": false,
+  "transcript_reason": "http_403",
+  "attempt_seq": 1,
+  "prior_success": false,
+  "unique_success": false
+ },
+ "https://x.com/nori_ynt1103/status/2124250886449037510?a=osRG9cUqNsHNlh-sgSI&s=12": {
+  "fetched_at": "2026-11-23T19:13:45Z",
+  "elapsed_ms": 64848,
+  "fetcher_version": "2026-11-04.1",
+  "url": "https://x.com/nori_ynt1103/status/2124250886449037510?a=osRG9cUqNsHNlh-sgSI&s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "partial",
+  "missing": [
+   "video_content"
+  ],
+  "raindrop_id": 1938868250,
+  "rid_source": "exact",
+  "text_chars": 250,
+  "text_sha1": "c0f5e82dac73a946cd8932c2b89606f42adb92e1",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 0,
+  "has_video": true,
+  "video_understood": false,
+  "video_summary": "",
+  "image_summary": "",
+  "image_reason": "",
+  "video_model": "",
+  "image_model": "",
+  "primary_skipped": false,
+  "primary_reason": "",
+  "fallback_reason": "",
+  "deadline_skipped": [],
+  "video_reason": "exception:ClientError:404",
+  "video_reason_detail": "",
+  "reason": "",
+  "fail_reason": "",
+  "fetched_via": "x_syndication",
+  "fetch_chain_tried": "",
+  "x_primary_skipped": "",
+  "x_primary_reason": "",
+  "stages": {
+   "download": {
+    "status": "ok",
+    "reason": ""
+   },
+   "frames": {
+    "status": "skipped",
+    "reason": "no_video"
+   },
+   "transcription": {
+    "status": "skipped",
+    "reason": "no_media"
+   },
+   "understanding": {
+    "status": "skipped",
+    "reason": "no_media"
+   },
+   "quote": {
+    "status": "fail",
+    "reason": "exception:ClientError:404"
+   }
+  },
+  "unique_url": "https://x.com/nori_ynt1103/status/2124250886449037510?a=osRG9cUqNsHNlh-sgSI",
+  "success": false,
+  "transcript_reason": "http_403",
+  "attempt_seq": 1,
+  "prior_success": false,
+  "unique_success": false
+ },
+ "https://www.instagram.com/reel/DgCpDx6HvhY/?gwpx=dWdlYmY5ODkxb2F4": {
+  "fetched_at": "2026-11-23T19:15:16Z",
+  "elapsed_ms": 1012,
+  "fetcher_version": "2026-11-04.1",
+  "url": "https://www.instagram.com/reel/DgCpDx6HvhY/?gwpx=dWdlYmY5ODkxb2F4",
+  "route": "instagram",
+  "ok": false,
+  "http_status": 429,
+  "depth": "none",
+  "missing": [
+   "fetch_failed"
+  ],
+  "raindrop_id": 1940033873,
+  "rid_source": "exact",
+  "text_chars": 0,
+  "text_sha1": "",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 0,
+  "has_video": false,
+  "video_understood": false,
+  "video_summary": "",
+  "image_summary": "",
+  "image_reason": "",
+  "video_model": "",
+  "image_model": "",
+  "primary_skipped": false,
+  "primary_reason": "",
+  "fallback_reason": "",
+  "deadline_skipped": [],
+  "video_reason": "",
+  "video_reason_detail": "",
+  "reason": "HTTP 429",
+  "fail_reason": "instagram_http_429",
+  "fetched_via": "",
+  "fetch_chain_tried": "",
+  "x_primary_skipped": "",
+  "x_primary_reason": "",
+  "stages": {
+   "download": {
+    "status": "skipped",
+    "reason": ""
+   },
+   "frames": {
+    "status": "skipped",
+    "reason": ""
+   },
+   "transcription": {
+    "status": "skipped",
+    "reason": ""
+   },
+   "understanding": {
+    "status": "skipped",
+    "reason": ""
+   }
+  },
+  "unique_url": "https://instagram.com/reel/DgCpDx6HvhY?gwpx=dWdlYmY5ODkxb2F4",
+  "success": false,
+  "transcript_reason": "",
+  "attempt_seq": 2,
+  "prior_success": false,
+  "unique_success": false
+ },
+ "https://x.com/tripoai/status/2124713724837806355?a=BIn5olBVsNV3DwFHmyE&s=12": {
+  "fetched_at": "2026-11-23T19:14:40Z",
+  "elapsed_ms": 42140,
+  "fetcher_version": "2026-11-04.1",
+  "url": "https://x.com/tripoai/status/2124713724837806355?a=BIn5olBVsNV3DwFHmyE&s=12",
+  "route": "x",
+  "ok": true,
+  "http_status": null,
+  "depth": "full",
+  "missing": [],
+  "raindrop_id": 1940078705,
+  "rid_source": "exact",
+  "text_chars": 47,
+  "text_sha1": "4cdc4cc09ce60ca75c1015c8fc81a5310423e1f8",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 0,
+  "has_video": false,
+  "video_understood": false,
+  "video_summary": "",
+  "image_summary": "",
+  "image_reason": "",
+  "video_model": "",
+  "image_model": "",
+  "primary_skipped": false,
+  "primary_reason": "",
+  "fallback_reason": "",
+  "deadline_skipped": [],
+  "video_reason": "",
+  "video_reason_detail": "",
+  "reason": "",
+  "fail_reason": "",
+  "fetched_via": "x_syndication",
+  "fetch_chain_tried": "",
+  "x_primary_skipped": "",
+  "x_primary_reason": "",
+  "stages": {
+   "download": {
+    "status": "skipped",
+    "reason": "no_media"
+   },
+   "frames": {
+    "status": "skipped",
+    "reason": "no_video"
+   },
+   "transcription": {
+    "status": "skipped",
+    "reason": "no_media"
+   },
+   "understanding": {
+    "status": "skipped",
+    "reason": "no_media"
+   },
+   "quote": {
+    "status": "skipped",
+    "reason": "no_quote"
+   }
+  },
+  "unique_url": "https://x.com/tripoai/status/2124713724837806355?a=BIn5olBVsNV3DwFHmyE",
+  "success": true,
+  "transcript_reason": "",
+  "attempt_seq": 1,
+  "prior_success": false,
+  "unique_success": true
+ },
+ "https://www.instagram.com/p/Df6OpbpiUUr/?evlk=bHBtODVrc2M1MHZ6": {
+  "fetched_at": "2026-11-23T19:14:45Z",
+  "elapsed_ms": 4978,
+  "fetcher_version": "2026-11-04.1",
+  "url": "https://www.instagram.com/p/Df6OpbpiUUr/?evlk=bHBtODVrc2M1MHZ6",
+  "route": "instagram",
+  "ok": true,
+  "http_status": null,
+  "depth": "shallow",
+  "missing": [
+   "visual_content",
+   "audio_content"
+  ],
+  "raindrop_id": 1940078306,
+  "rid_source": "exact",
+  "text_chars": 231,
+  "text_sha1": "37a91277224deca19c95cce53b33b7d72fc8c819",
+  "body_chars": null,
+  "desc_chars": null,
+  "body_truncated": null,
+  "image_count": 1,
+  "has_video": false,
+  "video_understood": false,
+  "video_summary": "",
+  "image_summary": "",
+  "image_reason": "",
+  "video_model": "",
+  "image_model": "",
+  "primary_skipped": false,
+  "primary_reason": "",
+  "fallback_reason": "",
+  "deadline_skipped": [],
+  "video_reason": "",
+  "video_reason_detail": "",
+  "reason": "",
+  "fail_reason": "",
+  "fetched_via": "",
+  "fetch_chain_tried": "",
+  "x_primary_skipped": "",
+  "x_primary_reason": "",
+  "stages": {
+   "download": {
+    "status": "skipped",
+    "reason": "no_media"
+   },
+   "frames": {
+    "status": "skipped",
+    "reason": "no_video"
+   },
+   "transcription": {
+    "status": "skipped",
+    "reason": "no_media"
+   },
+   "understanding": {
+    "status": "fail",
+    "reason": "not_understood"
+   }
+  },
+  "unique_url": "https://instagram.com/p/Df6OpbpiUUr?evlk=bHBtODVrc2M1MHZ6",
+  "success": true,
+  "transcript_reason": "",
+  "attempt_seq": 1,
+  "prior_success": false,
+  "unique_success": true
+ }
+}
