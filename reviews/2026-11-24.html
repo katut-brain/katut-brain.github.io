@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-11-24 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 戻る</a>
+  <h1>2026-11-24 の振り返り</h1>
+  <div class="meta">AIの「センス」と「段取り」を外付けする日——デザイン判断・エージェント・敷地分析（7件）</div>
+
+  <section class="summary">
+    <h2>まとめ</h2>
+    <p>この日の保存を貫くのは「AIに足りないものを、外から差し込む」という発想だった。AIが作る画面の凡庸さ（AI Slop）を判断基準のOSSで補う、エージェントがツールを直接叩く代わりにコードを書かせてトークンを98%削る、PCを閉じても進むProjectsで作業の持続を外に出す、そして敷地分析の図版づくりをsitediaに任せてClaudeがスライドへまとめる。どれも「モデルを賢くする」のではなく、判断基準・実行環境・データ源をモデルの外側に設計して組み合わせる話になっている。</p>
+    <p>ドメインをまたぐと、AI×デザインの「センス」と、建築の敷地分析がつながる。sitediaはPLATEAUの数字（延べ面積の偏り・階数分布）を図版にしてくれるが、そこから何を読み取り提案の軸にするかは設計者の「センス」側に残る。Veyd Segmentsが実在の家具のために部屋ごとBlenderで建てるのも、モノの価値を伝える文脈を自分で設計するという同じ問題だ。この日は「知る/紹介したい」軸より「作りたい」軸——自分の制作の道具立てを整える方向——が強く活性化した。AIエージェント・Claude Code周りの保存は今週ほぼ毎日続いている（11/18・11/20・11/23にも関連の保存）。※日付が翌日扱い（深夜0〜3時台）の保存4件を含む。</p>
+    <ul class="pts">
+      <li><b>センスの外付け</b>：「緑やベージュのグラデ・角丸・均等余白」と具体的に名指しできた時点で、凡庸さは回避可能なルールになるという含意がある。</li>
+      <li><b>コードを書かせる方が安い</b>：ツール呼び出しをコード化させると15万→2,000トークン。エージェントの性能はモデルより「どう呼ばせるか」で決まるという含意がある。</li>
+      <li><b>敷地分析の自動化</b>：棟数ではなく延べ面積で見ると渋谷の主役が商業から業務へ入れ替わる。数字を出す作業が自動化されるほど、どの指標で読むかを選ぶ力が問われる。</li>
+      <li><b>道具の囲い込み</b>：Antigravityは月約1,208円でClaude 5.5まで同梱。安さの裏で、どの環境に作業を預けるかという依存の選択を迫られる。</li>
+    </ul>
+    <div class="q"><b>次に考える問い：</b>sitediaが敷地の数字と図版まで出してくれるなら、卒業設計の敷地分析で自分が「センス」として手放してはいけない判断はどこにあるのか？</div>
+  </section>
+
+  <h2>🔎 深掘り（関連記事）</h2>
+  <section class="notes">
+    <div class="ntag">AIのデザインの「センス」</div>
+    <ul class="ilist">
+      <li><a href="https://raw.githubusercontent.com/leonxlnx/taste-skill/main/README.md" target="_blank" rel="noopener"><b>Taste Skill - Anti-slop Agent Skills for premium frontends</b></a> <span>→ 同系統のOSS「Taste Skill」は、業種を先に分類して配色・Google Fontsの組み合わせ・11種のヒーローレイアウトを割り当て、ヘッドレスChromeで複数幅を描画して整列・コントラスト・プレースホルダ残りを検査し、直るまで最大3周は完了させない。「センス」を好みではなく、検査可能なルールと完了ゲートとして実装している点が参考になる。</span></li>
+    </ul>
+    <div class="ntag">Google Antigravity</div>
+    <ul class="ilist">
+      <li><a href="https://dev.to/jovan_chan_9500711396d4e6/google-antigravity-20-review-2026-browser-subagent-20month-pro-and-the-quota-problem-6ob" target="_blank" rel="noopener"><b>Google Antigravity 2.0 Review (2026): Browser Subagent, $20/Month Pro, and the Quota Problem</b></a> <span>→ 2.0の目玉は実際のChromeを開いてローカルの開発サーバーを操作・撮影・修正するBrowser Subagent。一方で2025年12月〜2026年3月に予告なく4回クォータが削られ、週3億トークン超使えていた開発者が900万未満で上限に達した例や、Pro利用者の5〜7日ロックアウトも報告されている。「安い」は「使い放題」と同義ではない。</span></li>
+    </ul>
+    <div class="ntag">3D都市モデルと敷地分析</div>
+    <ul class="ilist">
+      <li><a href="https://www.mlit.go.jp/plateau/use-case/ec24-01-02/" target="_blank" rel="noopener"><b>3D都市モデルを利用した建築計画ボリューム検証出力サービス（PLATEAU）</b></a> <span>→ PLATEAUの用途地域・容積率などから建築可能ボリュームを自動算出し3DCADに出力する実証で、建築士の作図と比べ作業時間を約77%削減（誤差約7%）。ただし道路斜線は平均±11%ずれ、法令上の緩和や高層の日影規制には未対応——自動化された数字を鵜呑みにせず検証する目が要る。</span></li>
+    </ul>
+  </section>
+
+  <h2>🎨 AIとデザインの「センス」（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/rna4219/status/2124535975905026051?a=8tYtcuYuChWA56_MggA&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2124535975905026051" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">AIにデザインの「センス」を外付けするOSS（@rna4219）</div><div class="vdesc">AIに画面を作らせると出てくる「AI Slop」——緑や薄ベージュの基調グラデーション、角丸カード、無難なフォント、均等な余白——を名指しし、それを避ける判断基準を外付けするOSSを公開したという告知。今回は添付動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/25 01:20</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/rna4219/status/2124535975905026051?a=8tYtcuYuChWA56_MggA&amp;s=12" data-title="AIにデザインの「センス」を外付けするOSS（@rna4219）" data-rid="1941489844">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/hokazuya/status/2125017483027571176?a=OAFR0M1o17S6e_GSxzM&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://rdl.ink/render/https%3A%2F%2Fx.com%2Fhokazuya%2Fstatus%2F2125017483027571176%3Fa%3DOAFR0M1o17S6e_GSxzM%26s%3D12" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">「センス」OSSをA/Bテストした結果（@hokazuya）</div><div class="vdesc">上の「センス」OSSを、HP・アプリ一式・ゲームのデザインと挿絵の3種でランダムにA/B振り分けして出力させたところ、3種すべてで「センスあり」側を良いと選んだという検証報告。主観評価ながら、外付けの判断基準が媒体をまたいで効いたという実地の一票。引用元の動画は今回取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/25 01:19</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/hokazuya/status/2125017483027571176?a=OAFR0M1o17S6e_GSxzM&amp;s=12" data-title="「センス」OSSをA/Bテストした結果（@hokazuya）" data-rid="1941489621">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🤖 AIエージェント・開発（3件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/29meat_ai/status/2124832428237992133?a=AKkYV1DBYeC5zFtQPUg&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://pbs.twimg.com/media/HXzqX9jaIAAGbzL?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Google Antigravity 完全網羅（@29meat_ai）</div><div class="vdesc">Antigravityは2026年5月の2.0以降、App・CLI（agy）・IDE拡張など5つの入口が頭脳・権限・スキル・MCP設定を共有する「自律OS」に変わったという約12,000字の解説記事。ブラックフライデーでGoogle AI Pro年額が14,500円（実質月約1,208円）になり、Gemini 4 Neonに加えClaude Opus 5.5／Sonnet 5.5も追加課金なしで使える、Flow月1,000クレジット・5TBストレージ付き、と料金面を強調。レート制限と規約上の注意も明記している。</div><div class="vsaved">保存 11/24 16:01</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/29meat_ai/status/2124832428237992133?a=AKkYV1DBYeC5zFtQPUg&amp;s=12" data-title="Google Antigravity 完全網羅（@29meat_ai）" data-rid="1941132399">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/ai_ai_ailover/status/2124865594956915053?a=AczJxccPP03gvMmzo40&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2124865594956915053" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">Claude CodeのProjectsが全面刷新、PCを閉じても進む（@ai_ai_ailover）</div><div class="vdesc">これまで「ファイルとチャットを入れておく箱」だったProjectsが、9月17日の刷新でPCを閉じても作業が進み続ける形になった、という紹介投稿。本文は冒頭の数行のみで、具体的な操作手順は添付動画側にある。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/25 00:32</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/ai_ai_ailover/status/2124865594956915053?a=AczJxccPP03gvMmzo40&amp;s=12" data-title="Claude CodeのProjectsが全面刷新、PCを閉じても進む（@ai_ai_ailover）" data-rid="1941442376">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://x.com/angeldot_/status/2124869506057073070?a=VU1To5z4xr0vigbIH3w&amp;s=12" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://jf.x.com/images/media-preview/2124869506057073070" onerror="this.remove()"><span class="ph">X</span></div>
+        <div class="vbody"><div class="vtitle">トークンを最大98%削減するAnthropicの手法（@angeldot_）</div><div class="vdesc">スペイン語の投稿。同じツール・同じタスク・同じモデルのまま、エージェントにツールを直接呼ばせるのではなく「ツールを呼ぶコードを書かせる」ことで、使用トークンが15万から2,000へ（最大98%減）落ちたというAnthropicのエンジニアの報告を紹介。続きと動画は今回取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/25 03:33</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://x.com/angeldot_/status/2124869506057073070?a=VU1To5z4xr0vigbIH3w&amp;s=12" data-title="トークンを最大98%削減するAnthropicの手法（@angeldot_）" data-rid="1941604183">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <h2>🏛 建築・空間（2件）</h2>
+  <div class="cards">
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DgGuetClFO4/?bqrl=MTU5ZHlsYmNpejJyOQ==" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-vie1-1.cdninstagram.com/v/t51.82787-15/921145865_18156104062539708_3057009822083581382_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=100&amp;_nc_map=urlgen_bucketless&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=oJ1kBtq15q0Q7kNvwGrr-el&amp;_nc_oc=Adpz_J5mC45y-WZR14njTupHpxNoHo5MiuPXGs8W30nYpZeYmIcqOxvCP0Pqn5rz8hE&amp;_nc_zt=23&amp;_nc_ht=scontent-vie1-1.cdninstagram.com&amp;_nc_gid=X8yb6cQek3xndCVeP1jFgw&amp;_nc_ss=7bb02&amp;_nc_ct=RQosPBUKFQQAAAA&amp;oh=00_AQRTSwNHXW-NkQtQ2P_XFedx0Jew5dTsW25Cg8rXdBVepw&amp;oe=6B0B0F2F" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">sitedia：敷地分析ダイアグラムがClaudeの中で使える</div><div class="vdesc">住所と半径を伝えると、PLATEAU（国交省の3D都市モデル）等から敷地の図版と建物表を作り、Claudeがそれを読んでスライドまでまとめる。渋谷駅半径500mの例では1,397棟のうち棟数は商業32%が最多だが延べ面積の47%は業務、8階以下が76%、上位10棟で延べ面積の36%。卒業設計の敷地分析を狙ったサービスで、初回作成から48時間無料。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/24 17:08</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DgGuetClFO4/?bqrl=MTU5ZHlsYmNpejJyOQ==" data-title="sitedia：敷地分析ダイアグラムがClaudeの中で使える" data-rid="1941177160">💬 AIと話す</button>
+    </div>
+    <div class="vcard">
+      <a class="vlink" href="https://www.instagram.com/reel/DfMwFveIIFU/?dmpr=MXBrNml4NW93ZG1wZQ==" target="_blank" rel="noopener">
+        <div class="thumb"><img src="https://scontent-vie1-1.cdninstagram.com/v/t51.71878-15/883626761_29154490397495825_7318255353885035840_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=102&amp;_nc_map=urlgen_bucketless&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=gtUxhZMRjGMQ7kNvwFJrdB9&amp;_nc_oc=AdrLOltT_5wKT3JT7BIJCGToJ-zgyVYx8jIDWu4c9Rjp20ALdCHvKal9cJkEZjHmTOs&amp;_nc_zt=23&amp;_nc_ht=scontent-vie1-1.cdninstagram.com&amp;_nc_gid=7_v2EQcnHc6ujf8yimg_-A&amp;_nc_ss=7bb02&amp;_nc_ct=RQosPBUKFQgAAAA&amp;oh=00_AQQ193COKG0jQqHbAZtQh-ujNqhvEXXaQ3Fydcd0fjuMoA&amp;oe=6B0B1536" onerror="this.remove()"><span class="ph">Instagram</span></div>
+        <div class="vbody"><div class="vtitle">Veyd Segments：実在の家具を、Blenderで建てた部屋に置く</div><div class="vdesc">Gemini Stool・Tetra Side Table・Elephant Table Lamp・Fragment Wall Cabinet などは実在の家具で、周りの部屋「DHOMA」はその家具が想定する光で見せるためにBlenderで作ったシリーズ、という種明かし。モノの写真を「空間ごと設計する」見せ方の例。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/24 17:15</div></div>
+      </a>
+      <button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DfMwFveIIFU/?dmpr=MXBrNml4NW93ZG1wZQ==" data-title="Veyd Segments：実在の家具を、Blenderで建てた部屋に置く" data-rid="1941182593">💬 AIと話す</button>
+    </div>
+  </div>
+
+  <footer>毎朝の同期で自動生成 ｜ katut-brain
+<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（3件中0件成功・内訳: exception:ClientError:404 3件）。中継サービスの死亡を疑うこと</p>
+<!-- run-timing schema=v2 status=complete target=2026-11-24 run_id=667a660f saves=7 step1_s=13 step2_s=16 step2_5_s=15 step3_s=6 step4_s=478 step4_5_s=0 step5_s=43 step7_s=5 total_s=576 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+<script src="../deepdive-mark.js" defer></script>
+</body>
+</html>
