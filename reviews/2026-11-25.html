@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-11-25 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="../index.html">← 戻る</a>
+<h1>2026-11-25 の振り返り</h1>
+<div class="meta">AIが「図面」と「アプリ」を一括で生成する流れを追った1日（3件）</div>
+
+<section class="summary">
+<h2>まとめ</h2>
+<p>通奏低音は「AIが成果物の一式を丸ごと出す」ことへの関心。Rayonは1枚の平面図から提示用図面一式を、Claudeのアーティファクトは対話から常駐アプリを生み出す。どちらも「作る」より「何を作らせるか選ぶ」側へ作業が移っている。活性化したのは作りたい軸だが、noteは付いておらず、知る・試す段階の保存と読める。</p>
+<ul class="pts">
+<li><b>建築×AI</b>：図面AIは平面図を読んでから出す図面の候補を提案し、人が選ぶ。設計判断のどこまでを委ねるかという含意がある</li>
+<li><b>Claude</b>：アーティファクトがデスクトップ常駐アプリ化し、通知やメニューバーまで使える。プロトタイプと製品の境が薄れる</li>
+<li><b>Spooty</b>：プレイリストを丸ごとMP3化するOSS。反響の大きさ自体が、サブスクへの不満の信号になっている</li>
+</ul>
+<div class="q"><b>次に考える問い：</b>AIが提案した図面の候補から人が選ぶとき、選ばなかった図面に設計意図は残るのか？</div>
+</section>
+
+<h2>🔎 深掘り（関連記事）</h2>
+<section class="notes">
+<div class="ntag">建築×AI作図（Rayon）</div>
+<ul class="ilist">
+<li><a href="https://aecmag.com/cad/rayon-v4-a-different-bet-on-the-future-of-cad/" target="_blank" rel="noopener"><b>Rayon V4: a different bet on the future of CAD</b></a> <span>→ V4はブラウザ型2D CADに3DとAIエージェントをベータで加え、PDFの図面化やゾーニング、集計表・資料作成を担う。多数の専用コマンドより、軽いモデリング環境と高性能AIに賭ける設計思想が読み取れる。</span></li>
+</ul>
+</section>
+
+<h2>🏛️ 建築×AI（1件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/DgIA1zDzGbf/?avpt=MWhocm5lZDZiYjd6cA==" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.82787-15/902949128_17942371167400733_9065106042420236936_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=103&amp;_nc_map=urlgen_bucketless&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=X2t4tiBB2A4Q7kNvwHTISHg&amp;_nc_oc=AdphHwm5yuvfUcm6-1Bjxko4uWn2QvE0tQbnhur5goM-IxFapMWOzQ3IWRblCpNP4d0&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-1.cdninstagram.com&amp;_nc_gid=aqak5edoQ8jrYDp2soi6vw&amp;_nc_ss=7b70f&amp;_nc_ct=RQosPBUKFQwAAAA&amp;oh=00_AQS5kcvV0-Ga2VvzW67V9G6A5pvX3BfcgS9HHd_6X7LKfw&amp;oe=6B0C145A" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">間取り図1枚から提示用図面一式をつくるRayon AIのプロンプト</div><div class="vdesc">Rayonに平面図を置いてプロンプトを貼ると、AIがまず図面を読み、色分けゾーニング・寸法入り平面図・照明計画・家具配置図を提案。書き込まれた寸法でスケールを検証し、壁・ドア・窓・部屋名をトレースして各図をレイヤー別に描くという。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/25 10:07</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DgIA1zDzGbf/?avpt=MWhocm5lZDZiYjd6cA==" data-title="間取り図1枚から提示用図面一式をつくるRayon AIのプロンプト" data-rid="1941868408">💬 AIと話す</button>
+</div>
+</div>
+
+<h2>🤖 AIツール・開発（2件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://x.com/oab10don/status/2125367746221527270?a=pbVMyKMGc7Rg-ynBlA0&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">Claudeのアーティファクトがデスクトップアプリとして入れられるように</div><div class="vdesc">Claudeに作らせたアーティファクトで「Install as app」を押すだけ、Mac・Windowsで普通のアプリとして開ける手軽さを推す投稿。引用元のClaudeDevsによれば、コネクタも使え、許可すれば通知やメニューバー項目も追加できる。今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/25 13:55</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/oab10don/status/2125367746221527270?a=pbVMyKMGc7Rg-ynBlA0&amp;s=12" data-title="Claudeのアーティファクトがデスクトップアプリとして入れられるように" data-rid="1942038720">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://x.com/lisaknowsai/status/2125169078050467942?a=RaRZoAGbHTzRuV_nkW0&amp;s=12" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://pbs.twimg.com/media/HX4eAwWX0AAORyd?format=webp&amp;name=large" onerror="this.remove()"><span class="ph">X</span></div>
+<div class="vbody"><div class="vtitle">月額11.99€の音楽レンタルを終わらせる？Spotifyプレイリストを丸ごとMP3化するOSS「Spooty」</div><div class="vdesc">開発者が公開したOSSで、SpotifyのプレイリストURLを渡すと全曲をMP3として手元に保存できると紹介（スペイン語）。いいね7,657件と反響は大きい。添付画像の中身は今回取得できなかった。</div><div class="vsaved">保存 11/25 13:55</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://x.com/lisaknowsai/status/2125169078050467942?a=RaRZoAGbHTzRuV_nkW0&amp;s=12" data-title="月額11.99€の音楽レンタルを終わらせる？Spotifyプレイリストを丸ごとMP3化するOSS「Spooty」" data-rid="1942038932">💬 AIと話す</button>
+</div>
+</div>
+
+<footer>毎朝の同期で自動生成 ｜ katut-brain
+<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（2件中0件成功・内訳: exception:ClientError:404 2件）。中継サービスの死亡を疑うこと</p>
+<!-- run-timing schema=v2 status=complete target=2026-11-25 run_id=c3c89cc8 saves=3 step1_s=14 step2_s=14 step2_5_s=266 step3_s=6 step4_s=165 step4_5_s=42 step5_s=0 step7_s=2 total_s=509 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+<script src="../deepdive-mark.js" defer></script>
+</body>
+</html>
