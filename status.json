@@ -1,38 +1,38 @@
 {
-  "checked_at": "2026-11-25T04:33:57+00:00",
+  "checked_at": "2026-11-26T03:45:49+00:00",
   "env": "gha",
   "channels": {
     "x_post": {
-      "level": "degraded",
+      "level": "ok",
       "methods": [
         {
           "method": "x_grokbot",
-          "ok": false,
-          "ms": 67521,
-          "error": "結果が JSON でない"
+          "ok": true,
+          "ms": 41982,
+          "error": ""
         },
         {
           "method": "x_fxtwitter",
           "ok": true,
-          "ms": 274,
+          "ms": 122,
           "error": ""
         },
         {
           "method": "x_syndication",
           "ok": true,
-          "ms": 227,
+          "ms": 197,
           "error": ""
         },
         {
           "method": "x_vxtwitter",
           "ok": true,
-          "ms": 150,
+          "ms": 194,
           "error": ""
         },
         {
           "method": "x_publish_oembed",
           "ok": true,
-          "ms": 450,
+          "ms": 110,
           "error": ""
         }
       ]
@@ -49,7 +49,7 @@
         {
           "method": "yt_oembed",
           "ok": true,
-          "ms": 78,
+          "ms": 53,
           "error": ""
         }
       ]
@@ -60,13 +60,13 @@
         {
           "method": "ig_oembed",
           "ok": true,
-          "ms": 277,
+          "ms": 204,
           "error": ""
         },
         {
           "method": "og_meta",
           "ok": true,
-          "ms": 412,
+          "ms": 499,
           "error": ""
         }
       ]
@@ -77,25 +77,25 @@
         {
           "method": "og_meta",
           "ok": true,
-          "ms": 475,
+          "ms": 799,
           "error": ""
         }
       ]
     },
     "web": {
-      "level": "ok",
+      "level": "degraded",
       "methods": [
         {
           "method": "web_direct",
           "ok": true,
-          "ms": 125,
+          "ms": 158,
           "error": ""
         },
         {
           "method": "web_jina",
-          "ok": true,
-          "ms": 1843,
-          "error": ""
+          "ok": false,
+          "ms": 71,
+          "error": "HTTP 401"
         }
       ]
     }
