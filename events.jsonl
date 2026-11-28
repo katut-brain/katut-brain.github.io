@@ -1,1 +1,2 @@
 {"ts": "2026-11-21T02:49:22+00:00", "env": "gha", "event": "added_trial", "channel": "x_post", "name": "x_publish_oembed", "replaces": "x_grokbot"}
+{"ts": "2026-11-28T03:30:53+00:00", "env": "gha", "event": "promoted", "channel": "x_post", "name": "x_publish_oembed", "after": 7}

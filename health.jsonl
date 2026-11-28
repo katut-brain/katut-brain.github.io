@@ -338,3 +338,14 @@
 {"ts": "2026-11-27T03:47:08+00:00", "env": "gha", "kind": "canary", "channel": "threads", "method": "og_meta", "ok": true, "ms": 1545, "error": ""}
 {"ts": "2026-11-27T03:47:08+00:00", "env": "gha", "kind": "canary", "channel": "web", "method": "web_direct", "ok": true, "ms": 201, "error": ""}
 {"ts": "2026-11-27T03:47:09+00:00", "env": "gha", "kind": "canary", "channel": "web", "method": "web_jina", "ok": true, "ms": 687, "error": ""}
+{"ts": "2026-11-28T03:30:49+00:00", "env": "gha", "kind": "canary", "channel": "x_post", "method": "x_grokbot", "ok": false, "ms": 37038, "error": "結果が JSON でない"}
+{"ts": "2026-11-28T03:30:50+00:00", "env": "gha", "kind": "canary", "channel": "x_post", "method": "x_fxtwitter", "ok": true, "ms": 240, "error": ""}
+{"ts": "2026-11-28T03:30:50+00:00", "env": "gha", "kind": "canary", "channel": "x_post", "method": "x_syndication", "ok": true, "ms": 378, "error": ""}
+{"ts": "2026-11-28T03:30:50+00:00", "env": "gha", "kind": "canary", "channel": "x_post", "method": "x_vxtwitter", "ok": true, "ms": 156, "error": ""}
+{"ts": "2026-11-28T03:30:51+00:00", "env": "gha", "kind": "canary", "channel": "x_post", "method": "x_publish_oembed", "ok": true, "ms": 375, "error": ""}
+{"ts": "2026-11-28T03:30:51+00:00", "env": "gha", "kind": "canary", "channel": "youtube", "method": "yt_oembed", "ok": true, "ms": 63, "error": ""}
+{"ts": "2026-11-28T03:30:51+00:00", "env": "gha", "kind": "canary", "channel": "instagram", "method": "ig_oembed", "ok": true, "ms": 359, "error": ""}
+{"ts": "2026-11-28T03:30:52+00:00", "env": "gha", "kind": "canary", "channel": "instagram", "method": "og_meta", "ok": true, "ms": 566, "error": ""}
+{"ts": "2026-11-28T03:30:52+00:00", "env": "gha", "kind": "canary", "channel": "threads", "method": "og_meta", "ok": true, "ms": 817, "error": ""}
+{"ts": "2026-11-28T03:30:53+00:00", "env": "gha", "kind": "canary", "channel": "web", "method": "web_direct", "ok": true, "ms": 409, "error": ""}
+{"ts": "2026-11-28T03:30:53+00:00", "env": "gha", "kind": "canary", "channel": "web", "method": "web_jina", "ok": true, "ms": 299, "error": ""}
