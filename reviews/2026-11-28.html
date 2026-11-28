@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>2026-11-28 の振り返り</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-sec: #f5f5f7; --panel: #ffffff;
+  --text: #1d1d1f; --sub: #6e6e73; --ter: #aeaeb2;
+  --border: rgba(0,0,0,0.10); --border-s: rgba(0,0,0,0.20);
+  --chip: #f5f5f7; --accent: #0071e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --bg-sec: #1c1c1e; --panel: #2c2c2e;
+    --text: #f5f5f7; --sub: #98989d; --ter: #636366;
+    --border: rgba(255,255,255,0.10); --border-s: rgba(255,255,255,0.20);
+    --chip: #1c1c1e; --accent: #0a84ff;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6;
+  font-family: -apple-system, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-size: 15px; }
+.wrap { max-width: 740px; margin: 0 auto; padding: 32px 16px 64px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 13px; }
+a.back:hover { text-decoration: underline; }
+h1 { font-size: 24px; margin: 14px 0 2px; font-weight: 600; letter-spacing: -.01em; }
+.meta { color: var(--sub); font-size: 13px; margin-bottom: 24px; }
+h2 { font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--ter); margin: 32px 0 12px; }
+
+.summary { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; }
+.summary h2 { margin-top: 0; }
+.summary p { margin: 0 0 12px; }
+.summary .pts { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.summary .pts li { font-size: 13.5px; padding-left: 18px; position: relative; color: var(--text); }
+.summary .pts li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.q { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.q b { color: var(--text); }
+
+.notes { background: var(--bg-sec); border: 0.5px solid var(--border); border-radius: 14px; padding: 6px 18px 14px; }
+.ntag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; margin: 16px 0 8px; }
+.ilist, .qlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.ilist li, .qlist li { font-size: 13.5px; padding-left: 18px; position: relative; }
+.ilist li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+.qlist li::before { content: "?"; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
+.ilist b, .qlist b { color: var(--text); }
+.ilist span, .qlist span { color: var(--sub); }
+.ilist a, .qlist a { color: inherit; text-decoration: none; border-bottom: 0.5px solid var(--border); }
+.ilist a:hover, .qlist a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.cards { display: grid; gap: 12px; }
+.vcard { display: flex; align-items: center; gap: 8px; background: var(--bg-sec);
+  border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .15s, transform .15s; }
+.vcard:hover { border-color: var(--border-s); }
+.vlink { display: flex; gap: 14px; text-decoration: none; color: inherit; flex: 1; min-width: 0; transition: transform .15s; }
+.vcard:hover .vlink { transform: translateY(-1px); }
+.thumb { flex: none; width: 104px; min-height: 88px; background: var(--chip); position: relative;
+  display: flex; align-items: center; justify-content: center; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb .ph { font-size: 11px; color: var(--ter); letter-spacing: .03em; }
+.vbody { padding: 12px 14px 12px 0; min-width: 0; }
+.vtitle { font-weight: 500; font-size: 14.5px; margin-bottom: 3px; }
+.vdesc { color: var(--sub); font-size: 12.5px; }
+.vsaved { color: var(--ter); font-size: 10.5px; margin-top: 2px; }
+.deepdive { flex: none; margin-right: 10px; background: none; border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--sub); cursor: pointer; white-space: nowrap;
+  font-family: inherit; }
+.deepdive:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 460px) {
+  .vlink { flex-direction: column; }
+  .thumb { width: 100%; height: 150px; }
+  .vbody { padding: 0 14px 14px; }
+  .deepdive { display: none; }
+}
+footer { color: var(--ter); font-size: 11px; margin-top: 40px; opacity: .8; }
+
+</style></head><body>
+<div class="wrap">
+<a class="back" href="../index.html">← 戻る</a>
+<h1>2026-11-28 の振り返り</h1>
+<div class="meta">AIのMCP運用術とBlender/3D制作のReel計3件（3件）</div>
+<section class="summary">
+<h2>まとめ</h2>
+<p>この日の保存はInstagram Reel 3件で、AIエージェントの設計（MCPのCode Mode）と、Blenderを軸にした3D環境制作（Nukeでの合成、実在都市のインポート）に分かれる。共通するのは「手作業の積み上げを、コードやツールで一気に圧縮する」という方向で、AIも3Dも作業の粒度を上げることに関心が向いている。ユーザーのコメントは無く、保存だけが意図の手がかり。</p>
+<ul class="pts">
+<li><b>往復を減らす設計</b>：ツールを1つずつ呼ぶ代わりにコードを1本書かせる、という含意があり、トークンと文脈の節約が主題。</li>
+<li><b>都市を素材として取り込む</b>：渋谷を21.6秒でBlenderに入れる例は、背景制作の起点が「モデリング」から「選択」へ移る兆し。</li>
+</ul>
+<div class="q"><b>次に考える問い：</b>都市の実寸データを一瞬で取り込めるなら、手作業で作る環境にはどんな価値が残るのか。</div>
+</section>
+<h2>🔎 深掘り（関連記事）</h2>
+<section class="notes">
+<div class="ntag">MCPのCode Mode</div>
+<ul class="ilist">
+<li><a href="https://blog.cloudflare.com/code-mode-mcp/" target="_blank" rel="noopener"><b>Code Mode: give agents an entire API in 1,000 tokens</b></a> <span>→ Cloudflare APIの全体を search() と execute() の2ツールだけで公開し、エージェントが書いたJavaScriptをサンドボックスで実行する。入力トークンは約117万から約1,000へ（99.9%減）と同社は述べている。</span></li>
+</ul>
+</section>
+<h2>🤖 AI・開発（1件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/DgG8EOejQLz/?gwpx=YnZkdTQ4YTRoaGhs" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.82787-15/921865710_17980955603960855_2366437290995265044_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=110&amp;_nc_map=urlgen_bucketless&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=Jtp38VwwQA4Q7kNvwEzAtqP&amp;_nc_oc=Adp6J4yk0mrt_u7zXCGw_1LMCgxkU_uy96xVpIXCKyLEeZ5Qc8BABUz9ediW7XUeSbs&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-1.cdninstagram.com&amp;_nc_gid=v6MVM9KeCOulZNp9OmTWEQ&amp;_nc_ss=7b70f&amp;_nc_ct=RQosPBUKFQQAAAA&amp;oh=00_AQUH8iPkNp9m1QR_NYGzo57wZAoCMvwB0o45rzOl1LD9ZA&amp;oe=6B108D43" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">MCPは「古い使い方」が問題：Code Modeで往復を減らす</div><div class="vdesc">AIが最初にコードを1本書いてDrive→Notion→Slackの作業を一気に実行する「Code Mode」の紹介。Cloudflareでは約2,500個のAPIを全部ツール化すると約117万トークンのところを約1,000トークン（99.9%削減）で扱えるとする。今回は動画の内容を取得できなかった（キャプションの範囲）。※動画の内容は未取得</div><div class="vsaved">保存 11/28 20:46</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DgG8EOejQLz/?gwpx=YnZkdTQ4YTRoaGhs" data-title="MCPは「古い使い方」が問題：Code Modeで往復を減らす" data-rid="1946481803">💬 AIと話す</button>
+</div>
+</div>
+<h2>🧊 3D・VFX（2件）</h2>
+<div class="cards">
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/De97-KWOlQ_/?hvrq=OXhrbW9kbXVrcTd5" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-mxp2-1.cdninstagram.com/v/t51.82787-15/863195178_17966119026011380_2376571811667324272_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=108&amp;_nc_map=urlgen_bucketless&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=omNaRqjRpvIQ7kNvwGtBIsF&amp;_nc_oc=AdqoO7ENa-K4qFTL5xoNEH_TL9U_U3RKoS6uUCz2TRFUU5L6kr9skOaPflb9TEc5-lQ&amp;_nc_zt=23&amp;_nc_ht=scontent-mxp2-1.cdninstagram.com&amp;_nc_gid=JeIviD_lse9cizhQZCQBxQ&amp;_nc_ss=7b70f&amp;_nc_ct=RQosPBUKFQQAAAA&amp;oh=00_AQXIxrs8-O0oF3qk3B20BCwrGSvNU_P4WZqZ_J_DMC9XlA&amp;oe=6B108F97" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">Masca Village：Blender制作・Nuke合成のフルCG環境</div><div class="vdesc">Blenderで作りNukeで合成したフルCGの村の環境。キャプションは作品名と手法のみで、今回は動画の内容を取得できなかった。※動画の内容は未取得</div><div class="vsaved">保存 11/28 21:06</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/De97-KWOlQ_/?hvrq=OXhrbW9kbXVrcTd5" data-title="Masca Village：Blender制作・Nuke合成のフルCG環境" data-rid="1946497813">💬 AIと話す</button>
+</div>
+<div class="vcard">
+<a class="vlink" href="https://www.instagram.com/reel/DgP2DH5M3zm/?dmpr=dXNtMjhjZjZjMWF1" target="_blank" rel="noopener">
+<div class="thumb"><img src="https://scontent-fra5-1.cdninstagram.com/v/t51.82787-15/928812497_17888542146625051_3498225851025057164_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&amp;_nc_cat=100&amp;_nc_map=urlgen_bucketless&amp;ccb=7-5&amp;_nc_sid=18de74&amp;efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&amp;_nc_ohc=xvpcK-MWeuUQ7kNvwHwwY4Z&amp;_nc_oc=AdqpOFx96j7IZPDhjwlGmPCy3-wVa7egavvPVBYNnYpyuQLumzxotwbQed1T-o4UmFc&amp;_nc_zt=23&amp;_nc_ht=scontent-fra5-1.cdninstagram.com&amp;_nc_gid=uhCyBNz8DlpetoqPQFnk7w&amp;_nc_ss=7bb02&amp;_nc_ct=RQosPBUKFQQAAAA&amp;oh=00_AQXukimsBsIMs3KS0ySyiG3Nirw1KjCqcrPNWg5LFpf5Rg&amp;oe=6B109FF8" onerror="this.remove()"><span class="ph">Instagram</span></div>
+<div class="vbody"><div class="vtitle">Blenderで実在の渋谷を21.6秒でインポート</div><div class="vdesc">地図上で渋谷を矩形・パス・半径で選びBlenderへ送ると、198タイル・約1.2km四方、各ビルは実際の高さで再現される。手作業なら参考写真で1週間かかるところが21.6秒とし、同プラグインは9本のソフトで動くという。今回は動画の内容を取得できなかった（キャプションの範囲）。※動画の内容は未取得</div><div class="vsaved">保存 11/28 22:46</div></div>
+</a>
+<button class="deepdive" onclick="openChat(this)" data-url="https://www.instagram.com/reel/DgP2DH5M3zm/?dmpr=dXNtMjhjZjZjMWF1" data-title="Blenderで実在の渋谷を21.6秒でインポート" data-rid="1946551426">💬 AIと話す</button>
+</div>
+</div>
+<footer>毎朝の同期で自動生成 ｜ katut-brain
+<p class="notegen-warn">⚠️ Instagram Reel の動画取得が全滅（3件中0件成功・内訳: exception:ClientError:404 3件）。中継サービスの死亡を疑うこと</p>
+<!-- run-timing schema=v2 status=complete target=2026-11-28 run_id=d9163d0f saves=3 step1_s=14 step2_s=14 step2_5_s=116 step3_s=5 step4_s=56 step4_5_s=0 step5_s=18 step7_s=1 total_s=224 -->
+</footer>
+</div>
+<script>
+function openChat(btn) {
+  var url = btn.getAttribute('data-url');
+  var title = btn.getAttribute('data-title');
+  var rid = btn.getAttribute('data-rid');
+  var vault = 'C:\\Users\\katut\\Documents\\ObsidianVault';
+  var workdir = 'C:\\Users\\katut';
+  var bookmarksDir = vault + '\\Explore\\bookmarks\\';
+  var prompt = '次のブックマークについて一緒に調べて、学びをVaultに書き残して。\n' +
+    'URL: ' + url + '\n' + 'タイトル: ' + title + '\n' + 'raindrop_id: ' + rid + '\n\n' +
+    bookmarksDir + ' で raindrop_id: ' + rid + ' を grep で探す。' +
+    'あればそのノートに今回の深掘り内容を追記する。' +
+    'なければ rd-' + rid + '-<内容を表す英語kebab-caseスラッグ>.md を同フォルダに新規作成する' +
+    '（frontmatter: date / tags: [type/bookmark] / raindrop_id / source）。';
+  var link = 'claude://code/new?folder=' + encodeURIComponent(workdir) + '&q=' + encodeURIComponent(prompt);
+  location.href = link;
+}
+</script>
+<script src="../deepdive-mark.js" defer></script>
+</body></html>
